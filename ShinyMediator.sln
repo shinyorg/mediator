@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Contracts", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator", "Shiny.Mediator\Shiny.Mediator.csproj", "{8DB16363-E123-49E6-A733-723DC4C6C9F3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Tests", "tests\Shiny.Mediator.Tests\Shiny.Mediator.Tests.csproj", "{D5E10100-9EE4-4ED7-B1F4-2B22E37225C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{8DB16363-E123-49E6-A733-723DC4C6C9F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8DB16363-E123-49E6-A733-723DC4C6C9F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8DB16363-E123-49E6-A733-723DC4C6C9F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5E10100-9EE4-4ED7-B1F4-2B22E37225C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5E10100-9EE4-4ED7-B1F4-2B22E37225C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5E10100-9EE4-4ED7-B1F4-2B22E37225C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5E10100-9EE4-4ED7-B1F4-2B22E37225C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

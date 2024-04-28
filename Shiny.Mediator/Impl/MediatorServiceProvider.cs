@@ -2,7 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Shiny.Mediator.Impl;
 
-public class MediatorServiceProvider : 
+
+public class MediatorServiceProvider(IServiceScope services, bool scoped) : 
     IServiceProvider, 
     ISupportRequiredService, 
     IKeyedServiceProvider, 
@@ -10,45 +11,83 @@ public class MediatorServiceProvider :
     IDisposable, 
     IAsyncDisposable
 {
+    readonly List<object> trackEventHandlers = new();
     bool disposed;
     
-    public MediatorServiceProvider()
-    {
-    }
-
-    
-    // for every IEvent<> that comes out, we want to store it the main/singleton mediator and remove it when the childscope is disposed
     public object? GetService(Type serviceType)
     {
-        throw new NotImplementedException();
+        var service = services.ServiceProvider.GetService(serviceType);
+        this.TryTrackEventHandler(service);
+        return service;
     }
 
     public object GetRequiredService(Type serviceType)
     {
-        throw new NotImplementedException();
+        var service = services.ServiceProvider.GetRequiredService(serviceType);
+        this.TryTrackEventHandler(service);
+        return service;
     }
 
     public object? GetKeyedService(Type serviceType, object? serviceKey)
     {
+        var service = services.ServiceProvider.GetKeyedServices(serviceType, serviceKey);
+        this.TryTrackEventHandler(service);
         throw new NotImplementedException();
     }
-
+    
     public object GetRequiredKeyedService(Type serviceType, object? serviceKey)
-    {
-        throw new NotImplementedException();
-    }
-    
-    
+        => services.ServiceProvider.GetRequiredKeyedService(serviceType, serviceKey);
 
     public bool IsService(Type serviceType)
-    {
-        throw new NotImplementedException();
-    }
+        => false;
 
-    public bool IsKeyedService(Type serviceType, object? serviceKey)
+    public bool IsKeyedService(Type serviceType, object? serviceKey) =>
+        services.ServiceProvider is IKeyedServiceProvider;
+
+    public IList<IEventHandler<TEvent>> GetEventHandlers<TEvent>() where TEvent : IEvent
     {
-        throw new NotImplementedException();
+        // this is going to pull out all singletons, scoped, and transients of event handlers, BUT
+            // viewmodels should not register their IEventHandler interface, it is a marker at that point
+        var handlers = services
+            .ServiceProvider
+            .GetServices(typeof(IEventHandler<TEvent>))
+            .OfType<IEventHandler<TEvent>>()
+            .ToList();
+    
+        lock (this.trackEventHandlers)
+        {
+            var handlerInstances = this
+                .trackEventHandlers
+                .OfType<IEventHandler<TEvent>>()
+                .ToList();
+            
+            if (handlerInstances.Count > 0)
+                handlers.AddRange(handlerInstances);
+        }
+        return handlers;
     }
+    
+    void TryTrackEventHandler(object? service)
+    {
+        if (service == null || !scoped)
+            return;
+
+        if (IsEventHandler(service))
+        {
+            lock (this.trackEventHandlers)
+            {
+                this.trackEventHandlers.Add(service);
+            }
+        }
+    }
+    
+    static bool IsEventHandler(object service) => service
+        .GetType()
+        .GetInterfaces()
+        .Any(x =>
+            x.IsGenericType &&
+            x.GetGenericTypeDefinition() == typeof(IEventHandler<>)
+        );    
     
     /// <summary>
     /// Releases unmanaged and - optionally - managed resources.
@@ -64,7 +103,12 @@ public class MediatorServiceProvider :
             this.disposed = true;
             if (disposing)
             {
-                // this.lifetimeScope.Dispose();
+                // this will call dispose on the handlers for me
+                services.Dispose(); 
+                
+                // remove all tracked instances of IEventHandler's
+                lock (this.trackEventHandlers)
+                    this.trackEventHandlers.Clear();
             }
         }
     }
@@ -74,7 +118,7 @@ public class MediatorServiceProvider :
     /// </summary>
     public void Dispose()
     {
-        Dispose(true);
+        this.Dispose(true);
         GC.SuppressFinalize(this);
     }
    

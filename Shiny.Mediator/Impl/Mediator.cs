@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Shiny.Mediator.Contracts;
 
 namespace Shiny.Mediator.Impl;
 
@@ -28,7 +27,7 @@ public class Mediator(IServiceProvider services) : IMediator
         CancellationToken cancellationToken = default
     ) where TEvent : IEvent
     {
-        var handlers = (IEnumerable<IEventHandler<TEvent>>)services.GetServices(typeof(IEventHandler<TEvent>));
+        var handlers = ((MediatorServiceProvider)services).GetEventHandlers<TEvent>();
         if (!handlers.Any())
             return;
         

@@ -1,4 +1,4 @@
-namespace Shiny.Mediator.Contracts;
+namespace Shiny.Mediator;
 
 public interface IEventHandler<TEvent> where TEvent : IEvent
 {
