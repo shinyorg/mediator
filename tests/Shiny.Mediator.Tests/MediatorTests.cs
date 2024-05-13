@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿using Shiny.Mediator.Impl;
 
 namespace Shiny.Mediator.Tests;
 
@@ -6,13 +6,13 @@ namespace Shiny.Mediator.Tests;
 public class MediatorTests
 {
     [Fact]
-    public async Task Publish_FireAndForget()
+    public async Task Events_FireAndForget()
     {
         
     }
     
     [Fact]
-    public async Task Publish_ParallelExecution()
+    public async Task Events_ParallelExecution()
     {
         
     }    
@@ -33,6 +33,8 @@ public class MediatorTests
     [Fact]
     public void Events_FiredScopedUnregistered()
     {
-        
+        var services = new ServiceCollection();
+        var sf = new MediatorServiceProviderFactory();
+        sf.CreateServiceProvider(services);
     }
 }

@@ -1,31 +1,33 @@
-﻿namespace Sample;
+﻿using Shiny.Mediator.Impl;
+
+namespace Sample;
 
 public static class MauiProgram
 {
-    public static MauiApp CreateMauiApp() => MauiApp
-        .CreateBuilder()
-        .UseMauiApp<App>()
-        .UseMauiCommunityToolkit()
-        .UseShinyFramework(
-            new DryIocContainerExtension(),
-            prism => prism.CreateWindow("NavigationPage/MainPage"),
-            new(
-#if DEBUG
-                ErrorAlertType.FullError
-#else
-                ErrorAlertType.NoLocalize
-#endif
+    public static MauiApp CreateMauiApp()
+    {
+        var builder = MauiApp.CreateBuilder();
+        builder.ConfigureContainer(new MediatorServiceProviderFactory());
+        
+        builder
+            .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()
+            .UseShinyFramework(
+                new DryIocContainerExtension(),
+                prism => prism.CreateWindow("NavigationPage/MainPage"),
+                new(ErrorAlertType.FullError)
             )
-        )
-        .ConfigureFonts(fonts =>
-        {
-            fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-            fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-        })
-        .RegisterInfrastructure()
-        .RegisterAppServices()
-        .RegisterViews()
-        .Build();
+            .ConfigureFonts(fonts =>
+            {
+                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+            })
+            .RegisterInfrastructure()
+            .RegisterAppServices()
+            .RegisterViews();
+
+        return builder.Build();
+    }
 
 
     static MauiAppBuilder RegisterAppServices(this MauiAppBuilder builder)

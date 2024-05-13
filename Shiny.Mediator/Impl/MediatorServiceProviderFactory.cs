@@ -2,9 +2,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Shiny.Mediator.Impl;
 
-public class MediatorServiceProviderFactory : IServiceProviderFactory<MediatorServiceProvider>
+public class MediatorServiceProviderFactory : IServiceProviderFactory<IServiceCollection>
 {
-    public MediatorServiceProvider CreateBuilder(IServiceCollection services)
+    public IServiceCollection CreateBuilder(IServiceCollection services)
     {
         var sp = services.BuildServiceProvider();
         var scope = new InternalGlobalScope(sp);
