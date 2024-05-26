@@ -7,7 +7,7 @@ public static class MauiProgram
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
-        builder.ConfigureContainer(new MediatorServiceProviderFactory());
+        builder.Services.AddShinyMediator();
         
         builder
             .UseMauiApp<App>()

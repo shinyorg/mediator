@@ -3,7 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Shiny.Mediator.Impl;
 
 
-public class Mediator(IServiceProvider services) : IMediator
+public class Mediator(
+    IServiceProvider services, 
+    EventCollector collector
+) : IMediator
 {
     public async Task Send<TCommand>(TCommand command, CancellationToken cancellationToken = default) where TCommand : IRequest
     {
@@ -27,7 +30,10 @@ public class Mediator(IServiceProvider services) : IMediator
         CancellationToken cancellationToken = default
     ) where TEvent : IEvent
     {
-        var handlers = ((MediatorServiceProvider)services).GetEventHandlers<TEvent>();
+        var handlers = services.GetServices<IEventHandler<TEvent>>().ToList();
+        var liveHandlers = collector.GetHandlers<TEvent>().ToArray();
+        handlers.AddRange(liveHandlers);
+        
         if (!handlers.Any())
             return;
         
@@ -59,6 +65,14 @@ public class Mediator(IServiceProvider services) : IMediator
         {
             await executor.ConfigureAwait(false);
         }
+    }
+
+    
+    public IDisposable Subscribe<TEvent>(Func<TEvent, CancellationToken, Task> action) where TEvent : IEvent
+    {
+        var handler = new MediatorEventHandler<TEvent>(collector);
+        handler.OnHandle = action;
+        return handler;
     }
 
 

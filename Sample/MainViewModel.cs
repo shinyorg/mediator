@@ -3,25 +3,41 @@
 namespace Sample;
 
 // scoped
-public class MainViewModel : ViewModel, IEventHandler<MyMessageEvent>
+public class MainViewModel : ViewModel
 {
-    public MainViewModel(BaseServices services, IMediator mediator) : base(services)
+    readonly IDisposable sub;
+    CancellationTokenSource? cancelSource;
+    
+    public MainViewModel(
+        BaseServices services, 
+        IMediator mediator,
+        MediatorEventHandler<MyMessageEvent> scopedHandler
+    ) : base(services)
     {
-        this.TriggerEvent = ReactiveCommand.CreateFromTask(async () =>
+        this.TriggerCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            await mediator.Publish(
-                new MyMessageEvent("This is my message"),
-                fireAndForget: true,
-                executeInParallel: true,
-                CancellationToken.None
-            );
+            this.cancelSource = new();
+            var response = await mediator.Send(new MyMessageRequest(this.Arg!), this.cancelSource.Token);
+            Console.WriteLine("RESPONSE: " + response.Response);
+        });
+
+        this.CancelCommand = ReactiveCommand.Create(() => this.cancelSource?.Cancel());
+        
+        scopedHandler.OnHandle = async (@event, ct) =>
+        {
+            // do something async here
+            Console.WriteLine("Scoped Handler: " + @event.Arg);
+        };
+        
+        this.sub = mediator.Subscribe(async (MyMessageEvent @event, CancellationToken ct) =>
+        {
+            // do something async here
+            Console.WriteLine("Message Subscribe: " + @event.Arg);
         });
     }
 
 
-    public ICommand TriggerEvent { get; }
-    public async Task Handle(MyMessageEvent @event, CancellationToken cancellationToken)
-    {
-        // do something - this will trigger on the same instance as the viewmodel
-    }
+    public ICommand TriggerCommand { get; }
+    public ICommand CancelCommand { get; }
+    [Reactive] public string Arg { get; set; }
 }

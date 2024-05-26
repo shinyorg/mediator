@@ -34,7 +34,5 @@ public class MediatorTests
     public void Events_FiredScopedUnregistered()
     {
         var services = new ServiceCollection();
-        var sf = new MediatorServiceProviderFactory();
-        sf.CreateServiceProvider(services);
     }
 }

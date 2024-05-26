@@ -4,4 +4,6 @@
              xmlns:local="clr-namespace:Sample"
              x:DataType="local:MainViewModel"
              x:Class="Sample.MainPage">
+    
+    <Label></Label>
 </ContentPage>

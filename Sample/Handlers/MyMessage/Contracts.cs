@@ -1,5 +1,3 @@
-using Shiny.Mediator;
-
 namespace Sample.Handlers.MyMessage;
 
 public record MyMessageRequest(string Arg) : IRequest<MyMessageResponse>;
