@@ -2,7 +2,7 @@
 
 namespace Sample;
 
-// scoped
+
 public class MainViewModel : ViewModel
 {
     readonly IDisposable sub;
@@ -14,14 +14,28 @@ public class MainViewModel : ViewModel
         MediatorEventHandler<MyMessageEvent> scopedHandler
     ) : base(services)
     {
-        this.TriggerCommand = ReactiveCommand.CreateFromTask(async () =>
-        {
-            this.cancelSource = new();
-            var response = await mediator.Send(new MyMessageRequest(this.Arg!), this.cancelSource.Token);
-            Console.WriteLine("RESPONSE: " + response.Response);
-        });
+        this.TriggerCommand = ReactiveCommand.CreateFromTask(
+            async () =>
+            {
+                this.cancelSource = new();
+                var request = new MyMessageRequest(
+                    this.Arg!,
+                    this.FireAndForgetEvents,
+                    this.ParallelEvents
+                );
+                var response = await mediator.Send(request, this.cancelSource.Token);
+                Console.WriteLine("RESPONSE: " + response.Response);
+            }
+        );
+        this.BindBusyCommand(this.TriggerCommand);
 
-        this.CancelCommand = ReactiveCommand.Create(() => this.cancelSource?.Cancel());
+        this.CancelCommand = ReactiveCommand.Create(
+            () => this.cancelSource?.Cancel(),
+            this.WhenAny(
+                x => x.IsBusy,
+                busy => busy.GetValue()
+            )
+        );
         
         scopedHandler.OnHandle = async (@event, ct) =>
         {
@@ -40,4 +54,6 @@ public class MainViewModel : ViewModel
     public ICommand TriggerCommand { get; }
     public ICommand CancelCommand { get; }
     [Reactive] public string Arg { get; set; }
+    [Reactive] public bool FireAndForgetEvents { get; set; }
+    [Reactive] public bool ParallelEvents { get; set; }
 }
