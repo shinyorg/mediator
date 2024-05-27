@@ -1,4 +1,4 @@
-namespace Sample.Handlers.MyMessage;
+namespace Sample;
 
 
 public class SingletonRequestHandler(IMediator mediator) : IRequestHandler<MyMessageRequest, MyMessageResponse>

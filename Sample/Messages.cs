@@ -1,4 +1,4 @@
-namespace Sample.Handlers.MyMessage;
+namespace Sample;
 
 public record MyMessageRequest(string Arg, bool FireAndForgetEvents, bool ParallelEvents) : IRequest<MyMessageResponse>;
 

@@ -1,4 +1,4 @@
-namespace Sample.Handlers.MyMessage;
+namespace Sample;
 
 public class SingletonEventHandler(IMediator mediator) : IEventHandler<MyMessageEvent>
 {

@@ -9,6 +9,7 @@ public class MediatorEventHandler<TEvent> : IDisposable, IEventHandler<TEvent> w
     
     public MediatorEventHandler(EventCollector collector)
     {
+        this.collector = collector;
         this.collector.Add(this);    
     }
     

@@ -1,12 +1,12 @@
 namespace Shiny.Mediator;
 
-public interface IRequestHandler<TCommand> where TCommand : IRequest
+public interface IRequestHandler<in TRequest> where TRequest : IRequest
 {
-    Task Handle(TCommand command, CancellationToken cancellationToken);
+    Task Handle(TRequest request, CancellationToken cancellationToken);
 }
 
 
-public interface IRequestHandler<TCommand, TResult> where TCommand : IRequest<TResult>
+public interface IRequestHandler<in TRequest, TResult> where TRequest : IRequest<TResult>
 {
-    Task<TResult> Handle(TCommand command, CancellationToken cancellationToken);
+    Task<TResult> Handle(TRequest request, CancellationToken cancellationToken);
 }

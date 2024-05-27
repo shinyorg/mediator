@@ -10,3 +10,6 @@ Thoughts
 
 Pipeline
 - Time how long events took, time how long a command took
+
+Streams 
+- IAsyncEnumerable or IObservable

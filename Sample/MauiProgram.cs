@@ -1,6 +1,4 @@
-﻿using Sample.Handlers.MyMessage;
-
-namespace Sample;
+﻿namespace Sample;
 
 
 public static class MauiProgram
@@ -27,9 +25,10 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
         builder.Services.AddShinyMediator();
-        builder.Services.AddSingleton<IEventHandler<MyMessageEvent>, SingletonEventHandler>();
+        builder.Services.AddSingletonAsImplementedInterfaces<SingletonEventHandler>();
+        builder.Services.AddSingletonAsImplementedInterfaces<SingletonRequestHandler>();
         builder.Services.RegisterForNavigation<MainPage, MainViewModel>();
-        
+
         return builder.Build();
     }
 }

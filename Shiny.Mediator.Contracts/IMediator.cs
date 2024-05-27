@@ -6,28 +6,26 @@ public interface IMediator
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="command"></param>
+    /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
-    /// <typeparam name="TRequest"></typeparam>
     /// <returns></returns>
     Task Send<TRequest>(
-        TRequest command, 
+        TRequest request,
         CancellationToken cancellationToken = default
     ) where TRequest : IRequest;
 
-    
+
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="command"></param>
+    /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
-    /// <typeparam name="TRequest"></typeparam>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    Task<TResult> Send<TRequest, TResult>(
-        TRequest command, 
+    Task<TResult> Send<TResult>(
+        IRequest<TResult> request,
         CancellationToken cancellationToken = default
-    ) where TRequest : IRequest<TResult>;
+    );
 
     
     /// <summary>

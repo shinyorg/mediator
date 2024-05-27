@@ -1,6 +1,4 @@
-﻿using Sample.Handlers.MyMessage;
-
-namespace Sample;
+﻿namespace Sample;
 
 
 public class MainViewModel : ViewModel
@@ -14,6 +12,7 @@ public class MainViewModel : ViewModel
         MediatorEventHandler<MyMessageEvent> scopedHandler
     ) : base(services)
     {
+        // TODO: request without response
         this.TriggerCommand = ReactiveCommand.CreateFromTask(
             async () =>
             {
