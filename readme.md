@@ -13,3 +13,6 @@ Pipeline
 
 Streams 
 - IAsyncEnumerable or IObservable
+
+Prism Strongly Typed Navigation
+- Requires global navigation service
