@@ -1,41 +1,156 @@
 # Shiny Mediator
 
 A mediator pattern, but for apps.  Apps have pages with lifecycles that don't necessarily participate in the standard 
-dependency injection lifecycle.  .NET MAUI generally tend to favor the Messenger pattern.  We hate this pattern for many reasons 
+dependency injection lifecycle.  .NET MAUI generally tends to favor the Messenger pattern.  We hate this pattern for many reasons 
 which we won't get into.  That being said, we do offer a messenger subscription in our Mediator for where interfaces
 and dependency injection can't reach.
 
-Our event publishing comes with a couple of nice flavors in that you can
-* Fire & Forget
-* Run in parallel or sequentially
+## Features
+* A Mediator for your .NET Apps (MAUI & Blazor are the main targets for us)
+* Think of "weak" message subscription without the fuss or mess to cleanup
+* Fire & Forget as well as Parallel Event execution 
+* Our MAUI & Blazor integrations allow your viewmodels or pages to implement an IEventHandler<TEvent> interface(s) without them having to participate in the dependency injection provider
+* We still have a "messagingcenter" type subscribe off IMediator for cases where you can't have your current type implement an interface
 
-## Works with
+## Works With
 * .NET MAUI - all platforms
 * MVVM Frameworks like Prism, ReactiveUI, & .NET MAUI Shell
 * Blazor - TBD
-* Any other .NET platform - but you'll have to come up with your own "event collector" for the out-of-state stuff
+* Any other .NET platform - but you'll have to come up with your own "event collector" for the out-of-state stuff 
+
+## Getting Started
+
+First, let's create our request & event handlers
+
+```
+using Shiny.Mediator;
+
+public record TestRequest(string AnyArgs, int YouWant) : IRequest;
+public record TestEvent(MyObject AnyArgs) : IEvent;
+
+// and for request/response requests - we'll come back to this
+public record TestResponseRequest : IRequest<TestResponse> {}
+public record TestResponse {}
+```
+
+Next - let's wire up a RequestHandler.  You can have ONLY 1 request handler per request type.
+This is where you would do the main business logic or data requests.
+
+Let's create our RequestHandler
+
+```csharp
+using Shiny.Mediator;
+
+// NOTE: Request handlers are registered as singletons
+public class TestRequestHandler : IRequestHandler<TestRequest> 
+{
+    // you can do all dependency injection here
+    public async Task Handle(TestRequest request, CancellationToken ct) 
+    {
+        // do something async here
+    }
+}
+
+public class TestResponseRequestHandler : IRequestHandler<TestResponseRequest, TestResponse>
+{
+    public async Task<TestResponse> Handle(TestResponseRequest request, CancellationToken ct)
+    {
+        var response = await GetResponseThing(ct);
+        return response;
+    }
+}
+
+public class TestEventHandler : IEventHandler<TestEvent> 
+{
+    // Dependency injection works here
+    public async Task Handle(TestEvent @event, CancellationToken ct)
+    {
+        // Do something async here
+    }
+}
+```
+
+Now, let's register all of our stuff with our .NET MAUI MauiProgram.cs
+
+```csharp
+public static class MauiProgram
+{
+    public static MauiApp CreateMauiApp()
+    {
+        var builder = MauiApp
+            .CreateBuilder()
+            .UseMauiApp<App>();
+        
+        builder.Services.AddShinyMediator();
+        builder.Services.AddSingletonAsImplementedInterfaces<TestEventHandler>();
+        builder.Services.AddSingletonAsImplementedInterfaces<TestRequestHandler>();
+        builder.Services.AddSingltonAsImplementedInterfaces<TestResponseRequestHandler>();
+        // OR if you're using our attribute for source generation
+    }
+}
+```
+
+Lastly, any model model/viewmodel/etc participating in dependency injection can now inject the mediator
+
+```
+public class MyViewModel(Shiny.Mediator.IMediator mediator)
+{
+    public async Task Execute() 
+    {
+        await mediator.Send(new TestRequest()); // this will execute TestRequestHandler
+        var response = await mediator.Send(new TestResponseRequest()); // this will execute TestResponseRequestHandler and return a value
+        
+        // this will publish to any service registered that implement IEventHandler<TestEvent>
+        // there are additional args here to allow you to execute values in sequentially or wait for all events to complete
+        // by default, publish calls are "fire & forget" under the hood and execute in parallel
+        await mediator.Publish(new TestEvent()); 
+    }
+}
+```
+
+### What about my ViewModels?
+
+For .NET MAUI, your viewmodels have the ability to participate in the event publishing chain without being part of dependency injection
+
+Let's go back to MauiProgram.cs and alter the AddShinyMediator
+
+```csharp
+builder.Services.AddShinyMediator<MauiEventCollector>();
+```
+
+Now your viewmodel (or page) can simply implement the IEventHandler<T> interface to participate
+
+NOTE: Further example to below - you can implement multiple event handlers (or request handlers)
+
+```csharp
+public class MyViewModel : BaseViewModel, 
+                           Shiny.Mediator.IEventHandler<TestEvent>,
+                           Shiny.Mediator.IEventHandler<TestEvent>
+{
+    public async Task Handle(TestEvent @event, CancellationToken ct)
+    {
+    }
+    
+    public async Task Handle(TestEvent2 @event, CancellationToken ct)
+    {
+    }
+}
+```
 
 ## Sample
-TODO
-
-You do not need any other part of Shiny, Prism, ReactiveUI, etc - those are included as I write things faster with it.
+There is a sample in this repo.  You do not need any other part of Shiny, Prism, ReactiveUI, etc - those are included as I write things faster with it.
 Focus on the interfaces from the mediator & the mediator calls itself
 
-## Ideas for workflows
-
+## Ideas for Workflows
 * Use Prism with Modules - want strongly typed navigation parameters, navigations, and have them available to other modules - we're the guy to help!
     * Example TBD
 * Using a Shiny Foreground Job - want to push data an event that new data came in to anyone listening?
-
-## Event Collectors
-TODO
-
-* Blazor
-* .NET MAUI
+* Have a Shiny Push Delegate that is executing on the delegate but want to push it to the UI, Mediator has a plan!
 
 ## TODO
 * Pipelines
   * Error handlers - requests and events?
   * Pre/Post Execution - Time how long events took, time how long a command took
 
+* Explain Event Handlers 
 * Streams - IAsyncEnumerable or IObservable
