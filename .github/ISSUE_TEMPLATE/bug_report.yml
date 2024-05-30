@@ -1,0 +1,49 @@
+name: Bug Report
+description: You have found something wrong with Shiny Mediator
+title: "[Bug]: "
+labels: [bug, unverified]
+body:
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Steps To Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1.
+        2.
+        3.
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Actual Behavior
+    validations:
+      required: true
+  - type: textarea
+    id: exception
+    attributes:
+      label: Exception or Log output
+      description: Please copy and paste any relevant log output
+  - type: textarea
+    id: codesample
+    attributes:
+      label: Code Sample
+      description: Please include a github repo with your reproducible sample
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Terms of Filing
+      description: By submitting this issue, you agree to the following
+      options:
+        - label: I have supplied a reproducible sample
+          required: true
+        - label: I am a Sponsor OR I am using the LATEST stable or preview release
+          required: true
+        - label: I am Sponsor OR My GitHub account is 30+ days old
+          required: true
+        - label: I understand that if I am checking these boxes and I am not actually following what they are saying, I will be removed from this repository!
+          required: true

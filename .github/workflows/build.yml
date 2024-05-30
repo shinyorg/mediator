@@ -1,0 +1,88 @@
+﻿name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+  push:
+    branches:
+    - main
+    - dev
+    - preview
+    - v*
+    
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+
+    runs-on: macos-13
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+          fetch-depth: 0
+
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@v3
+      with:
+          dotnet-version: '8.0.x'
+
+#    - uses: AdoptOpenJDK/install-jdk@v1
+#      with:
+#        version: '13'
+#        architecture: x64
+
+#    - name: Add .NET Workloads
+#      run: dotnet workload install maui
+
+#    - name: Setup Nerdbank GitVersioning
+#      uses: dotnet/nbgv@master
+#      id: nbgv
+
+    - name: Build
+      run: dotnet build ShinyMediator.sln /restore -m -property:Configuration=Release -property:PublicRelease=true
+
+    - name: Post NuGet Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: nuget-artifacts
+        path: '**/*.nupkg'
+
+    - name: Publish Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: nugets
+        path: ${{ github.workspace }}/artifacts
+        retention-days: 5
+
+#    - name: Publish NuGets
+#      if: ${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/v') }}
+#      run: dotnet nuget push **\*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGETAPIKEY }} --skip-duplicate
+
+#    - name: Test Release Annoucement
+#      run: echo "Shiny ${{ steps.nbgv.outputs.NuGetPackageVersion }} released! Check out the latest info at https://shinylib.net/release-notes/client/"
+#
+#    - name: 'Announce to X/Twitter'
+#      uses: nearform-actions/github-action-notify-twitter@master
+#      if: ${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/v') }}
+#      with:
+#        message: Shiny ${{ steps.nbgv.outputs.NuGetPackageVersion }} released! Check out the latest info at https://shinylib.net/release-notes/client/
+#        twitter-app-key: ${{ secrets.TWITTER_CONSUMER_API_KEY }}
+#        twitter-app-secret: ${{ secrets.TWITTER_CONSUMER_API_SECRET }}
+#        twitter-access-token: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+#        twitter-access-token-secret: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+#
+#    - name: Announce to Mastodon
+#      uses: cbrgm/mastodon-github-action@v2
+#      if: ${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/v') }}
+#      with:
+#        access-token: ${{ secrets.MASTODON_ACCESS_TOKEN }}
+#        url: ${{ secrets.MASTODON_URL }}
+#        message: "Shiny ${{ steps.nbgv.outputs.NuGetPackageVersion }} released! Check out the latest info at https://shinylib.net/release-notes/client/"
