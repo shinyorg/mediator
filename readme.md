@@ -112,6 +112,10 @@ public class MyViewModel(Shiny.Mediator.IMediator mediator)
 
 For .NET MAUI, your viewmodels have the ability to participate in the event publishing chain without being part of dependency injection
 
+With this setup, you don't need to worry about deallocating any events, unsubscribing from some service, or hooking to anything.
+
+Lastly, if your page/viewmodel is navigated away from (popped), it will no longer participate in the event broadcast
+
 Let's go back to MauiProgram.cs and alter the AddShinyMediator
 
 ```csharp
