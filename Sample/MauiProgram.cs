@@ -8,10 +8,25 @@ public static class MauiProgram
         var builder = MauiApp
             .CreateBuilder()
             .UseMauiApp<App>()
-            .UseMauiCommunityToolkit()
             .UseShinyFramework(
                 new DryIocContainerExtension(),
-                prism => prism.CreateWindow("NavigationPage/MainPage"),
+                prism => prism.CreateWindow(nav => nav
+                    .CreateBuilder()
+                    .AddTabbedSegment(tabs => tabs
+                        .CreateTab(tab => tab
+                            .AddNavigationPage()
+                            .AddSegment(nameof(TriggerPage))
+                        )
+                        .CreateTab(tab => tab
+                            .AddNavigationPage()
+                            .AddSegment(nameof(EventPage))
+                        )
+                        .CreateTab(tab => tab
+                            .AddNavigationPage()
+                            .AddSegment(nameof(BlazorPage))
+                        )
+                    )
+                ),
                 new(ErrorAlertType.FullError)
             )
             .ConfigureFonts(fonts =>
@@ -23,12 +38,19 @@ public static class MauiProgram
 #if DEBUG
         builder.Logging.SetMinimumLevel(LogLevel.Trace);
         builder.Logging.AddDebug();
+        builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
         builder.Services.AddShinyMediator<MauiEventCollector>();
         builder.Services.AddSingletonAsImplementedInterfaces<SingletonEventHandler>();
         builder.Services.AddSingletonAsImplementedInterfaces<SingletonRequestHandler>();
-        builder.Services.RegisterForNavigation<MainPage, MainViewModel>();
 
+        builder.Services.AddSingleton<AppSqliteConnection>();
+        builder.Services.AddMauiBlazorWebView();
+
+        builder.Services.RegisterForNavigation<TriggerPage, TriggerViewModel>();
+        builder.Services.RegisterForNavigation<EventPage, EventViewModel>();
+        builder.Services.RegisterForNavigation<BlazorPage, BlazorViewModel>();
+        
         return builder.Build();
     }
 }

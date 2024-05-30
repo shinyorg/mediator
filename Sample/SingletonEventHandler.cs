@@ -1,6 +1,7 @@
 namespace Sample;
 
-public class SingletonEventHandler(IMediator mediator) : IEventHandler<MyMessageEvent>
+
+public class SingletonEventHandler(IMediator mediator, AppSqliteConnection data) : IEventHandler<MyMessageEvent>
 {
     public async Task Handle(MyMessageEvent @event, CancellationToken cancellationToken)
     {
@@ -8,6 +9,6 @@ public class SingletonEventHandler(IMediator mediator) : IEventHandler<MyMessage
         var wait = random.Next(500, 5000);
         await Task.Delay(wait, cancellationToken);
         
-        Console.WriteLine("SingletonEventHandler: " + @event.Arg);
+        await data.Log("SingletonEventHandler", @event);
     }
 }

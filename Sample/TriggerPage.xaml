@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Sample"
-             x:DataType="local:MainViewModel"
-             x:Class="Sample.MainPage"
-             Title="Shiny Mediator">
+             x:DataType="local:TriggerViewModel"
+             x:Class="Sample.TriggerPage"
+             Title="Trigger">
     <TableView>
         <TableRoot>
             <TableSection>
@@ -16,7 +16,9 @@
                 
                 <SwitchCell Text="Fire and Forget Events" 
                             On="{Binding FireAndForgetEvents}"/>
-                
+            </TableSection>
+
+            <TableSection>
                 <TextCell Text="Send Request" 
                           Command="{Binding TriggerCommand}"/>
                 

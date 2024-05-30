@@ -18,6 +18,9 @@ Our event publishing comes with a couple of nice flavors in that you can
 ## Sample
 TODO
 
+You do not need any other part of Shiny, Prism, ReactiveUI, etc - those are included as I write things faster with it.
+Focus on the interfaces from the mediator & the mediator calls itself
+
 ## Ideas for workflows
 
 * Use Prism with Modules - want strongly typed navigation parameters, navigations, and have them available to other modules - we're the guy to help!

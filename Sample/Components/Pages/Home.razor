@@ -1,0 +1,16 @@
+﻿@page "/"
+@inject AppSqliteConnection conn
+@implements IEventHandler<MyMessageEvent> 
+
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+@code {
+    // TODO: should nav to another page to test that this disconnects
+    public async Task Handle(MyMessageEvent @event, CancellationToken cancellationToken)
+    {
+        await conn.Log("BlazorPage-Home.razor", @event);
+    }
+}

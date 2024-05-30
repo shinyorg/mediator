@@ -8,8 +8,13 @@ public class MediatorTests
     [Fact]
     public async Task Events_FireAndForget()
     {
+        var services = new ServiceCollection();
+
+        var sp = services.BuildServiceProvider();
+        var mediator = sp.GetRequiredService<IMediator>();
         
     }
+    
     
     [Fact]
     public async Task Events_ParallelExecution()
@@ -17,6 +22,7 @@ public class MediatorTests
         
     }    
 
+    
     [Fact]
     public void Registration_OnlyOneRequestHandler_NoResponse()
     {
@@ -31,7 +37,7 @@ public class MediatorTests
 
 
     [Fact]
-    public void Events_FiredScopedUnregistered()
+    public void Events_SubscriptionFired()
     {
         var services = new ServiceCollection();
     }
