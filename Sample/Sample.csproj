@@ -5,7 +5,7 @@
         <TargetFrameworks>$(TargetFrameworks);net8.0-maccatalyst</TargetFrameworks>
         <IosSimulatorBuild Condition="'$(Configuration)' == 'Debug'">False</IosSimulatorBuild>
 
-        <MauiVersion>8.0.20</MauiVersion>
+        <MauiVersion>8.0.40</MauiVersion>
         <OutputType>Exe</OutputType>
         <RootNamespace>Sample</RootNamespace>
         <SingleProject>true</SingleProject>
@@ -98,6 +98,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj" />
         <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj" />
     </ItemGroup>
 

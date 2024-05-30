@@ -1,15 +1,18 @@
 namespace Shiny.Mediator.Impl;
 
-public class EventCollector
+
+public class SubscriptionEventCollector : IEventCollector
 {
     readonly List<object> handlers = new();
     
+
     public void Add<TEvent>(IEventHandler<TEvent> handler) where TEvent : IEvent
     {
         lock (this.handlers)
             this.handlers.Add(handler);
     }
 
+    
     public void Remove<TEvent>(IEventHandler<TEvent> handler) where TEvent : IEvent
     {
         lock (this.handlers)

@@ -13,6 +13,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{F3
 		readme.md = readme.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.SourceGenerators", "Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj", "{DC52EE6B-CE7D-4711-9BF9-A174E20B3D77}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Maui", "Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj", "{BEF98914-C9C9-4E90-AC49-5B73C58E1C81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Blazor", "Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj", "{11E8B489-B401-45A1-B904-6D0AF368A567}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,5 +41,17 @@ Global
 		{D5E10100-9EE4-4ED7-B1F4-2B22E37225C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5E10100-9EE4-4ED7-B1F4-2B22E37225C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5E10100-9EE4-4ED7-B1F4-2B22E37225C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC52EE6B-CE7D-4711-9BF9-A174E20B3D77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC52EE6B-CE7D-4711-9BF9-A174E20B3D77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC52EE6B-CE7D-4711-9BF9-A174E20B3D77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC52EE6B-CE7D-4711-9BF9-A174E20B3D77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEF98914-C9C9-4E90-AC49-5B73C58E1C81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEF98914-C9C9-4E90-AC49-5B73C58E1C81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEF98914-C9C9-4E90-AC49-5B73C58E1C81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEF98914-C9C9-4E90-AC49-5B73C58E1C81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11E8B489-B401-45A1-B904-6D0AF368A567}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11E8B489-B401-45A1-B904-6D0AF368A567}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11E8B489-B401-45A1-B904-6D0AF368A567}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11E8B489-B401-45A1-B904-6D0AF368A567}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

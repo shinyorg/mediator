@@ -1,13 +1,12 @@
-using Shiny.Mediator.Impl;
+namespace Shiny.Mediator.Impl;
 
-namespace Shiny.Mediator;
 
-public class MediatorEventHandler<TEvent> : IDisposable, IEventHandler<TEvent> where TEvent : IEvent
+public class SubscriptionEventHandler<TEvent> : IDisposable, IEventHandler<TEvent> where TEvent : IEvent
 {
-    readonly EventCollector collector;
+    readonly SubscriptionEventCollector collector;
     
     
-    public MediatorEventHandler(EventCollector collector)
+    public SubscriptionEventHandler(SubscriptionEventCollector collector)
     {
         this.collector = collector;
         this.collector.Add(this);    

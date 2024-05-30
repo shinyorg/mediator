@@ -1,16 +1,12 @@
 ﻿namespace Sample;
 
 
-public class MainViewModel : ViewModel
+public class MainViewModel : ViewModel, IEventHandler<MyMessageEvent>
 {
     readonly IDisposable sub;
     CancellationTokenSource? cancelSource;
     
-    public MainViewModel(
-        BaseServices services, 
-        IMediator mediator,
-        MediatorEventHandler<MyMessageEvent> scopedHandler
-    ) : base(services)
+    public MainViewModel(BaseServices services, IMediator mediator) : base(services)
     {
         // TODO: request without response
         this.TriggerCommand = ReactiveCommand.CreateFromTask(
@@ -36,12 +32,6 @@ public class MainViewModel : ViewModel
             )
         );
         
-        scopedHandler.OnHandle = async (@event, ct) =>
-        {
-            // do something async here
-            Console.WriteLine("Scoped Handler: " + @event.Arg);
-        };
-        
         this.sub = mediator.Subscribe(async (MyMessageEvent @event, CancellationToken ct) =>
         {
             // do something async here
@@ -49,6 +39,12 @@ public class MainViewModel : ViewModel
         });
     }
 
+    public Task Handle(MyMessageEvent @event, CancellationToken cancellationToken)
+    {
+        // do something async here
+        Console.WriteLine("Scoped Handler: " + @event.Arg);
+        return Task.CompletedTask;
+    }
 
     public ICommand TriggerCommand { get; }
     public ICommand CancelCommand { get; }

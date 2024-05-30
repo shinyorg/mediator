@@ -24,7 +24,7 @@ public static class MauiProgram
         builder.Logging.SetMinimumLevel(LogLevel.Trace);
         builder.Logging.AddDebug();
 #endif
-        builder.Services.AddShinyMediator();
+        builder.Services.AddShinyMediator<MauiEventCollector>();
         builder.Services.AddSingletonAsImplementedInterfaces<SingletonEventHandler>();
         builder.Services.AddSingletonAsImplementedInterfaces<SingletonRequestHandler>();
         builder.Services.RegisterForNavigation<MainPage, MainViewModel>();

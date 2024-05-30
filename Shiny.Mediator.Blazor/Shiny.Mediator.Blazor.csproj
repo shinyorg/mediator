@@ -4,11 +4,10 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>Shiny.Mediator</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" />
+      <ProjectReference Include="..\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj" />
     </ItemGroup>
 
 </Project>

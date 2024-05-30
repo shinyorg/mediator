@@ -8,9 +8,11 @@ namespace Shiny.Mediator.Impl;
 // TODO: validate all handlers (event or request) are scoped or singleton (how?)
 public class Mediator(
     IServiceProvider services, 
-    EventCollector collector
+    IEventCollector? collector = null
 ) : IMediator
 {
+    readonly SubscriptionEventCollector subscriptions = new();
+    
     public async Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest
     {
         var handlers = services.GetServices<IRequestHandler<TRequest>>().ToList();
@@ -20,17 +22,18 @@ public class Mediator(
         await handlers.First().Handle(request, cancellationToken).ConfigureAwait(false);
     }
     
-
+    
     public async Task<TResult> Send<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default)
     {
-        var handlerType = typeof(IRequestHandler<>).MakeGenericType([request.GetType()]);
+        var handlerType = typeof(IRequestHandler<,>).MakeGenericType(request.GetType(), typeof(TResult));
         var handlers = services.GetServices(handlerType).ToList();
         AssertRequestHandlers(handlers.Count, request);
 
         var handler = handlers.First();
         var handleMethod = handlerType.GetMethod("Handle", BindingFlags.Instance | BindingFlags.Public)!;
-
-        var resultTask = (Task<TResult>)handleMethod.Invoke(handler, [request, cancellationToken])!;
+        var args = new object[] { request, cancellationToken };
+        
+        var resultTask = (Task<TResult>)handleMethod.Invoke(handler, args)!;
         var result = await resultTask.ConfigureAwait(false);
 
         // TODO: pipelines
@@ -46,10 +49,11 @@ public class Mediator(
     ) where TEvent : IEvent
     {
         var handlers = services.GetServices<IEventHandler<TEvent>>().ToList();
-        var liveHandlers = collector.GetHandlers<TEvent>().ToArray();
-        handlers.AddRange(liveHandlers);
-        
-        if (!handlers.Any())
+        AppendHandlersIf(handlers, this.subscriptions);
+        if (collector != null)
+            AppendHandlersIf(handlers, collector);
+
+        if (handlers.Count == 0)
             return;
         
         Task executor = null!;
@@ -89,7 +93,7 @@ public class Mediator(
     
     public IDisposable Subscribe<TEvent>(Func<TEvent, CancellationToken, Task> action) where TEvent : IEvent
     {
-        var handler = new MediatorEventHandler<TEvent>(collector);
+        var handler = new SubscriptionEventHandler<TEvent>(this.subscriptions);
         handler.OnHandle = action;
         return handler;
     }
@@ -103,10 +107,18 @@ public class Mediator(
         }
         catch (Exception ex)
         {
-            // TODO: this should 
+            // TODO: this should call the error pipeline
         }
     }
 
+    
+    static void AppendHandlersIf<TEvent>(List<IEventHandler<TEvent>> list, IEventCollector collector) where TEvent : IEvent
+    {
+        var handlers = collector.GetHandlers<TEvent>();
+        if (handlers.Count > 0)
+            list.AddRange(handlers);
+    }
+    
 
     static void AssertRequestHandlers(int count, object request)
     {
