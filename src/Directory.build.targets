@@ -3,4 +3,10 @@
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
         <PackageReference Include="Nerdbank.GitVersioning" Version="3.6.133" PrivateAssets="All" />
     </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)nuget.png" Pack="true" PackagePath="icon.png" />
+        <None Include="$(MSBuildThisFileDirectory)nuget.txt" Pack="true" PackagePath="readme.txt" />
+        <None Include="..\..\readme.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
 </Project>

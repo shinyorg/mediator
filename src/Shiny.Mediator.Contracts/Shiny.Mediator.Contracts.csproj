@@ -7,8 +7,8 @@
         <RootNamespace>Shiny.Mediator</RootNamespace>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" />
-    </ItemGroup>
+<!--    <ItemGroup>-->
+<!--        <ProjectReference Include="..\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"/>-->
+<!--    </ItemGroup>-->
 
 </Project>
