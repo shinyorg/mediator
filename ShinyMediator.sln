@@ -2,9 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "Sample\Sample.csproj", "{44D3CCAB-F920-4F7B-A8F4-0253A21D3D4A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Contracts", "Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj", "{5898BF2F-9B33-4F5A-B018-3067C1F91F13}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Contracts", "src\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj", "{5898BF2F-9B33-4F5A-B018-3067C1F91F13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator", "Shiny.Mediator\Shiny.Mediator.csproj", "{8DB16363-E123-49E6-A733-723DC4C6C9F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator", "src\Shiny.Mediator\Shiny.Mediator.csproj", "{8DB16363-E123-49E6-A733-723DC4C6C9F3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Tests", "tests\Shiny.Mediator.Tests\Shiny.Mediator.Tests.csproj", "{D5E10100-9EE4-4ED7-B1F4-2B22E37225C6}"
 EndProject
@@ -13,11 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{F3
 		readme.md = readme.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.SourceGenerators", "Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj", "{DC52EE6B-CE7D-4711-9BF9-A174E20B3D77}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.SourceGenerators", "src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj", "{DC52EE6B-CE7D-4711-9BF9-A174E20B3D77}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Maui", "Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj", "{BEF98914-C9C9-4E90-AC49-5B73C58E1C81}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Maui", "src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj", "{BEF98914-C9C9-4E90-AC49-5B73C58E1C81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Blazor", "Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj", "{11E8B489-B401-45A1-B904-6D0AF368A567}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Blazor", "src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj", "{11E8B489-B401-45A1-B904-6D0AF368A567}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

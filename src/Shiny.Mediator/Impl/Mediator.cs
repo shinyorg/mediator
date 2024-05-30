@@ -31,9 +31,7 @@ public class Mediator(
 
         var handler = handlers.First();
         var handleMethod = handlerType.GetMethod("Handle", BindingFlags.Instance | BindingFlags.Public)!;
-        var args = new object[] { request, cancellationToken };
-        
-        var resultTask = (Task<TResult>)handleMethod.Invoke(handler, args)!;
+        var resultTask = (Task<TResult>)handleMethod.Invoke(handler, [request, cancellationToken])!;
         var result = await resultTask.ConfigureAwait(false);
 
         // TODO: pipelines
