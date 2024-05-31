@@ -15,6 +15,10 @@ and dependency injection can't reach.
 * Fire & Forget as well as Parallel Event execution 
 * Our MAUI & Blazor integrations allow your viewmodels or pages to implement an IEventHandler<TEvent> interface(s) without them having to participate in the dependency injection provider
 * We still have a "messagingcenter" type subscribe off IMediator for cases where you can't have your current type implement an interface
+* Instead of Assembly Scanning, we have source generators to automatically wireup the necessary registrations for you!
+* Lightweight, No external dependencies, tiny bit of reflection 
+* Help remove service overrun and reduce your constructor fat
+* Easy to Unit Test
 
 ## Works With
 * .NET MAUI - all platforms
@@ -159,6 +163,6 @@ Focus on the interfaces from the mediator & the mediator calls itself
 * Pipelines
   * Error handlers - requests and events?
   * Pre/Post Execution - Time how long events took, time how long a command took
-
 * Explain Event Handlers 
 * Streams - IAsyncEnumerable or IObservable
+* Source Generator Registration

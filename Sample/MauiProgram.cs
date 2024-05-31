@@ -50,6 +50,7 @@ public static class MauiProgram
         builder.Services.RegisterForNavigation<TriggerPage, TriggerViewModel>();
         builder.Services.RegisterForNavigation<EventPage, EventViewModel>();
         builder.Services.RegisterForNavigation<BlazorPage, BlazorViewModel>();
+        builder.Services.RegisterForNavigation<AnotherPage, AnotherViewModel>();
         
         return builder.Build();
     }

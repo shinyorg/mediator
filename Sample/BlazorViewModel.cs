@@ -1,8 +1,5 @@
 namespace Sample;
 
-public class BlazorViewModel : ViewModel
+public class BlazorViewModel(BaseServices services) : ViewModel(services)
 {
-    public BlazorViewModel(BaseServices services) : base(services)
-    {
-    }
 }

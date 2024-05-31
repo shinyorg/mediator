@@ -1,5 +1,3 @@
-
-
 namespace Sample;
 
 
@@ -19,7 +17,7 @@ public class EventViewModel : ViewModel
                     x.Arg,
                     x.FireAndForget,
                     x.ParallelEvents,
-                    x.Timestamp.ToString("g")
+                    x.Timestamp.ToLocalTime().ToString("g")
                 ))
                 .ToList();
         });
@@ -39,7 +37,6 @@ public class EventViewModel : ViewModel
     public ICommand Clear { get; }
     public ICommand Load { get; }
     [Reactive] public List<EventItemViewModel> List { get; private set; }
-
 
     public override void OnAppearing()
     {

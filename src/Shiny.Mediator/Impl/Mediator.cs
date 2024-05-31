@@ -19,7 +19,10 @@ public class Mediator(
         AssertRequestHandlers(handlers.Count, request);
         
         // TODO: pipelines
-        await handlers.First().Handle(request, cancellationToken).ConfigureAwait(false);
+        await handlers
+            .First()
+            .Handle(request, cancellationToken)
+            .ConfigureAwait(false);
     }
     
     
@@ -46,11 +49,12 @@ public class Mediator(
         CancellationToken cancellationToken = default
     ) where TEvent : IEvent
     {
+        // TODO: filter out the dupes from the collector by instance (viewmodels may be in DI and MAUI collector)
         var handlers = services.GetServices<IEventHandler<TEvent>>().ToList();
         AppendHandlersIf(handlers, this.subscriptions);
         if (collector != null)
             AppendHandlersIf(handlers, collector);
-
+        
         if (handlers.Count == 0)
             return;
         
@@ -114,7 +118,13 @@ public class Mediator(
     {
         var handlers = collector.GetHandlers<TEvent>();
         if (handlers.Count > 0)
-            list.AddRange(handlers);
+        {
+            foreach (var handler in handlers)
+            {
+                if (!list.Contains(handler))
+                    list.Add(handler);
+            }
+        }
     }
     
 
