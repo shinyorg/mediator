@@ -1,4 +1,8 @@
-# Shiny Mediator
+# Shiny Mediator (Preview)
+
+<a href="https://www.nuget.org/packages/Shiny.Mediator" target="_blank">
+  <img src="https://buildstats.info/nuget/Shiny.Mediator" />
+</a>
 
 A mediator pattern, but for apps.  Apps have pages with lifecycles that don't necessarily participate in the standard 
 dependency injection lifecycle.  .NET MAUI generally tends to favor the Messenger pattern.  We hate this pattern for many reasons 
