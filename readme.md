@@ -15,10 +15,9 @@ were aimed more at server scenarios, while also adding some features we feel ben
 ## Features
 * A Mediator for your .NET Apps (MAUI & Blazor are the main targets for us)
 * Think of "weak" message subscription without the fuss or mess to cleanup
-* Fire & Forget as well as Parallel Event execution 
 * Our MAUI & Blazor integrations allow your viewmodels or pages to implement an IEventHandler<TEvent> interface(s) without them having to participate in the dependency injection provider
 * We still have a "messagingcenter" type subscribe off IMediator for cases where you can't have your current type implement an interface
-* Instead of Assembly Scanning, we have source generators to automatically wireup the necessary registrations for you!
+* Instead of Assembly Scanning, we have source generators to automatically wireup the necessary registrations for you! (WIP)
 * Lightweight, No external dependencies, tiny bit of reflection 
 * Help remove service overrun and reduce your constructor fat
 * Easy to Unit Test
@@ -115,7 +114,6 @@ public class MyViewModel(Shiny.Mediator.IMediator mediator)
         
         // this will publish to any service registered that implement IEventHandler<TestEvent>
         // there are additional args here to allow you to execute values in sequentially or wait for all events to complete
-        // by default, publish calls are "fire & forget" under the hood and execute in parallel
         await mediator.Publish(new TestEvent()); 
     }
 }
@@ -165,10 +163,7 @@ Focus on the interfaces from the mediator & the mediator calls itself
 * Have a Shiny Push Delegate that is executing on the delegate but want to push it to the UI, Mediator has a plan!
 
 ## TODO
-* Pipelines
-  * Error handlers - requests and events?
-  * Pre/Post Execution - Time how long events took, time how long a command took
-* Explain Event Handlers 
+* Explain Event Collectors 
 * Streams - IAsyncEnumerable or IObservable
 * Source Generator Registration
   * Need to use a different method or not use extension methods - maybe AddHandlersFromAssemblyName or allow it to be custom named 
