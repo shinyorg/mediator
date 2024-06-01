@@ -8,14 +8,15 @@ namespace Shiny.Mediator.Impl;
 // TODO: validate all handlers (event or request) are scoped or singleton (how?)
 public class Mediator(
     IServiceProvider services, 
-    IEventCollector? collector = null
+    IEnumerable<IEventCollector> collectors
 ) : IMediator
 {
     readonly SubscriptionEventCollector subscriptions = new();
     
     public async Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest
     {
-        var handlers = services.GetServices<IRequestHandler<TRequest>>().ToList();
+        using var scope = services.CreateScope();
+        var handlers = scope.ServiceProvider.GetServices<IRequestHandler<TRequest>>().ToList();
         AssertRequestHandlers(handlers.Count, request);
         
         // TODO: pipelines
@@ -29,9 +30,11 @@ public class Mediator(
     public async Task<TResult> Send<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default)
     {
         var handlerType = typeof(IRequestHandler<,>).MakeGenericType(request.GetType(), typeof(TResult));
-        var handlers = services.GetServices(handlerType).ToList();
-        AssertRequestHandlers(handlers.Count, request);
 
+        using var scope = services.CreateScope();
+        var handlers = scope.ServiceProvider.GetServices(handlerType).ToList();
+        AssertRequestHandlers(handlers.Count, request);
+        
         var handler = handlers.First();
         var handleMethod = handlerType.GetMethod("Handle", BindingFlags.Instance | BindingFlags.Public)!;
         var resultTask = (Task<TResult>)handleMethod.Invoke(handler, [request, cancellationToken])!;
@@ -49,15 +52,16 @@ public class Mediator(
         CancellationToken cancellationToken = default
     ) where TEvent : IEvent
     {
-        // TODO: filter out the dupes from the collector by instance (viewmodels may be in DI and MAUI collector)
-        var handlers = services.GetServices<IEventHandler<TEvent>>().ToList();
+        // allow registered services to be transient/scoped/singleton
+        using var scope = services.CreateScope();
+        var handlers = scope.ServiceProvider.GetServices<IEventHandler<TEvent>>().ToList();
         AppendHandlersIf(handlers, this.subscriptions);
-        if (collector != null)
+        foreach (var collector in collectors)
             AppendHandlersIf(handlers, collector);
-        
+
         if (handlers.Count == 0)
             return;
-        
+
         Task executor = null!;
         if (executeInParallel)
         {
@@ -80,7 +84,7 @@ public class Mediator(
                 }
             });
         }
-        
+
         // TODO: pipelines
         if (fireAndForget)
         {
