@@ -1,7 +1,7 @@
 # Shiny Mediator (Preview)
 
 <a href="https://www.nuget.org/packages/Shiny.Mediator" target="_blank">
-  <img src="https://buildstats.info/nuget/Shiny.Mediator" />
+  <img src="https://buildstats.info/nuget/Shiny.Mediator?includePreReleases=true" />
 </a>
 
 A mediator pattern, but for apps.  Apps have pages with lifecycles that don't necessarily participate in the standard 

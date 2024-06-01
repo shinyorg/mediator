@@ -31,6 +31,7 @@ public class MediatorSourceGenerator : ISourceGenerator
         if (!(context.SyntaxContextReceiver is SyntaxReceiver receiver))
             return;
 
+        // TODO: detect double registration of request handlers
         var sb = new StringBuilder();
         sb
             .AppendLine("namespace Shiny.Mediator;")
