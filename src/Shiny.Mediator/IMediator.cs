@@ -15,6 +15,9 @@ public interface IMediator
     ) where TRequest : IRequest;
 
 
+    // Task Send(object arg, CancellationToken cancellationToken = default)
+    // Task<object?> Send(object arg, CancellationToken cancellationToken = default);
+    
     /// <summary>
     /// 
     /// </summary>
@@ -43,7 +46,8 @@ public interface IMediator
         bool executeInParallel = true, 
         CancellationToken cancellationToken = default
     ) where TEvent : IEvent;
-
+    
+    // Task Publish(object arg, CancellationToken cancellationToken = default)
 
     /// <summary>
     /// 
