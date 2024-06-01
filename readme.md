@@ -162,6 +162,9 @@ Focus on the interfaces from the mediator & the mediator calls itself
 * Using a Shiny Foreground Job - want to push data an event that new data came in to anyone listening?
 * Have a Shiny Push Delegate that is executing on the delegate but want to push it to the UI, Mediator has a plan!
 
+## Request Middleware Ideas
+* Connectivity check - pull from cache/memory or go to the API
+
 ## TODO
 * Explain Event Collectors 
 * Streams - IAsyncEnumerable or IObservable
