@@ -46,8 +46,6 @@
                                         <Span Text="{Binding Arg, StringFormat='Arg: {0}'}" />
                                         <Span Text=" - "  />
                                         <Span Text="{Binding FireAndForget, StringFormat='Fire and Forget: {0}'}" />
-                                        <Span Text=" - " />
-                                        <Span Text="{Binding ParallelEvents, StringFormat='Parallel Events: {0}'}" />
                                     </FormattedString>
                                 </Label.FormattedText>
                             </Label>

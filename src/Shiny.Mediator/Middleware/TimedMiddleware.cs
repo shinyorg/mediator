@@ -1,9 +1,18 @@
+// using System.Diagnostics;
+//
 // namespace Shiny.Mediator.Middleware;
 //
-// public class TimedMiddleware<IRequest<TResult>> : IRequestMiddleware<IRequest<TResult>>
+// public class TimedMiddleware<TRequest, TResult> : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 // {
-//     public Task Process(IRequest request, IRequestHandler<IRequest> handler)
+//     public async Task<TResult> Process(TRequest request, IRequestMiddleware<TRequest, TResult> next, CancellationToken cancellationToken)
 //     {
-//         throw new NotImplementedException();
+//         var sw = new Stopwatch();
+//         sw.Start();
+//         var result = await next(request, cancellationToken);
+//         sw.Stop();
+//         
+//         // TODO: alert on long?
+//         return result;
 //     }
 // }
+

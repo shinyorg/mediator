@@ -16,7 +16,6 @@ public class EventViewModel : ViewModel
                     x.Area,
                     x.Arg,
                     x.FireAndForget,
-                    x.ParallelEvents,
                     x.Timestamp.ToLocalTime().ToString("g")
                 ))
                 .ToList();
@@ -49,6 +48,5 @@ public record EventItemViewModel(
     string Area,
     string Arg,
     bool FireAndForget,
-    bool ParallelEvents,
     string Timestamp
 );

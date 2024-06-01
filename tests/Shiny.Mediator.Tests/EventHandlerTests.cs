@@ -9,32 +9,7 @@ public class EventHandlerTests
     {
         CatchAllEventHandler.Executed = false;
     }
-    
-    
-    [Theory]
-    [InlineData(10000, 1000, false, true, false)]
-    [InlineData(3000, 6000, true, false, false)]
-    [InlineData(3000, 4000, true, false, true)]
-    public async Task Events_TriggerTypes(int delayMs, int expectedTime, bool timeIsMinValue, bool fireAndForget, bool executeParallel)
-    {
-        var services = new ServiceCollection();
-        services.AddShinyMediator();
-        services.AddSingletonAsImplementedInterfaces<Test1EventHandler>();
-        services.AddSingletonAsImplementedInterfaces<Test2EventHandler>();
-        var sp = services.BuildServiceProvider();
-        var mediator = sp.GetRequiredService<IMediator>();
-
-        var sw = new Stopwatch();
-        sw.Start();
-        await mediator.Publish(new TestEvent { Delay = delayMs }, fireAndForget, executeParallel);
-        sw.Stop();
-        
-        if (timeIsMinValue)
-            sw.ElapsedMilliseconds.Should().BeGreaterOrEqualTo(expectedTime);
-        else
-            sw.ElapsedMilliseconds.Should().BeLessOrEqualTo(expectedTime);
-    }
-    
+   
 
     [Fact]
     public async Task Events_SubscriptionFired()

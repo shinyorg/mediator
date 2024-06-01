@@ -9,6 +9,9 @@ dependency injection lifecycle.  .NET MAUI generally tends to favor the Messenge
 which we won't get into.  That being said, we do offer a messenger subscription in our Mediator for where interfaces
 and dependency injection can't reach.
 
+This project is heavily inspired by [MediatR](https://github.com/jbogard/mediatr) with some lesser features that we feel
+were aimed more at server scenarios, while also adding some features we feel benefit apps
+
 ## Features
 * A Mediator for your .NET Apps (MAUI & Blazor are the main targets for us)
 * Think of "weak" message subscription without the fuss or mess to cleanup
@@ -170,3 +173,4 @@ Focus on the interfaces from the mediator & the mediator calls itself
 * Source Generator Registration
   * Need to use a different method or not use extension methods - maybe AddHandlersFromAssemblyName or allow it to be custom named 
 * IEventHandler<IEvent> can handle ALL events?
+* Request Middleware - Covariance/catch-all

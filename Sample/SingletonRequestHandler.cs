@@ -11,16 +11,24 @@ public class SingletonRequestHandler(IMediator mediator, AppSqliteConnection dat
             // could have a pre/post on handlers
         var e = new MyMessageEvent(
             request.Arg,
-            request.FireAndForgetEvents,
-            request.ParallelEvents
+            request.FireAndForgetEvents
         );
         await data.Log("SingletonRequestHandler", e);
-        await mediator.Publish(
-            e, 
-            request.FireAndForgetEvents,
-            request.ParallelEvents,
-            cancellationToken
-        );
+        if (request.FireAndForgetEvents)
+        {
+            mediator.Publish(e).RunOffThread(ex =>
+            {
+                // TODO: log this
+            });
+        }
+        else
+        {
+            await mediator.Publish(
+                e,
+                cancellationToken
+            );
+        }
+
         return new MyMessageResponse("RESPONSE: " + request.Arg);
     }
 }

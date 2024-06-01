@@ -1,14 +1,25 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Shiny.Mediator.Impl;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator;
 
 
-public static class ServiceCollectionExtensions
+public static class MediatorExtensions
 {
+    public static void RunOffThread(this Task task, Action<Exception> onError)
+        => task.ContinueWith(x =>
+        {
+            if (x.Exception != null)
+                onError(x.Exception);
+        });
+
     public static IServiceCollection AddShinyMediator(this IServiceCollection services)
     {
         services.TryAddSingleton<IMediator, Impl.Mediator>();
+        services.TryAddSingleton<IRequestSender, DefaultRequestSender>();
+        services.TryAddSingleton<IEventPublisher, DefaultEventPublisher>();
         return services;
     }
 

@@ -20,16 +20,14 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
                 this.cancelSource = new();
                 var request = new MyMessageRequest(
                     this.Arg!,
-                    this.FireAndForgetEvents,
-                    this.ParallelEvents
+                    this.FireAndForgetEvents
                 );
                 var response = await mediator.Send(request, this.cancelSource.Token);
                 await data.Log(
                     "TriggerViewModel-Response",
                     new MyMessageEvent(
                         response.Response, 
-                        this.FireAndForgetEvents, 
-                        this.ParallelEvents
+                        this.FireAndForgetEvents 
                     )
                 );
                 await this.Dialogs.Alert("Execution Complete");
@@ -45,8 +43,7 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
                     "TriggerViewModel-Cancel",
                     new MyMessageEvent(
                         this.Arg, 
-                        this.FireAndForgetEvents, 
-                        this.ParallelEvents
+                        this.FireAndForgetEvents
                     )
                 );
             },
@@ -72,7 +69,6 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
     public ICommand CancelCommand { get; }
     [Reactive] public string Arg { get; set; }
     [Reactive] public bool FireAndForgetEvents { get; set; }
-    [Reactive] public bool ParallelEvents { get; set; }
 
     public override void Destroy()
     {

@@ -16,7 +16,6 @@ public class AppSqliteConnection : SQLiteAsyncConnection
         Area = area,
         Arg = @event.Arg,
         FireAndForget = @event.FireAndForgetEvents,
-        ParallelEvents = @event.ParallelEvents,
         Timestamp = DateTimeOffset.UtcNow
     });
     public AsyncTableQuery<LogModel> Logs => this.Table<LogModel>();
@@ -31,6 +30,5 @@ public class LogModel
     public string Area { get; set; }
     public string Arg { get; set; }
     public bool FireAndForget { get; set; }
-    public bool ParallelEvents { get; set; }
     public DateTimeOffset Timestamp { get; set; }
 }

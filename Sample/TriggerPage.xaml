@@ -11,9 +11,6 @@
                 <EntryCell Label="Argument" 
                            Text="{Binding Arg}" />
                 
-                <SwitchCell Text="Parallel Events" 
-                            On="{Binding ParallelEvents}" />
-                
                 <SwitchCell Text="Fire and Forget Events" 
                             On="{Binding FireAndForgetEvents}"/>
             </TableSection>
