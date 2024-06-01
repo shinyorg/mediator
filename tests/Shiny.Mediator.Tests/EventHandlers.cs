@@ -1,2 +1,0 @@
-namespace Shiny.Mediator.Tests;
-

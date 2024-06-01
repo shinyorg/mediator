@@ -15,6 +15,7 @@ public class Mediator(
     
     public async Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest
     {
+        // TODO: middleware execution should support contravariance
         using var scope = services.CreateScope();
         var handlers = scope.ServiceProvider.GetServices<IRequestHandler<TRequest>>().ToList();
         AssertRequestHandlers(handlers.Count, request);
@@ -31,6 +32,7 @@ public class Mediator(
     {
         var handlerType = typeof(IRequestHandler<,>).MakeGenericType(request.GetType(), typeof(TResult));
 
+        // TODO: middleware execution should support contravariance
         using var scope = services.CreateScope();
         var handlers = scope.ServiceProvider.GetServices(handlerType).ToList();
         AssertRequestHandlers(handlers.Count, request);
@@ -39,8 +41,7 @@ public class Mediator(
         var handleMethod = handlerType.GetMethod("Handle", BindingFlags.Instance | BindingFlags.Public)!;
         var resultTask = (Task<TResult>)handleMethod.Invoke(handler, [request, cancellationToken])!;
         var result = await resultTask.ConfigureAwait(false);
-
-        // TODO: pipelines
+        
         return result;
     }
 
@@ -55,6 +56,8 @@ public class Mediator(
         // allow registered services to be transient/scoped/singleton
         using var scope = services.CreateScope();
         var handlers = scope.ServiceProvider.GetServices<IEventHandler<TEvent>>().ToList();
+        //var globalHandlers = scope.ServiceProvider.GetServices<IEventHandler<IEvent>>().ToList();
+        
         AppendHandlersIf(handlers, this.subscriptions);
         foreach (var collector in collectors)
             AppendHandlersIf(handlers, collector);
@@ -65,7 +68,6 @@ public class Mediator(
         Task executor = null!;
         if (executeInParallel)
         {
-            // TODO: pipelines? error management?
             executor = Task.WhenAll(handlers.Select(x => x.Handle(@event, cancellationToken)).ToList());
         }
         else
@@ -85,7 +87,7 @@ public class Mediator(
             });
         }
 
-        // TODO: pipelines
+        // TODO: middleware
         if (fireAndForget)
         {
             this.FireAndForget(executor);
@@ -121,13 +123,10 @@ public class Mediator(
     static void AppendHandlersIf<TEvent>(List<IEventHandler<TEvent>> list, IEventCollector collector) where TEvent : IEvent
     {
         var handlers = collector.GetHandlers<TEvent>();
-        if (handlers.Count > 0)
+        foreach (var handler in handlers)
         {
-            foreach (var handler in handlers)
-            {
-                if (!list.Contains(handler))
-                    list.Add(handler);
-            }
+            if (!list.Contains(handler))
+                list.Add(handler);
         }
     }
     

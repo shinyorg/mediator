@@ -168,3 +168,5 @@ Focus on the interfaces from the mediator & the mediator calls itself
 * Explain Event Handlers 
 * Streams - IAsyncEnumerable or IObservable
 * Source Generator Registration
+  * Need to use a different method or not use extension methods - maybe AddHandlersFromAssemblyName or allow it to be custom named 
+* IEventHandler<IEvent> can handle ALL events?

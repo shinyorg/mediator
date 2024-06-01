@@ -49,6 +49,9 @@ jobs:
     - name: Build
       run: dotnet build Build.slnf /restore -m -property:Configuration=Release -property:PublicRelease=true
 
+    - name: Test
+      run: dotnet test tests/Shiny.Mediator.Tests/Shiny.Mediator.Tests.csproj --no-restore --verbosity normal
+      
     - name: Post NuGet Artifacts
       uses: actions/upload-artifact@v2
       with:

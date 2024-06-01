@@ -8,10 +8,10 @@
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
         <Description>Shiny Mediator - a mediator pattern but for apps</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageProjectUrl>https://shinylib.net</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/shinyorg/mediator</PackageProjectUrl>
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
-        <PackageReleaseNotes>https://shinylib.net</PackageReleaseNotes>
+        <PackageReleaseNotes>https://github.com/shinyorg/mediator</PackageReleaseNotes>
         <PackageTags>mediator maui blazor</PackageTags>
         <RepositoryUrl>https://github.com/shinyorg/mediator</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
