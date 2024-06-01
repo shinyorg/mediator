@@ -5,7 +5,8 @@
       "src\\Shiny.Mediator\\Shiny.Mediator.csproj",
       "src\\Shiny.Mediator.Contracts\\Shiny.Mediator.Contracts.csproj",
       "src\\Shiny.Mediator.Blazor\\Shiny.Mediator.Blazor.csproj",
-      "src\\Shiny.Mediator.Maui\\Shiny.Mediator.Maui.csproj"
+      "src\\Shiny.Mediator.Maui\\Shiny.Mediator.Maui.csproj",
+      "src\\Shiny.Mediator.SourceGenerators\\Shiny.Mediator.SourceGenerators.csproj"
     ]
   }
 }

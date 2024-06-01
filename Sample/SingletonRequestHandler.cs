@@ -1,6 +1,7 @@
 namespace Sample;
 
 
+// [RegisterHandler]
 public class SingletonRequestHandler(IMediator mediator, AppSqliteConnection data) : IRequestHandler<MyMessageRequest, MyMessageResponse>
 {
     public async Task<MyMessageResponse> Handle(MyMessageRequest request, CancellationToken cancellationToken)

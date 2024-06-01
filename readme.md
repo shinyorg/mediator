@@ -28,6 +28,8 @@ and dependency injection can't reach.
 
 ## Getting Started
 
+Install [Shiny.Mediator](https://www.nuget.org/packages/Shiny.Mediator) from NuGet
+
 First, let's create our request & event handlers
 
 ```

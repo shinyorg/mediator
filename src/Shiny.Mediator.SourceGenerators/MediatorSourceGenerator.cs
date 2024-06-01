@@ -16,13 +16,14 @@ public class MediatorSourceGenerator : ISourceGenerator
     {
         context.RegisterForPostInitialization(x => x.AddSource("RegisterHandlerAttribute.g.cs", SourceText.From(
             """
-            namespace Shiny.Mediator;
-
-            [System.AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
-            public class RegisterHandlerAttribute : System.Attribute {}
+            namespace Shiny.Mediator
+            {
+                [System.AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
+                public class RegisterHandlerAttribute : System.Attribute {}
+            }
             """
         )));
-       context.RegisterForSyntaxNotifications(() => syntaxReceiver);
+       // context.RegisterForSyntaxNotifications(() => syntaxReceiver);
     }
 
     
