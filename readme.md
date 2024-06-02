@@ -1,5 +1,7 @@
 # Shiny Mediator (Preview)
 
+## PLEASE NOTE - THIS IS AN ALPHA.  THINGS ARE LIKELY TO CHANGE
+
 <a href="https://www.nuget.org/packages/Shiny.Mediator" target="_blank">
   <img src="https://buildstats.info/nuget/Shiny.Mediator?includePreReleases=true" />
 </a>
@@ -14,7 +16,7 @@ were aimed more at server scenarios, while also adding some features we feel ben
 
 ## Features
 * A Mediator for your .NET Apps (MAUI & Blazor are the main targets for us)
-* Think of "weak" message subscription without the fuss or mess to cleanup
+* Think of "weak" message subscriptions without the fuss or mess to cleanup
 * Our MAUI & Blazor integrations allow your viewmodels or pages to implement an IEventHandler<TEvent> interface(s) without them having to participate in the dependency injection provider
 * We still have a "messagingcenter" type subscribe off IMediator for cases where you can't have your current type implement an interface
 * Instead of Assembly Scanning, we have source generators to automatically wireup the necessary registrations for you! (WIP)
@@ -127,7 +129,8 @@ With this setup, you don't need to worry about deallocating any events, unsubscr
 
 Lastly, if your page/viewmodel is navigated away from (popped), it will no longer participate in the event broadcast
 
-Let's go back to MauiProgram.cs and alter the AddShinyMediator
+First, let's install [Shiny.Mediator.Maui](https://www.nuget.org/packages/Shiny.Mediator.Maui)
+Now...let's go back to our MauiProgram.cs and alter the AddShinyMediator
 
 ```csharp
 builder.Services.AddShinyMediator<MauiEventCollector>();
