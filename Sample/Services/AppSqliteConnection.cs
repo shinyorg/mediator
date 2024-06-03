@@ -11,12 +11,13 @@ public class AppSqliteConnection : SQLiteAsyncConnection
         data.CreateTable<LogModel>();
     }
 
-    public Task Log(string area, MyMessageEvent @event) => this.InsertAsync(new LogModel
+    public Task Log(string area, MyMessageEvent @event, long executionTimeMillis = 0) => this.InsertAsync(new LogModel
     {
         Area = area,
         Arg = @event.Arg,
         FireAndForget = @event.FireAndForgetEvents,
-        Timestamp = DateTimeOffset.UtcNow
+        Timestamp = DateTimeOffset.UtcNow,
+        ExecutionTimeMillis = executionTimeMillis
     });
     public AsyncTableQuery<LogModel> Logs => this.Table<LogModel>();
 }
@@ -30,5 +31,6 @@ public class LogModel
     public string Area { get; set; }
     public string Arg { get; set; }
     public bool FireAndForget { get; set; }
+    public long ExecutionTimeMillis { get; set; }
     public DateTimeOffset Timestamp { get; set; }
 }

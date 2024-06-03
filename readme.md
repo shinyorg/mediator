@@ -155,29 +155,24 @@ public class MyViewModel : BaseViewModel,
 }
 ```
 
-## Request Middleware
-TODO
-
-## Event Covariance
-TODO
-
 ## Sample
 There is a sample in this repo.  You do not need any other part of Shiny, Prism, ReactiveUI, etc - those are included as I write things faster with it.
 Focus on the interfaces from the mediator & the mediator calls itself
 
-## Ideas for Workflows
+## Ideas for Workflows Request & Events
 * Use Prism with Modules - want strongly typed navigation parameters, navigations, and have them available to other modules - we're the guy to help!
     * Example TBD
 * Using a Shiny Foreground Job - want to push data an event that new data came in to anyone listening?
 * Have a Shiny Push Delegate that is executing on the delegate but want to push it to the UI, Mediator has a plan!
 
-## Request Middleware Ideas
-* Connectivity check - pull from cache/memory or go to the API
 
 ## TODO
-* Explain Event Collectors 
+* Document 
+  * Event Collectors 
+  * Request Middleware
+  * Covariance Event Handlers & Request Middleware
+  * OOBE Middleware
 * Event Collectors for MAUI execute on main thread?
 * Streams - IAsyncEnumerable or IObservable
 * Source Generator Registration
-  * Need to use a different method or not use extension methods - maybe AddHandlersFromAssemblyName or allow it to be custom named 
-* IEventHandler<IEvent> can handle ALL events?
+  * Need to use a different method or not use extension methods - maybe AddHandlersFromAssemblyName or allow it to be custom named

@@ -57,12 +57,13 @@ public class DefaultRequestSender(IServiceProvider services) : IRequestSender
         CancellationToken cancellationToken
     ) where TRequest : IRequest<TResult>
     {
-        // var middlewareType = typeof(IRequestMiddleware<,>).MakeGenericType(request.GetType(), typeof(TResult));
-        // var middlewareMethod = middlewareType.GetMethod("Process", BindingFlags.Instance | BindingFlags.Public)!;
-        // var middlewares = scope.ServiceProvider.GetServices(middlewareType).ToList();
-        // var pipeline = new List<Func<Task<TResult>>> { initialExecute };
+        var middlewareType = typeof(IRequestMiddleware<,>).MakeGenericType(request.GetType(), typeof(TResult));
+        var middlewareMethod = middlewareType.GetMethod("Process", BindingFlags.Instance | BindingFlags.Public)!;
+        var middlewares = scope.ServiceProvider.GetServices(middlewareType).ToList();
+        var pipeline = new List<Func<Task<TResult>>> { initialExecute };
 
-        // we get the middleware reverse ordered from last to first so execution
+        // Unable to find seq points for method 'System.Runtime.CompilerServices.AsyncMethodBuilderCore:Start<Sample.MyRequestMiddleware/<Process>d__2> (Sample.MyRequestMiddleware/<Process>d__2&)', offset 0xfffffe88.
+        // we get the middleware reverse ordered from last to first so execution ordered properly
         // middlewares.Reverse();
         // foreach (var middleware in middlewares)
         // {

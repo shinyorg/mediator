@@ -1,21 +1,26 @@
+using System.Diagnostics;
+
 namespace Sample;
 
+
 // [RegisterMiddleware]
-public class MyRequestMiddleware : IRequestMiddleware<MyMessageRequest, MyMessageResponse>
+public class MyRequestMiddleware(AppSqliteConnection conn) : IRequestMiddleware<MyMessageRequest, MyMessageResponse>
 {
     public async Task<MyMessageResponse> Process(MyMessageRequest request, Func<Task<MyMessageResponse>> next, CancellationToken cancellationToken)
     {
-        // BEFORE - If connected - pull from API after save to cache ELSE pull from cache 
-        var result = await next();
-        // AFTER = cache
-        return result;
-    }
-}
+        var sw = new Stopwatch();
+        sw.Start();
+        var result = await next().ConfigureAwait(false);
+        sw.Stop();
 
-public class CatchAllRequestMiddleware : IRequestMiddleware<IRequest<object>, object> 
-{
-    public Task<object> Process(IRequest<object> request, Func<Task<object>> next, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
+        await conn.Log(
+            nameof(MyRequestMiddleware), 
+            new MyMessageEvent(
+                request.Arg, 
+                request.FireAndForgetEvents
+            ), 
+            sw.ElapsedMilliseconds
+        );
+        return result;
     }
 }

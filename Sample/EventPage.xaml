@@ -46,6 +46,8 @@
                                         <Span Text="{Binding Arg, StringFormat='Arg: {0}'}" />
                                         <Span Text=" - "  />
                                         <Span Text="{Binding FireAndForget, StringFormat='Fire and Forget: {0}'}" />
+                                        <Span Text=" - " />
+                                        <Span Text="{Binding ElapsedMillis, StringFormat='{0} ms'}" />
                                     </FormattedString>
                                 </Label.FormattedText>
                             </Label>
