@@ -10,44 +10,47 @@ public class MiddlewareTests
     }
     
     
-    public async Task Constrained()
-    {
-        
-    }
-
-
-    [Fact]
-    public async Task ConstrainedAndOpen()
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public async Task ConstrainedAndOpen(bool addConstrained, bool addOpen)
     {
         var services = new ServiceCollection();
         services.AddShinyMediator();
-        services.AddSingletonAsImplementedInterfaces<MiddlewareRequestResponseHandler>();
-        services.AddSingletonAsImplementedInterfaces<ConstrainedMiddleware>();
-        services.AddSingleton(typeof(IRequestMiddleware<,>), typeof(VariantRequestMiddleware<,>));
+        services.AddSingletonAsImplementedInterfaces<MiddlewareRequestResultHandler>();
+        
+        if (addConstrained)
+            services.AddSingleton<IRequestMiddleware<MiddlewareResultRequest, int>, ConstrainedMiddleware>();
+            //services.AddSingletonAsImplementedInterfaces<ConstrainedMiddleware>();
+        
+        if (addOpen)
+            services.AddSingleton(typeof(IRequestMiddleware<,>), typeof(VariantRequestMiddleware<,>));
+        
         var sp = services.BuildServiceProvider();
         
         var mediator = sp.GetRequiredService<IMediator>();
-        var result = await mediator.Request(new MiddlewareResponseRequest());
-        Executed.Constrained.Should().BeTrue();
-        Executed.Variant.Should().BeTrue();
+        var result = await mediator.Request(new MiddlewareResultRequest());
+        Executed.Constrained.Should().Be(addConstrained);
+        Executed.Variant.Should().Be(addOpen);
     }
 }
 
 
 public class MiddlewareRequest : IRequest;
 
-public class MiddlewareResponseRequest : IRequest<int>;
+public class MiddlewareResultRequest : IRequest<int>;
 
 
-public class MiddlewareRequestHandler : IRequestHandler<MiddlewareRequest>
+// public class MiddlewareRequestHandler : IRequestHandler<MiddlewareRequest>
+// {
+//     public Task Handle(MiddlewareRequest request, CancellationToken cancellationToken)
+//         => Task.CompletedTask;
+// }
+
+public class MiddlewareRequestResultHandler : IRequestHandler<MiddlewareResultRequest, int>
 {
-    public Task Handle(MiddlewareRequest request, CancellationToken cancellationToken)
-        => Task.CompletedTask;
-}
-
-public class MiddlewareRequestResponseHandler : IRequestHandler<MiddlewareResponseRequest, int>
-{
-    public Task<int> Handle(MiddlewareResponseRequest request, CancellationToken cancellationToken)
+    public Task<int> Handle(MiddlewareResultRequest request, CancellationToken cancellationToken)
         => Task.FromResult(1);
 }
 
@@ -57,9 +60,9 @@ public static class Executed
     public static bool Constrained { get; set; }
     public static bool Variant { get; set; }
 }
-public class ConstrainedMiddleware : IRequestMiddleware<MiddlewareResponseRequest, int>
+public class ConstrainedMiddleware : IRequestMiddleware<MiddlewareResultRequest, int>
 {
-    public Task<int> Process(MiddlewareResponseRequest request, Func<Task<int>> next, CancellationToken cancellationToken)
+    public Task<int> Process(MiddlewareResultRequest request, Func<Task<int>> next, CancellationToken cancellationToken)
     {
         Executed.Constrained = true;
         return next();

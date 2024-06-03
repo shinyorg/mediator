@@ -57,33 +57,29 @@ public class DefaultRequestSender(IServiceProvider services) : IRequestSender
         CancellationToken cancellationToken
     ) where TRequest : IRequest<TResult>
     {
-        var middlewareType = typeof(IRequestMiddleware<,>).MakeGenericType(request.GetType(), typeof(TResult));
-        var middlewareMethod = middlewareType.GetMethod("Process", BindingFlags.Instance | BindingFlags.Public)!;
-        var middlewares = scope.ServiceProvider.GetServices(middlewareType).ToList();
+        // var middlewareType = typeof(IRequestMiddleware<,>).MakeGenericType(request.GetType(), typeof(TResult));
+        // var middlewareMethod = middlewareType.GetMethod("Process", BindingFlags.Instance | BindingFlags.Public)!;
+        // var middlewares = scope.ServiceProvider.GetServices(middlewareType).ToList();
+        // var pipeline = new List<Func<Task<TResult>>> { initialExecute };
 
+        // we get the middleware reverse ordered from last to first so execution
         // middlewares.Reverse();
         // foreach (var middleware in middlewares)
         // {
-        //     var next = () =>
-        //     {
-        //         return (Task<TResult>)middlewareMethod.Invoke(middleware, [
-        //             request, 
-        //             next, 
-        //             cancellationToken
-        //         ]);
-        //     };
+        //     var pipelineAdd = () => (Task<TResult>)middlewareMethod.Invoke(middleware, [
+        //         request, 
+        //         pipeline.Last(), 
+        //         cancellationToken
+        //     ])!;
+        //     pipeline.Add(pipelineAdd);
         // }
         //
-        // await next!.Invoke().ConfigureAwait(false);
-        // we setup execution in reverse - with the top being our start/await point
-        // middlewares.Reverse();
-        // var next = initialExecute;
-        //
-        // foreach (var middleware in middlewares)
-        //     next = () => (Task<TResult>)middlewareMethod.Invoke(middleware, [request, next, cancellationToken]);
-        //
-        // var result = await next().ConfigureAwait(false);
+        // var result = await pipeline
+        //     .Last()
+        //     .Invoke()
+        //     .ConfigureAwait(false);
         // return result;
+
         var result = await initialExecute.Invoke().ConfigureAwait(false);
         return result;
     }
