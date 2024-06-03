@@ -155,6 +155,12 @@ public class MyViewModel : BaseViewModel,
 }
 ```
 
+## Request Middleware
+TODO
+
+## Event Covariance
+TODO
+
 ## Sample
 There is a sample in this repo.  You do not need any other part of Shiny, Prism, ReactiveUI, etc - those are included as I write things faster with it.
 Focus on the interfaces from the mediator & the mediator calls itself
@@ -170,8 +176,8 @@ Focus on the interfaces from the mediator & the mediator calls itself
 
 ## TODO
 * Explain Event Collectors 
+* Event Collectors for MAUI execute on main thread?
 * Streams - IAsyncEnumerable or IObservable
 * Source Generator Registration
   * Need to use a different method or not use extension methods - maybe AddHandlersFromAssemblyName or allow it to be custom named 
 * IEventHandler<IEvent> can handle ALL events?
-* Request Middleware - Covariance/catch-all

@@ -4,8 +4,6 @@ public interface IRequestSender
 {
     // Task Send(object arg, CancellationToken cancellationToken = default)
     // Task<object?> Send(object arg, CancellationToken cancellationToken = default);
-
-
     
     /// <summary>
     /// 
@@ -14,7 +12,7 @@ public interface IRequestSender
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    Task<TResult> Send<TResult>(
+    Task<TResult> Request<TResult>(
         IRequest<TResult> request,
         CancellationToken cancellationToken = default
     );

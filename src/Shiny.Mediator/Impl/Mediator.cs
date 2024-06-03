@@ -8,8 +8,8 @@ public class Mediator(
     IEventPublisher eventPublisher
 ) : IMediator
 {
-    public Task<TResult> Send<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default)
-        => requestSender.Send(request, cancellationToken);
+    public Task<TResult> Request<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default)
+        => requestSender.Request(request, cancellationToken);
 
     public Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest
         => requestSender.Send(request, cancellationToken);

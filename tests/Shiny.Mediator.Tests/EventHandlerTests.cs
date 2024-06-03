@@ -12,7 +12,7 @@ public class EventHandlerTests
    
 
     [Fact]
-    public async Task Events_SubscriptionFired()
+    public async Task SubscriptionFired()
     {
         var services = new ServiceCollection();
         services.AddShinyMediator();
@@ -32,16 +32,15 @@ public class EventHandlerTests
 
 
     [Fact]
-    public async Task Events_CatchAllHandler()
+    public async Task VariantHandler()
     {
-        // TODO: test against event collectors as well
         var services = new ServiceCollection();
         services.AddShinyMediator();
         services.AddSingletonAsImplementedInterfaces<CatchAllEventHandler>();
         var sp = services.BuildServiceProvider();
         var mediator = sp.GetRequiredService<IMediator>();
         
-        await mediator.Publish(new TestEvent());
+        await mediator.Publish(new TestTestEvent());
         CatchAllEventHandler.Executed.Should().BeTrue();
     }    
 }
@@ -67,10 +66,11 @@ public class Test2EventHandler : IEventHandler<TestEvent>
     }
 }
 
-public class CatchAllEventHandler : IEventHandler<IEvent>
+public class TestTestEvent : TestEvent;
+public class CatchAllEventHandler : IEventHandler<TestTestEvent>
 {
     public static bool Executed { get; set; }
-    public Task Handle(IEvent @event, CancellationToken cancellationToken)
+    public Task Handle(TestTestEvent @event, CancellationToken cancellationToken)
     {
         Executed = true;
         return Task.CompletedTask;

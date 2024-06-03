@@ -22,11 +22,11 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
                     this.Arg!,
                     this.FireAndForgetEvents
                 );
-                var response = await mediator.Send(request, this.cancelSource.Token);
+                var result = await mediator.Request(request, this.cancelSource.Token);
                 await data.Log(
                     "TriggerViewModel-Response",
                     new MyMessageEvent(
-                        response.Response, 
+                        result.Response, 
                         this.FireAndForgetEvents 
                     )
                 );
