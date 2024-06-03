@@ -16,7 +16,7 @@ public class SingletonRequestHandler(IMediator mediator, AppSqliteConnection dat
         await data.Log("SingletonRequestHandler", e);
         if (request.FireAndForgetEvents)
         {
-            mediator.Publish(e).RunOffThread(ex =>
+            mediator.Publish(e).RunInBackground(ex =>
             {
                 // TODO: log this
             });

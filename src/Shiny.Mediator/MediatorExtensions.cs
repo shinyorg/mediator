@@ -2,14 +2,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Impl;
 using Shiny.Mediator.Infrastructure;
-using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;
 
 
 public static class MediatorExtensions
 {
-    public static void RunOffThread(this Task task, Action<Exception> onError)
+    public static void RunInBackground(this Task task, Action<Exception> onError)
         => task.ContinueWith(x =>
         {
             if (x.Exception != null)
@@ -26,14 +25,7 @@ public static class MediatorExtensions
 
         return services;
     }
-
     
-    public static ShinyConfigurator AddExceptionHandling(this ShinyConfigurator cfg)
-        => cfg.AddOpenRequestMiddleware(typeof(ExceptionHandlerMiddleware<,>));
-
-    public static ShinyConfigurator AddTimedMiddleware(this ShinyConfigurator cfg)
-        => cfg.AddOpenRequestMiddleware(typeof(TimedMiddleware<,>));
-
     
     public static IServiceCollection AddSingletonAsImplementedInterfaces<TImplementation>(this IServiceCollection services) where TImplementation : class
     {

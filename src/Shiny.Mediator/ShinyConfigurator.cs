@@ -5,6 +5,8 @@ namespace Shiny.Mediator;
 
 public sealed class ShinyConfigurator(IServiceCollection services)
 {
+    public IServiceCollection Services => services;
+    
     public ShinyConfigurator AddRequestMiddleware<TRequest, TResult, TImpl>(
         ServiceLifetime lifetime = ServiceLifetime.Scoped)
         where TRequest : IRequest<TResult>
@@ -31,7 +33,7 @@ public sealed class ShinyConfigurator(IServiceCollection services)
     
     public ShinyConfigurator AddOpenRequestMiddleware(Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped) 
     {
-        // validate open generic
+        // TODO: validate open generic
         services.Add(new ServiceDescriptor(typeof(IRequestMiddleware<,>), null, implementationType, lifetime));
         return this;
     }
