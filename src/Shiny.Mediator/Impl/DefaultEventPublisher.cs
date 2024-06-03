@@ -16,7 +16,11 @@ public class DefaultEventPublisher(IServiceProvider services, IEnumerable<IEvent
         // allow registered services to be transient/scoped/singleton
         using var scope = services.CreateScope();
         var handlers = scope.ServiceProvider.GetServices<IEventHandler<TEvent>>().ToList();
-        //var globalHandlers = scope.ServiceProvider.GetServices<IEventHandler<IEvent>>().ToList();
+        
+        // "covariance" event publishing chain
+        // typeof(TEvent).BaseType == typeof(object) // loop on basetype until object
+        //typeof(TEvent).BaseType.GetInterfaces().Any(x => x == typeof(IEvent)); // must be implementing IEvent although it wouldn't have been able to compile anyhow
+        //var globalHandlers = scope.ServiceProvider.GetServices<IEventHandler<IEvent>>().ToList(); // global handlers
         
         AppendHandlersIf(handlers, this.subscriptions);
         foreach (var collector in collectors)
