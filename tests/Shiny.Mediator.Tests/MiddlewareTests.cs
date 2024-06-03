@@ -17,7 +17,10 @@ public class MiddlewareTests
     public async Task ConstrainedAndOpen(bool addConstrained, bool addOpen)
     {
         var services = new ServiceCollection();
-        services.AddShinyMediator();
+        services.AddShinyMediator(cfg =>
+        {
+            
+        });
         services.AddSingletonAsImplementedInterfaces<MiddlewareRequestResultHandler>();
         
         if (addConstrained)

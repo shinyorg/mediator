@@ -9,9 +9,11 @@ public class SourceGeneratorTests
     public void DidRegister()
     {
         var services = new ServiceCollection();
-        services.AddShinyMediator();
-        // TODO: source gen call
-        // services.AddDiscoveredMediatorHandlers();
+        services.AddShinyMediator(cfg =>
+        {
+            // TODO: source gen call
+            // services.AddDiscoveredMediatorHandlers();
+        });
         var sp = services.BuildServiceProvider();
 
         sp.GetService<IEventHandler<SourceGenEvent>>().Should().NotBeNull("Event Handler not found");

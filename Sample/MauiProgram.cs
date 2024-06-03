@@ -40,7 +40,7 @@ public static class MauiProgram
         builder.Logging.AddDebug();
         builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
-        builder.Services.AddShinyMediator<MauiEventCollector>();
+        builder.Services.AddShinyMediator(x => x.UseMaui());
         builder.Services.AddSingletonAsImplementedInterfaces<SingletonEventHandler>();
         builder.Services.AddSingletonAsImplementedInterfaces<SingletonRequestHandler>();
 

@@ -1,5 +1,10 @@
 ﻿namespace Shiny.Mediator;
 
+public static class MauiEventCollectorExtensions
+{
+    public static ShinyConfigurator UseMaui(this ShinyConfigurator cfg) => cfg.AddEventCollector<MauiEventCollector>();
+}
+
 public class MauiEventCollector : IEventCollector
 {
     public IReadOnlyList<IEventHandler<TEvent>> GetHandlers<TEvent>() where TEvent : IEvent

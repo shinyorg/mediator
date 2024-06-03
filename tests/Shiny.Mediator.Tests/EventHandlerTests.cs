@@ -15,7 +15,7 @@ public class EventHandlerTests
     public async Task SubscriptionFired()
     {
         var services = new ServiceCollection();
-        services.AddShinyMediator();
+        services.AddShinyMediator(cfg => {});
         var sp = services.BuildServiceProvider();
         var mediator = sp.GetRequiredService<IMediator>();
 

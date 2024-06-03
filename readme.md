@@ -133,7 +133,7 @@ First, let's install [Shiny.Mediator.Maui](https://www.nuget.org/packages/Shiny.
 Now...let's go back to our MauiProgram.cs and alter the AddShinyMediator
 
 ```csharp
-builder.Services.AddShinyMediator<MauiEventCollector>();
+builder.Services.AddShinyMediator(cfg => cfg.UseMaui());
 ```
 
 Now your viewmodel (or page) can simply implement the IEventHandler<T> interface to participate

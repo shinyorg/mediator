@@ -9,7 +9,7 @@ public class RequestHandlerTests
         try
         {
             var services = new ServiceCollection();
-            services.AddShinyMediator();
+            services.AddShinyMediator(cfg => { });
             var sp = services.BuildServiceProvider();
             var mediator = sp.GetRequiredService<IMediator>();
             await mediator.Send(new TestRequest());

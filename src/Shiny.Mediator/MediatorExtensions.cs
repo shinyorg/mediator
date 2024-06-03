@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Impl;
 using Shiny.Mediator.Infrastructure;
+using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;
 
@@ -15,20 +16,23 @@ public static class MediatorExtensions
                 onError(x.Exception);
         });
 
-    public static IServiceCollection AddShinyMediator(this IServiceCollection services)
+    
+    public static IServiceCollection AddShinyMediator(this IServiceCollection services, Action<ShinyConfigurator>? configurator = null)
     {
         services.TryAddSingleton<IMediator, Impl.Mediator>();
         services.TryAddSingleton<IRequestSender, DefaultRequestSender>();
         services.TryAddSingleton<IEventPublisher, DefaultEventPublisher>();
+        configurator?.Invoke(new ShinyConfigurator(services));
+
         return services;
     }
 
     
-    public static IServiceCollection AddShinyMediator<TEventCollector>(this IServiceCollection services) where TEventCollector : class, IEventCollector
-    { 
-        services.AddSingleton<IEventCollector, TEventCollector>();
-        return services.AddShinyMediator();
-    }
+    public static ShinyConfigurator AddExceptionHandling(this ShinyConfigurator cfg)
+        => cfg.AddOpenRequestMiddleware(typeof(ExceptionHandlerMiddleware<,>));
+
+    public static ShinyConfigurator AddTimedMiddleware(this ShinyConfigurator cfg)
+        => cfg.AddOpenRequestMiddleware(typeof(TimedMiddleware<,>));
 
     
     public static IServiceCollection AddSingletonAsImplementedInterfaces<TImplementation>(this IServiceCollection services) where TImplementation : class
