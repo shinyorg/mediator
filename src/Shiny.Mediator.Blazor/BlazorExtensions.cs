@@ -1,4 +1,7 @@
-namespace Shiny.Mediator.Blazor;
+using Shiny.Mediator.Blazor;
+
+namespace Shiny.Mediator;
+
 
 public static class BlazorExtensions
 {
