@@ -9,25 +9,12 @@ public class DefaultRequestSender(IServiceProvider services) : IRequestSender
 {
     public async Task Send(IRequest request, CancellationToken cancellationToken)
     {
-        // using var scope = services.CreateScope();
-        // var handlers = scope.ServiceProvider.GetServices<IRequestHandler<TRequest>>().ToList();
-        // AssertRequestHandlers(handlers.Count, request);
-        //
-        // await this.ExecuteMiddleware(
-        //     scope, 
-        //     (IRequest<Unit>)request, 
-        //     async () =>
-        //     {
-        //         await handlers
-        //             .First()
-        //             .Handle(request, cancellationToken)
-        //             .ConfigureAwait(false);
-        //         return Unit.Value;
-        //     },
-        //     cancellationToken
-        // )
-        // .ConfigureAwait(false);
-        throw new BadImageFormatException();
+        using var scope = services.CreateScope();
+        var wrapperType = typeof(RequestWrapper<,>).MakeGenericType([request.GetType(), typeof(Unit)]);
+        var wrapperMethod = wrapperType.GetMethod("Handle", BindingFlags.Public | BindingFlags.Instance)!;
+        var wrapper = Activator.CreateInstance(wrapperType);
+        var task = (Task<Unit>)wrapperMethod.Invoke(wrapper, [scope.ServiceProvider, request, cancellationToken])!;
+        await task.ConfigureAwait(false);
     }
     
     
@@ -37,7 +24,7 @@ public class DefaultRequestSender(IServiceProvider services) : IRequestSender
         var wrapperType = typeof(RequestWrapper<,>).MakeGenericType([request.GetType(), typeof(TResult)]);
         var wrapperMethod = wrapperType.GetMethod("Handle", BindingFlags.Public | BindingFlags.Instance)!;
         var wrapper = Activator.CreateInstance(wrapperType);
-        var task = (Task<TResult>)wrapperMethod.Invoke(wrapper, [services, request, cancellationToken])!;
+        var task = (Task<TResult>)wrapperMethod.Invoke(wrapper, [scope.ServiceProvider, request, cancellationToken])!;
         var result = await task.ConfigureAwait(false);
         return result;
     }
