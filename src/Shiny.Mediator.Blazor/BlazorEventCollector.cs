@@ -2,24 +2,25 @@ using Microsoft.AspNetCore.Components;
 
 namespace Shiny.Mediator.Blazor;
 
-public class BlazorEventCollector(NavigationManager navigator) : IEventCollector, Microsoft.AspNetCore.Components.IComponentActivator
+public class BlazorEventCollector(NavigationManager navigator) : IEventCollector, IComponentActivator
 {
+    IComponent? currentComponent;
+    
+    
     public IReadOnlyList<IEventHandler<TEvent>> GetHandlers<TEvent>() where TEvent : IEvent
     {
-        navigator.LocationChanged += (sender, args) =>
-        {
-
-        };
-        navigator.RegisterLocationChangingHandler(async (context) =>
-        {
-        });
+        if (this.currentComponent is IEventHandler<TEvent> handler)
+            return [handler];
         
-        // TODO: no idea yet
-        return null;
+        return [];
     }
 
+    
     public IComponent CreateInstance(Type componentType)
     {
-        throw new NotImplementedException();
+        var component = (IComponent)Activator.CreateInstance(componentType);
+        this.currentComponent = component;
+
+        return component;
     }
 }
