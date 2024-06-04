@@ -27,7 +27,7 @@ were aimed more at server scenarios, while also adding some features we feel ben
 ## Works With
 * .NET MAUI - all platforms
 * MVVM Frameworks like Prism, ReactiveUI, & .NET MAUI Shell
-* Blazor - TBD
+* Blazor - Work In Progress
 * Any other .NET platform - but you'll have to come up with your own "event collector" for the out-of-state stuff 
 
 ## Getting Started
@@ -112,7 +112,7 @@ public class MyViewModel(Shiny.Mediator.IMediator mediator)
     public async Task Execute() 
     {
         await mediator.Send(new TestRequest()); // this will execute TestRequestHandler
-        var response = await mediator.Send(new TestResponseRequest()); // this will execute TestResponseRequestHandler and return a value
+        var response = await mediator.Request(new TestResponseRequest()); // this will execute TestResponseRequestHandler and return a value
         
         // this will publish to any service registered that implement IEventHandler<TestEvent>
         // there are additional args here to allow you to execute values in sequentially or wait for all events to complete
@@ -170,8 +170,8 @@ Focus on the interfaces from the mediator & the mediator calls itself
 * Document 
   * Event Collectors 
   * Request Middleware
-  * Covariance Event Handlers & Request Middleware
-  * OOBE Middleware
+  * Covariance Event Handlers & Request Middleware - Dependency Injection Support - nothing to do with the library
+  * OOBE Middleware - easy, not feature rich - use as a template once you outgrow them
 * Event Collectors for MAUI execute on main thread?
 * Streams - IAsyncEnumerable or IObservable
 * Source Generator Registration
