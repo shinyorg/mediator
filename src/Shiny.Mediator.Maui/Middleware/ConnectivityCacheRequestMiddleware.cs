@@ -12,7 +12,7 @@ public class CacheAttribute : Attribute
 
 public class ConnectivityCacheRequestMiddleware<TRequest, TResult>(IConnectivity connectivity, IFileSystem fileSystem) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
-    public async Task<TResult> Process(TRequest request, Func<Task<TResult>> next, CancellationToken cancellationToken)
+    public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, CancellationToken cancellationToken)
     {
         var config = typeof(TRequest).GetCustomAttribute<CacheAttribute>();
         if (config == null)

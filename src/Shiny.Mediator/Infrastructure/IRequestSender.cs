@@ -23,8 +23,8 @@ public interface IRequestSender
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task Send<TRequest>(
-        TRequest request,
+    Task Send(
+        IRequest request,
         CancellationToken cancellationToken = default
-    ) where TRequest : IRequest;
+    );
 }

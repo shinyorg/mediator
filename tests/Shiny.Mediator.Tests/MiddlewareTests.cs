@@ -61,17 +61,17 @@ public static class Executed
 }
 public class ConstrainedMiddleware : IRequestMiddleware<MiddlewareResultRequest, int>
 {
-    public Task<int> Process(MiddlewareResultRequest request, Func<Task<int>> next, CancellationToken cancellationToken)
+    public Task<int> Process(MiddlewareResultRequest request, RequestHandlerDelegate<int> next, CancellationToken cancellationToken)
     {
         Executed.Constrained = true;
         return next();
     }
 }
 
-public class VariantRequestMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse>
-    where TRequest : IRequest<TResponse>
+public class VariantRequestMiddleware<TRequest, TResult> : IRequestMiddleware<TRequest, TResult>
+    where TRequest : IRequest<TResult>
 {
-    public Task<TResponse> Process(TRequest request, Func<Task<TResponse>> next, CancellationToken cancellationToken)
+    public Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, CancellationToken cancellationToken)
     {
         Executed.Variant = true;
         return next();

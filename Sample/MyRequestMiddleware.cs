@@ -6,7 +6,7 @@ namespace Sample;
 // [RegisterMiddleware]
 public class MyRequestMiddleware(AppSqliteConnection conn) : IRequestMiddleware<MyMessageRequest, MyMessageResponse>
 {
-    public async Task<MyMessageResponse> Process(MyMessageRequest request, Func<Task<MyMessageResponse>> next, CancellationToken cancellationToken)
+    public async Task<MyMessageResponse> Process(MyMessageRequest request, RequestHandlerDelegate<MyMessageResponse> next, CancellationToken cancellationToken)
     {
         var sw = new Stopwatch();
         sw.Start();
