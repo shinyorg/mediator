@@ -16,7 +16,8 @@ public static class MauiMediatorExtensions
 
     public static ShinyConfigurator AddConnectivityCacheMiddleware(this ShinyConfigurator cfg)
     {
-        cfg.AddOpenRequestMiddleware(typeof(ConnectivityCacheRequestMiddleware<,>));
+        // TODO: how to clear memory
+        cfg.AddOpenRequestMiddleware(typeof(CacheRequestMiddleware<,>));
         return cfg;
     }
     
