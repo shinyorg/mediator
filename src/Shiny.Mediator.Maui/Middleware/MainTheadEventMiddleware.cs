@@ -25,5 +25,9 @@ public class MainTheadEventMiddleware<TEvent> : IEventMiddleware<TEvent> where T
             });
             await tcs.Task.ConfigureAwait(false);
         }
+        else
+        {
+            await next().ConfigureAwait(false);
+        }
     }
 }

@@ -30,12 +30,12 @@ public class DefaultEventPublisher(IServiceProvider services, IEnumerable<IEvent
             return;
 
         var middlewares = scope.ServiceProvider.GetServices<IEventMiddleware<TEvent>>().ToList();
+        var tasks = handlers
+            .Select(x => Execute(@event, x, middlewares, cancellationToken))
+            .ToList();
+        
         await Task
-            .WhenAll(
-                handlers
-                    .Select(x => Execute(@event, x, middlewares, cancellationToken))
-                    .ToList()
-            )
+            .WhenAll(tasks)
             .ConfigureAwait(false);
     }
 
@@ -55,15 +55,14 @@ public class DefaultEventPublisher(IServiceProvider services, IEnumerable<IEvent
         CancellationToken cancellationToken
     ) where TEvent : IEvent
     {
-        
-        var handler = new EventHandlerDelegate(
+        var handlerDelegate = new EventHandlerDelegate(
             () => eventHandler.Handle(@event, cancellationToken)
         );
         
         await middlewares
             .Reverse()
             .Aggregate(
-                handler, 
+                handlerDelegate, 
                 (next, middleware) => () => middleware.Process(
                     @event, 
                     next, 

@@ -6,9 +6,6 @@ public class SingletonRequestHandler(IMediator mediator, AppSqliteConnection dat
 {
     public async Task<MyMessageResponse> Handle(MyMessageRequest request, CancellationToken cancellationToken)
     {
-        // TODO: I would normally want to fire this AFTER the return though
-            // this is likely why service bus frameworks have a return method
-            // could have a pre/post on handlers
         var e = new MyMessageEvent(
             request.Arg,
             request.FireAndForgetEvents
@@ -18,7 +15,8 @@ public class SingletonRequestHandler(IMediator mediator, AppSqliteConnection dat
         {
             mediator.Publish(e).RunInBackground(ex =>
             {
-                // TODO: log this
+                // log this or something
+                Console.WriteLine(ex);
             });
         }
         else
