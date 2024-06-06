@@ -12,7 +12,7 @@ public class TimedLoggingMiddlewareConfig
 
 public class TimedLoggingRequestMiddleware<TRequest, TResult>(ILogger<TRequest> logger, TimedLoggingMiddlewareConfig config) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
-    public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, CancellationToken cancellationToken)
+    public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler<TRequest, TResult> requestHandler, CancellationToken cancellationToken)
     {
         var sw = new Stopwatch();
         sw.Start();

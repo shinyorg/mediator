@@ -31,14 +31,14 @@ public class DefaultRequestSender(IServiceProvider services) : IRequestSender
 }
 
 
-public class RequestWrapper<TRequest, TResult> where TRequest : IRequest<TResult>
+class RequestWrapper<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     public async Task<TResult> Handle(IServiceProvider services, TRequest request, CancellationToken cancellationToken)
     {
-        var handler = new RequestHandlerDelegate<TResult>(() => services
-            .GetRequiredService<IRequestHandler<TRequest, TResult>>()!
-            .Handle(request, cancellationToken)
-        );
+        var requestHandler = services.GetRequiredService<IRequestHandler<TRequest, TResult>>();
+            
+        var handler = new RequestHandlerDelegate<TResult>(()
+            => requestHandler.Handle(request, cancellationToken));
         
         var result = await services
             .GetServices<IRequestMiddleware<TRequest, TResult>>()
@@ -48,6 +48,7 @@ public class RequestWrapper<TRequest, TResult> where TRequest : IRequest<TResult
                 (next, middleware) => () => middleware.Process(
                     request, 
                     next, 
+                    requestHandler,
                     cancellationToken
                 )
             )

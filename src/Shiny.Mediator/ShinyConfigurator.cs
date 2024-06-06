@@ -37,7 +37,14 @@ public sealed class ShinyConfigurator(IServiceCollection services)
         services.Add(new ServiceDescriptor(typeof(IRequestMiddleware<,>), null, implementationType, lifetime));
         return this;
     }
-   
+
+
+    public ShinyConfigurator AddOpenEventMiddleware(Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    {
+        // TODO: validate open generic
+        services.Add(new ServiceDescriptor(typeof(IEventMiddleware<>), null, implementationType, lifetime));
+        return this;
+    }
 
     public ShinyConfigurator AddEventCollector<TImpl>() where TImpl : class, IEventCollector
     {

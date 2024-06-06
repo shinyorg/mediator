@@ -16,8 +16,9 @@ public class CacheRequestMiddlewareTests
                 ["Cache:Shiny.Mediator.Tests.CacheRequest"] = ""
             })
             .Build();
-        
-        var middleware = new CacheRequestMiddleware<CacheRequest, CacheResponse>(configuration, conn, fs);
+
+        var handler = new CacheRequestHandler();
+        var middleware = new CacheRequestMiddleware<CacheRequest, CacheResult>(configuration, conn, fs);
 
         // TODO: test with ICacheItem
         var request = new CacheRequest();
@@ -25,16 +26,18 @@ public class CacheRequestMiddlewareTests
         var result1 = await middleware.Process(
             request,
             () => Task.FromResult(
-                new CacheResponse(DateTimeOffset.UtcNow.Ticks)
+                new CacheResult(DateTimeOffset.UtcNow.Ticks)
             ), 
+            handler,
             CancellationToken.None
         );
         await Task.Delay(2000);
         var result2 = await middleware.Process(
             request,
             () => Task.FromResult(
-                new CacheResponse(DateTimeOffset.UtcNow.Ticks)
+                new CacheResult(DateTimeOffset.UtcNow.Ticks)
             ), 
+            handler,
             CancellationToken.None
         );
         
@@ -44,16 +47,20 @@ public class CacheRequestMiddlewareTests
 }
 
 
-public record CacheRequest : IRequest<CacheResponse>;
-public record CacheResponse(long Ticks);
+public record CacheRequest : IRequest<CacheResult>;
+public record CacheResult(long Ticks);
 
+public class CacheRequestHandler : IRequestHandler<CacheRequest, CacheResult>
+{
+    public Task<CacheResult> Handle(CacheRequest request, CancellationToken cancellationToken)
+        => Task.FromResult(new CacheResult(DateTimeOffset.UtcNow.Ticks));
+}
 public class MockConnectivity : IConnectivity
 {
     public IEnumerable<ConnectionProfile> ConnectionProfiles { get; set; }// = ConnectionProfile.WiFi;
     public NetworkAccess NetworkAccess { get; set; }
     public event EventHandler<ConnectivityChangedEventArgs>? ConnectivityChanged;
 }
-
 public class MockFileSystem : IFileSystem
 {
     public Task<Stream> OpenAppPackageFileAsync(string filename)

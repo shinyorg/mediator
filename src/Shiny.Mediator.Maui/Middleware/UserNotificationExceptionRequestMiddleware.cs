@@ -13,7 +13,7 @@ public class UserExceptionRequestMiddlewareConfig
 
 public class UserExceptionRequestMiddleware<TRequest, TResult>(ILogger<TRequest> logger, UserExceptionRequestMiddlewareConfig config) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
-    public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, CancellationToken cancellationToken)
+    public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler<TRequest, TResult> requestHandler, CancellationToken cancellationToken)
     {
         var result = default(TResult);
         try
@@ -30,7 +30,6 @@ public class UserExceptionRequestMiddleware<TRequest, TResult>(ILogger<TRequest>
             }
             catch
             {
-                // throw away
             }
         }
 

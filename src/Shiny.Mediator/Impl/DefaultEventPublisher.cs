@@ -29,10 +29,11 @@ public class DefaultEventPublisher(IServiceProvider services, IEnumerable<IEvent
         if (handlers.Count == 0)
             return;
 
+        var middlewares = scope.ServiceProvider.GetServices<IEventMiddleware<TEvent>>().ToList();
         await Task
             .WhenAll(
                 handlers
-                    .Select(x => x.Handle(@event, cancellationToken))
+                    .Select(x => Execute(@event, x, middlewares, cancellationToken))
                     .ToList()
             )
             .ConfigureAwait(false);
@@ -46,6 +47,33 @@ public class DefaultEventPublisher(IServiceProvider services, IEnumerable<IEvent
         return handler;
     }
 
+
+    static async Task Execute<TEvent>(
+        TEvent @event,
+        IEventHandler<TEvent> eventHandler, 
+        IEnumerable<IEventMiddleware<TEvent>> middlewares,
+        CancellationToken cancellationToken
+    ) where TEvent : IEvent
+    {
+        
+        var handler = new EventHandlerDelegate(
+            () => eventHandler.Handle(@event, cancellationToken)
+        );
+        
+        await middlewares
+            .Reverse()
+            .Aggregate(
+                handler, 
+                (next, middleware) => () => middleware.Process(
+                    @event, 
+                    next, 
+                    eventHandler,
+                    cancellationToken
+                )
+            )
+            .Invoke()
+            .ConfigureAwait(false);
+    }
     
     static void AppendHandlersIf<TEvent>(List<IEventHandler<TEvent>> list, IEventCollector collector) where TEvent : IEvent
     {

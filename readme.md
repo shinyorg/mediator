@@ -16,6 +16,7 @@ were aimed more at server scenarios, while also adding some features we feel ben
 
 ## Features
 * A Mediator for your .NET Apps (MAUI & Blazor are the main targets for us)
+* Request & event middleware with some great "out of the box" scenarios for your app
 * Think of "weak" message subscriptions without the fuss or mess to cleanup
 * Our MAUI & Blazor integrations allow your viewmodels or pages to implement an IEventHandler<TEvent> interface(s) without them having to participate in the dependency injection provider
 * We still have a "messagingcenter" type subscribe off IMediator for cases where you can't have your current type implement an interface

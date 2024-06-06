@@ -12,7 +12,7 @@ public class CacheRequestMiddleware<TRequest, TResult>(
     // IRequestHandler<FlushAllCacheRequest>, 
     // IRequestHandler<FlushCacheItemRequest>
 { 
-    public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, CancellationToken cancellationToken)
+    public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler<TRequest, TResult> requestHandler, CancellationToken cancellationToken)
     {
         // no caching for void requests
         if (typeof(TResult) == typeof(Unit))
