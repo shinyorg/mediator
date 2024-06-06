@@ -16,6 +16,7 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.9.2" PrivateAssets="all" />
         <PackageReference Include="FluentAssertions" Version="6.12.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
         <PackageReference Include="xunit" Version="2.8.1" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.8.1">
@@ -25,6 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj" />
         <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj" />
         <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
                           ReferenceOutputAssembly="false"
