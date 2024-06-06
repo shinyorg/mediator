@@ -15,7 +15,18 @@ public class MauiServiceProvider : IMauiInitializeService
 
 public static class MauiMediatorExtensions
 {
-    public static ShinyConfigurator UseMaui(this ShinyConfigurator cfg) => cfg.AddEventCollector<MauiEventCollector>();
+    public static ShinyConfigurator UseMaui(this ShinyConfigurator cfg, bool includeStandardMiddleware = true)
+    {
+        cfg.AddEventCollector<MauiEventCollector>();
+        if (includeStandardMiddleware)
+        {
+            cfg.AddEventExceptionHandlingMiddleware();
+            cfg.AddMainThreadEventMiddleware();
+            // cfg.AddUserNotificationExceptionMiddleware();
+        }
+
+        return cfg;
+    }
 
     public static ShinyConfigurator AddTimedMiddleware(this ShinyConfigurator cfg, TimedLoggingMiddlewareConfig config)
     {
@@ -24,7 +35,7 @@ public static class MauiMediatorExtensions
     }
 
 
-    public static ShinyConfigurator AddEventExceptionHandling(this ShinyConfigurator cfg)
+    public static ShinyConfigurator AddEventExceptionHandlingMiddleware(this ShinyConfigurator cfg)
     {
         cfg.AddOpenEventMiddleware(typeof(ExceptionHandlerEventMiddleware<>));
         return cfg;
