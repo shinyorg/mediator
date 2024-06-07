@@ -1,35 +1,37 @@
 using System.Diagnostics;
+using System.Reflection;
 using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Middleware;
 
 
-public class TimedLoggingMiddlewareConfig
+[AttributeUsage(AttributeTargets.Class, Inherited = false)]
+public class TimedLoggingAttribute : Attribute
 {
-    public bool LogAll { get; set; }
-    public TimeSpan? ErrorThreshold { get; set; }
+    public double ErrorThresholdMillis { get; set; } = 0;
 }
 
-public class TimedLoggingRequestMiddleware<TRequest, TResult>(ILogger<TRequest> logger, TimedLoggingMiddlewareConfig config) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
+
+public class TimedLoggingRequestMiddleware<TRequest, TResult>(ILogger<TRequest> logger) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler<TRequest, TResult> requestHandler, CancellationToken cancellationToken)
     {
-        var sw = new Stopwatch();
-        sw.Start();
+        var attribute = requestHandler.GetType().GetCustomAttribute<TimedLoggingAttribute>();
+        if (attribute == null)
+            return await next().ConfigureAwait(false);
+
+        var sw = Stopwatch.StartNew();
         var result = await next();
         sw.Stop();
 
-        var errored = config.ErrorThreshold != null && config.ErrorThreshold < sw.Elapsed;
         var msg = $"{typeof(TRequest)} pipeline execution took ${sw.Elapsed}";
-        
-        if (!errored && config.LogAll)
-        {
+        var ts = TimeSpan.FromMilliseconds(attribute.ErrorThresholdMillis);
+        if (attribute.ErrorThresholdMillis > 0 && sw.Elapsed > ts)
             logger.LogDebug(msg);
-        }
-        if (errored)
-        {
+
+        else if (logger.IsEnabled(LogLevel.Debug))
             logger.LogError(msg);
-        }
+        
         return result;
     }
 }

@@ -21,6 +21,7 @@ public static class MauiMediatorExtensions
         if (includeStandardMiddleware)
         {
             cfg.AddEventExceptionHandlingMiddleware();
+            cfg.AddTimedMiddleware();
             cfg.AddMainThreadEventMiddleware();
             // cfg.AddUserNotificationExceptionMiddleware();
         }
@@ -28,11 +29,8 @@ public static class MauiMediatorExtensions
         return cfg;
     }
 
-    public static ShinyConfigurator AddTimedMiddleware(this ShinyConfigurator cfg, TimedLoggingMiddlewareConfig config)
-    {
-        cfg.Services.AddSingleton(config);
-        return cfg.AddOpenRequestMiddleware(typeof(TimedLoggingRequestMiddleware<,>));
-    }
+    public static ShinyConfigurator AddTimedMiddleware(this ShinyConfigurator cfg)
+        => cfg.AddOpenRequestMiddleware(typeof(TimedLoggingRequestMiddleware<,>));
 
 
     public static ShinyConfigurator AddEventExceptionHandlingMiddleware(this ShinyConfigurator cfg)
