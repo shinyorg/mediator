@@ -44,9 +44,7 @@ public static class MauiProgram
             .UseMaui()
             .UseBlazor()
         );
-        builder.Services.AddSingletonAsImplementedInterfaces<SingletonEventHandler>();
-        builder.Services.AddSingletonAsImplementedInterfaces<SingletonRequestHandler>();
-        builder.Services.AddSingletonAsImplementedInterfaces<MyRequestMiddleware>();
+        builder.Services.AddDiscoveredMediatorHandlersFromSample();
 
         builder.Services.AddSingleton<AppSqliteConnection>();
         builder.Services.AddMauiBlazorWebView();

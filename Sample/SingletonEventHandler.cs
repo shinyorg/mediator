@@ -1,6 +1,7 @@
 namespace Sample;
 
 
+[RegisterHandler]
 public class SingletonEventHandler(IMediator mediator, AppSqliteConnection data) : IEventHandler<MyMessageEvent>
 {
     public async Task Handle(MyMessageEvent @event, CancellationToken cancellationToken)

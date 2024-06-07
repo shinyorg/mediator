@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using SourceGeneratorsKit;
@@ -26,14 +28,14 @@ public class MediatorSourceGenerator : ISourceGenerator
                 #nullable disable
                 
                 [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class RegisterHandlerAttribute: System.Attribute
+                public sealed class RegisterHandlerAttribute: System.Attribute
                 {
-                    public RegisterHandlerAttribute(bool IsSingleton = true) {}
+                    public RegisterHandlerAttribute() {}
                 }
                 
-                internal sealed class RegisterMiddlewareAttribute: System.Attribute
+                public sealed class RegisterMiddlewareAttribute: System.Attribute
                 {
-                    public RegisterMiddlewareAttribute(bool IsSingleton = true) {}
+                    public RegisterMiddlewareAttribute() {}
                 }
                 """,
                 Encoding.UTF8
@@ -48,26 +50,31 @@ public class MediatorSourceGenerator : ISourceGenerator
         if (!(context.SyntaxContextReceiver is SyntaxReceiver))
             return;
 
-        // TODO: detect double registration of request handlers
-        // TODO: I need the namespace to be the global namespace
+        // TODO: detect double registration of request handlers?
+        // TODO: scopes
+        // TODO: open middleware
         // TODO: this will be registered with multiple AddDiscoveredMediatorHandlers in the main app
-        
+
+        var nameSpace = context.GetMSBuildProperty("RootNamespace") ?? context.Compilation.AssemblyName;
+        var assName = context.Compilation.AssemblyName?.Replace(".", "_");
+
         var sb = new StringBuilder();
         sb
-            .AppendLine("namespace Shiny.Mediator;")
+            .AppendLine($"namespace {nameSpace};")
             .AppendLine()
             .AppendLine("public static class __ShinyMediatorSourceGenExtensions {")
-            .AppendLine(
-                "\tpublic static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlers(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services) {");
-            
-        foreach (var classSymbol in this.syntaxReceiver.Classes)
-            sb.AppendLine($"\t\tservices.AddSingletonAsImplementedInterfaces<{classSymbol.ToDisplayString()}>();");
+            .AppendLine($"\tpublic static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFrom{assName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)")
+            .AppendLine("\t{");
+
+        var classes = this.syntaxReceiver.Classes.Select(x => x.ToDisplayString()).Distinct();
+        foreach (var cls in classes)
+            sb.AppendLine($"\t\tservices.AddSingletonAsImplementedInterfaces<{cls}>();");
 
         sb
-            .AppendLine("\treturn services;")
+            .AppendLine("\t\treturn services;")
             .AppendLine("\t}")
             .AppendLine("}");
 
-        context.AddSource("__MediatorHandlersRegistration.g.cs", SourceText.From(sb.ToString()));
+        context.AddSource("__MediatorHandlersRegistration.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
     }
 }
