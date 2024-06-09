@@ -8,9 +8,10 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj" />
-<!--        <ProjectReference Include="..\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"-->
-<!--                          OutputItemType="Analyzer"-->
-<!--                          ReferenceOutputAssembly="false" />-->
+        <ProjectReference Include="..\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false" />
+        <None Include="Shiny.Mediator.targets" Pack="True" PackagePath="buildTransitive" />
     </ItemGroup>
 
     <ItemGroup>
@@ -22,5 +23,9 @@
               Pack="true" 
               PackagePath="analyzers/dotnet/cs" 
               Visible="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="build\" />
     </ItemGroup>
 </Project>

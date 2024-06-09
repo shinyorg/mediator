@@ -4,9 +4,6 @@ using System.Reflection;
 namespace Shiny.Mediator.Middleware;
 
 
-[AttributeUsage(AttributeTargets.Method, Inherited = false)]
-public class MainThreadAttribute : Attribute {}
-
 public class MainTheadEventMiddleware<TEvent> : IEventMiddleware<TEvent> where TEvent : IEvent
 {
     public async Task Process(IEvent @event, EventHandlerDelegate next, IEventHandler<TEvent> eventHandler, CancellationToken cancellationToken)

@@ -5,13 +5,6 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Middleware;
 
 
-[AttributeUsage(AttributeTargets.Class, Inherited = false)]
-public class TimedLoggingAttribute : Attribute
-{
-    public double ErrorThresholdMillis { get; set; } = 0;
-}
-
-
 public class TimedLoggingRequestMiddleware<TRequest, TResult>(ILogger<TRequest> logger) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler<TRequest, TResult> requestHandler, CancellationToken cancellationToken)

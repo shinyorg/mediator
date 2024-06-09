@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator.Tests;
@@ -10,15 +9,9 @@ public class CacheRequestMiddlewareTests
     {
         var conn = new MockConnectivity();
         var fs = new MockFileSystem();
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string>
-            {
-                ["Cache:Shiny.Mediator.Tests.CacheRequest"] = ""
-            })
-            .Build();
 
         var handler = new CacheRequestHandler();
-        var middleware = new CacheRequestMiddleware<CacheRequest, CacheResult>(configuration, conn, fs);
+        var middleware = new CacheRequestMiddleware<CacheRequest, CacheResult>(conn, fs);
 
         // TODO: test with ICacheItem
         var request = new CacheRequest();
@@ -50,6 +43,7 @@ public class CacheRequestMiddlewareTests
 public record CacheRequest : IRequest<CacheResult>;
 public record CacheResult(long Ticks);
 
+[Cache(MaxAgeSeconds = 5, Storage = StoreType.Memory, OnlyForOffline = false)]
 public class CacheRequestHandler : IRequestHandler<CacheRequest, CacheResult>
 {
     public Task<CacheResult> Handle(CacheRequest request, CancellationToken cancellationToken)

@@ -1,25 +1,26 @@
+using System.Reflection;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
 
 namespace Shiny.Mediator.Middleware;
 
 
 public class CacheRequestMiddleware<TRequest, TResult>(
-    IConfiguration configuration,
     IConnectivity connectivity, 
     IFileSystem fileSystem
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult> 
     // IRequestHandler<FlushAllCacheRequest>, 
     // IRequestHandler<FlushCacheItemRequest>
 { 
+    readonly Dictionary<string, CachedItem<object>> memCache = new();
+    
+    
     public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler<TRequest, TResult> requestHandler, CancellationToken cancellationToken)
     {
         // no caching for void requests
         if (typeof(TResult) == typeof(Unit))
             return await next().ConfigureAwait(false);
 
-        // no config no cache - TODO: could consider ICacheItem taking default values
-        var cfg = GetConfiguration(request);
+        var cfg = requestHandler.GetType().GetCustomAttribute<CacheAttribute>();
         if (cfg == null)
             return await next().ConfigureAwait(false);
 
@@ -50,18 +51,18 @@ public class CacheRequestMiddleware<TRequest, TResult>(
     }
     
 
-    protected virtual bool IsExpired(CachedItem<TResult> item, CacheConfiguration cfg)
+    protected virtual bool IsExpired(CachedItem<TResult> item, CacheAttribute cfg)
     {
-        if (cfg.MaxAge == null)
+        if (cfg.MaxAgeSeconds <= 0)
             return false;
 
-        var expiry = item.CreatedOn.Add(cfg.MaxAge.Value);
+        var expiry = item.CreatedOn.Add(TimeSpan.FromSeconds(cfg.MaxAgeSeconds));
         var expired = expiry < DateTimeOffset.UtcNow;
         return expired;
     }
     
     
-    protected virtual async Task<TResult> GetAndStore(TRequest request, RequestHandlerDelegate<TResult> next, CacheConfiguration cfg)
+    protected virtual async Task<TResult> GetAndStore(TRequest request, RequestHandlerDelegate<TResult> next, CacheAttribute cfg)
     {
         var result = await next().ConfigureAwait(false);
         this.Store(request, result, cfg);
@@ -86,7 +87,7 @@ public class CacheRequestMiddleware<TRequest, TResult>(
     }
 
 
-    protected virtual void Store(TRequest request, TResult result, CacheConfiguration cfg)
+    protected virtual void Store(TRequest request, TResult result, CacheAttribute cfg)
     {
         switch (cfg.Storage)
         {
@@ -110,7 +111,7 @@ public class CacheRequestMiddleware<TRequest, TResult>(
     }
 
 
-    protected virtual CachedItem<TResult>? GetFromStore(TRequest request, CacheConfiguration cfg)
+    protected virtual CachedItem<TResult>? GetFromStore(TRequest request, CacheAttribute cfg)
     {
         CachedItem<TResult>? returnValue = null;
         
@@ -143,44 +144,15 @@ public class CacheRequestMiddleware<TRequest, TResult>(
 
         return returnValue;
     }
-    
-
-    readonly Dictionary<string, CachedItem<object>> memCache = new();
-    readonly object syncLock = new();
-    CacheConfiguration[]? configurations;
-    
-    
-    protected virtual CacheConfiguration? GetConfiguration(TRequest request)
-    {
-        var type = request.GetType();
-        var key = $"{type.Namespace}.{type.Name}";
-
-        if (this.configurations == null)
-        {
-            lock (this.syncLock)
-            {
-                this.configurations = configuration
-                    .GetSection("Cache")
-                    .Get<CacheConfiguration[]>();
-            }
-        }
-
-        var cfg = this.configurations?
-            .FirstOrDefault(x => x
-                .RequestType
-                .Equals(
-                    key, 
-                    StringComparison.InvariantCultureIgnoreCase
-                )
-            );
-        
-        return cfg;
-    }
 }
 
 // public record FlushCacheItemRequest(Type RequestType) : IRequest;
 // public record FlushAllCacheRequest : IRequest;
 
+/// <summary>
+/// Implementing this interface will allow you to create your own cache key, otherwise the cache key is based on the name
+/// of the request model
+/// </summary>
 public interface ICacheItem
 {
     string CacheKey { get; }
@@ -191,16 +163,3 @@ public record CachedItem<T>(
     T Value
 );
 
-public enum StoreType
-{
-    File,
-    Memory
-}
-
-public class CacheConfiguration
-{
-    public string RequestType { get; set; }
-    public bool OnlyForOffline { get; set; }
-    public TimeSpan? MaxAge { get; set; }
-    public StoreType Storage { get; set; }
-}
