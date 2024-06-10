@@ -8,13 +8,9 @@ public class MainTheadEventMiddleware<TEvent> : IEventMiddleware<TEvent> where T
 {
     public async Task Process(IEvent @event, EventHandlerDelegate next, IEventHandler<TEvent> eventHandler, CancellationToken cancellationToken)
     {
-        // TODO: could pull an attribute off the method of the eventhandler instance method
-        var hasAttribute = eventHandler
-            .GetType()
-            .GetMethod("Handle")!
-            .GetCustomAttribute<MainThreadAttribute>() != null;
+        var attr = eventHandler.GetHandlerHandleMethodAttribute<TEvent, MainThreadAttribute>();
         
-        if (hasAttribute)
+        if (attr != null)
         {
             var tcs = new TaskCompletionSource();
             MainThread.BeginInvokeOnMainThread(async () =>

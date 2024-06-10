@@ -13,8 +13,8 @@ public static class MediatorExtensions
         {
             if (x.Exception != null)
                 onError(x.Exception);
-        });
-
+        }, TaskContinuationOptions.OnlyOnFaulted);
+    
     
     public static IServiceCollection AddShinyMediator(this IServiceCollection services, Action<ShinyConfigurator>? configurator = null)
     {

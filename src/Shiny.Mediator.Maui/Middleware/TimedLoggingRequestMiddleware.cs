@@ -9,7 +9,7 @@ public class TimedLoggingRequestMiddleware<TRequest, TResult>(ILogger<TRequest> 
 {
     public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler<TRequest, TResult> requestHandler, CancellationToken cancellationToken)
     {
-        var attribute = requestHandler.GetType().GetCustomAttribute<TimedLoggingAttribute>();
+        var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TResult, TimedLoggingAttribute>();
         if (attribute == null)
             return await next().ConfigureAwait(false);
 

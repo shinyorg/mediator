@@ -25,18 +25,7 @@ public class CacheRequestMiddleware<TRequest, TResult>(
         if (typeof(TResult) == typeof(Unit))
             return await next().ConfigureAwait(false);
 
-        var cfg = requestHandler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TRequest), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<CacheAttribute>();
-        
+        var cfg = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TResult, CacheAttribute>();
         if (cfg == null)
             return await next().ConfigureAwait(false);
 
