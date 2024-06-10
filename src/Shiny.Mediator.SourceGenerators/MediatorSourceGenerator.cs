@@ -57,7 +57,15 @@ public class MediatorSourceGenerator : ISourceGenerator
 
         var nameSpace = context.GetMSBuildProperty("RootNamespace") ?? context.Compilation.AssemblyName;
         var assName = context.Compilation.AssemblyName?.Replace(".", "_");
-
+        var classes = this.syntaxReceiver
+            .Classes
+            .Select(x => x.ToDisplayString())
+            .Distinct()
+            .ToList();
+        
+        if (!classes.Any())
+            return;
+        
         var sb = new StringBuilder();
         sb
             .AppendLine($"namespace {nameSpace};")
@@ -66,7 +74,7 @@ public class MediatorSourceGenerator : ISourceGenerator
             .AppendLine($"\tpublic static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFrom{assName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)")
             .AppendLine("\t{");
 
-        var classes = this.syntaxReceiver.Classes.Select(x => x.ToDisplayString()).Distinct();
+        
         foreach (var cls in classes)
             sb.AppendLine($"\t\tservices.AddSingletonAsImplementedInterfaces<{cls}>();");
 

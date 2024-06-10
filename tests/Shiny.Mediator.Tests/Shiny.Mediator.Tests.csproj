@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <AssemblyName>UnitTests</AssemblyName>
         <!--<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GF</CompilerGeneratedFilesOutputPath>-->
 <!--        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>-->
 <!--        <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>-->

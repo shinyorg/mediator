@@ -1,3 +1,4 @@
+using System;
 using Microsoft.CodeAnalysis;
 using SourceGeneratorsKit;
 
@@ -10,6 +11,9 @@ public class RegisterHandlerAttributeSyntaxReceiver : SyntaxReceiver
 
     protected override bool ShouldCollectClassSymbol(INamedTypeSymbol classSymbol)
     {
+        if (classSymbol.ContainingAssembly.Name.StartsWith("Shiny.Mediator", StringComparison.CurrentCultureIgnoreCase))
+            return false;
+        
         var hasAttribute = classSymbol.HasAttribute("RegisterHandlerAttribute");
         if (hasAttribute)
             return true;
