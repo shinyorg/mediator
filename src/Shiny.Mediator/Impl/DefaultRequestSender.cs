@@ -35,8 +35,10 @@ class RequestWrapper<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     public async Task<TResult> Handle(IServiceProvider services, TRequest request, CancellationToken cancellationToken)
     {
-        var requestHandler = services.GetRequiredService<IRequestHandler<TRequest, TResult>>();
-            
+        var requestHandler = services.GetService<IRequestHandler<TRequest, TResult>>();
+        if (requestHandler == null)
+            throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
+        
         var handler = new RequestHandlerDelegate<TResult>(()
             => requestHandler.Handle(request, cancellationToken));
         
