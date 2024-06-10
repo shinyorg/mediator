@@ -14,16 +14,39 @@ public class CacheRequestMiddleware<TRequest, TResult>(
     readonly Dictionary<string, CachedItem<object>> memCache = new();
     
     
-    public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler<TRequest, TResult> requestHandler, CancellationToken cancellationToken)
+    public async Task<TResult> Process(
+        TRequest request, 
+        RequestHandlerDelegate<TResult> next, 
+        IRequestHandler<TRequest, TResult> requestHandler, 
+        CancellationToken cancellationToken
+    )
     {
         // no caching for void requests
         if (typeof(TResult) == typeof(Unit))
             return await next().ConfigureAwait(false);
 
-        var cfg = requestHandler.GetType().GetCustomAttribute<CacheAttribute>();
+        var cfg = requestHandler
+            .GetType()
+            .GetMethod(
+                "Handle", 
+                BindingFlags.Public | BindingFlags.Instance, 
+                null,
+                CallingConventions.Any,
+                [ typeof(TRequest), typeof(CancellationToken) ],
+                null
+            )!
+            .GetCustomAttribute<CacheAttribute>();
+        
         if (cfg == null)
             return await next().ConfigureAwait(false);
 
+        var result = await this.Process(cfg, request, next, requestHandler, cancellationToken).ConfigureAwait(false);
+        return result;
+    }
+
+
+    protected virtual async Task<TResult> Process(CacheAttribute cfg, TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler<TRequest, TResult> requestHandler, CancellationToken cancellationToken)
+    {
         var result = default(TResult);
         var connected = connectivity.NetworkAccess == NetworkAccess.Internet;
         if (cfg.OnlyForOffline && connected)
@@ -68,6 +91,7 @@ public class CacheRequestMiddleware<TRequest, TResult>(
         this.Store(request, result, cfg);
         return result;
     }
+    
 
     protected virtual string GetCacheKey(TRequest request)
     {

@@ -6,7 +6,7 @@ public enum StoreType
     Memory
 }
 
-[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Method, Inherited = false)]
 public class CacheAttribute : Attribute
 {
     /// <summary>
