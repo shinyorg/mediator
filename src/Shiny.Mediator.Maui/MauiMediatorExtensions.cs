@@ -1,3 +1,4 @@
+using Shiny.Mediator.Maui;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;

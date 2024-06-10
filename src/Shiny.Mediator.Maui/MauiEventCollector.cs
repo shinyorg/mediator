@@ -1,4 +1,6 @@
-﻿namespace Shiny.Mediator;
+﻿using Shiny.Mediator.Infrastructure;
+
+namespace Shiny.Mediator.Maui;
 
 
 public class MauiEventCollector : IEventCollector

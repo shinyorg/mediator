@@ -18,11 +18,10 @@ public static class MediatorExtensions
     
     public static IServiceCollection AddShinyMediator(this IServiceCollection services, Action<ShinyConfigurator>? configurator = null)
     {
+        configurator?.Invoke(new ShinyConfigurator(services));
         services.TryAddSingleton<IMediator, Impl.Mediator>();
         services.TryAddSingleton<IRequestSender, DefaultRequestSender>();
         services.TryAddSingleton<IEventPublisher, DefaultEventPublisher>();
-        configurator?.Invoke(new ShinyConfigurator(services));
-
         return services;
     }
     

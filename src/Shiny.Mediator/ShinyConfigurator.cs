@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator;
 
@@ -6,6 +7,20 @@ namespace Shiny.Mediator;
 public sealed class ShinyConfigurator(IServiceCollection services)
 {
     public IServiceCollection Services => services;
+
+    public ShinyConfigurator SetRequestSender<TRequestSender>() where TRequestSender : class, IRequestSender
+    {
+        this.Services.AddSingleton<IRequestSender, TRequestSender>();
+        return this;
+    }
+    
+    
+    public ShinyConfigurator SetEventPublish<TEventPublisher>() where TEventPublisher : class, IEventPublisher
+    {
+        this.Services.AddSingleton<IEventPublisher, TEventPublisher>();
+        return this;
+    }
+    
     
     public ShinyConfigurator AddRequestMiddleware<TRequest, TResult, TImpl>(
         ServiceLifetime lifetime = ServiceLifetime.Scoped)

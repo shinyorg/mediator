@@ -4,6 +4,11 @@ namespace Shiny.Mediator.Tests;
 
 public class CacheRequestMiddlewareTests
 {
+    // online with offlineonly
+    // offline with offlineonly
+    // offline with expired 
+    // offline with no cache
+    // custom cache key
     [Fact]
     public async Task EndToEnd()
     {

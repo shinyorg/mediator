@@ -1,4 +1,4 @@
-namespace Shiny.Mediator;
+namespace Shiny.Mediator.Infrastructure;
 
 public interface IEventCollector
 {

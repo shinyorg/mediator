@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Blazor;
 
