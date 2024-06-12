@@ -1,4 +1,6 @@
+// [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Shiny.Mediator.Tests")]
 namespace Shiny.Mediator;
+
 
 public enum StoreType
 {

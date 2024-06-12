@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json;
 
 namespace Shiny.Mediator.Middleware;
@@ -34,7 +33,7 @@ public class CacheRequestMiddleware<TRequest, TResult>(
     }
 
 
-    protected virtual async Task<TResult> Process(CacheAttribute cfg, TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler<TRequest, TResult> requestHandler, CancellationToken cancellationToken)
+    public virtual async Task<TResult> Process(CacheAttribute cfg, TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler<TRequest, TResult> requestHandler, CancellationToken cancellationToken)
     {
         var result = default(TResult);
         var connected = connectivity.NetworkAccess == NetworkAccess.Internet;
