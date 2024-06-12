@@ -58,6 +58,8 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
         );
     }
 
+    
+    [MainThread]
     public Task Handle(MyMessageEvent @event, CancellationToken cancellationToken)
     {
         // do something async here
