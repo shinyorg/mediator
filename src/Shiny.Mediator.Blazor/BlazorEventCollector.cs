@@ -40,9 +40,19 @@ public class BlazorEventCollector : IEventCollector, IComponentActivator
     public IComponent CreateInstance(Type componentType)
     {
         var component = (IComponent)Activator.CreateInstance(componentType);
-        lock (this.components)
-            this.components.Add(new WeakReference<IComponent>(component));
+        var isHandler = componentType
+            .GetInterfaces()
+            .Any(x => 
+                x.IsGenericType && 
+                x.GetGenericTypeDefinition() == typeof(IEventHandler<>)
+            );
         
+        if (isHandler)
+        {
+            lock (this.components)
+                this.components.Add(new WeakReference<IComponent>(component));
+        }
+
         return component;
     }
 }
