@@ -17,29 +17,34 @@ public class MauiEventCollector : IEventCollector
         {
             foreach (var tab in tabs.Children)
             {
-                if (tab is NavigationPage navPage)
-                {
-                    TryAppendEvents(navPage, list);
-                }
-                else
-                {
-                    TryAppendEvents(tab, list);
-                }
+                TryNavPage(tab, list);
             }
         }
-        else if (mainPage is NavigationPage navPage)
+        else if (mainPage is FlyoutPage flyout)
+        {
+            TryNavPage(flyout.Flyout, list);
+            TryNavPage(flyout.Detail, list); // could be a tabs page
+        }
+        else
+        {
+            TryNavPage(mainPage, list);
+        }
+        return list;
+    }
+
+
+    static void TryNavPage<TEvent>(Page page, List<IEventHandler<TEvent>> list) where TEvent : IEvent
+    {
+        if (page is NavigationPage navPage)
         {
             TryAppendEvents(navPage, list);
         }
         else
         {
-            TryAppendEvents(mainPage!, list);
+            TryAppendEvents(page, list);
         }
-
-        return list;
     }
-
-
+    
     static void TryAppendEvents<TEvent>(Page page, List<IEventHandler<TEvent>> list) where TEvent : IEvent
     {
         if (page is IEventHandler<TEvent> handler1)
