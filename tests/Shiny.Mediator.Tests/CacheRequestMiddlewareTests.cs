@@ -17,71 +17,70 @@ public class CacheRequestMiddlewareTests
         this.middleware = new CacheRequestMiddleware<CacheRequest, long>(this.connectivity, this.fileSystem);
     }
     
-    // online with offlineonly
-    // offline with offlineonly
-    // offline with expired 
-    // offline with no cache
-    // test where it should not be caching, double request handler - cache on one method, not on other
-    // custom cache key
+    
     [Fact]
-    public async Task Offline_NoCache()
+    public async Task OfflineOnlyTests()
     {
-        this.connectivity.IsAvailable = false;
-        var result = await this.middleware.Process(
-            new CacheRequest(),
-            () => Task.FromResult(-1L),
-            this.handler,
-            CancellationToken.None
-        );
-        result.Should().Be(0);
-        this.handler.WasHit.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task Online_OnlyForOffline()
-    {
+        this.handler.ReturnValue = 99L;
         this.connectivity.IsAvailable = true;
-        this.handler.ReturnValue = 100L;
         
-        // TODO: make sure it has a cache value already
-        var result = await this.middleware.Process(
-            new CacheAttribute
-            {
-                OnlyForOffline = true,
-                Storage = StoreType.Memory
-            },
+        var func = () => this.middleware.Process(
+            new CacheAttribute { OnlyForOffline  = true, Storage = StoreType.Memory },
             new CacheRequest(),
-            () => Task.FromResult(-1L),
+            () => this.handler.Handle(new CacheRequest(), CancellationToken.None),
             this.handler,
             CancellationToken.None
         );
-        result.Should().Be(0);
-        this.handler.WasHit.Should().BeFalse();
+
+        var result = await func();
+        result.Should().Be(99L, "Gate 1");
+        this.handler.WasHit.Should().Be(true, "Gate 1");
+
+        this.handler.WasHit = false;
+        this.handler.ReturnValue = 88L;
+        this.connectivity.IsAvailable = false;
+        result = await func();
+        
+        this.handler.WasHit.Should().Be(false, "Gate 2");
+        result.Should().Be(99L, "Gate 2");
+
+        this.connectivity.IsAvailable = true;
+        result = await func();
+        this.handler.WasHit.Should().Be(true, "Gate 3");
+        result.Should().Be(88L, "Gate 3");
     }
     
     
     [Fact]
-    public async Task EndToEnd()
+    public async Task ExpiryTests()
     {
-        // TODO: test with ICacheItem
-        var request = new CacheRequest();
-
-        var result1 = await middleware.Process(
-            request,
-            () => Task.FromResult(DateTimeOffset.UtcNow.Ticks),
-            handler,
-            CancellationToken.None
-        );
-        await Task.Delay(2000);
-        var result2 = await middleware.Process(
-            request,
-            () => Task.FromResult(DateTimeOffset.UtcNow.Ticks),
-            handler,
-            CancellationToken.None
-        );
+        this.handler.ReturnValue = 120L;
         
-        // if cached
-        result1.Should().Be(result2);
+        var func = () => this.middleware.Process(
+            new CacheAttribute { MaxAgeSeconds = 3, Storage = StoreType.Memory },
+            new CacheRequest(),
+            () => this.handler.Handle(new CacheRequest(), CancellationToken.None),
+            this.handler,
+            CancellationToken.None
+        );
+
+        // gate 1
+        var result = await func();
+        result.Should().Be(120L, "Gate 1");
+        this.handler.WasHit.Should().Be(true, "Gate 1");
+
+        // gate 2
+        this.handler.WasHit = false;
+        this.handler.ReturnValue = 130L;
+        result = await func();
+        this.handler.WasHit.Should().Be(false, "Gate 2");
+        result.Should().Be(120L, "Gate 2");
+
+        // gate 3
+        await Task.Delay(3000);
+        result = await func();
+        this.handler.WasHit.Should().Be(true, "Gate 3");
+        result.Should().Be(130L, "Gate 3");
     }
 }
 
@@ -90,7 +89,7 @@ public record CacheRequest : IRequest<long>;
 
 public class CacheRequestHandler : IRequestHandler<CacheRequest, long>
 {
-    public bool WasHit { get; private set; }
+    public bool WasHit { get; set; }
     public long ReturnValue { get; set; }
     
     [Cache(MaxAgeSeconds = 5, Storage = StoreType.Memory, OnlyForOffline = false)]
