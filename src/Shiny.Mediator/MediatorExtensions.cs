@@ -27,9 +27,7 @@ public static class MediatorExtensions
     }
     
     
-    public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IRequestHandler<TRequest, TResult> handler) 
-        where TRequest : IRequest<TResult>
-        where TAttribute : Attribute
+    public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TAttribute>(this IRequestHandler handler) where TAttribute : Attribute
         => handler
             .GetType()
             .GetMethod(

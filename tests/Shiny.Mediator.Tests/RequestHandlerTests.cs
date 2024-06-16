@@ -12,7 +12,7 @@ public class RequestHandlerTests
             services.AddShinyMediator(cfg => { });
             var sp = services.BuildServiceProvider();
             var mediator = sp.GetRequiredService<IMediator>();
-            await mediator.Send(new TestRequest());
+            await mediator.Request(new TestRequest());
             Assert.Fail("This should not have passed");
         }
         catch (InvalidOperationException ex)
@@ -63,13 +63,3 @@ public class Test1RequestHandler : IRequestHandler<TestRequest>
             await Task.Delay(request.Delay);
     }
 }
-
-
-public class Test2RequestHandler : IRequestHandler<TestRequest>
-{
-    public async Task Handle(TestRequest request, CancellationToken cancellationToken)
-    {
-    }
-}
-
-

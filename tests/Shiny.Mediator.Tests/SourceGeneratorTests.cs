@@ -14,7 +14,7 @@ public class SourceGeneratorTests
         var sp = services.BuildServiceProvider();
 
         sp.GetService<IEventHandler<SourceGenEvent>>().Should().NotBeNull("Event Handler not found");
-        sp.GetService<IRequestHandler<SourceGenRequest>>().Should().NotBeNull("Request Handler not found");
+        sp.GetService<IRequestHandler<SourceGenRequest, Unit>>().Should().NotBeNull("Request Handler not found");
         sp.GetService<IRequestHandler<SourceGenResponseRequest, SourceGenResponse>>().Should().NotBeNull("Request/Response Handler not found");
     }
 }

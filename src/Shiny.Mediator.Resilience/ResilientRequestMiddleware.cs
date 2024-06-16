@@ -29,11 +29,11 @@ public class ResilientRequestHandlerMiddleware<TRequest, TResult>(ResiliencePipe
     public async Task<TResult> Process(
         TRequest request, 
         RequestHandlerDelegate<TResult> next, 
-        IRequestHandler<TRequest, TResult> requestHandler,
+        IRequestHandler requestHandler,
         CancellationToken cancellationToken
     )
     {
-        var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TResult, ResilientAttribute>();
+        var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, ResilientAttribute>();
         if (attribute == null)
             return await next().ConfigureAwait(false);
 

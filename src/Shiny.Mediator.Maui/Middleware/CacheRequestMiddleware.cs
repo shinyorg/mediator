@@ -16,7 +16,7 @@ public class CacheRequestMiddleware<TRequest, TResult>(
     public async Task<TResult> Process(
         TRequest request, 
         RequestHandlerDelegate<TResult> next, 
-        IRequestHandler<TRequest, TResult> requestHandler, 
+        IRequestHandler requestHandler, 
         CancellationToken cancellationToken
     )
     {
@@ -24,7 +24,7 @@ public class CacheRequestMiddleware<TRequest, TResult>(
         if (typeof(TResult) == typeof(Unit))
             return await next().ConfigureAwait(false);
 
-        var cfg = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TResult, CacheAttribute>();
+        var cfg = requestHandler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
         if (cfg == null)
             return await next().ConfigureAwait(false);
 
@@ -33,7 +33,13 @@ public class CacheRequestMiddleware<TRequest, TResult>(
     }
 
 
-    public virtual async Task<TResult> Process(CacheAttribute cfg, TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler<TRequest, TResult> requestHandler, CancellationToken cancellationToken)
+    public virtual async Task<TResult> Process(
+        CacheAttribute cfg, 
+        TRequest request, 
+        RequestHandlerDelegate<TResult> next, 
+        IRequestHandler requestHandler, 
+        CancellationToken cancellationToken
+    )
     {
         var result = default(TResult);
         var connected = connectivity.NetworkAccess == NetworkAccess.Internet;

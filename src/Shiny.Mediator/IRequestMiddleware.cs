@@ -7,7 +7,7 @@ public interface IRequestMiddleware<TRequest, TResult> where TRequest : IRequest
     Task<TResult> Process(
         TRequest request, 
         RequestHandlerDelegate<TResult> next, 
-        IRequestHandler<TRequest, TResult> requestHandler, 
+        IRequestHandler requestHandler, 
         CancellationToken cancellationToken
     );
 }
