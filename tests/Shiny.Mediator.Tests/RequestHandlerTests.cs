@@ -12,7 +12,7 @@ public class RequestHandlerTests
             services.AddShinyMediator(cfg => { });
             var sp = services.BuildServiceProvider();
             var mediator = sp.GetRequiredService<IMediator>();
-            await mediator.Request(new TestRequest());
+            await mediator.Send(new TestRequest());
             Assert.Fail("This should not have passed");
         }
         catch (InvalidOperationException ex)

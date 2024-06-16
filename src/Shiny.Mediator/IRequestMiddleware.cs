@@ -2,7 +2,7 @@ using Shiny.Mediator;
 
 
 public delegate Task<TResult> RequestHandlerDelegate<TResult>();
-public interface IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
+public interface IRequestMiddleware<TRequest, TResult> where TRequest : IBaseRequest<TResult>
 {
     Task<TResult> Process(
         TRequest request, 

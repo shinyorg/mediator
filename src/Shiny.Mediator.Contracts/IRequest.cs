@@ -1,11 +1,16 @@
 ﻿namespace Shiny.Mediator;
 
-public interface IRequest : IRequest<Unit>
+
+public interface IBaseRequest<out TResult>
+{
+}
+
+public interface IRequest : IBaseRequest<Unit>
 {
 }
 
 
-public interface IRequest<out TResult>
+public interface IRequest<out TResult> : IBaseRequest<TResult>
 {
 }
 
