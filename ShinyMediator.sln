@@ -28,6 +28,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Maui", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Blazor", "src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj", "{11E8B489-B401-45A1-B904-6D0AF368A567}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Mvvm", "src\Shiny.Mediator.Mvvm\Shiny.Mediator.Mvvm.csproj", "{3E966F2E-5A86-467C-845C-E1E6BA70653B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Resilience", "src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj", "{1DDF878B-0EDF-4C32-813C-7995427D3387}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,5 +66,13 @@ Global
 		{11E8B489-B401-45A1-B904-6D0AF368A567}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11E8B489-B401-45A1-B904-6D0AF368A567}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11E8B489-B401-45A1-B904-6D0AF368A567}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E966F2E-5A86-467C-845C-E1E6BA70653B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E966F2E-5A86-467C-845C-E1E6BA70653B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E966F2E-5A86-467C-845C-E1E6BA70653B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E966F2E-5A86-467C-845C-E1E6BA70653B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DDF878B-0EDF-4C32-813C-7995427D3387}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DDF878B-0EDF-4C32-813C-7995427D3387}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DDF878B-0EDF-4C32-813C-7995427D3387}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DDF878B-0EDF-4C32-813C-7995427D3387}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

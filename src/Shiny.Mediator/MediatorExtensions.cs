@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Impl;
@@ -25,6 +26,38 @@ public static class MediatorExtensions
         return services;
     }
     
+    
+    public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IRequestHandler<TRequest, TResult> handler) 
+        where TRequest : IRequest<TResult>
+        where TAttribute : Attribute
+        => handler
+            .GetType()
+            .GetMethod(
+                "Handle", 
+                BindingFlags.Public | BindingFlags.Instance, 
+                null,
+                CallingConventions.Any,
+                [ typeof(TRequest), typeof(CancellationToken) ],
+                null
+            )!
+            .GetCustomAttribute<TAttribute>();
+    
+    
+    public static TAttribute? GetHandlerHandleMethodAttribute<TEvent, TAttribute>(this IEventHandler<TEvent> handler) 
+        where TEvent : IEvent
+        where TAttribute : Attribute
+        => handler
+            .GetType()
+            .GetMethod(
+                "Handle", 
+                BindingFlags.Public | BindingFlags.Instance, 
+                null,
+                CallingConventions.Any,
+                [ typeof(TEvent), typeof(CancellationToken) ],
+                null
+            )!
+            .GetCustomAttribute<TAttribute>();
+
     
     public static IServiceCollection AddSingletonAsImplementedInterfaces<TImplementation>(this IServiceCollection services) where TImplementation : class
     {

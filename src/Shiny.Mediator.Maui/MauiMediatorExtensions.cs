@@ -1,4 +1,3 @@
-using System.Reflection;
 using Shiny.Mediator.Maui;
 using Shiny.Mediator.Middleware;
 
@@ -17,38 +16,6 @@ public class MauiServiceProvider : IMauiInitializeService
 
 public static class MauiMediatorExtensions
 {
-    internal static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IRequestHandler<TRequest, TResult> handler) 
-        where TRequest : IRequest<TResult>
-        where TAttribute : Attribute
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TRequest), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
-    
-    
-    internal static TAttribute? GetHandlerHandleMethodAttribute<TEvent, TAttribute>(this IEventHandler<TEvent> handler) 
-        where TEvent : IEvent
-        where TAttribute : Attribute
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TEvent), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
-    
-    
     public static ShinyConfigurator UseMaui(this ShinyConfigurator cfg, bool includeStandardMiddleware = true)
     {
         cfg.AddEventCollector<MauiEventCollector>();
@@ -63,6 +30,7 @@ public static class MauiMediatorExtensions
         return cfg;
     }
 
+    
     public static ShinyConfigurator AddTimedMiddleware(this ShinyConfigurator cfg)
         => cfg.AddOpenRequestMiddleware(typeof(TimedLoggingRequestMiddleware<,>));
 
