@@ -1,7 +1,7 @@
 ﻿@page "/"
+@using Sample.Contracts
+@implements IEventHandler<MyMessageEvent>
 @inject AppSqliteConnection conn
-@implements IEventHandler<MyMessageEvent> 
-
 
 <h1>Hello, world!</h1>
 

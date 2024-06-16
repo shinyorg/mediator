@@ -1,4 +1,4 @@
-namespace Sample;
+namespace Sample.Contracts;
 
 public record MyMessageRequest(string Arg, bool FireAndForgetEvents) : IRequest<MyMessageResponse>;
 

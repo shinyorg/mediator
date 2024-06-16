@@ -1,4 +1,6 @@
-namespace Sample;
+using Sample.Contracts;
+
+namespace Sample.Handlers;
 
 
 [RegisterHandler]

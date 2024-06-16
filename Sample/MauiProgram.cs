@@ -1,4 +1,6 @@
-﻿namespace Sample;
+﻿using Sample.Handlers;
+
+namespace Sample;
 
 
 public static class MauiProgram
@@ -28,12 +30,7 @@ public static class MauiProgram
                     )
                 ),
                 new(ErrorAlertType.FullError)
-            )
-            .ConfigureFonts(fonts =>
-            {
-                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-            });
+            );
 
 #if DEBUG
         builder.Logging.SetMinimumLevel(LogLevel.Trace);
@@ -43,8 +40,17 @@ public static class MauiProgram
         builder.Services.AddShinyMediator(x => x
             .UseMaui()
             .UseBlazor()
+            .AddUserNotificationExceptionMiddleware(new UserExceptionRequestMiddlewareConfig
+            {
+                ErrorConfirm = "Error",
+                ErrorMessage = "You did something wrong",
+#if DEBUG
+                ShowFullException = true
+#endif
+            })
         );
         builder.Services.AddDiscoveredMediatorHandlersFromSample();
+        builder.Services.AddSingletonAsImplementedInterfaces<ErrorRequestHandler>();
 
         builder.Services.AddSingleton<AppSqliteConnection>();
         builder.Services.AddMauiBlazorWebView();

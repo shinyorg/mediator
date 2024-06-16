@@ -22,6 +22,11 @@
                 <TextCell Text="Cancel Request" 
                           Command="{Binding CancelCommand}"/>
             </TableSection>
+            
+            <TableSection Title="Precanned">
+                <TextCell Text="Error Trap" 
+                          Command="{Binding ErrorTrap}" />
+            </TableSection>
         </TableRoot>
     </TableView>
 </ContentPage>

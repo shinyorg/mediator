@@ -1,3 +1,5 @@
+using Sample.Contracts;
+
 namespace Sample;
 
 
@@ -52,6 +54,8 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
                 busy => busy.GetValue()
             )
         );
+
+        this.ErrorTrap = ReactiveCommand.CreateFromTask(() => mediator.Send(new ErrorRequest()));
         
         this.sub = mediator.Subscribe((MyMessageEvent @event, CancellationToken _) =>
             data.Log("TriggerViewModel-Subscribe", @event)
@@ -67,6 +71,7 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
         return Task.CompletedTask;
     }
 
+    public ICommand ErrorTrap { get; }
     public ICommand TriggerCommand { get; }
     public ICommand CancelCommand { get; }
     [Reactive] public string Arg { get; set; }

@@ -1,6 +1,7 @@
 using System.Diagnostics;
+using Sample.Contracts;
 
-namespace Sample;
+namespace Sample.Handlers;
 
 
 [RegisterMiddleware]
