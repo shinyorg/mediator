@@ -16,8 +16,23 @@ public class DefaultRequestSender(IServiceProvider services) : IRequestSender
         var task = (Task)wrapperMethod.Invoke(wrapper, [scope.ServiceProvider, request, cancellationToken])!;
         await task.ConfigureAwait(false);
     }
-    
-    
+
+    public IAsyncEnumerable<TResult> Request<TResult>(IStreamRequest<TResult> request, CancellationToken cancellationToken = default)
+    {
+        using var scope = services.CreateScope();
+        
+        // TODO: middleware
+        var wrapperType = typeof(IStreamRequestHandler<,>).MakeGenericType([request.GetType(), typeof(TResult)]);
+        var wrapper = scope.ServiceProvider.GetService(wrapperType);
+        if (wrapper == null)
+            throw new InvalidOperationException($"No Stream Request Handler for '{request.GetType().FullName}'");
+
+        var wrapperMethod = wrapperType.GetMethod("Handle", BindingFlags.Public | BindingFlags.Instance)!;
+        var enumerable = (IAsyncEnumerable<TResult>)wrapperMethod.Invoke(wrapper, [request, cancellationToken])!;
+        return enumerable;
+    }
+
+
     // TODO: I want to prevent IRequest (void) from being callable here
     public async Task<TResult> Request<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default)
     {

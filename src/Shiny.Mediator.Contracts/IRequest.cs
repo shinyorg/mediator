@@ -3,6 +3,4 @@
 
 public interface IRequest;
 public interface IRequest<out TResult>;
-// public interface IStreamRequest<out TResult> : IRequest<IAsyncEnumerable<TResult>> 
-// {
-// }
+public interface IStreamRequest<out TResult>; 

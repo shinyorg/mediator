@@ -14,6 +14,9 @@ public class Mediator(
     public Task Send(IRequest request, CancellationToken cancellationToken = default)
         => requestSender.Send(request, cancellationToken);
 
+    public IAsyncEnumerable<TResult> Request<TResult>(IStreamRequest<TResult> request, CancellationToken cancellationToken = default)
+        => requestSender.Request(request, cancellationToken);
+
     public Task Publish<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : IEvent
         => eventPublisher.Publish(@event, cancellationToken);
 

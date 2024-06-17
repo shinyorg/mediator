@@ -56,7 +56,15 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
         );
 
         this.ErrorTrap = ReactiveCommand.CreateFromTask(() => mediator.Send(new ErrorRequest()));
-        
+
+        this.Stream = ReactiveCommand.CreateFromTask(async () =>
+        {
+            var stream = mediator.Request(new TickerRequest(this.StreamRepeat, this.StreamMultiplier, this.StreamGapSeconds));
+            await foreach (var item in stream)
+            {
+                this.StreamLastResponse = item;
+            } 
+        });
         this.sub = mediator.Subscribe((MyMessageEvent @event, CancellationToken _) =>
             data.Log("TriggerViewModel-Subscribe", @event)
         );
@@ -77,6 +85,12 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
     [Reactive] public string Arg { get; set; }
     [Reactive] public bool FireAndForgetEvents { get; set; }
 
+    public ICommand Stream { get; }
+    [Reactive] public int StreamGapSeconds { get; set; } = 1;
+    [Reactive] public int StreamRepeat { get; set; } = 5;
+    [Reactive] public int StreamMultiplier { get; set; } = 2;
+    [Reactive] public string? StreamLastResponse { get; private set; } 
+    
     public override void Destroy()
     {
         base.Destroy();

@@ -27,4 +27,17 @@ public interface IRequestSender
         IRequest request,
         CancellationToken cancellationToken = default
     );
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    IAsyncEnumerable<TResult> Request<TResult>(
+        IStreamRequest<TResult> request,
+        CancellationToken cancellationToken = default
+    );
 }

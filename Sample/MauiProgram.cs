@@ -49,7 +49,7 @@ public static class MauiProgram
             })
         );
         builder.Services.AddDiscoveredMediatorHandlersFromSample();
-        builder.Services.AddSingletonAsImplementedInterfaces<ErrorRequestHandler>();
+        // builder.Services.AddSingletonAsImplementedInterfaces<ErrorRequestHandler>();
 
         builder.Services.AddSingleton<AppSqliteConnection>();
         builder.Services.AddMauiBlazorWebView();
