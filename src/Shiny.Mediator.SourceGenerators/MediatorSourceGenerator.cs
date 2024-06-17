@@ -12,7 +12,6 @@ namespace Shiny.Mediator.SourceGenerators;
 public class MediatorSourceGenerator : ISourceGenerator
 {
     readonly SyntaxReceiver syntaxReceiver = new RegisterHandlerAttributeSyntaxReceiver();
-    // SyntaxReceiver syntaxReceiver = new ClassesWithInterfacesReceiver("IEnumerable");
     
     public void Initialize(GeneratorInitializationContext context)
     {
@@ -54,9 +53,7 @@ public class MediatorSourceGenerator : ISourceGenerator
         // TODO: scopes
         // TODO: open middleware
         // TODO: this will be registered with multiple AddDiscoveredMediatorHandlers in the main app
-
-        var nameSpace = context.GetMSBuildProperty("RootNamespace") ?? context.Compilation.AssemblyName;
-        var assName = context.Compilation.AssemblyName?.Replace(".", "_");
+        
         var classes = this.syntaxReceiver
             .Classes
             .Select(x => x.ToDisplayString())
@@ -66,6 +63,8 @@ public class MediatorSourceGenerator : ISourceGenerator
         if (!classes.Any())
             return;
         
+        var nameSpace = context.GetMSBuildProperty("RootNamespace") ?? context.Compilation.AssemblyName;
+        var assName = context.Compilation.AssemblyName?.Replace(".", "_");
         var sb = new StringBuilder();
         sb
             .AppendLine($"namespace {nameSpace};")
