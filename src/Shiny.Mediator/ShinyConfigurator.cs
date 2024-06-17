@@ -15,7 +15,7 @@ public sealed class ShinyConfigurator(IServiceCollection services)
     }
     
     
-    public ShinyConfigurator SetEventPublish<TEventPublisher>() where TEventPublisher : class, IEventPublisher
+    public ShinyConfigurator SetEventPublisher<TEventPublisher>() where TEventPublisher : class, IEventPublisher
     {
         this.Services.AddSingleton<IEventPublisher, TEventPublisher>();
         return this;

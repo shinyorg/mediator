@@ -22,6 +22,31 @@
                 <TextCell Text="Cancel Request" 
                           Command="{Binding CancelCommand}"/>
             </TableSection>
+            
+            <TableSection Title="Precanned">
+                <TextCell Text="Error Trap" 
+                          Command="{Binding ErrorTrap}" />
+            </TableSection>
+            
+            <TableSection Title="Streaming">
+                <EntryCell Label="Repeat" 
+                           Text="{Binding StreamRepeat}" 
+                           Keyboard="Numeric" />
+                
+                <EntryCell Label="Multiplier" 
+                           Text="{Binding StreamMultiplier}" 
+                           Keyboard="Numeric" />
+                
+                <EntryCell Label="Gap Seconds" 
+                           Text="{Binding StreamGapSeconds}" 
+                           Keyboard="Numeric" />
+                
+                <TextCell Text="Run Stream" 
+                          Command="{Binding Stream}"/>
+                
+                <TextCell Text="Last Response" 
+                          Detail="{Binding StreamLastResponse}" />
+            </TableSection>
         </TableRoot>
     </TableView>
 </ContentPage>

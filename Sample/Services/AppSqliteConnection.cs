@@ -1,3 +1,4 @@
+using Sample.Contracts;
 using SQLite;
 
 namespace Sample.Services;

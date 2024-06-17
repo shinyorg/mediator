@@ -1,6 +1,3 @@
-using FluentAssertions;
-using Shiny.Mediator;
-
 namespace Shiny.Mediator.Tests;
 
 public class SourceGeneratorTests
@@ -23,6 +20,7 @@ public record SourceGenRequest : IRequest;
 public record SourceGenResponseRequest : IRequest<SourceGenResponse>;
 public record SourceGenResponse;
 public record SourceGenEvent : IEvent;
+
 
 [RegisterHandler]
 public class SourceGenRequestHandler : IRequestHandler<SourceGenRequest>

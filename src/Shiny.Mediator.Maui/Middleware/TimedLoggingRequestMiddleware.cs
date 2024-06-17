@@ -5,11 +5,11 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Middleware;
 
 
-public class TimedLoggingRequestMiddleware<TRequest, TResult>(ILogger<TRequest> logger) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
+public class TimedLoggingRequestMiddleware<TRequest, TResult>(ILogger<TRequest> logger) : IRequestMiddleware<TRequest, TResult>
 {
-    public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler<TRequest, TResult> requestHandler, CancellationToken cancellationToken)
+    public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler requestHandler, CancellationToken cancellationToken)
     {
-        var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TResult, TimedLoggingAttribute>();
+        var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TimedLoggingAttribute>();
         if (attribute == null)
             return await next().ConfigureAwait(false);
 

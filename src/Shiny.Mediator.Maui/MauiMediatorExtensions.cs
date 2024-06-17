@@ -1,5 +1,6 @@
-using System.Reflection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Maui;
+using Shiny.Mediator.Maui.Services;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;
@@ -17,38 +18,6 @@ public class MauiServiceProvider : IMauiInitializeService
 
 public static class MauiMediatorExtensions
 {
-    internal static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IRequestHandler<TRequest, TResult> handler) 
-        where TRequest : IRequest<TResult>
-        where TAttribute : Attribute
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TRequest), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
-    
-    
-    internal static TAttribute? GetHandlerHandleMethodAttribute<TEvent, TAttribute>(this IEventHandler<TEvent> handler) 
-        where TEvent : IEvent
-        where TAttribute : Attribute
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TEvent), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
-    
-    
     public static ShinyConfigurator UseMaui(this ShinyConfigurator cfg, bool includeStandardMiddleware = true)
     {
         cfg.AddEventCollector<MauiEventCollector>();
@@ -63,6 +32,7 @@ public static class MauiMediatorExtensions
         return cfg;
     }
 
+    
     public static ShinyConfigurator AddTimedMiddleware(this ShinyConfigurator cfg)
         => cfg.AddOpenRequestMiddleware(typeof(TimedLoggingRequestMiddleware<,>));
 
@@ -83,6 +53,8 @@ public static class MauiMediatorExtensions
     
     public static ShinyConfigurator AddCacheMiddleware(this ShinyConfigurator cfg)
     {
+        cfg.Services.TryAddSingleton<CacheManager>();
+        cfg.Services.AddSingletonAsImplementedInterfaces<CacheHandlers>();
         cfg.AddOpenRequestMiddleware(typeof(CacheRequestMiddleware<,>));
         return cfg;
     }

@@ -1,3 +1,4 @@
+using Sample.Contracts;
 using Shiny.Mediator.Middleware;
 
 namespace Sample;

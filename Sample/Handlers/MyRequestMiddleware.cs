@@ -1,12 +1,13 @@
 using System.Diagnostics;
+using Sample.Contracts;
 
-namespace Sample;
+namespace Sample.Handlers;
 
 
 [RegisterMiddleware]
 public class MyRequestMiddleware(AppSqliteConnection conn) : IRequestMiddleware<MyMessageRequest, MyMessageResponse>
 {
-    public async Task<MyMessageResponse> Process(MyMessageRequest request, RequestHandlerDelegate<MyMessageResponse> next, IRequestHandler<MyMessageRequest, MyMessageResponse> requestHandler, CancellationToken cancellationToken)
+    public async Task<MyMessageResponse> Process(MyMessageRequest request, RequestHandlerDelegate<MyMessageResponse> next, IRequestHandler requestHandler, CancellationToken cancellationToken)
     {
         var sw = Stopwatch.StartNew();
         var result = await next().ConfigureAwait(false);
