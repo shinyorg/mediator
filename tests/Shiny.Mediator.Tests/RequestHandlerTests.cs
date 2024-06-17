@@ -3,6 +3,16 @@
 
 public class RequestHandlerTests
 {
+    [Fact]
+    public async Task EndToEnd()
+    {
+        var services = new ServiceCollection();
+        services.AddShinyMediator();
+        services.AddSingletonAsImplementedInterfaces<TestResultRequestHandler>();
+        var sp = services.BuildServiceProvider();
+        var result = await sp.GetRequiredService<IMediator>().Request(new TestResultRequest("HELLO"));
+        result.Should().Be("RESPONSE-HELLO");
+    }
 }
 
 
