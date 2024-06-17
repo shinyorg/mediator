@@ -1,4 +1,6 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Maui;
+using Shiny.Mediator.Maui.Services;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;
@@ -51,6 +53,8 @@ public static class MauiMediatorExtensions
     
     public static ShinyConfigurator AddCacheMiddleware(this ShinyConfigurator cfg)
     {
+        cfg.Services.TryAddSingleton<CacheManager>();
+        cfg.Services.AddSingletonAsImplementedInterfaces<CacheHandlers>();
         cfg.AddOpenRequestMiddleware(typeof(CacheRequestMiddleware<,>));
         return cfg;
     }
