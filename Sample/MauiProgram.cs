@@ -42,11 +42,10 @@ public static class MauiProgram
             .UseBlazor()
             .AddUserNotificationExceptionMiddleware(new UserExceptionRequestMiddlewareConfig
             {
-                ErrorConfirm = "Error",
+                ErrorConfirm = "OK",
+                ErrorTitle = "OOOPS",
                 ErrorMessage = "You did something wrong",
-#if DEBUG
-                ShowFullException = true
-#endif
+                ShowFullException = false
             })
         );
         builder.Services.AddDiscoveredMediatorHandlersFromSample();

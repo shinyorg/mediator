@@ -6,7 +6,7 @@ namespace Shiny.Mediator.Middleware;
 public class CacheRequestMiddleware<TRequest, TResult>(
     IConnectivity connectivity, 
     IFileSystem fileSystem
-) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult> 
+) : IRequestMiddleware<TRequest, TResult> 
     // IRequestHandler<FlushAllCacheRequest>, 
     // IRequestHandler<FlushCacheItemRequest>
 { 

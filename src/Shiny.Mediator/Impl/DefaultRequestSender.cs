@@ -40,25 +40,14 @@ class RequestVoidWrapper<TRequest> where TRequest : IRequest
         if (requestHandler == null)
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
         
-        var handler = new RequestHandlerDelegate<Unit>(async () =>
+        var handlerExec = new RequestHandlerDelegate<Unit>(async () =>
         {
             await requestHandler.Handle(request, cancellationToken).ConfigureAwait(false);
             return Unit.Value;
         });
         
-        await services
-            .GetServices<IRequestMiddleware<TRequest, Unit>>()
-            .Reverse()
-            .Aggregate(
-                handler, 
-                (next, middleware) => () => middleware.Process(
-                    request, 
-                    next, 
-                    requestHandler,
-                    cancellationToken
-                )
-            )
-            .Invoke()
+        await RequestExecutor
+            .Execute(services, request, requestHandler, handlerExec, cancellationToken)
             .ConfigureAwait(false);
     }
 }
@@ -71,14 +60,34 @@ class RequestWrapper<TRequest, TResult> where TRequest : IRequest<TResult>
         if (requestHandler == null)
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
         
-        var handler = new RequestHandlerDelegate<TResult>(()
+        var handlerExec = new RequestHandlerDelegate<TResult>(()
             => requestHandler.Handle(request, cancellationToken));
+
+        var result = await RequestExecutor
+            .Execute(services, request, requestHandler, handlerExec, cancellationToken)
+            .ConfigureAwait(false);
         
-        var result = await services
-            .GetServices<IRequestMiddleware<TRequest, TResult>>()
+        return result;
+    }
+}
+
+
+static class RequestExecutor
+{
+    public static async Task<TResult> Execute<TRequest, TResult>(
+        IServiceProvider services, 
+        TRequest request, 
+        IRequestHandler requestHandler,
+        RequestHandlerDelegate<TResult> handlerExec,
+        CancellationToken cancellationToken
+    )
+    {
+        var middleware = services.GetServices<IRequestMiddleware<TRequest, TResult>>();
+        
+        var result = await middleware
             .Reverse()
             .Aggregate(
-                handler, 
+                handlerExec, 
                 (next, middleware) => () => middleware.Process(
                     request, 
                     next, 

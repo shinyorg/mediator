@@ -2,6 +2,7 @@ using Sample.Contracts;
 
 namespace Sample.Handlers;
 
+
 [RegisterHandler]
 public class ErrorRequestHandler : IRequestHandler<ErrorRequest>
 {
