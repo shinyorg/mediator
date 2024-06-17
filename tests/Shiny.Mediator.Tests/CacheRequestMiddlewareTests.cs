@@ -1,3 +1,4 @@
+using Shiny.Mediator.Maui.Services;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator.Tests;
@@ -6,6 +7,7 @@ public class CacheRequestMiddlewareTests
 {
     readonly MockConnectivity connectivity;
     readonly MockFileSystem fileSystem;
+    readonly CacheManager cacheManager;
     readonly CacheRequestMiddleware<CacheRequest, long> middleware;
     readonly CacheRequestHandler handler;
     
@@ -14,7 +16,9 @@ public class CacheRequestMiddlewareTests
         this.handler = new();
         this.connectivity = new();
         this.fileSystem = new();
-        this.middleware = new CacheRequestMiddleware<CacheRequest, long>(this.connectivity, this.fileSystem);
+
+        this.cacheManager = new(this.connectivity, this.fileSystem);
+        this.middleware = new CacheRequestMiddleware<CacheRequest, long>(this.cacheManager);
     }
     
     
@@ -27,9 +31,7 @@ public class CacheRequestMiddlewareTests
         var func = () => this.middleware.Process(
             new CacheAttribute { OnlyForOffline  = true, Storage = StoreType.Memory },
             new CacheRequest(),
-            () => this.handler.Handle(new CacheRequest(), CancellationToken.None),
-            this.handler,
-            CancellationToken.None
+            () => this.handler.Handle(new CacheRequest(), CancellationToken.None)
         );
 
         var result = await func();
@@ -59,9 +61,7 @@ public class CacheRequestMiddlewareTests
         var func = () => this.middleware.Process(
             new CacheAttribute { MaxAgeSeconds = 3, Storage = StoreType.Memory },
             new CacheRequest(),
-            () => this.handler.Handle(new CacheRequest(), CancellationToken.None),
-            this.handler,
-            CancellationToken.None
+            () => this.handler.Handle(new CacheRequest(), CancellationToken.None)
         );
 
         // gate 1
