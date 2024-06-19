@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Impl;
 using Shiny.Mediator.Infrastructure;
+using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;
 
@@ -82,5 +83,12 @@ public static class MediatorExtensions
             services.AddScoped(interfaceType, sp => sp.GetRequiredService<TImplementation>());
 
         return services;
+    }
+
+
+    public static ShinyConfigurator AddReplayStreamMiddleware(this ShinyConfigurator configurator)
+    {
+        configurator.AddOpenStreamMiddleware(typeof(ReplayStreamMiddleware<,>));
+        return configurator;
     }
 }

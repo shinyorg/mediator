@@ -35,9 +35,9 @@ public class MainThreadAttribute : Attribute {}
 
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-public class TimedLoggingAttribute : Attribute
+public class TimedLoggingAttribute(double errorThresholdMillis) : Attribute
 {
-    public double ErrorThresholdMillis { get; set; } = 0;
+    public double ErrorThresholdMillis => errorThresholdMillis;
 }
 
 

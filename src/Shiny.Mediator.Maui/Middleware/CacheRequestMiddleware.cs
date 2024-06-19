@@ -30,9 +30,9 @@ public class CacheRequestMiddleware<TRequest, TResult>(CacheManager cacheManager
         TRequest request, 
         RequestHandlerDelegate<TResult> next
     )
-    => cacheManager.CacheOrGet<TResult>(
+    => cacheManager.CacheOrGet(
         cfg, 
-        request, 
+        request!, 
         async () => await next().ConfigureAwait(false)
     );
 }

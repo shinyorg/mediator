@@ -25,6 +25,8 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
                     this.FireAndForgetEvents
                 );
                 var result = await mediator.Request(request, this.cancelSource.Token);
+
+                
                 await data.Log(
                     "TriggerViewModel-Response",
                     new MyMessageEvent(
