@@ -10,7 +10,7 @@ public class TickerStreamRequestHandler : IStreamRequestHandler<TickerRequest, s
     {
         for (var i = 0; i < request.Repeat; i++)
         {
-            await Task.Delay(TimeSpan.FromSeconds(request.GapSeconds));
+            await Task.Delay(TimeSpan.FromSeconds(request.GapSeconds), cancellationToken);
             var value = i * request.Multiplier;
             yield return ($"{i} : {value}");
         }

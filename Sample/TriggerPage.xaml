@@ -23,9 +23,17 @@
                           Command="{Binding CancelCommand}"/>
             </TableSection>
             
-            <TableSection Title="Precanned">
+            <TableSection Title="Other Request Samples">
                 <TextCell Text="Error Trap" 
                           Command="{Binding ErrorTrap}" />
+            </TableSection>
+            
+            <TableSection Title="Cache">
+                <!--TODO - clear cache-->
+            </TableSection>
+            
+            <TableSection Title="Resiliency">
+                <!--TODO-->
             </TableSection>
             
             <TableSection Title="Streaming">
@@ -46,6 +54,14 @@
                 
                 <TextCell Text="Last Response" 
                           Detail="{Binding StreamLastResponse}" />
+            </TableSection>
+            
+            <TableSection Title="Timer Refresh">
+                <!--start/cancel-->
+            </TableSection>
+            
+            <TableSection Title="Replay">
+                <!--run-->
             </TableSection>
         </TableRoot>
     </TableView>
