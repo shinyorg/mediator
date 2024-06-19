@@ -60,6 +60,13 @@ public static class MauiMediatorExtensions
     }
     
     
+    public static ShinyConfigurator AddReplayStreamMiddleware(this ShinyConfigurator configurator)
+    {
+        configurator.AddOpenStreamMiddleware(typeof(ReplayStreamMiddleware<,>));
+        return configurator;
+    }
+    
+    
     public static ShinyConfigurator AddUserNotificationExceptionMiddleware(this ShinyConfigurator cfg, UserExceptionRequestMiddlewareConfig config)
     {
         cfg.Services.AddSingleton(config);

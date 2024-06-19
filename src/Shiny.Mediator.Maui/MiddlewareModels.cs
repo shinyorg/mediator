@@ -41,6 +41,18 @@ public class TimedLoggingAttribute(double errorThresholdMillis) : Attribute
 }
 
 
+[AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+public class ReplayAttribute : Attribute {}
+
+public interface IReplayKey<TResult> : IStreamRequest<TResult>
+{
+    string Key { get; }
+}
+
+
+public record FlushAllCacheRequest : IRequest;
+public record FlushCacheItemRequest(object Request) : IRequest;
+
 public class UserExceptionRequestMiddlewareConfig
 {
     public bool ShowFullException { get; set; }

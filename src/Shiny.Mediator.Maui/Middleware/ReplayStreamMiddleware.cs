@@ -2,12 +2,13 @@ using System.Text.Json;
 
 namespace Shiny.Mediator.Middleware;
 
+
 /// <summary>
 /// Replays the last result before requesting a new one
 /// </summary>
 /// <typeparam name="TRequest"></typeparam>
 /// <typeparam name="TResult"></typeparam>
-public class ReplayStreamMiddleware<TRequest, TResult> : IStreamRequestMiddleware<TRequest, TResult> 
+public class ReplayStreamMiddleware<TRequest, TResult>(IFileSystem fileSystem) : IStreamRequestMiddleware<TRequest, TResult> 
     where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerator<TResult> Process(
@@ -46,10 +47,17 @@ public class ReplayStreamMiddleware<TRequest, TResult> : IStreamRequestMiddlewar
 
     protected virtual string GetCacheFilePath(TRequest request)
     {
+        var key = this.GetCacheKey(request);
+        return Path.Combine(fileSystem.CacheDirectory, $"{key}.replay");
+    }
+
+
+    protected virtual string GetCacheKey(TRequest request)
+    {
         if (request is IReplayKey<TResult> key)
             return key.Key;
 
         var t = request.GetType();
-        return $"{t.Namespace}_{t.Name}.replay";
+        return $"{t.Namespace}_{t.Name}";
     }
 }
