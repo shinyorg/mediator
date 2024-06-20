@@ -29,14 +29,20 @@
             </TableSection>
             
             <TableSection Title="Cache">
-                <!--TODO - clear cache-->
+                <TextCell Text="Clear" Command="{Binding CacheClear}" />
+                <TextCell Text="Request" Command="{Binding CacheRequest}" />
+                <TextCell Text="Value" Detail="{Binding CacheValue}" />
+                <TextCell Text="Cache has a 20s expiry time" />
             </TableSection>
             
+            <!--
             <TableSection Title="Resiliency">
-                <!--TODO-->
+                <TextCell Text="Request" Command="{Binding ResilientCommand}" />
+                <TextCell Text="Value" Detail="{Binding ResilientValue}" />
             </TableSection>
+            -->
             
-            <TableSection Title="Streaming">
+            <TableSection Title="STREAMING - Standard">
                 <EntryCell Label="Repeat" 
                            Text="{Binding StreamRepeat}" 
                            Keyboard="Numeric" />
@@ -49,20 +55,26 @@
                            Text="{Binding StreamGapSeconds}" 
                            Keyboard="Numeric" />
                 
-                <TextCell Text="Run Stream" 
+                <TextCell Text="Run" 
                           Command="{Binding Stream}"/>
+                
+                <TextCell Text="Stop" 
+                          Command="{Binding CancelStream}"/>
                 
                 <TextCell Text="Last Response" 
                           Detail="{Binding StreamLastResponse}" />
             </TableSection>
             
-            <TableSection Title="Timer Refresh">
-                <!--start/cancel-->
+            <TableSection Title="STREAMING - Timer Refresh">
+                <TextCell Text="Start" Command="{Binding RefreshTimerStart}" />
+                <TextCell Text="Stop" Command="{Binding CancelStream}" />
+                <TextCell Text="Last Value" Detail="{Binding LastRefreshTimerValue}" />
             </TableSection>
             
-            <TableSection Title="Replay">
-                <!--run-->
+            <!--
+            <TableSection Title="STREAMING - Replay">
             </TableSection>
+            -->
         </TableRoot>
     </TableView>
 </ContentPage>

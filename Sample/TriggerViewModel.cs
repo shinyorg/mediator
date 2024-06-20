@@ -15,7 +15,6 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
     ) 
     : base(services)
     {
-        // TODO: request without response
         this.TriggerCommand = ReactiveCommand.CreateFromTask(
             async () =>
             {
@@ -25,7 +24,6 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
                     this.FireAndForgetEvents
                 );
                 var result = await mediator.Request(request, this.cancelSource.Token);
-
                 
                 await data.Log(
                     "TriggerViewModel-Response",
@@ -46,7 +44,7 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
                 await data.Log(
                     "TriggerViewModel-Cancel",
                     new MyMessageEvent(
-                        this.Arg, 
+                        this.Arg!, 
                         this.FireAndForgetEvents
                     )
                 );
@@ -61,7 +59,10 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
 
         this.Stream = ReactiveCommand.CreateFromTask(async () =>
         {
-            var stream = mediator.Request(new TickerRequest(this.StreamRepeat, this.StreamMultiplier, this.StreamGapSeconds));
+            var stream = mediator.Request(
+                new TickerRequest(this.StreamRepeat, this.StreamMultiplier, this.StreamGapSeconds), 
+                this.DeactivateToken
+            );
             await foreach (var item in stream)
             {
                 this.StreamLastResponse = item;
@@ -70,6 +71,38 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
         this.sub = mediator.Subscribe((MyMessageEvent @event, CancellationToken _) =>
             data.Log("TriggerViewModel-Subscribe", @event)
         );
+
+        this.CacheClear = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await mediator.Send(new FlushAllCacheRequest());
+            await this.Dialogs.Alert("Cache Cleared");
+        });
+
+        this.CancelStream = ReactiveCommand.CreateFromTask(async () =>
+        {
+            this.Deactivate();
+            await this.Dialogs.Alert("All streams cancelled");
+        });
+        this.CacheRequest = ReactiveCommand.CreateFromTask(async () =>
+        {
+            this.CacheValue = await mediator.Request(new CachedRequest());
+        });
+
+        this.ResilientCommand = ReactiveCommand.CreateFromTask(async () =>
+        {
+            this.ResilientValue = await mediator.Request(new ResilientRequest());
+        });
+
+        this.RefreshTimerStart = ReactiveCommand.CreateFromTask(async () =>
+        {
+            var en = mediator.Request(new AutoRefreshRequest(), this.DeactivateToken).GetAsyncEnumerator(this.DeactivateToken);
+            while (await en.MoveNextAsync())
+            {
+                await MainThread.InvokeOnMainThreadAsync(
+                    () => this.LastRefreshTimerValue = en.Current
+                );
+            }
+        });
     }
 
     
@@ -81,9 +114,21 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
         return Task.CompletedTask;
     }
 
+    
+    public ICommand CancelStream { get; }
     public ICommand ErrorTrap { get; }
     public ICommand TriggerCommand { get; }
     public ICommand CancelCommand { get; }
+    public ICommand CacheRequest { get; }
+    public ICommand CacheClear { get; }
+    [Reactive] public string CacheValue { get; private set; }
+
+    [Reactive] public string LastRefreshTimerValue { get; private set; }
+    public ICommand RefreshTimerStart { get; }
+    
+    public ICommand ResilientCommand { get; }
+    [Reactive] public string ResilientValue { get; private set; }
+    
     [Reactive] public string Arg { get; set; }
     [Reactive] public bool FireAndForgetEvents { get; set; }
 

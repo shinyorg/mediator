@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace Shiny.Mediator.Middleware;
@@ -11,9 +12,9 @@ namespace Shiny.Mediator.Middleware;
 public class ReplayStreamMiddleware<TRequest, TResult>(IFileSystem fileSystem) : IStreamRequestMiddleware<TRequest, TResult> 
     where TRequest : IStreamRequest<TResult>
 {
-    public IAsyncEnumerator<TResult> Process(
+    public IAsyncEnumerable<TResult> Process(
         TRequest request, 
-        StreamRequestDelegate<TResult> next, 
+        StreamRequestHandlerDelegate<TResult> next, 
         IStreamRequestHandler<TRequest, TResult> requestHandler,
         CancellationToken cancellationToken
     )
@@ -26,21 +27,21 @@ public class ReplayStreamMiddleware<TRequest, TResult>(IFileSystem fileSystem) :
     }
 
 
-    protected virtual async IAsyncEnumerator<TResult> Iterate(TRequest request, StreamRequestDelegate<TResult> next, CancellationToken ct)
+    protected virtual async IAsyncEnumerable<TResult> Iterate(TRequest request, StreamRequestHandlerDelegate<TResult> next, [EnumeratorCancellation] CancellationToken ct)
     {
         var path = this.GetCacheFilePath(request);
         if (File.Exists(path))
         {
-            var json = File.ReadAllText(path);
+            var json = await File.ReadAllTextAsync(path, ct);
             var obj = JsonSerializer.Deserialize<TResult>(json);
-            yield return obj;
+            yield return obj!;
         }
 
-        var nxt = next();
+        var nxt = next().GetAsyncEnumerator(ct);
         while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
         {
             var json = JsonSerializer.Serialize(nxt.Current);
-            File.WriteAllText(path, json);
+            await File.WriteAllTextAsync(path, json, ct);
             yield return nxt.Current;
         }
     }

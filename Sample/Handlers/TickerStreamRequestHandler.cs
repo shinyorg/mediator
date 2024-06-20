@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Sample.Contracts;
 
 namespace Sample.Handlers;
@@ -6,7 +7,7 @@ namespace Sample.Handlers;
 [RegisterHandler]
 public class TickerStreamRequestHandler : IStreamRequestHandler<TickerRequest, string>
 {
-    public async IAsyncEnumerable<string> Handle(TickerRequest request, CancellationToken cancellationToken)
+    public async IAsyncEnumerable<string> Handle(TickerRequest request, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         for (var i = 0; i < request.Repeat; i++)
         {

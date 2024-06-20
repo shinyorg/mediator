@@ -6,29 +6,21 @@ using Shiny.Mediator.Middleware;
 namespace Shiny.Mediator;
 
 
-public class MauiServiceProvider : IMauiInitializeService
-{
-    public static IServiceProvider Services { get; private set; } = null!;
-    public void Initialize(IServiceProvider services)
-    {
-        Services = services;
-    }
-}
-
-
 public static class MauiMediatorExtensions
 {
     public static ShinyConfigurator UseMaui(this ShinyConfigurator cfg, bool includeStandardMiddleware = true)
     {
         cfg.AddEventCollector<MauiEventCollector>();
+        
         if (includeStandardMiddleware)
         {
             cfg.AddEventExceptionHandlingMiddleware();
-            cfg.AddTimedMiddleware();
             cfg.AddMainThreadEventMiddleware();
+            
+            cfg.AddTimedMiddleware();
+            cfg.AddCacheMiddleware();
             // cfg.AddUserNotificationExceptionMiddleware();
         }
-
         return cfg;
     }
 
@@ -38,21 +30,17 @@ public static class MauiMediatorExtensions
 
 
     public static ShinyConfigurator AddEventExceptionHandlingMiddleware(this ShinyConfigurator cfg)
-    {
-        cfg.AddOpenEventMiddleware(typeof(ExceptionHandlerEventMiddleware<>));
-        return cfg;
-    }
+        => cfg.AddOpenEventMiddleware(typeof(ExceptionHandlerEventMiddleware<>));
     
 
     public static ShinyConfigurator AddMainThreadEventMiddleware(this ShinyConfigurator cfg)
-    {
-        cfg.AddOpenEventMiddleware(typeof(MainTheadEventMiddleware<>));
-        return cfg;
-    }
+        => cfg.AddOpenEventMiddleware(typeof(MainTheadEventMiddleware<>));
     
     
     public static ShinyConfigurator AddCacheMiddleware(this ShinyConfigurator cfg)
     {
+        cfg.Services.TryAddSingleton(Connectivity.Current);
+        cfg.Services.TryAddSingleton(FileSystem.Current);
         cfg.Services.TryAddSingleton<CacheManager>();
         cfg.Services.AddSingletonAsImplementedInterfaces<CacheHandlers>();
         cfg.AddOpenRequestMiddleware(typeof(CacheRequestMiddleware<,>));
@@ -60,10 +48,12 @@ public static class MauiMediatorExtensions
     }
     
     
-    public static ShinyConfigurator AddReplayStreamMiddleware(this ShinyConfigurator configurator)
+    public static ShinyConfigurator AddReplayStreamMiddleware(this ShinyConfigurator cfg)
     {
-        configurator.AddOpenStreamMiddleware(typeof(ReplayStreamMiddleware<,>));
-        return configurator;
+        cfg.Services.TryAddSingleton(Connectivity.Current);
+        cfg.Services.TryAddSingleton(FileSystem.Current);
+        cfg.AddOpenStreamMiddleware(typeof(ReplayStreamMiddleware<,>));
+        return cfg;
     }
     
     

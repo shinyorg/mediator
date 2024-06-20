@@ -1,11 +1,13 @@
+using System.Runtime.CompilerServices;
+
 namespace Shiny.Mediator.Middleware;
 
 public class TimerRefreshStreamRequestMiddleware<TRequest, TResult> : IStreamRequestMiddleware<TRequest, TResult> 
     where TRequest : IStreamRequest<TResult>
 {
-    public IAsyncEnumerator<TResult> Process(
+    public IAsyncEnumerable<TResult> Process(
         TRequest request, 
-        StreamRequestDelegate<TResult> next, 
+        StreamRequestHandlerDelegate<TResult> next, 
         IStreamRequestHandler<TRequest, TResult> requestHandler,
         CancellationToken cancellationToken
     )
@@ -18,13 +20,13 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult> : IStreamReq
     }
 
 
-    async IAsyncEnumerator<TResult> Iterate(TimerRefreshAttribute attribute, StreamRequestDelegate<TResult> next, CancellationToken ct)
+    async IAsyncEnumerable<TResult> Iterate(TimerRefreshAttribute attribute, StreamRequestHandlerDelegate<TResult> next, [EnumeratorCancellation] CancellationToken ct)
     {
         while (!ct.IsCancellationRequested)
         {
             await Task.Delay(attribute.RefreshSeconds, ct);
         
-            var nxt = next();
+            var nxt = next().GetAsyncEnumerator(ct);
             while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
                 yield return nxt.Current;
         }
