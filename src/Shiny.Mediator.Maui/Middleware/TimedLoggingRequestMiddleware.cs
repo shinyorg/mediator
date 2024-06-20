@@ -20,10 +20,10 @@ public class TimedLoggingRequestMiddleware<TRequest, TResult>(ILogger<TRequest> 
         var msg = $"{typeof(TRequest)} pipeline execution took ${sw.Elapsed}";
         var ts = TimeSpan.FromMilliseconds(attribute.ErrorThresholdMillis);
         if (attribute.ErrorThresholdMillis > 0 && sw.Elapsed > ts)
-            logger.LogDebug(msg);
+            logger.LogError(msg);
 
         else if (logger.IsEnabled(LogLevel.Debug))
-            logger.LogError(msg);
+            logger.LogDebug(msg);
         
         return result;
     }

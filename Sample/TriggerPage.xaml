@@ -23,12 +23,26 @@
                           Command="{Binding CancelCommand}"/>
             </TableSection>
             
-            <TableSection Title="Precanned">
+            <TableSection Title="Other Request Samples">
                 <TextCell Text="Error Trap" 
                           Command="{Binding ErrorTrap}" />
             </TableSection>
             
-            <TableSection Title="Streaming">
+            <TableSection Title="Cache">
+                <TextCell Text="Clear" Command="{Binding CacheClear}" />
+                <TextCell Text="Request" Command="{Binding CacheRequest}" />
+                <TextCell Text="Value" Detail="{Binding CacheValue}" />
+                <TextCell Text="Cache has a 20s expiry time" />
+            </TableSection>
+            
+            <!--
+            <TableSection Title="Resiliency">
+                <TextCell Text="Request" Command="{Binding ResilientCommand}" />
+                <TextCell Text="Value" Detail="{Binding ResilientValue}" />
+            </TableSection>
+            -->
+            
+            <TableSection Title="STREAMING - Standard">
                 <EntryCell Label="Repeat" 
                            Text="{Binding StreamRepeat}" 
                            Keyboard="Numeric" />
@@ -41,12 +55,26 @@
                            Text="{Binding StreamGapSeconds}" 
                            Keyboard="Numeric" />
                 
-                <TextCell Text="Run Stream" 
+                <TextCell Text="Run" 
                           Command="{Binding Stream}"/>
+                
+                <TextCell Text="Stop" 
+                          Command="{Binding CancelStream}"/>
                 
                 <TextCell Text="Last Response" 
                           Detail="{Binding StreamLastResponse}" />
             </TableSection>
+            
+            <TableSection Title="STREAMING - Timer Refresh">
+                <TextCell Text="Start" Command="{Binding RefreshTimerStart}" />
+                <TextCell Text="Stop" Command="{Binding CancelStream}" />
+                <TextCell Text="Last Value" Detail="{Binding LastRefreshTimerValue}" />
+            </TableSection>
+            
+            <!--
+            <TableSection Title="STREAMING - Replay">
+            </TableSection>
+            -->
         </TableRoot>
     </TableView>
 </ContentPage>

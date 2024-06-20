@@ -1,4 +1,7 @@
-﻿using Sample.Handlers;
+﻿using Polly;
+using Polly.Retry;
+using Sample.Handlers;
+using Shiny.Mediator.Resilience;
 
 namespace Sample;
 
@@ -40,6 +43,8 @@ public static class MauiProgram
         builder.Services.AddShinyMediator(x => x
             .UseMaui()
             .UseBlazor()
+            .AddTimerRefreshStreamMiddleware()
+            // .AddReplayStreamMiddleware()
             .AddUserNotificationExceptionMiddleware(new UserExceptionRequestMiddlewareConfig
             {
                 ErrorConfirm = "OK",
@@ -47,10 +52,16 @@ public static class MauiProgram
                 ErrorMessage = "You did something wrong",
                 ShowFullException = false
             })
+            // .AddResiliencyMiddleware(
+            //     ("Test", builder =>
+            //     {
+            //         // builder.AddRetry(new RetryStrategyOptions());
+            //         builder.AddTimeout(TimeSpan.FromSeconds(2.0));
+            //     })
+            // )
         );
         builder.Services.AddDiscoveredMediatorHandlersFromSample();
-        // builder.Services.AddSingletonAsImplementedInterfaces<ErrorRequestHandler>();
-
+        
         builder.Services.AddSingleton<AppSqliteConnection>();
         builder.Services.AddMauiBlazorWebView();
 

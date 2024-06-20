@@ -52,7 +52,14 @@ public sealed class ShinyConfigurator(IServiceCollection services)
         services.Add(new ServiceDescriptor(typeof(IRequestMiddleware<,>), null, implementationType, lifetime));
         return this;
     }
-
+    
+    
+    public ShinyConfigurator AddOpenStreamMiddleware(Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped) 
+    {
+        // TODO: validate open generic
+        services.Add(new ServiceDescriptor(typeof(IStreamRequestMiddleware<,>), null, implementationType, lifetime));
+        return this;
+    }
 
     public ShinyConfigurator AddOpenEventMiddleware(Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
