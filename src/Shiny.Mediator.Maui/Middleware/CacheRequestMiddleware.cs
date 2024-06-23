@@ -37,13 +37,3 @@ public class CacheRequestMiddleware<TRequest, TResult>(CacheManager cacheManager
     );
 }
 
-
-/// <summary>
-/// Implementing this interface will allow you to create your own cache key, otherwise the cache key is based on the name
-/// of the request model
-/// </summary>
-public interface ICacheItem
-{
-    string CacheKey { get; }
-}
-
