@@ -52,13 +52,17 @@ public static class MauiProgram
                 ErrorMessage = "You did something wrong",
                 ShowFullException = false
             })
-            .AddResiliencyMiddleware(
-                ("Test", builder =>
-                {
-                    // builder.AddRetry(new RetryStrategyOptions());
-                    builder.AddTimeout(TimeSpan.FromSeconds(2.0));
-                })
-            )
+            // .AddResiliencyMiddleware(
+            //     ("Test", builder =>
+            //     {
+            //         // builder.AddRetry(new RetryStrategyOptions());
+            //         builder.AddTimeout(TimeSpan.FromSeconds(2.0));
+            //     })
+            // )
+            .AddMemoryCaching(x =>
+            {
+                
+            })
         );
         builder.Services.AddDiscoveredMediatorHandlersFromSample();
         

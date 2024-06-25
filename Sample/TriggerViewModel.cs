@@ -72,11 +72,11 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
             data.Log("TriggerViewModel-Subscribe", @event)
         );
 
-        this.CacheClear = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await mediator.Send(new FlushAllCacheRequest());
-            await this.Dialogs.Alert("Cache Cleared");
-        });
+        // this.CacheClear = ReactiveCommand.CreateFromTask(async () =>
+        // {
+        //     await mediator.Send(new FlushAllCacheRequest());
+        //     await this.Dialogs.Alert("Cache Cleared");
+        // });
 
         this.CancelStream = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -85,7 +85,7 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
         });
         this.CacheRequest = ReactiveCommand.CreateFromTask(async () =>
         {
-            this.CacheValue = await mediator.Request(new CachedRequest());
+            this.CacheValue = await mediator.Request(new OfflineRequest());
         });
 
         this.ResilientCommand = ReactiveCommand.CreateFromTask(async () =>

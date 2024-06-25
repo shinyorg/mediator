@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
 
@@ -51,19 +52,13 @@ public class ReplayStreamMiddleware<TRequest, TResult>(IFileSystem fileSystem) :
         }
     }
 
-    protected virtual string GetCacheFilePath(TRequest request, IStreamRequestHandler<TRequest, TResult> requestHandler)
+    protected virtual string GetCacheFilePath(TRequest request)
     {
-        var key = this.GetCacheKey(request, requestHandler);
+        var key = this.GetCacheKey(request);
         return Path.Combine(fileSystem.CacheDirectory, $"{key}.replay");
     }
 
 
-    protected virtual string GetCacheKey(TRequest request, IStreamRequestHandler<TRequest, TResult> requestHandler)
-    {
-        if (requestHandler is IReplayKeyProvider<TRequest, TResult> provider)
-            return provider.GetReplayKey(request);
-
-        var t = request.GetType();
-        return $"{t.Namespace}_{t.Name}";
-    }
+    protected virtual string GetCacheKey(TRequest request)
+        => Utils.GetRequestKey(request);
 }

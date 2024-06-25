@@ -1,5 +1,4 @@
-namespace Shiny.Mediator;
+namespace Shiny.Mediator.Caching;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-public class ReplayAttribute : Attribute {}
-
+public class CacheAttribute : Attribute { }
