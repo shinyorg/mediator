@@ -4,11 +4,14 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>Shiny.Mediator</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.10" />
-        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj" />
+      <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
+    </ItemGroup>
+
 </Project>

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Memory;
 using Sample.Contracts;
 
 namespace Sample;
@@ -11,6 +12,7 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
     public TriggerViewModel(
         BaseServices services, 
         IMediator mediator,
+        IMemoryCache cache,
         AppSqliteConnection data
     ) 
     : base(services)
@@ -74,7 +76,7 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
 
         this.CacheClear = ReactiveCommand.CreateFromTask(async () =>
         {
-            await mediator.Send(new FlushAllCacheRequest());
+            cache.Clear();
             await this.Dialogs.Alert("Cache Cleared");
         });
 
@@ -85,12 +87,17 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
         });
         this.CacheRequest = ReactiveCommand.CreateFromTask(async () =>
         {
-            this.CacheValue = await mediator.Request(new CachedRequest());
+            this.CacheValue = await mediator.Request(new CacheRequest());
         });
 
         this.ResilientCommand = ReactiveCommand.CreateFromTask(async () =>
         {
             this.ResilientValue = await mediator.Request(new ResilientRequest());
+        });
+
+        this.OfflineCommand = ReactiveCommand.CreateFromTask(async () =>
+        {
+            this.OfflineValue = await mediator.Request(new OfflineRequest());
         });
 
         this.RefreshTimerStart = ReactiveCommand.CreateFromTask(async () =>
@@ -114,6 +121,9 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
         return Task.CompletedTask;
     }
 
+    
+    public ICommand OfflineCommand { get; }
+    [Reactive] public string OfflineValue { get; private set; }
     
     public ICommand CancelStream { get; }
     public ICommand ErrorTrap { get; }

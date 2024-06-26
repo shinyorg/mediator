@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Maui;
-using Shiny.Mediator.Maui.Services;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;
@@ -8,6 +7,12 @@ namespace Shiny.Mediator;
 
 public static class MauiMediatorExtensions
 {
+    /// <summary>
+    /// Adds Maui Event Collector to mediator
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <param name="includeStandardMiddleware">If true, event exception handling, main thread event handling, timed requests, and offline availability middle is installed</param>
+    /// <returns></returns>
     public static ShinyConfigurator UseMaui(this ShinyConfigurator cfg, bool includeStandardMiddleware = true)
     {
         cfg.AddEventCollector<MauiEventCollector>();
@@ -18,7 +23,7 @@ public static class MauiMediatorExtensions
             cfg.AddMainThreadEventMiddleware();
             
             cfg.AddTimedMiddleware();
-            cfg.AddCacheMiddleware();
+            cfg.AddOfflineAvailabilityMiddleware();
             // cfg.AddUserNotificationExceptionMiddleware();
         }
         return cfg;
@@ -37,13 +42,12 @@ public static class MauiMediatorExtensions
         => cfg.AddOpenEventMiddleware(typeof(MainTheadEventMiddleware<>));
     
     
-    public static ShinyConfigurator AddCacheMiddleware(this ShinyConfigurator cfg)
+    public static ShinyConfigurator AddOfflineAvailabilityMiddleware(this ShinyConfigurator cfg)
     {
         cfg.Services.TryAddSingleton(Connectivity.Current);
         cfg.Services.TryAddSingleton(FileSystem.Current);
-        cfg.Services.TryAddSingleton<CacheManager>();
-        cfg.Services.AddSingletonAsImplementedInterfaces<CacheHandlers>();
-        cfg.AddOpenRequestMiddleware(typeof(CacheRequestMiddleware<,>));
+        cfg.Services.AddSingletonAsImplementedInterfaces<OfflineAvailableFlushRequestHandler>();
+        cfg.AddOpenRequestMiddleware(typeof(OfflineAvailableRequestMiddleware<,>));
         return cfg;
     }
     
