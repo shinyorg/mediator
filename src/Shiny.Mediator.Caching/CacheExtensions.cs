@@ -13,4 +13,7 @@ public static class CacheExtensions
         cfg.AddOpenRequestMiddleware(typeof(CachingRequestMiddleware<,>));
         return cfg;
     }
+
+    public static void Clear(this IMemoryCache cache) 
+        => (cache as MemoryCache)?.Clear();
 }

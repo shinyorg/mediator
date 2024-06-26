@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Caching;
@@ -22,8 +21,17 @@ public class CachingRequestMiddleware<TRequest, TResult>(IMemoryCache cache) : I
             return await next().ConfigureAwait(false);
         
         var cacheKey = this.GetCacheKey(request!, requestHandler);
+        var e = cache.CreateEntry(cacheKey);
+        e.Priority = cfg.Priority;
+        
+        if (cfg.AbsoluteExpirationSeconds != null)
+            e.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(cfg.AbsoluteExpirationSeconds.Value);
+
+        if (cfg.SlidingExpirationSeconds != null)
+            e.SlidingExpiration = TimeSpan.FromSeconds(cfg.SlidingExpirationSeconds.Value);
+        
         var result = await cache.GetOrCreateAsync<TResult>(
-            cacheKey,
+            e,
             _ => next()
         );
         return result!;
