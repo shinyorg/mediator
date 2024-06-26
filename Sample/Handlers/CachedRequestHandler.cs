@@ -4,12 +4,12 @@ namespace Sample.Handlers;
 
 
 [RegisterHandler]
-public class CachedRequestHandler : IRequestHandler<OfflineRequest, string>
+public class CachedRequestHandler : IRequestHandler<CacheRequest, string>
 {
-    [OfflineAvailable]
-    public Task<string> Handle(OfflineRequest request, CancellationToken cancellationToken)
+    [Cache]
+    public Task<string> Handle(CacheRequest request, CancellationToken cancellationToken)
     {
-        var r = DateTimeOffset.UtcNow.ToLocalTime().ToString("h:mm:ss tt");
+        var r = DateTimeOffset.Now.ToString("h:mm:ss tt");
         return Task.FromResult(r);
     }
 }

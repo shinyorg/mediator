@@ -61,7 +61,7 @@ public static class MauiProgram
             // )
             .AddMemoryCaching(x =>
             {
-                
+                x.ExpirationScanFrequency = TimeSpan.FromSeconds(5);
             })
         );
         builder.Services.AddDiscoveredMediatorHandlersFromSample();
