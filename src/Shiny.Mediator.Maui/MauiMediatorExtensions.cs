@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Maui;
 using Shiny.Mediator.Middleware;
 
@@ -7,6 +8,13 @@ namespace Shiny.Mediator;
 
 public static class MauiMediatorExtensions
 {
+    public static void RunInBackground(this Task task, ILogger errorLogger)
+        => task.ContinueWith(x =>
+        {
+            if (x.Exception != null)
+                errorLogger.LogError(x.Exception, "Fire & Forget trapped error");
+        }, TaskContinuationOptions.OnlyOnFaulted);
+
     /// <summary>
     /// Adds Maui Event Collector to mediator
     /// </summary>
@@ -22,9 +30,11 @@ public static class MauiMediatorExtensions
             cfg.AddEventExceptionHandlingMiddleware();
             cfg.AddMainThreadEventMiddleware();
             
+            cfg.AddUserNotificationExceptionMiddleware();
             cfg.AddTimedMiddleware();
             cfg.AddOfflineAvailabilityMiddleware();
-            // cfg.AddUserNotificationExceptionMiddleware();
+
+            cfg.AddReplayStreamMiddleware();
         }
         return cfg;
     }
@@ -61,9 +71,9 @@ public static class MauiMediatorExtensions
     }
     
     
-    public static ShinyConfigurator AddUserNotificationExceptionMiddleware(this ShinyConfigurator cfg, UserExceptionRequestMiddlewareConfig config)
+    public static ShinyConfigurator AddUserNotificationExceptionMiddleware(this ShinyConfigurator cfg, UserExceptionRequestMiddlewareConfig? config = null)
     {
-        cfg.Services.AddSingleton(config);
+        cfg.Services.AddSingleton(config ?? new());
         cfg.AddOpenRequestMiddleware(typeof(UserExceptionRequestMiddleware<,>));
         return cfg;
     }
