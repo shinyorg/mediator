@@ -10,7 +10,7 @@ public class StorageManager(IFileSystem fileSystem) : IStorageManager
     Dictionary<string, string> keys = null!;
     
     
-    public void Store(object request, object result, bool isPersistent)
+    public virtual void Store(object request, object result, bool isPersistent)
     {
         if (isPersistent)
         {
@@ -27,7 +27,7 @@ public class StorageManager(IFileSystem fileSystem) : IStorageManager
     }
     
 
-    public TResult? Get<TResult>(object request, bool isPersistent)
+    public virtual TResult? Get<TResult>(object request, bool isPersistent)
     {
         TResult? returnValue = default;
 
@@ -55,8 +55,10 @@ public class StorageManager(IFileSystem fileSystem) : IStorageManager
         }
         return returnValue;
     }
+    
 
-    public void ClearAll()
+    // TODO: clear by category (cache/replay/offline)
+    public virtual void ClearAll()
     {
         lock (this.memCache)
             this.memCache.Clear();
@@ -69,7 +71,7 @@ public class StorageManager(IFileSystem fileSystem) : IStorageManager
     }
 
 
-    string GetStoreKeyFromRequest(object request)
+    protected virtual string GetStoreKeyFromRequest(object request)
     {
         if (request is IRequestKey keyProvider)
             return keyProvider.GetKey();
@@ -111,12 +113,12 @@ public class StorageManager(IFileSystem fileSystem) : IStorageManager
     
 
     bool initialized = false;
-    void EnsureKeyLoad()
+    protected void EnsureKeyLoad()
     {
         if (this.initialized)
             return;
 
-        var storePath = Path.Combine(fileSystem.AppDataDirectory, "keys.mediator");
+        var storePath = this.KeyStorePath;
         if (File.Exists(storePath))
         {
             var json = File.ReadAllText(storePath);
@@ -130,10 +132,12 @@ public class StorageManager(IFileSystem fileSystem) : IStorageManager
     }
 
 
-    void PersistKeyStore()
+    protected void PersistKeyStore()
     {
-        var storePath = Path.Combine(fileSystem.AppDataDirectory, "keys.mediator");
         var json = JsonSerializer.Serialize(this.keys);
-        File.WriteAllText(storePath, json);
+        File.WriteAllText(this.KeyStorePath, json);
     }
+
+
+    protected string KeyStorePath => Path.Combine(fileSystem.AppDataDirectory, "keys.mediator");
 }
