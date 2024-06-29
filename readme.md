@@ -18,9 +18,8 @@ were aimed more at server scenarios, while also adding some features we feel ben
 - Docs
   - [Main](https://shinylib.net/client/mediator/)
   - [Quick Start](https://shinylib.net/client/mediator/quick-start/)
-  - [Middleware](http://localhost:4321/client/mediator/middleware)
-  - [Advanced](http://localhost:4321/client/mediator/advanced/)
 - [Sample](https://github.com/shinyorg/mediator/tree/main/Sample)
+- [End-to-End Architectural Layout Sample](https://github.com/shinyorg/mediatorsample)
 
 ## Features
 - A Mediator for your .NET Apps (MAUI & Blazor are the main targets for us)
@@ -34,6 +33,16 @@ were aimed more at server scenarios, while also adding some features we feel ben
 - Lightweight, No external dependencies, tiny bit of reflection
 - Help remove service overrun and reduce your constructor fat
 - Easy to Unit Test
+- Epic Out-of-the-Box Middleware
+  - Offline Caching
+  - Caching
+  - Resiliency
+  - User Exception Handling notifications
+  - Exception Handling logging
+  - Performance Time Logging
+  - Main Thread Dispatching
+  - Replayable Streams
+  - Refresh Timer Streams
 
 ## Works With
 - .NET MAUI - all platforms
