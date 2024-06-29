@@ -6,6 +6,6 @@ namespace Shiny.Mediator;
 public class CacheAttribute : Attribute
 {
     public CacheItemPriority Priority { get; set; } = CacheItemPriority.Normal;
-    public int? AbsoluteExpirationSeconds { get; set; }
-    public int? SlidingExpirationSeconds { get; set; }
+    public int AbsoluteExpirationSeconds { get; set; }
+    public int SlidingExpirationSeconds { get; set; }
 }

@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
-using Shiny.Mediator.Infrastructure;
 
-namespace Shiny.Mediator.Caching;
+namespace Shiny.Mediator.Caching.Infrastructure;
 
 
 public class CachingRequestMiddleware<TRequest, TResult>(IMemoryCache cache) : IRequestMiddleware<TRequest, TResult>
@@ -21,23 +20,33 @@ public class CachingRequestMiddleware<TRequest, TResult>(IMemoryCache cache) : I
             return await next().ConfigureAwait(false);
         
         var cacheKey = this.GetCacheKey(request!, requestHandler);
-        var e = cache.CreateEntry(cacheKey);
-        e.Priority = cfg.Priority;
-        
-        if (cfg.AbsoluteExpirationSeconds != null)
-            e.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(cfg.AbsoluteExpirationSeconds.Value);
-
-        if (cfg.SlidingExpirationSeconds != null)
-            e.SlidingExpiration = TimeSpan.FromSeconds(cfg.SlidingExpirationSeconds.Value);
-        
         var result = await cache.GetOrCreateAsync<TResult>(
-            e,
-            _ => next()
+            cacheKey,
+            entry =>
+            {
+                entry.Priority = cfg.Priority;
+        
+                if (cfg.AbsoluteExpirationSeconds > 0)
+                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(cfg.AbsoluteExpirationSeconds);
+
+                if (cfg.SlidingExpirationSeconds > 0)
+                    entry.SlidingExpiration = TimeSpan.FromSeconds(cfg.SlidingExpirationSeconds);
+                
+                return next();
+            }
         );
+        
         return result!;
     }
-
+    
 
     protected virtual string GetCacheKey(object request, IRequestHandler handler)
-        => Utils.GetRequestKey(request);
+    {
+        if (request is IRequestKey keyProvider)
+            return keyProvider.GetKey();
+        
+        var t = request.GetType();
+        var key = $"{t.Namespace}_{t.Name}";
+        return key;
+    }
 }
