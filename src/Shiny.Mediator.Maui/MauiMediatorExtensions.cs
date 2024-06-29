@@ -8,6 +8,11 @@ namespace Shiny.Mediator;
 
 public static class MauiMediatorExtensions
 {
+    /// <summary>
+    /// Fire & Forget task pattern that logs errors
+    /// </summary>
+    /// <param name="task"></param>
+    /// <param name="errorLogger"></param>
     public static void RunInBackground(this Task task, ILogger errorLogger)
         => task.ContinueWith(x =>
         {
@@ -28,7 +33,7 @@ public static class MauiMediatorExtensions
         if (includeStandardMiddleware)
         {
             cfg.AddEventExceptionHandlingMiddleware();
-            cfg.AddMainThreadEventMiddleware();
+            cfg.AddMainThreadMiddleware();
             
             cfg.AddUserNotificationExceptionMiddleware();
             cfg.AddTimedMiddleware();
@@ -46,12 +51,17 @@ public static class MauiMediatorExtensions
 
     public static ShinyConfigurator AddEventExceptionHandlingMiddleware(this ShinyConfigurator cfg)
         => cfg.AddOpenEventMiddleware(typeof(ExceptionHandlerEventMiddleware<>));
-    
 
-    public static ShinyConfigurator AddMainThreadEventMiddleware(this ShinyConfigurator cfg)
-        => cfg.AddOpenEventMiddleware(typeof(MainTheadEventMiddleware<>));
-    
-    
+
+    public static ShinyConfigurator AddMainThreadMiddleware(this ShinyConfigurator cfg)
+    {
+        cfg.AddOpenEventMiddleware(typeof(MainTheadEventMiddleware<>));
+        cfg.AddOpenRequestMiddleware(typeof(MainThreadRequestHandler<,>));
+        
+        return cfg;
+    }
+
+
     public static ShinyConfigurator AddOfflineAvailabilityMiddleware(this ShinyConfigurator cfg)
     {
         cfg.Services.TryAddSingleton(Connectivity.Current);
