@@ -85,7 +85,7 @@ public class StorageManager(IFileSystem fileSystem) : IStorageManager
     {
         var key = this.GetStoreKeyFromRequest(request);
         this.EnsureKeyLoad();
-        if (!this.keys.ContainsKey(key))
+        if (this.keys.ContainsKey(key))
         {
             key = this.keys[key];
         }
