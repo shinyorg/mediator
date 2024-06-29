@@ -1,9 +1,4 @@
-﻿using Polly;
-using Polly.Retry;
-using Sample.Handlers;
-using Shiny.Mediator.Resilience;
-
-namespace Sample;
+﻿namespace Sample;
 
 
 public static class MauiProgram
@@ -44,14 +39,6 @@ public static class MauiProgram
             .UseMaui()
             .UseBlazor()
             .AddTimerRefreshStreamMiddleware()
-            // .AddReplayStreamMiddleware()
-            .AddUserNotificationExceptionMiddleware(new UserExceptionRequestMiddlewareConfig
-            {
-                ErrorConfirm = "OK",
-                ErrorTitle = "OOOPS",
-                ErrorMessage = "You did something wrong",
-                ShowFullException = false
-            })
             // .AddResiliencyMiddleware(
             //     ("Test", builder =>
             //     {
