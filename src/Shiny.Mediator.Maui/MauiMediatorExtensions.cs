@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Shiny.Mediator.Infrastructure;
+using Shiny.Mediator.Infrastructure.Impl;
 using Shiny.Mediator.Maui;
 using Shiny.Mediator.Middleware;
 
@@ -20,6 +22,16 @@ public static class MauiMediatorExtensions
                 errorLogger.LogError(x.Exception, "Fire & Forget trapped error");
         }, TaskContinuationOptions.OnlyOnFaulted);
 
+
+    internal static ShinyConfigurator EnsureInfrastructure(this ShinyConfigurator cfg)
+    {
+        cfg.Services.TryAddSingleton<IEventHandler<FlushAllStoresEvent>, FlushAllCacheEventHandler>();
+        cfg.Services.TryAddSingleton<IStorageManager, StorageManager>();
+        cfg.Services.TryAddSingleton(Connectivity.Current);
+        cfg.Services.TryAddSingleton(FileSystem.Current);
+        return cfg;
+    }
+    
     /// <summary>
     /// Adds Maui Event Collector to mediator
     /// </summary>
@@ -64,18 +76,17 @@ public static class MauiMediatorExtensions
 
     public static ShinyConfigurator AddOfflineAvailabilityMiddleware(this ShinyConfigurator cfg)
     {
-        cfg.Services.TryAddSingleton(Connectivity.Current);
-        cfg.Services.TryAddSingleton(FileSystem.Current);
+        cfg.EnsureInfrastructure();
         cfg.Services.AddSingletonAsImplementedInterfaces<OfflineAvailableFlushRequestHandler>();
         cfg.AddOpenRequestMiddleware(typeof(OfflineAvailableRequestMiddleware<,>));
+        
         return cfg;
     }
     
     
     public static ShinyConfigurator AddReplayStreamMiddleware(this ShinyConfigurator cfg)
     {
-        cfg.Services.TryAddSingleton(Connectivity.Current);
-        cfg.Services.TryAddSingleton(FileSystem.Current);
+        cfg.EnsureInfrastructure();
         cfg.AddOpenStreamMiddleware(typeof(ReplayStreamMiddleware<,>));
         return cfg;
     }

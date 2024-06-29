@@ -10,7 +10,7 @@ namespace Shiny.Mediator.Middleware;
 /// </summary>
 /// <typeparam name="TRequest"></typeparam>
 /// <typeparam name="TResult"></typeparam>
-public class ReplayStreamMiddleware<TRequest, TResult>(IFileSystem fileSystem) : IStreamRequestMiddleware<TRequest, TResult> 
+public class ReplayStreamMiddleware<TRequest, TResult>(IStorageManager storage) : IStreamRequestMiddleware<TRequest, TResult> 
     where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
@@ -24,41 +24,28 @@ public class ReplayStreamMiddleware<TRequest, TResult>(IFileSystem fileSystem) :
         if (attribute == null)
             return next();
 
-        return this.Iterate(request, requestHandler, next, cancellationToken);
+        return this.Iterate(attribute, request, requestHandler, next, cancellationToken);
     }
 
 
     protected virtual async IAsyncEnumerable<TResult> Iterate(
+        ReplayAttribute attribute,
         TRequest request, 
         IStreamRequestHandler<TRequest, TResult> requestHandler, 
         StreamRequestHandlerDelegate<TResult> next, 
         [EnumeratorCancellation] CancellationToken ct
     )
     {
-        var path = this.GetCacheFilePath(request);
-        if (File.Exists(path))
-        {
-            var json = await File.ReadAllTextAsync(path, ct);
-            var obj = JsonSerializer.Deserialize<TResult>(json);
-            yield return obj!;
-        }
+        var store = storage.Get<TResult>(request, attribute.AvailableAcrossSessions);
+        if (store != null)
+            yield return store;
 
         var nxt = next().GetAsyncEnumerator(ct);
         while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
         {
-            var json = JsonSerializer.Serialize(nxt.Current);
-            await File.WriteAllTextAsync(path, json, ct);
+            // TODO: if current is null, remove?
+            storage.Store(request, nxt.Current!, attribute.AvailableAcrossSessions);
             yield return nxt.Current;
         }
     }
-
-    protected virtual string GetCacheFilePath(TRequest request)
-    {
-        var key = this.GetCacheKey(request);
-        return Path.Combine(fileSystem.CacheDirectory, $"{key}.replay");
-    }
-
-
-    protected virtual string GetCacheKey(TRequest request)
-        => Utils.GetRequestKey(request);
 }

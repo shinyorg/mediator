@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
-using Shiny.Mediator.Infrastructure;
 
-namespace Shiny.Mediator.Caching;
+namespace Shiny.Mediator.Caching.Infrastructure;
 
 
 public class CachingRequestMiddleware<TRequest, TResult>(IMemoryCache cache) : IRequestMiddleware<TRequest, TResult>
@@ -36,8 +35,15 @@ public class CachingRequestMiddleware<TRequest, TResult>(IMemoryCache cache) : I
         );
         return result!;
     }
-
+    
 
     protected virtual string GetCacheKey(object request, IRequestHandler handler)
-        => Utils.GetRequestKey(request);
+    {
+        if (request is IRequestKey keyProvider)
+            return keyProvider.GetKey();
+        
+        var t = request.GetType();
+        var key = $"{t.Namespace}_{t.Name}";
+        return key;
+    }
 }

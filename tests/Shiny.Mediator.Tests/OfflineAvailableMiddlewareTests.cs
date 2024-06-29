@@ -1,3 +1,4 @@
+using Shiny.Mediator.Infrastructure.Impl;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator.Tests;
@@ -7,6 +8,7 @@ public class OfflineAvailableRequestMiddlewareTests
 {
     readonly MockConnectivity connectivity;
     readonly MockFileSystem fileSystem;
+    readonly StorageManager storeMgr;
     readonly OfflineAvailableRequestMiddleware<OfflineRequest, long> middleware;
     readonly OfflineRequestHandler handler;
     
@@ -15,10 +17,11 @@ public class OfflineAvailableRequestMiddlewareTests
         this.handler = new();
         this.connectivity = new();
         this.fileSystem = new();
+        this.storeMgr = new(this.fileSystem);
 
         this.middleware = new OfflineAvailableRequestMiddleware<OfflineRequest, long>(
             this.connectivity, 
-            this.fileSystem
+            this.storeMgr
         );
     }
     
