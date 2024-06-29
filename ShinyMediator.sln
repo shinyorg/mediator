@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Blazor", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Resilience", "src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj", "{1DDF878B-0EDF-4C32-813C-7995427D3387}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Caching", "src\Shiny.Mediator.Caching\Shiny.Mediator.Caching.csproj", "{0F0B73E3-165F-44E1-B0CF-917231D3C670}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -68,5 +70,9 @@ Global
 		{1DDF878B-0EDF-4C32-813C-7995427D3387}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1DDF878B-0EDF-4C32-813C-7995427D3387}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1DDF878B-0EDF-4C32-813C-7995427D3387}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F0B73E3-165F-44E1-B0CF-917231D3C670}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F0B73E3-165F-44E1-B0CF-917231D3C670}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F0B73E3-165F-44E1-B0CF-917231D3C670}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F0B73E3-165F-44E1-B0CF-917231D3C670}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

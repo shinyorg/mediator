@@ -28,6 +28,14 @@
                           Command="{Binding ErrorTrap}" />
             </TableSection>
             
+            <TableSection Title="Offline">
+                <TextCell Text="Request" 
+                          Command="{Binding OfflineCommand}" />
+                
+                <TextCell Text="Value" 
+                          Detail="{Binding OfflineValue}" />
+            </TableSection>
+            
             <TableSection Title="Cache">
                 <TextCell Text="Clear" Command="{Binding CacheClear}" />
                 <TextCell Text="Request" Command="{Binding CacheRequest}" />
