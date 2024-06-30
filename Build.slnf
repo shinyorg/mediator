@@ -8,6 +8,7 @@
       "src\\Shiny.Mediator.Maui\\Shiny.Mediator.Maui.csproj",
       "src\\Shiny.Mediator.Caching\\Shiny.Mediator.Caching.csproj",
       "src\\Shiny.Mediator.Resilience\\Shiny.Mediator.Resilience.csproj",
+      "src\\Shiny.Mediator.Prism\\Shiny.Mediator.Prism.csproj",
       "src\\Shiny.Mediator.SourceGenerators\\Shiny.Mediator.SourceGenerators.csproj"
     ]
   }
