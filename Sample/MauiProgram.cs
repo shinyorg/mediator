@@ -39,6 +39,7 @@ public static class MauiProgram
             .UseMaui()
             .UseBlazor()
             .AddTimerRefreshStreamMiddleware()
+            .AddPrismSupport()
             // .AddResiliencyMiddleware(
             //     ("Test", builder =>
             //     {
