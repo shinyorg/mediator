@@ -110,6 +110,11 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
                 );
             }
         });
+
+        this.PrismNav = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await mediator.Send(new MyPrismNavRequest(this.PrismNavArg!), CancellationToken.None);
+        });
     }
 
     
@@ -121,6 +126,9 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
         return Task.CompletedTask;
     }
 
+    
+    public ICommand PrismNav { get; }
+    [Reactive] public string PrismNavArg { get; set; }
     
     public ICommand OfflineCommand { get; }
     [Reactive] public string OfflineValue { get; private set; }

@@ -43,6 +43,10 @@
                 <TextCell Text="Cache has a 20s expiry time" />
             </TableSection>
             
+            <TableSection Title="Prism Navigation">
+                <EntryCell Label="Arg" Text="{Binding PrismNavArg}" />
+                <TextCell Text="Navigate" Command="{Binding PrismNav}" />
+            </TableSection>
             <!--
             <TableSection Title="Resiliency">
                 <TextCell Text="Request" Command="{Binding ResilientCommand}" />

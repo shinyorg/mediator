@@ -6,8 +6,17 @@
              x:Class="Sample.AnotherPage"
              Title="Another Page">
     <ContentPage.Content>
-        <Label Text="This Page will now participate in the event handler chain as long as it stays in this navigation stack"
-               HorizontalTextAlignment="Center"
-               HorizontalOptions="Fill" />
+        <VerticalStackLayout HorizontalOptions="Fill"
+                             VerticalOptions="Fill">
+
+            <Label Text="This Page will now participate in the event handler chain as long as it stays in this navigation stack"
+                   HorizontalTextAlignment="Center"
+                   HorizontalOptions="Fill" />
+            
+            <Label Text="{Binding Arg}"
+                   IsVisible="{Binding ShowArg}"
+                   HorizontalTextAlignment="Center"
+                   HorizontalOptions="Fill" />
+        </VerticalStackLayout>
     </ContentPage.Content>
 </ContentPage>
