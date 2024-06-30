@@ -16,6 +16,8 @@ public class PrismNavigationRequestHandler<TRequest>(IGlobalNavigationService na
                 var result = await nav.NavigateAsync(request.PageUri, (pn, request));
                 if (!result.Success)
                     throw new InvalidOperationException("Failed to Navigate", result.Exception);
+                
+                tcs.SetResult();
             }
             catch (Exception ex)
             {
