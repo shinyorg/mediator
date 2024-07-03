@@ -1,4 +1,4 @@
-# Shiny Mediator (Preview)
+# Shiny Mediator
 
 <a href="https://www.nuget.org/packages/Shiny.Mediator" target="_blank">
   <img src="https://buildstats.info/nuget/Shiny.Mediator?includePreReleases=true" />
