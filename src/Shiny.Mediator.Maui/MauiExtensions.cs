@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Shiny.Mediator.Handlers;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Infrastructure.Impl;
 using Shiny.Mediator.Maui;
@@ -8,7 +9,7 @@ using Shiny.Mediator.Middleware;
 namespace Shiny.Mediator;
 
 
-public static class MauiMediatorExtensions
+public static class MauiExtensions
 {
     /// <summary>
     /// Fire & Forget task pattern that logs errors
@@ -22,8 +23,8 @@ public static class MauiMediatorExtensions
                 errorLogger.LogError(x.Exception, "Fire & Forget trapped error");
         }, TaskContinuationOptions.OnlyOnFaulted);
 
-
-    internal static ShinyConfigurator EnsureInfrastructure(this ShinyConfigurator cfg)
+    
+    static ShinyConfigurator EnsureInfrastructure(this ShinyConfigurator cfg)
     {
         cfg.Services.TryAddSingleton<IEventHandler<FlushAllStoresEvent>, FlushAllCacheEventHandler>();
         cfg.Services.TryAddSingleton<IStorageManager, StorageManager>();
@@ -56,15 +57,41 @@ public static class MauiMediatorExtensions
         return cfg;
     }
 
-    
+
+    /// <summary>
+    /// Add Strongly Typed Shell Navigator
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator AddShellNavigation(this ShinyConfigurator cfg)
+    {
+        cfg.Services.AddSingleton(typeof(IRequestHandler<>), typeof(ShellNavigationRequestHandler<>));
+        return cfg;
+    }
+
+    /// <summary>
+    /// Timed middleware logging
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
     public static ShinyConfigurator AddTimedMiddleware(this ShinyConfigurator cfg)
         => cfg.AddOpenRequestMiddleware(typeof(TimedLoggingRequestMiddleware<,>));
 
 
+    /// <summary>
+    ///  Event Exception Management
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
     public static ShinyConfigurator AddEventExceptionHandlingMiddleware(this ShinyConfigurator cfg)
         => cfg.AddOpenEventMiddleware(typeof(ExceptionHandlerEventMiddleware<>));
 
 
+    /// <summary>
+    /// Allows for [MainThread] marking on Request & Event Handlers
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
     public static ShinyConfigurator AddMainThreadMiddleware(this ShinyConfigurator cfg)
     {
         cfg.AddOpenEventMiddleware(typeof(MainTheadEventMiddleware<>));
@@ -74,6 +101,11 @@ public static class MauiMediatorExtensions
     }
 
 
+    /// <summary>
+    /// Allows your request /w result handlers to return a stored value when offline is detected
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
     public static ShinyConfigurator AddOfflineAvailabilityMiddleware(this ShinyConfigurator cfg)
     {
         cfg.EnsureInfrastructure();
@@ -84,6 +116,11 @@ public static class MauiMediatorExtensions
     }
     
     
+    /// <summary>
+    /// Plays the last value for the request while requesting the next value
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
     public static ShinyConfigurator AddReplayStreamMiddleware(this ShinyConfigurator cfg)
     {
         cfg.EnsureInfrastructure();
@@ -92,6 +129,13 @@ public static class MauiMediatorExtensions
     }
     
     
+    /// <summary>
+    /// Allows you to mark [UserNotify] on your request handlers which logs an error & displays an alert to the user
+    /// to show a customized message
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <param name="config"></param>
+    /// <returns></returns>
     public static ShinyConfigurator AddUserNotificationExceptionMiddleware(this ShinyConfigurator cfg, UserExceptionRequestMiddlewareConfig? config = null)
     {
         cfg.Services.AddSingleton(config ?? new());
