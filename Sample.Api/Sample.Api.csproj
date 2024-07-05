@@ -12,9 +12,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\Shiny.Mediator.AspNet\Shiny.Mediator.AspNet.csproj" />
-      <ProjectReference Include="..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" />
-      <ProjectReference Include="..\src\Shiny.Mediator\Shiny.Mediator.csproj" />
+        <ProjectReference Include="..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
+        <ProjectReference Include="..\src\Shiny.Mediator.AspNet\Shiny.Mediator.AspNet.csproj"/>
+        <ProjectReference Include="..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false"/>
     </ItemGroup>
-
 </Project>

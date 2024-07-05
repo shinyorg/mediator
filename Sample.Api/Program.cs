@@ -1,7 +1,9 @@
+using Sample.Api;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddShinyMediator();
-// builder.Services.AddDiscoveredMediatorHandlersFromSample_Api();
+builder.Services.AddDiscoveredMediatorHandlersFromSample_Api();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

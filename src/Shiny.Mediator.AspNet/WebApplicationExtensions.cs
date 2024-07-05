@@ -58,6 +58,7 @@ public static class WebApplicationExtensions
     
     static void MapVoid(WebApplication app, Type handlerType, MediatorHttpAttribute attribute)
     {
+        // TODO: need to use the interface arg to get the request type
         var requestType = handlerType.GetGenericArguments().First();
         var mapMethod = typeof(WebApplicationExtensions).GetMethod(nameof(MapVoidType))!;
         var method = mapMethod.MakeGenericMethod(requestType);
@@ -67,6 +68,7 @@ public static class WebApplicationExtensions
     
     static void MapResult(WebApplication app, Type handlerType, MediatorHttpAttribute attribute)
     {
+        // TODO: need to use the interface arg to get the request type
         var requestType = handlerType.GetGenericArguments().First();
         var mapMethod = typeof(WebApplicationExtensions).GetMethod(nameof(MapResultType))!;
         var method = mapMethod.MakeGenericMethod(requestType);
