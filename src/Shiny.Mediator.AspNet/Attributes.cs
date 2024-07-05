@@ -18,4 +18,18 @@ public class MediatorHttpAttribute(string uriTemplate, HttpMethod httpMethod) : 
 {
     public string UriTemplate => uriTemplate;
     public HttpMethod Method => httpMethod;
+    
+    public bool RequiresAuthorization { get; set; }
+    public string[]? AuthorizationPolicies { get; set; }
+    public string? DisplayName { get; set; }
+    public string? GroupName { get; set; }
+    public string[]? Tags { get; set; }
+    public string? Description { get; set; }
+    public string? Summary { get; set; }
+    public bool UseOpenApi { get; set; } = true;
+    public string? CachePolicy { get; set; }
+    public string? CorsPolicy { get; set; }
+    public bool ExcludeFromDescription { get; set; }
+    public string? RateLimitingPolicy { get; set; }
+    public bool AllowAnonymous { get; set; }
 }
