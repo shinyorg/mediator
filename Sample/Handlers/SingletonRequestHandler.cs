@@ -3,7 +3,7 @@ using Sample.Contracts;
 namespace Sample.Handlers;
 
 
-[RegisterHandler]
+[SingletonHandler]
 [TimedLogging(3000)]
 public class SingletonRequestHandler(IMediator mediator, AppSqliteConnection data) : IRequestHandler<MyMessageRequest, MyMessageResponse>
 {

@@ -34,6 +34,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Caching", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Prism", "src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj", "{5534AE08-461A-4ADD-84C9-B745B6EDB8FF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Api", "Sample.Api\Sample.Api.csproj", "{EBC4C275-4A6D-4303-AB23-172AEB6EB883}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.AspNet", "src\Shiny.Mediator.AspNet\Shiny.Mediator.AspNet.csproj", "{438E8EDF-81E0-4E1B-96B7-4BC177008D22}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,5 +84,13 @@ Global
 		{5534AE08-461A-4ADD-84C9-B745B6EDB8FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5534AE08-461A-4ADD-84C9-B745B6EDB8FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5534AE08-461A-4ADD-84C9-B745B6EDB8FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBC4C275-4A6D-4303-AB23-172AEB6EB883}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBC4C275-4A6D-4303-AB23-172AEB6EB883}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBC4C275-4A6D-4303-AB23-172AEB6EB883}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBC4C275-4A6D-4303-AB23-172AEB6EB883}.Release|Any CPU.Build.0 = Release|Any CPU
+		{438E8EDF-81E0-4E1B-96B7-4BC177008D22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{438E8EDF-81E0-4E1B-96B7-4BC177008D22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{438E8EDF-81E0-4E1B-96B7-4BC177008D22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{438E8EDF-81E0-4E1B-96B7-4BC177008D22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

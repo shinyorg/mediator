@@ -4,7 +4,7 @@ using Shiny.Mediator.Resilience;
 namespace Sample.Handlers;
 
 
-[RegisterHandler]
+[SingletonHandler]
 public class ResilientRequestHandler : IRequestHandler<ResilientRequest, string>
 {
     static bool timeoutRequest;
