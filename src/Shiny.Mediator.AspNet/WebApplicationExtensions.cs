@@ -8,7 +8,6 @@ namespace Shiny.Mediator;
 
 
 // TODO: IStreamRequest
-// TODO: file uploads
 // TODO: delete/get
 // TODO: type implements multiple handlers - move attribute to Handle method?
 public static class WebApplicationExtensions
@@ -23,7 +22,7 @@ public static class WebApplicationExtensions
     }
     
     
-    public static WebApplication UseMappedShinyMediatorHandlers(this WebApplication app, IServiceCollection services)
+    public static WebApplication UseShinyMediatorEndpointHandlers(this WebApplication app, IServiceCollection services)
     {
         foreach (var service in services)
         {

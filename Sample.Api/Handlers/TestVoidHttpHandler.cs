@@ -3,7 +3,7 @@ namespace Sample.Api.Handlers;
 public record TestVoidRequest(int Number, string StringArg) : IRequest;
 
 
-[RegisterHandler]
+[ScopedHandler]
 [MediatorHttpPost("/testvoid")]
 public class TestVoidHttpHandler : IRequestHandler<TestVoidRequest>
 {

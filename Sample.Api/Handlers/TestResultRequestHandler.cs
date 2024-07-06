@@ -4,7 +4,7 @@ public record TestResultRequest(int Number) : IRequest<TestResult>;
 public record TestResult;
 
 
-[RegisterHandler]
+[ScopedHandler]
 [MediatorHttpPost("/testresult")]
 public class TestResultRequestHandler : IRequestHandler<TestResultRequest, TestResult>
 {

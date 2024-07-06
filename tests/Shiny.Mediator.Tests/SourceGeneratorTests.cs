@@ -22,18 +22,18 @@ public record SourceGenResponse;
 public record SourceGenEvent : IEvent;
 
 
-[RegisterHandler]
+[SingletonHandler]
 public class SourceGenRequestHandler : IRequestHandler<SourceGenRequest>
 {
     public Task Handle(SourceGenRequest request, CancellationToken cancellationToken) => Task.CompletedTask;
 }
-[RegisterHandler]
+[SingletonHandler]
 public class SourceGenResponseRequestHandler : IRequestHandler<SourceGenResponseRequest, SourceGenResponse>
 {
     public Task<SourceGenResponse> Handle(SourceGenResponseRequest request, CancellationToken cancellationToken)
         => Task.FromResult(new SourceGenResponse());
 }
-[RegisterHandler]
+[SingletonHandler]
 public class SourceGenEventHandler : IEventHandler<SourceGenEvent>
 {
     public Task Handle(SourceGenEvent @event, CancellationToken cancellationToken) => Task.CompletedTask;

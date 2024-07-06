@@ -14,22 +14,22 @@ public class RegisterHandlerAttributeSyntaxReceiver : SyntaxReceiver
         if (classSymbol.ContainingAssembly.Name.StartsWith("Shiny.Mediator", StringComparison.CurrentCultureIgnoreCase))
             return false;
         
-        var hasAttribute = classSymbol.HasAttribute("RegisterHandlerAttribute");
+        var hasAttribute = classSymbol.HasAttribute("SingletonHandlerAttribute");
         if (hasAttribute)
             return true;
-        // if (hasAttribute)
-        // {
-        //     // TODO: log error
-        //     if (classSymbol.IsImplements("Shiny.Mediator.IEventHandler`1"))
-        //         return false;
-        //
-        //     if (classSymbol.IsImplements("Shiny.Mediator.IRequestHandler`1"))
-        //         return false;
-        // }
-        hasAttribute = classSymbol.HasAttribute("RegisterMiddlewareAttribute");
+        
+        hasAttribute = classSymbol.HasAttribute("ScopedHandlerAttribute");
+        if (hasAttribute)
+            return true;
+        
+        hasAttribute = classSymbol.HasAttribute("SingletonMiddlewareAttribute");
         if (hasAttribute)
             return true;
 
+        hasAttribute = classSymbol.HasAttribute("ScopedMiddlewareAttribute");
+        if (hasAttribute)
+            return true;
+        
         return false;
     }
 }

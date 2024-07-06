@@ -17,6 +17,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseMappedShinyMediatorHandlers(builder.Services);
+app.UseShinyMediatorEndpointHandlers(builder.Services);
 
 app.Run();

@@ -3,7 +3,7 @@ using Sample.Contracts;
 namespace Sample.Handlers;
 
 
-[RegisterHandler]
+[SingletonHandler]
 public class SingletonEventHandler(IMediator mediator, AppSqliteConnection data) : IEventHandler<MyMessageEvent>
 {
     public async Task Handle(MyMessageEvent @event, CancellationToken cancellationToken)

@@ -6,7 +6,7 @@
 
 Mediator is a behavioral design pattern that lets you reduce chaotic dependencies between objects. The pattern restricts direct communications between the objects and forces them to collaborate only via a mediator object.
 
-Shiny Mediator is a mediator pattern implementation, but for apps.  Apps have pages with lifecycles that don't necessarily participate in the standard
+Shiny Mediator is a mediator pattern implementation, works for server, but also works great for apps.  Apps have pages with lifecycles that don't necessarily participate in the standard
 dependency injection lifecycle.  .NET MAUI generally tends to favor the Messenger pattern.  We hate this pattern for many reasons
 which we won't get into.  That being said, we do offer a messenger subscription in our Mediator for where interfaces
 and dependency injection can't reach.
@@ -33,6 +33,7 @@ were aimed more at server scenarios, while also adding some features we feel ben
 - Lightweight, No external dependencies, tiny bit of reflection
 - Help remove service overrun and reduce your constructor fat
 - Easy to Unit Test
+- Direct Handler to ASP.NET Core endpoint
 - Epic Out-of-the-Box Middleware
   - Offline Caching
   - Caching
