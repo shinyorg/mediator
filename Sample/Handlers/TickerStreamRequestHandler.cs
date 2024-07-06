@@ -4,7 +4,7 @@ using Sample.Contracts;
 namespace Sample.Handlers;
 
 
-[RegisterHandler]
+[SingletonHandler]
 public class TickerStreamRequestHandler : IStreamRequestHandler<TickerRequest, string>
 {
     public async IAsyncEnumerable<string> Handle(TickerRequest request, [EnumeratorCancellation] CancellationToken cancellationToken)

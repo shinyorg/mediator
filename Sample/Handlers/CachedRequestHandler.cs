@@ -3,7 +3,7 @@ using Sample.Contracts;
 namespace Sample.Handlers;
 
 
-[RegisterHandler]
+[SingletonHandler]
 public class CachedRequestHandler : IRequestHandler<CacheRequest, string>
 {
     [Cache(AbsoluteExpirationSeconds = 20)]

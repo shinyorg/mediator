@@ -27,14 +27,23 @@ public class MediatorSourceGenerator : ISourceGenerator
                 #nullable disable
                 
                 [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = false)]
-                public sealed class RegisterHandlerAttribute: System.Attribute
+                internal sealed class SingletonHandlerAttribute : System.Attribute
                 {
-                    public RegisterHandlerAttribute() {}
                 }
                 
-                public sealed class RegisterMiddlewareAttribute: System.Attribute
+                [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = false)]
+                internal sealed class ScopedHandlerAttribute : System.Attribute
                 {
-                    public RegisterMiddlewareAttribute() {}
+                }
+                
+                [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = false)]
+                internal sealed class SingletonMiddlewareAttribute : System.Attribute
+                {
+                }
+                
+                [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = false)]
+                internal sealed class ScopedMiddlewareAttribute : System.Attribute
+                {
                 }
                 """,
                 Encoding.UTF8
@@ -56,8 +65,8 @@ public class MediatorSourceGenerator : ISourceGenerator
         
         var classes = this.syntaxReceiver
             .Classes
-            .Select(x => x.ToDisplayString())
-            .Distinct()
+            .GroupBy(x => x.ToDisplayString())
+            .Select(x => x.First())
             .ToList();
         
         if (!classes.Any())
@@ -73,9 +82,15 @@ public class MediatorSourceGenerator : ISourceGenerator
             .AppendLine($"\tpublic static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFrom{assName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)")
             .AppendLine("\t{");
 
-        
-        foreach (var cls in classes)
-            sb.AppendLine($"\t\tservices.AddSingletonAsImplementedInterfaces<{cls}>();");
+
+        foreach (var clazz in classes)
+        {
+            var cls = clazz.ToDisplayString();
+            if (clazz.HasAttribute("ScopedHandlerAttribute") || clazz.HasAttribute("ScopedMiddlewareAttribute"))
+                sb.AppendLine($"\t\tservices.AddSingletonAsImplementedInterfaces<{cls}>();");
+            else
+                sb.AppendLine($"\t\tservices.AddScopedAsImplementedInterfaces<{cls}>();");
+        }
 
         sb
             .AppendLine("\t\treturn services;")
