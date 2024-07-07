@@ -19,6 +19,7 @@ public class MediatorHttpAttribute(string uriTemplate, HttpMethod httpMethod) : 
     public string UriTemplate => uriTemplate;
     public HttpMethod Method => httpMethod;
     
+    public string? Name { get; set; }
     public bool RequiresAuthorization { get; set; }
     public string[]? AuthorizationPolicies { get; set; }
     public string? DisplayName { get; set; }

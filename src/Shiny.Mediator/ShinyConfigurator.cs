@@ -8,6 +8,10 @@ public sealed class ShinyConfigurator(IServiceCollection services)
 {
     public IServiceCollection Services => services;
 
+    
+    public bool ExcludeDefaultMiddleware { get; set; }
+    
+    
     public ShinyConfigurator SetRequestSender<TRequestSender>() where TRequestSender : class, IRequestSender
     {
         this.Services.AddSingleton<IRequestSender, TRequestSender>();
