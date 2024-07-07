@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Shiny.Mediator.Caching.Infrastructure;
 
@@ -15,38 +16,31 @@ public class CachingRequestMiddleware<TRequest, TResult>(IMemoryCache cache) : I
         if (typeof(TResult) == typeof(Unit))
             return await next().ConfigureAwait(false);
 
-        var cfg = requestHandler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
-        if (cfg == null)
+        var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
+        if (attribute == null)
             return await next().ConfigureAwait(false);
         
-        var cacheKey = this.GetCacheKey(request!, requestHandler);
+        var cacheKey = CacheExtensions.GetCacheKey(request!);
         var result = await cache.GetOrCreateAsync<TResult>(
             cacheKey,
             entry =>
             {
-                entry.Priority = cfg.Priority;
-        
-                if (cfg.AbsoluteExpirationSeconds > 0)
-                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(cfg.AbsoluteExpirationSeconds);
-
-                if (cfg.SlidingExpirationSeconds > 0)
-                    entry.SlidingExpiration = TimeSpan.FromSeconds(cfg.SlidingExpirationSeconds);
-                
+                this.SetCacheEntry(attribute, entry);
                 return next();
             }
         );
-        
         return result!;
     }
-    
 
-    protected virtual string GetCacheKey(object request, IRequestHandler handler)
+    
+    protected void SetCacheEntry(CacheAttribute attribute, ICacheEntry entry)
     {
-        if (request is IRequestKey keyProvider)
-            return keyProvider.GetKey();
-        
-        var t = request.GetType();
-        var key = $"{t.Namespace}_{t.Name}";
-        return key;
+        entry.Priority = attribute.Priority;
+        if (attribute.AbsoluteExpirationSeconds > 0)
+            entry.AbsoluteExpirationRelativeToNow =
+                TimeSpan.FromSeconds(attribute.AbsoluteExpirationSeconds);
+
+        if (attribute.SlidingExpirationSeconds > 0)
+            entry.SlidingExpiration = TimeSpan.FromSeconds(attribute.SlidingExpirationSeconds);
     }
 }
