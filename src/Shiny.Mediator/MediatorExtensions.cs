@@ -23,7 +23,7 @@ public static class MediatorExtensions
         var cfg = new ShinyConfigurator(services);
         configurator?.Invoke(cfg);
         if (!cfg.ExcludeDefaultMiddleware)
-            cfg.AddOpenRequestMiddleware(typeof(TimerRefreshStreamRequestMiddleware<,>));
+            cfg.AddOpenStreamMiddleware(typeof(TimerRefreshStreamRequestMiddleware<,>));
         
         services.TryAddSingleton<IMediator, Impl.Mediator>();
         services.TryAddSingleton<IRequestSender, DefaultRequestSender>();
