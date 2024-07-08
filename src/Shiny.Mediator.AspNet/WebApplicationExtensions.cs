@@ -14,10 +14,12 @@ public static class WebApplicationExtensions
 {
     static readonly MethodInfo mapVoidType;
     static readonly MethodInfo mapResultType;
+    static readonly MethodInfo mapStreamType;
     
     static WebApplicationExtensions()
     {
         mapResultType = typeof(WebAppMap).GetMethod(nameof(WebAppMap.MapResultType), BindingFlags.Static | BindingFlags.Public)!;
+        mapStreamType = typeof(WebAppMap).GetMethod(nameof(WebAppMap.MapStreamType), BindingFlags.Static | BindingFlags.Public)!;
         mapVoidType = typeof(WebAppMap).GetMethod(nameof(WebAppMap.MapVoidType), BindingFlags.Static | BindingFlags.Public)!;
     }
     
@@ -52,7 +54,13 @@ public static class WebApplicationExtensions
             var attribute = type.GetCustomAttribute<MediatorHttpAttribute>();
             if (attribute != null)
                 MapResult(app, type, attribute);
-        } 
+        }
+        else if (IsStreamHandler(type))
+        {
+            var attribute = type.GetCustomAttribute<MediatorHttpAttribute>();
+            if (attribute != null)
+                MapStream(app, type, attribute);
+        }
     }
 
     
@@ -64,6 +72,11 @@ public static class WebApplicationExtensions
     static bool IsResultHandler(Type type) => type
         .GetInterfaces()
         .Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IRequestHandler<,>));
+    
+    
+    static bool IsStreamHandler(Type type) => type
+        .GetInterfaces()
+        .Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>));
     
     
     static void MapVoid(WebApplication app, Type handlerType, MediatorHttpAttribute attribute)
@@ -79,6 +92,20 @@ public static class WebApplicationExtensions
             .Invoke(null, [app, attribute]);
     }
 
+
+    static void MapStream(WebApplication app, Type handlerType, MediatorHttpAttribute attribute)
+    {
+        var requestType = handlerType
+            .GetInterfaces()
+            .Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>))
+            .Select(x => x.GetGenericArguments())
+            .First();
+
+        mapStreamType
+            .MakeGenericMethod(requestType[0], requestType[1])
+            .Invoke(null, [app, attribute]);
+    }
+    
     
     static void MapResult(WebApplication app, Type handlerType, MediatorHttpAttribute attribute)
     {
@@ -145,6 +172,42 @@ public class WebAppMap
         Visit(routerBuilder, attribute);
     }
     
+    
+    public static void MapStreamType<TRequest, TResult>(WebApplication app, MediatorHttpAttribute attribute) where TRequest : IStreamRequest<TResult>
+    {
+        attribute.Tags ??= [$"{typeof(TRequest).Name}s"];
+        RouteHandlerBuilder routerBuilder;
+        
+        if (attribute.Method == HttpMethod.Post)
+        {
+            routerBuilder = app.MapPost(
+                attribute.UriTemplate,
+                (
+                    [FromServices] IMediator mediator,
+                    [FromBody] TRequest request,
+                    CancellationToken cancellationToken
+                ) => mediator.Request(request, cancellationToken)
+            );
+        }
+        else if (attribute.Method == HttpMethod.Put)
+        {
+            routerBuilder = app.MapPut(
+                attribute.UriTemplate,
+                (
+                    [FromServices] IMediator mediator,
+                    [FromBody] TRequest request,
+                    CancellationToken cancellationToken
+                ) => mediator.Request(request, cancellationToken)
+            );
+        }
+        else
+        {
+            throw new InvalidOperationException($"Invalid Mediator Endpoint on `{typeof(TRequest).FullName}` - Can only be PUT/POST");
+        }
+
+        Visit(routerBuilder, attribute);
+    }
+    
 
     public static void MapResultType<TRequest, TResult>(WebApplication app, MediatorHttpAttribute attribute) where TRequest : IRequest<TResult>
     {
@@ -164,7 +227,7 @@ public class WebAppMap
                     var result = await mediator
                         .Request(request, cancellationToken)
                         .ConfigureAwait(false);
-
+                    
                     return Results.Ok(result);
                 }
             );
@@ -198,6 +261,9 @@ public class WebAppMap
 
     static void Visit(RouteHandlerBuilder routeBuilder, MediatorHttpAttribute attribute)
     {
+        if (attribute.Name != null)
+            routeBuilder.WithName(attribute.Name);
+        
         if (attribute.Summary != null)
              routeBuilder.WithSummary(attribute.Summary);
 
