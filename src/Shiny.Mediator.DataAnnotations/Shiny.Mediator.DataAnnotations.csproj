@@ -7,8 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
-        <PackageReference Include="Prism.Maui" Version="9.0.401-pre"/>
+        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj" />  
+        <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     </ItemGroup>
-
 </Project>
