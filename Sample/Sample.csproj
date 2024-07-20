@@ -103,6 +103,7 @@
         <ProjectReference Include="..\src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj" />
         <ProjectReference Include="..\src\Shiny.Mediator.Caching\Shiny.Mediator.Caching.csproj" />
         <ProjectReference Include="..\src\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj"/>
+        <ProjectReference Include="..\src\Shiny.Mediator.FluentValidation\Shiny.Mediator.FluentValidation.csproj" />
         <ProjectReference Include="..\src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj"/>
         <ProjectReference Include="..\src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj" />
         <ProjectReference Include="..\src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj" />

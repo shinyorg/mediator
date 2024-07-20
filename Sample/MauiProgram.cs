@@ -40,6 +40,10 @@ public static class MauiProgram
             .UseBlazor()
             .AddTimerRefreshStreamMiddleware()
             .AddPrismSupport()
+            .AddDataAnnotations()
+            
+            // TODO: don't add both
+            // .AddFluentValidation()
             // .AddResiliencyMiddleware(
             //     ("Test", builder =>
             //     {

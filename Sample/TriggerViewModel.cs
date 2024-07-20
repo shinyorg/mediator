@@ -115,6 +115,19 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
         {
             await mediator.Send(new MyPrismNavRequest(this.PrismNavArg!), CancellationToken.None);
         });
+
+        this.Validate = ReactiveCommand.CreateFromTask(async () =>
+        {
+            try
+            {
+                await mediator.Send(new MyValidateRequest { Url = this.ValidateUrl });
+                await this.Dialogs.Alert("All is good");
+            }
+            catch (ValidateException ex)
+            {
+                this.ValidateError = ex.Result.Errors.First().Value.First();
+            }
+        });
     }
 
     
@@ -143,6 +156,10 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
 
     [Reactive] public string LastRefreshTimerValue { get; private set; }
     public ICommand RefreshTimerStart { get; }
+    
+    public ICommand Validate { get; }
+    [Reactive] public string ValidateUrl { get; set; }
+    [Reactive] public string ValidateError { get; private set; }
     
     public ICommand ResilientCommand { get; }
     [Reactive] public string ResilientValue { get; private set; }

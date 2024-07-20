@@ -7,7 +7,7 @@
              Title="Trigger">
     <TableView>
         <TableRoot>
-            <TableSection>
+            <TableSection Title="REQUESTS - Standard">
                 <EntryCell Label="Argument" 
                            Text="{Binding Arg}" />
                 
@@ -15,7 +15,7 @@
                             On="{Binding FireAndForgetEvents}"/>
             </TableSection>
 
-            <TableSection>
+            <TableSection Title="REQUESTS - Standard">
                 <TextCell Text="Send Request" 
                           Command="{Binding TriggerCommand}"/>
                 
@@ -23,12 +23,12 @@
                           Command="{Binding CancelCommand}"/>
             </TableSection>
             
-            <TableSection Title="Other Request Samples">
+            <TableSection Title="REQUESTS - User Notify">
                 <TextCell Text="Error Trap" 
                           Command="{Binding ErrorTrap}" />
             </TableSection>
             
-            <TableSection Title="Offline">
+            <TableSection Title="REQUESTS - Offline">
                 <TextCell Text="Request" 
                           Command="{Binding OfflineCommand}" />
                 
@@ -36,19 +36,26 @@
                           Detail="{Binding OfflineValue}" />
             </TableSection>
             
-            <TableSection Title="Cache">
+            <TableSection Title="REQUESTS - Cache">
                 <TextCell Text="Clear" Command="{Binding CacheClear}" />
                 <TextCell Text="Request" Command="{Binding CacheRequest}" />
                 <TextCell Text="Value" Detail="{Binding CacheValue}" />
                 <TextCell Text="Cache has a 20s expiry time" />
             </TableSection>
             
-            <TableSection Title="Prism Navigation">
+            <TableSection Title="REQUESTS - Validation">
+                <EntryCell Label="Valid URL" Text="{Binding ValidateUrl}" Keyboard="Url" />
+                <TextCell Text="{Binding ValidateError}" TextColor="Red" />
+                <TextCell Text="Validate" Command="{Binding Validate}" />
+            </TableSection>
+            
+            <TableSection Title="REQUESTS - Prism Navigation">
                 <EntryCell Label="Arg" Text="{Binding PrismNavArg}" />
                 <TextCell Text="Navigate" Command="{Binding PrismNav}" />
             </TableSection>
+            
             <!--
-            <TableSection Title="Resiliency">
+            <TableSection Title="REQUESTS - Resiliency">
                 <TextCell Text="Request" Command="{Binding ResilientCommand}" />
                 <TextCell Text="Value" Detail="{Binding ResilientValue}" />
             </TableSection>
