@@ -32,6 +32,15 @@ public static class MediatorExtensions
     }
     
     
+    /// <summary>
+    /// Adds data annotation validation to your contracts & request handlers
+    /// </summary>
+    /// <param name="configurator"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator AddDataAnnotations(this ShinyConfigurator configurator)
+        => configurator.AddOpenRequestMiddleware(typeof(DataAnnotationsRequestMiddleware<,>));
+    
+    
     public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TAttribute>(this IRequestHandler handler) where TAttribute : Attribute
         => handler
             .GetType()
