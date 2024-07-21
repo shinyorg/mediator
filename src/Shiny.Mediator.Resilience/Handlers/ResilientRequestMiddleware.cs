@@ -1,13 +1,7 @@
+using System.Reflection;
 using Polly.Registry;
 
-namespace Shiny.Mediator.Resilience;
-
-
-[AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
-public class ResilientAttribute(string configurationKey) : Attribute
-{
-    public string ConfigurationKey => configurationKey;
-}
+namespace Shiny.Mediator.Resilience.Handlers;
 
 /*
 services.AddResiliencePipeline(key, static builder =>
@@ -34,6 +28,7 @@ public class ResilientRequestHandlerMiddleware<TRequest, TResult>(ResiliencePipe
     )
     {
         var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, ResilientAttribute>();
+        attribute ??= request.GetType().GetCustomAttribute<ResilientAttribute>();
         if (attribute == null)
             return await next().ConfigureAwait(false);
 

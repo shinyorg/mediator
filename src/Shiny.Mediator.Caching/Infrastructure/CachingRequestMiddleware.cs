@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Reflection;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Shiny.Mediator.Caching.Infrastructure;
@@ -17,6 +18,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(IMemoryCache cache) : I
             return await next().ConfigureAwait(false);
 
         var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
+        attribute ??= request!.GetType().GetCustomAttribute<CacheAttribute>();
         if (attribute == null)
             return await next().ConfigureAwait(false);
         

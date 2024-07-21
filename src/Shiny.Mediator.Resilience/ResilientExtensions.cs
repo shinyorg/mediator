@@ -1,6 +1,7 @@
 using Polly;
+using Shiny.Mediator.Resilience.Handlers;
 
-namespace Shiny.Mediator.Resilience;
+namespace Shiny.Mediator;
 
 
 public static class ResilientExtensions

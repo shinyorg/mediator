@@ -1,3 +1,4 @@
+using System.Reflection;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
@@ -16,6 +17,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(IConnectivity 
             return await next().ConfigureAwait(false);
 
         var cfg = requestHandler.GetHandlerHandleMethodAttribute<TRequest, OfflineAvailableAttribute>();
+        cfg ??= request!.GetType().GetCustomAttribute<OfflineAvailableAttribute>();
         if (cfg == null)
             return await next().ConfigureAwait(false);
         
