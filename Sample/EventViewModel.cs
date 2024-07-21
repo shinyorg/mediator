@@ -1,48 +1,46 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+
 namespace Sample;
 
 
-public class EventViewModel : ViewModel
+public partial class EventViewModel(
+    IPageDialogService dialogs,
+    AppSqliteConnection conn
+) : ObservableObject, IPageLifecycleAware
 {
-    public EventViewModel(
-        BaseServices services, 
-        AppSqliteConnection conn
-    ) : base(services)
+    [RelayCommand]
+    async Task Clear()
     {
-        this.Load = ReactiveCommand.CreateFromTask(async () =>
+        var confirm = await dialogs.DisplayAlertAsync("Clear all events?", "Confirm", "Yes", "No");
+        if (confirm)
         {
-            var list = await conn.Logs.OrderByDescending(x => x.Timestamp).ToListAsync();
-            this.List = list
-                .Select(x => new EventItemViewModel(
-                    x.Area,
-                    x.Arg,
-                    x.FireAndForget,
-                    x.ExecutionTimeMillis,
-                    x.Timestamp.ToLocalTime().ToString("g")
-                ))
-                .ToList();
-        });
-        this.BindBusyCommand(this.Load);
-        
-        this.Clear = ReactiveCommand.CreateFromTask(async () =>
-        {
-            var confirm = await this.Dialogs.Confirm("Clear all events?", "Confirm");
-            if (confirm)
-            {
-                await conn.DeleteAllAsync<LogModel>();
-                this.Load.Execute(null);
-            }
-        });
+            await conn.DeleteAllAsync<LogModel>();
+            await this.LoadCommand.ExecuteAsync(null!);
+        }
     }
-    
-    public ICommand Clear { get; }
-    public ICommand Load { get; }
-    [Reactive] public List<EventItemViewModel> List { get; private set; }
 
-    public override void OnAppearing()
+
+    [RelayCommand]
+    async Task Load()
     {
-        base.OnAppearing();
-        this.Load.Execute(null);
+        var tmp = await conn.Logs.OrderByDescending(x => x.Timestamp).ToListAsync();
+        this.List = tmp
+            .Select(x => new EventItemViewModel(
+                x.Area,
+                x.Arg,
+                x.FireAndForget,
+                x.ExecutionTimeMillis,
+                x.Timestamp.ToLocalTime().ToString("g")
+            ))
+            .ToList();
     }
+
+    [ObservableProperty] List<EventItemViewModel> list;
+    [ObservableProperty] bool isBusy;
+    
+    public void OnAppearing() => this.LoadCommand.Execute(null);
+    public void OnDisappearing() {}
 }
 
 public record EventItemViewModel(

@@ -8,12 +8,12 @@
     
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Clear" 
-                     Command="{Binding Clear}" />    
+                     Command="{Binding ClearCommand}" />    
     </ContentPage.ToolbarItems>
     
     <ContentPage.Content>
-        <RefreshView IsRefreshing="{Binding IsBusy}"
-                     Command="{Binding Load}">
+        <RefreshView IsRefreshing="{Binding LoadCommand.IsRunning}"
+                     Command="{Binding LoadCommand}">
             <CollectionView ItemsSource="{Binding List}">
                 <CollectionView.EmptyView>
                     <Label Text="No Records Found"
