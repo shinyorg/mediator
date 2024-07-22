@@ -49,7 +49,7 @@ public static class MediatorExtensions
     /// <typeparam name="TRequest"></typeparam>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    public static TimestampedResult<TResult> ToTimestamp<TRequest, TResult>(this IRequestHandler<TRequest, TResult> handler, TResult result, DateTimeOffset? dt = null) where TRequest : IRequest<TResult>∂
+    public static TimestampedResult<TResult> ToTimestamp<TRequest, TResult>(this IRequestHandler<TRequest, TResult> handler, TResult result, DateTimeOffset? dt = null) where TRequest : IRequest<TResult>
         => new (dt ?? DateTimeOffset.UtcNow, result);
     
     public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TAttribute>(this IRequestHandler handler) where TAttribute : Attribute
