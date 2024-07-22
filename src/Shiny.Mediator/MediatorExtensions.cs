@@ -40,6 +40,17 @@ public static class MediatorExtensions
     public static ShinyConfigurator AddDataAnnotations(this ShinyConfigurator configurator)
         => configurator.AddOpenRequestMiddleware(typeof(DataAnnotationsRequestMiddleware<,>));
     
+    /// <summary>
+    /// Transforms result to a timestamped values
+    /// </summary>
+    /// <param name="handler"></param>
+    /// <param name="result"></param>
+    /// <param name="dt"></param>
+    /// <typeparam name="TRequest"></typeparam>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    public static TimestampedResult<TResult> ToTimestamp<TRequest, TResult>(this IRequestHandler<TRequest, TResult> handler, TResult result, DateTimeOffset? dt = null) where TRequest : IRequest<TResult>∂
+        => new (dt ?? DateTimeOffset.UtcNow, result);
     
     public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TAttribute>(this IRequestHandler handler) where TAttribute : Attribute
         => handler
