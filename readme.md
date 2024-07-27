@@ -22,7 +22,7 @@ were aimed more at server scenarios, while also adding some features we feel ben
 - [End-to-End Architectural Layout Sample](https://github.com/shinyorg/mediatorsample)
 
 ## Features
-- A Mediator for your .NET Apps (MAUI & Blazor are the main targets for us)
+- A Mediator for your .NET Apps (ASP.NET, Blazor, MAUI, basically anywhere in .NET)
 - Request/Response "Command" Handling
 - Event Publication
 - Request & event middleware with some great "out of the box" scenarios for your app
