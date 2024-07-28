@@ -1,5 +1,10 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+
 namespace Sample;
 
-public class BlazorViewModel(BaseServices services) : ViewModel(services)
+
+public partial class BlazorViewModel(INavigationService navigator) : ObservableObject
 {
+    [RelayCommand] Task Navigate() => navigator.NavigateAsync(nameof(AnotherPage));
 }

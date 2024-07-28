@@ -8,7 +8,7 @@ public static class MauiProgram
         var builder = MauiApp
             .CreateBuilder()
             .UseMauiApp<App>()
-            .UseShinyFramework(
+            .UsePrism(
                 new DryIocContainerExtension(),
                 prism => prism.CreateWindow(nav => nav
                     .CreateBuilder()
@@ -26,8 +26,7 @@ public static class MauiProgram
                             .AddSegment(nameof(BlazorPage))
                         )
                     )
-                ),
-                new(ErrorAlertType.FullError)
+                )
             );
 
 #if DEBUG

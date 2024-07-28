@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Impl;
 
@@ -7,6 +8,7 @@ static class RequestExecutor
     public static async Task<TResult> Execute<TRequest, TResult>(
         IServiceProvider services, 
         TRequest request, 
+        ILogger<TRequest> logger,
         IRequestHandler requestHandler,
         RequestHandlerDelegate<TResult> handlerExec,
         CancellationToken cancellationToken
@@ -18,13 +20,21 @@ static class RequestExecutor
             .Reverse()
             .Aggregate(
                 handlerExec, 
-                (next, middleware) => () => middleware.Process(
-                    request, 
-                    next, 
-                    requestHandler,
-                    cancellationToken
-                )
-            )
+                (next, middleware) => () =>
+                {
+                    logger.LogDebug(
+                        "Executing request middleware {MiddlewareType} for {RequestType}",
+                        middleware.GetType().FullName,
+                        request.GetType().FullName
+                    );
+                    
+                    return middleware.Process(
+                        request,
+                        next,
+                        requestHandler,
+                        cancellationToken
+                    );
+                })
             .Invoke()
             .ConfigureAwait(false);
 
