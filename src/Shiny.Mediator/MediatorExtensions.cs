@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Impl;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Middleware;
@@ -17,19 +18,53 @@ public static class MediatorExtensions
                 onError(x.Exception);
         }, TaskContinuationOptions.OnlyOnFaulted);
     
+    /// <summary>
+    /// Fire & Forget task pattern that logs errors
+    /// </summary>
+    /// <param name="task"></param>
+    /// <param name="errorLogger"></param>
+    public static void RunInBackground(this Task task, ILogger errorLogger)
+        => task.ContinueWith(x =>
+        {
+            if (x.Exception != null)
+                errorLogger.LogError(x.Exception, "Fire & Forget trapped error");
+        }, TaskContinuationOptions.OnlyOnFaulted);
+    
     
     public static IServiceCollection AddShinyMediator(this IServiceCollection services, Action<ShinyConfigurator>? configurator = null)
     {
         var cfg = new ShinyConfigurator(services);
         configurator?.Invoke(cfg);
         if (!cfg.ExcludeDefaultMiddleware)
+        {
             cfg.AddOpenStreamMiddleware(typeof(TimerRefreshStreamRequestMiddleware<,>));
-        
+            cfg.AddEventExceptionHandlingMiddleware();
+            cfg.AddTimedMiddleware();
+        }
+
         services.TryAddSingleton<IMediator, Impl.Mediator>();
         services.TryAddSingleton<IRequestSender, DefaultRequestSender>();
         services.TryAddSingleton<IEventPublisher, DefaultEventPublisher>();
         return services;
     }
+    
+    
+    /// <summary>
+    /// Timed middleware logging
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator AddTimedMiddleware(this ShinyConfigurator cfg)
+        => cfg.AddOpenRequestMiddleware(typeof(TimedLoggingRequestMiddleware<,>));
+
+
+    /// <summary>
+    ///  Event Exception Management
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator AddEventExceptionHandlingMiddleware(this ShinyConfigurator cfg)
+        => cfg.AddOpenEventMiddleware(typeof(ExceptionHandlerEventMiddleware<>));
     
     
     /// <summary>

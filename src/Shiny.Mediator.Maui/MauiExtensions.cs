@@ -11,18 +11,6 @@ namespace Shiny.Mediator;
 
 public static class MauiExtensions
 {
-    /// <summary>
-    /// Fire & Forget task pattern that logs errors
-    /// </summary>
-    /// <param name="task"></param>
-    /// <param name="errorLogger"></param>
-    public static void RunInBackground(this Task task, ILogger errorLogger)
-        => task.ContinueWith(x =>
-        {
-            if (x.Exception != null)
-                errorLogger.LogError(x.Exception, "Fire & Forget trapped error");
-        }, TaskContinuationOptions.OnlyOnFaulted);
-
     
     static ShinyConfigurator EnsureInfrastructure(this ShinyConfigurator cfg)
     {
@@ -45,13 +33,9 @@ public static class MauiExtensions
         
         if (includeStandardMiddleware)
         {
-            cfg.AddEventExceptionHandlingMiddleware();
             cfg.AddMainThreadMiddleware();
-            
             cfg.AddUserNotificationExceptionMiddleware();
-            cfg.AddTimedMiddleware();
             cfg.AddOfflineAvailabilityMiddleware();
-
             cfg.AddReplayStreamMiddleware();
         }
         return cfg;
@@ -68,23 +52,6 @@ public static class MauiExtensions
         cfg.Services.AddSingleton(typeof(IRequestHandler<>), typeof(ShellNavigationRequestHandler<>));
         return cfg;
     }
-
-    /// <summary>
-    /// Timed middleware logging
-    /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
-    public static ShinyConfigurator AddTimedMiddleware(this ShinyConfigurator cfg)
-        => cfg.AddOpenRequestMiddleware(typeof(TimedLoggingRequestMiddleware<,>));
-
-
-    /// <summary>
-    ///  Event Exception Management
-    /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
-    public static ShinyConfigurator AddEventExceptionHandlingMiddleware(this ShinyConfigurator cfg)
-        => cfg.AddOpenEventMiddleware(typeof(ExceptionHandlerEventMiddleware<>));
 
 
     /// <summary>
