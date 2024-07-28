@@ -9,9 +9,9 @@
     
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Another Page" 
-                     Command="{Binding Navigate}"
-                     CommandParameter="AnotherPage" />
+                     Command="{Binding NavigateCommand}" />
     </ContentPage.ToolbarItems>
+    
     <ContentPage.Content>
         <BlazorWebView x:Name="blazorWebView" 
                        HostPage="wwwroot/index.html">

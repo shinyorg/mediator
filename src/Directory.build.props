@@ -6,13 +6,13 @@
         <Nullable>enable</Nullable>
         <DisableExtraReferences>False</DisableExtraReferences>
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
-        <Description>Shiny Mediator - a mediator pattern but for apps</Description>
+        <Description>Shiny Mediator - A mediator pattern for all .NET Apps</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://shinylib.net/client/mediator</PackageProjectUrl>
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
         <PackageReleaseNotes>https://shinylib.net/release-notes/mediator/v10/</PackageReleaseNotes>
-        <PackageTags>mediator maui blazor</PackageTags>
+        <PackageTags>mediator shiny aspnet maui blazor prism</PackageTags>
         <RepositoryUrl>https://github.com/shinyorg/mediator</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
 

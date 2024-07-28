@@ -1,16 +1,17 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using Sample.Contracts;
-using Shiny.Mediator.Middleware;
 
 namespace Sample;
 
 
-public class AnotherViewModel(BaseServices services, AppSqliteConnection conn) : ViewModel(services), IEventHandler<MyMessageEvent>
+public partial class AnotherViewModel(AppSqliteConnection conn) : ObservableObject, INavigatedAware, IEventHandler<MyMessageEvent>
 {
     const string Key = nameof(MyPrismNavRequest);
+
     
-    public override void OnNavigatedTo(INavigationParameters parameters)
+    public void OnNavigatedFrom(INavigationParameters parameters) {}
+    public void OnNavigatedTo(INavigationParameters parameters)
     {
-        base.OnNavigatedTo(parameters);
         if (parameters.ContainsKey(Key))
         {
             var p = parameters.GetValue<MyPrismNavRequest>(Key);
@@ -19,10 +20,10 @@ public class AnotherViewModel(BaseServices services, AppSqliteConnection conn) :
             this.Arg = p.Arg ?? "No Argument";
         }
     }
-    
-    
-    [Reactive] public bool ShowArg { get; private set; }
-    [Reactive] public string Arg { get; private set; }
+
+
+    [ObservableProperty] bool showArg;
+    [ObservableProperty] string arg;
 
     [MainThread]
     public Task Handle(MyMessageEvent @event, CancellationToken cancellationToken) =>

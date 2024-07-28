@@ -6,7 +6,7 @@ namespace Sample.Services;
 
 public class AppSqliteConnection : SQLiteAsyncConnection
 {
-    public AppSqliteConnection(IPlatform platform) : base(Path.Combine(platform.AppData.FullName, "app.db"), true)
+    public AppSqliteConnection() : base(Path.Combine(FileSystem.AppDataDirectory, "app.db"), true)
     {
         var data = this.GetConnection();
         data.CreateTable<LogModel>();

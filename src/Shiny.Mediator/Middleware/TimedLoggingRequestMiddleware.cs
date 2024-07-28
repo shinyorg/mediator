@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Reflection;
 using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Middleware;
@@ -17,13 +16,12 @@ public class TimedLoggingRequestMiddleware<TRequest, TResult>(ILogger<TRequest> 
         var result = await next();
         sw.Stop();
 
-        var msg = $"{typeof(TRequest)} pipeline execution took ${sw.Elapsed}";
         var ts = TimeSpan.FromMilliseconds(attribute.ErrorThresholdMillis);
         if (attribute.ErrorThresholdMillis > 0 && sw.Elapsed > ts)
-            logger.LogError(msg);
+            logger.LogError("{RequestType} took longer than {Threshold} to execute - {Elapsed}", typeof(TRequest), ts, sw.Elapsed);
 
         else if (logger.IsEnabled(LogLevel.Debug))
-            logger.LogDebug(msg);
+            logger.LogDebug("{RequestType} took {Elapsed} to execute", typeof(TRequest), sw.Elapsed);
         
         return result;
     }

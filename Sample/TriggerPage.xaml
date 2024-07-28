@@ -25,7 +25,7 @@
             
             <TableSection Title="REQUESTS - User Notify">
                 <TextCell Text="Error Trap" 
-                          Command="{Binding ErrorTrap}" />
+                          Command="{Binding ErrorTrapCommand}" />
             </TableSection>
             
             <TableSection Title="REQUESTS - Offline">
@@ -37,8 +37,8 @@
             </TableSection>
             
             <TableSection Title="REQUESTS - Cache">
-                <TextCell Text="Clear" Command="{Binding CacheClear}" />
-                <TextCell Text="Request" Command="{Binding CacheRequest}" />
+                <TextCell Text="Clear" Command="{Binding CacheClearCommand}" />
+                <TextCell Text="Request" Command="{Binding CacheRequestCommand}" />
                 <TextCell Text="Value" Detail="{Binding CacheValue}" />
                 <TextCell Text="Cache has a 20s expiry time" />
             </TableSection>
@@ -46,20 +46,18 @@
             <TableSection Title="REQUESTS - Validation">
                 <EntryCell Label="Valid URL" Text="{Binding ValidateUrl}" Keyboard="Url" />
                 <TextCell Text="{Binding ValidateError}" TextColor="Red" />
-                <TextCell Text="Validate" Command="{Binding Validate}" />
+                <TextCell Text="Validate" Command="{Binding ValidateCommand}" />
             </TableSection>
             
             <TableSection Title="REQUESTS - Prism Navigation">
                 <EntryCell Label="Arg" Text="{Binding PrismNavArg}" />
-                <TextCell Text="Navigate" Command="{Binding PrismNav}" />
+                <TextCell Text="Navigate" Command="{Binding PrismNavCommand}" />
             </TableSection>
             
-            <!--
             <TableSection Title="REQUESTS - Resiliency">
                 <TextCell Text="Request" Command="{Binding ResilientCommand}" />
                 <TextCell Text="Value" Detail="{Binding ResilientValue}" />
             </TableSection>
-            -->
             
             <TableSection Title="STREAMING - Standard">
                 <EntryCell Label="Repeat" 
@@ -75,18 +73,18 @@
                            Keyboard="Numeric" />
                 
                 <TextCell Text="Run" 
-                          Command="{Binding Stream}"/>
+                          Command="{Binding StreamCommand}"/>
                 
                 <TextCell Text="Stop" 
-                          Command="{Binding CancelStream}"/>
+                          Command="{Binding CancelCommand}"/>
                 
                 <TextCell Text="Last Response" 
                           Detail="{Binding StreamLastResponse}" />
             </TableSection>
             
             <TableSection Title="STREAMING - Timer Refresh">
-                <TextCell Text="Start" Command="{Binding RefreshTimerStart}" />
-                <TextCell Text="Stop" Command="{Binding CancelStream}" />
+                <TextCell Text="Start" Command="{Binding RefreshTimerStartCommand}" />
+                <TextCell Text="Stop" Command="{Binding CancelCommand}" />
                 <TextCell Text="Last Value" Detail="{Binding LastRefreshTimerValue}" />
             </TableSection>
             

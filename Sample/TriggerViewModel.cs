@@ -1,135 +1,26 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Caching.Memory;
 using Sample.Contracts;
 
 namespace Sample;
 
 
-public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
+public partial class TriggerViewModel(
+    IMediator mediator,
+    IMemoryCache cache,
+    AppSqliteConnection data,
+    IPageDialogService dialogs
+) : ObservableObject, IEventHandler<MyMessageEvent>
 {
     readonly IDisposable sub;
-    CancellationTokenSource? cancelSource;
+    CancellationTokenSource cancelSource = new();
     
-    public TriggerViewModel(
-        BaseServices services, 
-        IMediator mediator,
-        IMemoryCache cache,
-        AppSqliteConnection data
-    ) 
-    : base(services)
-    {
-        this.TriggerCommand = ReactiveCommand.CreateFromTask(
-            async () =>
-            {
-                this.cancelSource = new();
-                var request = new MyMessageRequest(
-                    this.Arg!,
-                    this.FireAndForgetEvents
-                );
-                var result = await mediator.Request(request, this.cancelSource.Token);
-                
-                await data.Log(
-                    "TriggerViewModel-Response",
-                    new MyMessageEvent(
-                        result.Response, 
-                        this.FireAndForgetEvents 
-                    )
-                );
-                await this.Dialogs.Alert("Execution Complete");
-            }
-        );
-        this.BindBusyCommand(this.TriggerCommand);
 
-        this.CancelCommand = ReactiveCommand.CreateFromTask(
-            async () =>
-            {
-                this.cancelSource?.Cancel();
-                await data.Log(
-                    "TriggerViewModel-Cancel",
-                    new MyMessageEvent(
-                        this.Arg!, 
-                        this.FireAndForgetEvents
-                    )
-                );
-            },
-            this.WhenAny(
-                x => x.IsBusy,
-                busy => busy.GetValue()
-            )
-        );
-
-        this.ErrorTrap = ReactiveCommand.CreateFromTask(() => mediator.Send(new ErrorRequest()));
-
-        this.Stream = ReactiveCommand.CreateFromTask(async () =>
-        {
-            var stream = mediator.Request(
-                new TickerRequest(this.StreamRepeat, this.StreamMultiplier, this.StreamGapSeconds), 
-                this.DeactivateToken
-            );
-            await foreach (var item in stream)
-            {
-                this.StreamLastResponse = item;
-            } 
-        });
-        this.sub = mediator.Subscribe((MyMessageEvent @event, CancellationToken _) =>
-            data.Log("TriggerViewModel-Subscribe", @event)
-        );
-
-        this.CacheClear = ReactiveCommand.CreateFromTask(async () =>
-        {
-            cache.Clear();
-            await this.Dialogs.Alert("Cache Cleared");
-        });
-
-        this.CancelStream = ReactiveCommand.CreateFromTask(async () =>
-        {
-            this.Deactivate();
-            await this.Dialogs.Alert("All streams cancelled");
-        });
-        this.CacheRequest = ReactiveCommand.CreateFromTask(async () =>
-        {
-            this.CacheValue = await mediator.Request(new CacheRequest());
-        });
-
-        this.ResilientCommand = ReactiveCommand.CreateFromTask(async () =>
-        {
-            this.ResilientValue = await mediator.Request(new ResilientRequest());
-        });
-
-        this.OfflineCommand = ReactiveCommand.CreateFromTask(async () =>
-        {
-            this.OfflineValue = await mediator.Request(new OfflineRequest());
-        });
-
-        this.RefreshTimerStart = ReactiveCommand.CreateFromTask(async () =>
-        {
-            var en = mediator.Request(new AutoRefreshRequest(), this.DeactivateToken).GetAsyncEnumerator(this.DeactivateToken);
-            while (await en.MoveNextAsync())
-            {
-                await MainThread.InvokeOnMainThreadAsync(
-                    () => this.LastRefreshTimerValue = en.Current
-                );
-            }
-        });
-
-        this.PrismNav = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await mediator.Send(new MyPrismNavRequest(this.PrismNavArg!), CancellationToken.None);
-        });
-
-        this.Validate = ReactiveCommand.CreateFromTask(async () =>
-        {
-            try
-            {
-                await mediator.Send(new MyValidateRequest { Url = this.ValidateUrl });
-                await this.Dialogs.Alert("All is good");
-            }
-            catch (ValidateException ex)
-            {
-                this.ValidateError = ex.Result.Errors.First().Value.First();
-            }
-        });
-    }
-
+        // this.sub = mediator.Subscribe((MyMessageEvent @event, CancellationToken _) =>
+        //     data.Log("TriggerViewModel-Subscribe", @event)
+        // );
+        
     
     [MainThread]
     public Task Handle(MyMessageEvent @event, CancellationToken cancellationToken)
@@ -139,43 +30,120 @@ public class TriggerViewModel : ViewModel, IEventHandler<MyMessageEvent>
         return Task.CompletedTask;
     }
 
-    
-    public ICommand PrismNav { get; }
-    [Reactive] public string PrismNavArg { get; set; }
-    
-    public ICommand OfflineCommand { get; }
-    [Reactive] public string OfflineValue { get; private set; }
-    
-    public ICommand CancelStream { get; }
-    public ICommand ErrorTrap { get; }
-    public ICommand TriggerCommand { get; }
-    public ICommand CancelCommand { get; }
-    public ICommand CacheRequest { get; }
-    public ICommand CacheClear { get; }
-    [Reactive] public string CacheValue { get; private set; }
 
-    [Reactive] public string LastRefreshTimerValue { get; private set; }
-    public ICommand RefreshTimerStart { get; }
+    [RelayCommand]
+    Task PrismNav()
+        => mediator.Send(new MyPrismNavRequest(this.PrismNavArg!), CancellationToken.None);
     
-    public ICommand Validate { get; }
-    [Reactive] public string ValidateUrl { get; set; }
-    [Reactive] public string ValidateError { get; private set; }
-    
-    public ICommand ResilientCommand { get; }
-    [Reactive] public string ResilientValue { get; private set; }
-    
-    [Reactive] public string Arg { get; set; }
-    [Reactive] public bool FireAndForgetEvents { get; set; }
+    [ObservableProperty] string prismNavArg;
 
-    public ICommand Stream { get; }
-    [Reactive] public int StreamGapSeconds { get; set; } = 1;
-    [Reactive] public int StreamRepeat { get; set; } = 5;
-    [Reactive] public int StreamMultiplier { get; set; } = 2;
-    [Reactive] public string? StreamLastResponse { get; private set; } 
     
-    public override void Destroy()
+    [RelayCommand]
+    async Task Offline() => this.OfflineValue = await mediator.Request(new OfflineRequest());
+    [ObservableProperty] string offlineValue;
+
+    [RelayCommand]
+    Task ErrorTrap() => mediator.Send(new ErrorRequest());
+
+
+    [RelayCommand]
+    async Task Trigger()
     {
-        base.Destroy();
-        this.sub?.Dispose();
+        this.cancelSource = new();
+        var request = new MyMessageRequest(
+            this.Arg!,
+            this.FireAndForgetEvents
+        );
+        var result = await mediator.Request(request, this.cancelSource.Token);
+        
+        await data.Log(
+            "TriggerViewModel-Response",
+            new MyMessageEvent(
+                result.Response, 
+                this.FireAndForgetEvents 
+            )
+        );
+        await dialogs.DisplayAlertAsync("Execution Complete", "DONE", "Ok");
     }
+
+    [RelayCommand]
+    async Task Cancel()
+    {
+        this.cancelSource.Cancel();
+        await dialogs.DisplayAlertAsync("All streams cancelled", "DONE", "Ok");
+        this.cancelSource = new();
+    }
+
+
+    [RelayCommand]
+    async Task CacheRequest() => this.CacheValue = await mediator.Request(new CacheRequest());
+    
+    [RelayCommand]
+    async Task CacheClear()
+    {
+        cache.Clear();
+        await dialogs.DisplayAlertAsync("Cache Cleared", "DONE", "Ok");
+    }
+    [ObservableProperty] string cacheValue;
+    [ObservableProperty] string lastRefreshTimerValue;
+
+
+    [RelayCommand]
+    async Task RefreshTimerStart()
+    {
+        var en = mediator
+            .Request(new AutoRefreshRequest(), this.cancelSource.Token)
+            .GetAsyncEnumerator(this.cancelSource.Token);
+        
+        while (await en.MoveNextAsync())
+        {
+            await MainThread.InvokeOnMainThreadAsync(
+                () => this.LastRefreshTimerValue = en.Current
+            );
+        }
+    }
+
+    
+    [RelayCommand]
+    async Task Validate()
+    {
+        try
+        {
+            await mediator.Send(new MyValidateRequest { Url = this.ValidateUrl });
+            await dialogs.DisplayAlertAsync("All is good", "VALID", "Ok");
+        }
+        catch (ValidateException ex)
+        {
+            this.ValidateError = ex.Result.Errors.First().Value.First();
+        }
+    }
+    [ObservableProperty] string validateUrl;
+    [ObservableProperty] string validateError;
+
+
+    [RelayCommand]
+    async Task Resilient() => this.ResilientValue = await mediator.Request(new ResilientRequest());
+    [ObservableProperty] string resilientValue;
+
+    
+    [ObservableProperty] string arg;
+    [ObservableProperty] bool fireAndForgetEvents;
+
+    [RelayCommand]
+    async Task Stream()
+    {
+        var stream = mediator.Request(
+            new TickerRequest(this.StreamRepeat, this.StreamMultiplier, this.StreamGapSeconds), 
+            this.cancelSource.Token
+        );
+        await foreach (var item in stream)
+        {
+            this.StreamLastResponse = item;
+        } 
+    }
+    
+    [ObservableProperty] int streamGapSeconds = 1;
+    [ObservableProperty] int streamRepeat = 5;
+    [ObservableProperty] int streamMultiplier = 2;
+    [ObservableProperty] string? streamLastResponse;
 }

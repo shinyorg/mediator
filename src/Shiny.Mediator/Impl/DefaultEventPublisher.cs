@@ -1,9 +1,14 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Impl;
 
-public class DefaultEventPublisher(IServiceProvider services, IEnumerable<IEventCollector> collectors) : IEventPublisher
+public class DefaultEventPublisher(
+    IServiceProvider services, 
+    ILogger<IEventPublisher> logger,
+    IEnumerable<IEventCollector> collectors
+) : IEventPublisher
 {
     readonly SubscriptionEventCollector subscriptions = new();
 
@@ -31,7 +36,7 @@ public class DefaultEventPublisher(IServiceProvider services, IEnumerable<IEvent
 
         var middlewares = scope.ServiceProvider.GetServices<IEventMiddleware<TEvent>>().ToList();
         var tasks = handlers
-            .Select(x => Execute(@event, x, middlewares, cancellationToken))
+            .Select(x => Execute(@event, x, logger, middlewares, cancellationToken))
             .ToList();
         
         await Task
@@ -51,25 +56,40 @@ public class DefaultEventPublisher(IServiceProvider services, IEnumerable<IEvent
     static async Task Execute<TEvent>(
         TEvent @event,
         IEventHandler<TEvent> eventHandler, 
+        ILogger<IEventPublisher> logger,
         IEnumerable<IEventMiddleware<TEvent>> middlewares,
         CancellationToken cancellationToken
     ) where TEvent : IEvent
     {
-        var handlerDelegate = new EventHandlerDelegate(
-            () => eventHandler.Handle(@event, cancellationToken)
-        );
+        var handlerDelegate = new EventHandlerDelegate(() =>
+        {
+            logger.LogDebug(
+                "Executing Event Handler {HandlerType} for {EventType}", 
+                eventHandler.GetType().FullName,
+                @event.GetType().FullName
+            );
+            return eventHandler.Handle(@event, cancellationToken);
+        });
         
         await middlewares
             .Reverse()
             .Aggregate(
                 handlerDelegate, 
-                (next, middleware) => () => middleware.Process(
-                    @event, 
-                    next, 
-                    eventHandler,
-                    cancellationToken
-                )
-            )
+                (next, middleware) => () =>
+                {
+                    logger.LogDebug(
+                        "Executing event middleware {MiddlewareType} for {RequestType}",
+                        middleware.GetType().FullName,
+                        @event.GetType().FullName
+                    );
+                    
+                    return middleware.Process(
+                        @event,
+                        next,
+                        eventHandler,
+                        cancellationToken
+                    );
+                })
             .Invoke()
             .ConfigureAwait(false);
     }

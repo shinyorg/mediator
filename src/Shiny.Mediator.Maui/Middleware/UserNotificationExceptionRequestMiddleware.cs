@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Middleware;
@@ -8,6 +9,7 @@ public class UserExceptionRequestMiddleware<TRequest, TResult>(ILogger<TRequest>
     public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler requestHandler, CancellationToken cancellationToken)
     {
         var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, UserNotifyAttribute>();
+        attribute ??= request!.GetType().GetCustomAttribute<UserNotifyAttribute>();
         if (attribute == null)
             return await next().ConfigureAwait(false);
         

@@ -36,6 +36,7 @@ were aimed more at server scenarios, while also adding some features we feel ben
 - Direct Handler to ASP.NET Core endpoint
 - Epic Out-of-the-Box Middleware
   - Offline Caching
+  - Validation with Data Annotations or FluentValidation
   - Caching
   - Resiliency
   - User Exception Handling notifications
@@ -44,6 +45,7 @@ were aimed more at server scenarios, while also adding some features we feel ben
   - Main Thread Dispatching
   - Replayable Streams
   - Refresh Timer Streams
+  - Registration straight from startup to mediator (we do the minimal api reg for you)
 
 ## Works With
 - .NET MAUI - all platforms
