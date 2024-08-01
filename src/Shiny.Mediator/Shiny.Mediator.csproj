@@ -12,7 +12,6 @@
         <ProjectReference Include="..\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false" />
-        <None Include="Shiny.Mediator.targets" Pack="True" PackagePath="buildTransitive" />
     </ItemGroup>
 
     <ItemGroup>
