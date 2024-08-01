@@ -1,6 +1,6 @@
 ﻿using Shiny.Mediator.Infrastructure;
 
-namespace Shiny.Mediator.Maui;
+namespace Shiny.Mediator.Maui.Infrastructure;
 
 
 public class MauiEventCollector : IEventCollector
@@ -10,6 +10,7 @@ public class MauiEventCollector : IEventCollector
         // I need to make this crawl the tree, but really I don't need a ton of use-cases here
         var list = new List<IEventHandler<TEvent>>();
         var mainPage = Application.Current?.MainPage;
+        // Application.Current.Windows
         if (mainPage == null)
             return list;
         
