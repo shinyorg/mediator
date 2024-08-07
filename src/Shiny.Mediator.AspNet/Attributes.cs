@@ -1,10 +1,10 @@
 namespace Shiny.Mediator;
 
-// [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-// public class MediatorHttpGetAttribute(string uriTemplate) : MediatorHttpAttribute(uriTemplate, HttpMethod.Get);
-//
-// [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-// public class MediatorHttpDeleteAttribute(string uriTemplate) : MediatorHttpAttribute(uriTemplate, HttpMethod.Delete);
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public class MediatorHttpGetAttribute(string uriTemplate) : MediatorHttpAttribute(uriTemplate, HttpMethod.Get);
+
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public class MediatorHttpDeleteAttribute(string uriTemplate) : MediatorHttpAttribute(uriTemplate, HttpMethod.Delete);
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public class MediatorHttpPostAttribute(string uriTemplate) : MediatorHttpAttribute(uriTemplate, HttpMethod.Post);

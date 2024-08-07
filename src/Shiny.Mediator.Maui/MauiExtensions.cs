@@ -4,6 +4,7 @@ using Shiny.Mediator.Handlers;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Infrastructure.Impl;
 using Shiny.Mediator.Maui;
+using Shiny.Mediator.Maui.Infrastructure;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;

@@ -82,14 +82,13 @@ public class MediatorSourceGenerator : ISourceGenerator
             .AppendLine($"\tpublic static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFrom{assName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)")
             .AppendLine("\t{");
 
-
         foreach (var clazz in classes)
         {
             var cls = clazz.ToDisplayString();
             if (clazz.HasAttribute("ScopedHandlerAttribute") || clazz.HasAttribute("ScopedMiddlewareAttribute"))
-                sb.AppendLine($"\t\tservices.AddSingletonAsImplementedInterfaces<{cls}>();");
-            else
                 sb.AppendLine($"\t\tservices.AddScopedAsImplementedInterfaces<{cls}>();");
+            else
+                sb.AppendLine($"\t\tservices.AddSingletonAsImplementedInterfaces<{cls}>();");
         }
 
         sb

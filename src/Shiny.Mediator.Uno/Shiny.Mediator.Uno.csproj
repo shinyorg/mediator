@@ -1,0 +1,21 @@
+<Project Sdk="Uno.Sdk/5.3.90">
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net8.0-ios;net8.0-maccatalyst;net8.0-android;net8.0-windows10.0.19041;net8.0-browserwasm;net8.0-desktop</TargetFrameworks>
+        <UnoSingleProject>true</UnoSingleProject>
+        <OutputType>Library</OutputType>
+
+        <GenerateLibraryLayout>true</GenerateLibraryLayout>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <!--
+          UnoFeatures let's you quickly add and manage implicit package references based on the features you want to use.
+          https://aka.platform.uno/singleproject-features
+        -->
+        <UnoFeatures>Hosting;Navigation</UnoFeatures>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
+    </ItemGroup>
+</Project>
