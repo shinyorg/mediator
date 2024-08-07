@@ -7,8 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Shiny.Mediator;
 
 
-// TODO: IStreamRequest
-// TODO: delete/get
 // TODO: type implements multiple handlers - move attribute to Handle method?
 public static class WebApplicationExtensions
 {
@@ -165,6 +163,42 @@ public class WebAppMap
                 }
             );
         }
+        else if (attribute.Method == HttpMethod.Get)
+        {
+            routerBuilder = app.MapGet(
+                attribute.UriTemplate,
+                async (
+                    [FromServices] IMediator mediator,
+                    [AsParameters] TRequest request,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    await mediator
+                        .Send(request, cancellationToken)
+                        .ConfigureAwait(false);
+                    
+                    return Results.Ok();
+                }
+            );
+        } 
+        else if (attribute.Method == HttpMethod.Delete)
+        {
+            routerBuilder = app.MapDelete(
+                attribute.UriTemplate,
+                async (
+                    [FromServices] IMediator mediator,
+                    [AsParameters] TRequest request,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    await mediator
+                        .Send(request, cancellationToken)
+                        .ConfigureAwait(false);
+                    
+                    return Results.Ok();
+                }
+            );
+        } 
         else
         {
             throw new InvalidOperationException($"Invalid Mediator Endpoint on `{typeof(TRequest).FullName}` - Can only be PUT/POST");
@@ -196,6 +230,28 @@ public class WebAppMap
                 (
                     [FromServices] IMediator mediator,
                     [FromBody] TRequest request,
+                    CancellationToken cancellationToken
+                ) => mediator.Request(request, cancellationToken)
+            );
+        }
+        else if (attribute.Method == HttpMethod.Get)
+        {
+            routerBuilder = app.MapGet(
+                attribute.UriTemplate,
+                (
+                    [FromServices] IMediator mediator,
+                    [AsParameters] TRequest request,
+                    CancellationToken cancellationToken
+                ) => mediator.Request(request, cancellationToken)
+            );
+        }
+        else if (attribute.Method == HttpMethod.Delete)
+        {
+            routerBuilder = app.MapDelete(
+                attribute.UriTemplate,
+                (
+                    [FromServices] IMediator mediator,
+                    [AsParameters] TRequest request,
                     CancellationToken cancellationToken
                 ) => mediator.Request(request, cancellationToken)
             );
@@ -234,7 +290,7 @@ public class WebAppMap
         }
         else if (attribute.Method == HttpMethod.Put)
         {
-            routerBuilder = app.MapPut(
+            routerBuilder = app.MapGet(
                 attribute.UriTemplate,
                 async (
                     [FromServices] IMediator mediator,
@@ -248,6 +304,28 @@ public class WebAppMap
 
                     return Results.Ok(result);
                 }
+            );
+        }
+        else if (attribute.Method == HttpMethod.Get)
+        {
+            routerBuilder = app.MapGet(
+                attribute.UriTemplate,
+                (
+                    [FromServices] IMediator mediator,
+                    [AsParameters] TRequest request,
+                    CancellationToken cancellationToken
+                ) => mediator.Request(request, cancellationToken)
+            );
+        }
+        else if (attribute.Method == HttpMethod.Delete)
+        {
+            routerBuilder = app.MapDelete(
+                attribute.UriTemplate,
+                (
+                    [FromServices] IMediator mediator,
+                    [AsParameters] TRequest request,
+                    CancellationToken cancellationToken
+                ) => mediator.Request(request, cancellationToken)
             );
         }
         else
