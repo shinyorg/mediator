@@ -9,22 +9,18 @@ public class GlobalNavigationService(IApplication application) : IGlobalNavigati
     public Task<INavigationResult> GoBackAsync(INavigationParameters parameters)
         => this.Run(nav => nav.GoBackAsync(parameters));
 
-    public Task<INavigationResult> GoBackAsync(string viewName, INavigationParameters parameters)
-        => this.Run(nav => nav.GoBackAsync(viewName, parameters));
-
-    public Task<INavigationResult> GoBackToAsync(string name, INavigationParameters parameters)
-        => this.Run(nav => nav.NavigateAsync(name, parameters));
+    public Task<INavigationResult> GoBackToAsync(string viewName, INavigationParameters parameters)
+        => this.Run(nav => nav.GoBackToAsync(viewName, parameters));
 
     public Task<INavigationResult> GoBackToRootAsync(INavigationParameters parameters)
-        => this.Run(nav => nav.GoBackAsync(parameters));
+        => this.Run(nav => nav.GoBackToRootAsync(parameters));
 
     public Task<INavigationResult> NavigateAsync(Uri uri, INavigationParameters parameters)
         => this.Run(nav => nav.NavigateAsync(uri, parameters));
 
-    public Task<INavigationResult> SelectTabAsync(string name, INavigationParameters parameters)
+    public Task<INavigationResult> SelectTabAsync(string name, Uri uri, INavigationParameters parameters)
         => this.Run(nav => nav.SelectTabAsync(name, parameters));
-
-
+    
     protected virtual async Task<INavigationResult> Run(Func<INavigationService, Task<INavigationResult>> func)
     {
         var window = application.Windows.OfType<Window>().First();
