@@ -5,7 +5,7 @@
         <TargetFrameworks>$(TargetFrameworks);net8.0-maccatalyst</TargetFrameworks>
         <IosSimulatorBuild Condition="'$(Configuration)' == 'Debug'">False</IosSimulatorBuild>
 
-        <MauiVersion>8.0.70</MauiVersion>
+        <MauiVersion>8.0.80</MauiVersion>
         <OutputType>Exe</OutputType>
         <RootNamespace>Sample</RootNamespace>
         <SingleProject>true</SingleProject>
@@ -94,7 +94,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" Condition="'$(Configuration)' == 'Debug'"/>
 
-        <PackageReference Include="Prism.DryIoc.Maui" Version="9.0.401-pre"/>
+        <PackageReference Include="Prism.DryIoc.Maui" Version="9.0.537" />
         <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
     </ItemGroup>
 
