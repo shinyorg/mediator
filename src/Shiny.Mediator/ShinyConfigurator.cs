@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator;
@@ -24,7 +25,13 @@ public sealed class ShinyConfigurator(IServiceCollection services)
         this.Services.AddSingleton<IEventPublisher, TEventPublisher>();
         return this;
     }
-    
+
+
+    public ShinyConfigurator AddHttpClient()
+    {
+        this.Services.Add(new ServiceDescriptor(typeof(IRequestMiddleware<,>), null, typeof(HttpRequestHandler<,>), ServiceLifetime.Scoped));
+        return this;
+    }
     
     public ShinyConfigurator AddRequestMiddleware<TRequest, TResult, TImpl>(
         ServiceLifetime lifetime = ServiceLifetime.Scoped)
