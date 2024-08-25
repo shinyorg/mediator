@@ -1,9 +1,8 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Handlers;
+using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Infrastructure.Impl;
-using Shiny.Mediator.Maui;
 using Shiny.Mediator.Maui.Infrastructure;
 using Shiny.Mediator.Middleware;
 
@@ -12,16 +11,6 @@ namespace Shiny.Mediator;
 
 public static class MauiExtensions
 {
-    
-    static ShinyConfigurator EnsureInfrastructure(this ShinyConfigurator cfg)
-    {
-        cfg.Services.TryAddSingleton<IEventHandler<FlushAllStoresEvent>, FlushAllCacheEventHandler>();
-        cfg.Services.TryAddSingleton<IStorageManager, StorageManager>();
-        cfg.Services.TryAddSingleton(Connectivity.Current);
-        cfg.Services.TryAddSingleton(FileSystem.Current);
-        return cfg;
-    }
-    
     /// <summary>
     /// Adds Maui Event Collector to mediator
     /// </summary>
@@ -30,6 +19,15 @@ public static class MauiExtensions
     /// <returns></returns>
     public static ShinyConfigurator UseMaui(this ShinyConfigurator cfg, bool includeStandardMiddleware = true)
     {
+        cfg.Services.TryAddSingleton<IEventHandler<FlushAllStoresEvent>, FlushAllCacheEventHandler>();
+        cfg.Services.TryAddSingleton<IStorageManager, StorageManager>();
+        cfg.Services.TryAddSingleton(AppInfo.Current);
+        cfg.Services.TryAddSingleton(DeviceDisplay.Current);
+        cfg.Services.TryAddSingleton(DeviceInfo.Current);
+        cfg.Services.TryAddSingleton(Connectivity.Current);
+        cfg.Services.TryAddSingleton(FileSystem.Current);
+        cfg.Services.TryAddSingleton(Geolocation.Default);
+
         cfg.AddEventCollector<MauiEventCollector>();
         
         if (includeStandardMiddleware)
@@ -42,6 +40,23 @@ public static class MauiExtensions
         return cfg;
     }
 
+
+    /// <summary>
+    /// This appends app version, device info, and culture to the HTTP request handling framework
+    /// </summary>
+    /// <param name="configurator"></param>
+    /// <param name="appendGpsHeader"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator AddMauiHttpDecorator(this ShinyConfigurator configurator, bool appendGpsHeader = false)
+    {
+        configurator.Services.Add(new ServiceDescriptor(
+            typeof(IHttpRequestDecorator<,>), 
+            null,
+            typeof(MauiHttpRequestDecorator<,>),
+            ServiceLifetime.Singleton
+        ));
+        return configurator;
+    }
 
     /// <summary>
     /// Add Strongly Typed Shell Navigator
@@ -76,7 +91,6 @@ public static class MauiExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddOfflineAvailabilityMiddleware(this ShinyConfigurator cfg)
     {
-        cfg.EnsureInfrastructure();
         cfg.Services.AddSingletonAsImplementedInterfaces<OfflineAvailableFlushRequestHandler>();
         cfg.AddOpenRequestMiddleware(typeof(OfflineAvailableRequestMiddleware<,>));
         
@@ -91,7 +105,6 @@ public static class MauiExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddReplayStreamMiddleware(this ShinyConfigurator cfg)
     {
-        cfg.EnsureInfrastructure();
         cfg.AddOpenStreamMiddleware(typeof(ReplayStreamMiddleware<,>));
         return cfg;
     }
