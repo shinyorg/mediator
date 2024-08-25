@@ -16,33 +16,53 @@ public class CachingRequestMiddleware<TRequest, TResult>(IMemoryCache cache) : I
     {
         if (typeof(TResult) == typeof(Unit))
             return await next().ConfigureAwait(false);
-
+        
         var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
         attribute ??= request!.GetType().GetCustomAttribute<CacheAttribute>();
-        if (attribute == null)
+        if (attribute == null && request is not ICacheControl)
             return await next().ConfigureAwait(false);
-        
+
+        TResult result = default!;
         var cacheKey = CacheExtensions.GetCacheKey(request!);
-        var result = await cache.GetOrCreateAsync<TResult>(
-            cacheKey,
-            entry =>
-            {
-                this.SetCacheEntry(attribute, entry);
-                return next();
-            }
-        );
+        if (request is ICacheControl control && control.ForceRefresh)
+        {
+            result = await next().ConfigureAwait(false);
+            
+            var entry = cache.CreateEntry(cacheKey);
+            entry.Value = result;
+            this.SetCacheEntry(attribute, request, entry);
+        }
+        else
+        {
+            result = await cache
+                .GetOrCreateAsync<TResult>(
+                    cacheKey,
+                    entry =>
+                    {
+                        this.SetCacheEntry(attribute, request, entry);
+                        return next();
+                    }
+                )
+                .ConfigureAwait(false)!;
+        }
         return result!;
     }
 
     
-    protected void SetCacheEntry(CacheAttribute attribute, ICacheEntry entry)
+    protected void SetCacheEntry(CacheAttribute? attribute, TRequest request, ICacheEntry entry)
     {
-        entry.Priority = attribute.Priority;
-        if (attribute.AbsoluteExpirationSeconds > 0)
-            entry.AbsoluteExpirationRelativeToNow =
-                TimeSpan.FromSeconds(attribute.AbsoluteExpirationSeconds);
+        if (attribute != null)
+        {
+            entry.Priority = attribute.Priority;
+            if (attribute.AbsoluteExpirationSeconds > 0)
+                entry.AbsoluteExpirationRelativeToNow =
+                    TimeSpan.FromSeconds(attribute.AbsoluteExpirationSeconds);
 
-        if (attribute.SlidingExpirationSeconds > 0)
-            entry.SlidingExpiration = TimeSpan.FromSeconds(attribute.SlidingExpirationSeconds);
+            if (attribute.SlidingExpirationSeconds > 0)
+                entry.SlidingExpiration = TimeSpan.FromSeconds(attribute.SlidingExpirationSeconds);
+        }
+
+        if (request is ICacheControl control)
+            control.Set(entry);
     }
 }
