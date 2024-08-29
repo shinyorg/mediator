@@ -39,9 +39,10 @@ public class ContractGenerator
         sb.AppendLine($"namespace {nameSpace};");
         sb.AppendLine();
         
-        foreach (var schema in document.Components.Schemas.Values)
+        foreach (var schema in document.Components.Schemas)
         {
-            if (schema.Type == null)
+            // TODO: temp
+            if (schema.Value.Type == null)
                 continue;
             
             var type = this.GenerateComplexTypeIfNeeded(schema);
@@ -68,7 +69,7 @@ public class ContractGenerator
                 {
                     if (parameter.Schema != null)
                     {
-                        var typeName = this.GetAndCreateTypeIfNeeded(parameter.Schema);
+                        var typeName = this.GetAndCreateTypeIfNeeded(new KeyValuePair<string, OpenApiSchema>(parameter.Name, parameter.Schema));
                         var propertyName = parameter.Name.Pascalize();
                         contractSb.AppendLine($"    public {typeName} {propertyName} {{ get; set; }}");
                     }
@@ -127,13 +128,13 @@ public class ContractGenerator
     }
 
     
-    string GetAndCreateTypeIfNeeded(OpenApiSchema schema)
+    string GetAndCreateTypeIfNeeded(KeyValuePair<string, OpenApiSchema> schema)
     {
-        var typeName = schema.Type switch
+        var typeName = schema.Value.Type switch
         {
-            "string" => GetStringType(schema),
-            "integer" => GetNumberType(schema.Format),
-            "number" => GetNumberType(schema.Format),
+            "string" => GetStringType(schema.Value),
+            "integer" => GetNumberType(schema.Value.Format),
+            "number" => GetNumberType(schema.Value.Format),
             "boolean" => "bool",
             "object" => "object",
 
@@ -144,7 +145,7 @@ public class ContractGenerator
         if (typeName == "object")
         {
         }
-        if (schema.Nullable)
+        if (schema.Value.Nullable)
             typeName += "?";
 
         return typeName;
@@ -171,18 +172,18 @@ public class ContractGenerator
 
 
     // readonly List<string> generatedTypes = new();
-    string GenerateComplexTypeIfNeeded(OpenApiSchema schema)
+    string GenerateComplexTypeIfNeeded(KeyValuePair<string, OpenApiSchema> schema)
     {
         // if (this.generatedTypes.Contains(schema.Type))
         //     this.generatedTypes.Add(schema.Type);
 
         var sb = new StringBuilder();
-        var className = schema.Type.Pascalize();
+        var className = schema.Key.Pascalize();
         // TODO: schema.AllOf <= ARRAY
         sb.AppendLine("public class " + className);
         sb.AppendLine("{");
         
-        foreach (var prop in schema.Properties)
+        foreach (var prop in schema.Value.Properties)
         {
             var propertyName = prop.Key.Pascalize();
             if (prop.Value != null)
@@ -191,7 +192,7 @@ public class ContractGenerator
                     continue;
                 
                 // TODO: allOf == type is null
-                var typeName = this.GetAndCreateTypeIfNeeded(prop.Value);
+                var typeName = this.GetAndCreateTypeIfNeeded(prop);
 
                 sb.AppendLine($"    [JsonPropertyName(\"{prop.Key}\")]");
                 sb.AppendLine("    public " + typeName + " " + propertyName + " { get; set; }");
