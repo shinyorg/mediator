@@ -25,14 +25,6 @@ public class HttpRequestHandler<TRequest, TResult>(
                 .Decorate(httpRequest, request)
                 .ConfigureAwait(false);
         }
-        // if (http.IsAuthRequired)
-        // {
-        //     var success = await authService.TryRefresh();
-        //     if (!success)
-        //         throw new InvalidOperationException("Failed to refresh token");
-        //
-        //     httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authService.Auth!.Token);
-        // }
     
         var response = await this.httpClient
             .SendAsync(httpRequest, cancellationToken)
