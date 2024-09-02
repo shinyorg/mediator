@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Shiny.Mediator.Http;
 
+
 public class HttpRequestHandler<TRequest, TResult>(
     IConfiguration configuration,
     IEnumerable<IHttpRequestDecorator<TRequest, TResult>> decorators
@@ -17,18 +18,58 @@ public class HttpRequestHandler<TRequest, TResult>(
         var http = request.GetType().GetCustomAttribute<HttpAttribute>();
         if (http == null)
             throw new InvalidOperationException("HttpAttribute not specified on request");
-
-        var baseUri = http.Route.StartsWith("http")
-            ? http.Route
-            : configuration.GetSection("Mediator:Http")?["BaseUri"] ?? "http://localhost";
         
-        var httpRequest = new HttpRequestMessage(http.Method, baseUri);
+        var baseUri = this.GetBaseUri(request, http);
+        var httpRequest = this.ContractToHttpRequest(request, http, baseUri);
+        await this.Decorate(request, httpRequest).ConfigureAwait(false);
+
+        var result = await this.Send(httpRequest, cancellationToken).ConfigureAwait(false);
+        return result;
+    }
+
+
+    protected virtual async Task<TResult> Send(HttpRequestMessage httpRequest, CancellationToken cancellationToken)
+    {
+        var response = await this.httpClient
+            .SendAsync(httpRequest, cancellationToken)
+            .ConfigureAwait(false);
+        
+        response.EnsureSuccessStatusCode();
+        TResult finalResult = default!;
+        if (typeof(TResult) != typeof(Unit))
+        {
+            var stringResult = await response
+                .Content
+                .ReadAsStringAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            finalResult = JsonSerializer.Deserialize<TResult>(stringResult)!;
+        }
+        return finalResult!;
+    }
+    
+
+    protected virtual async Task Decorate(TRequest request, HttpRequestMessage httpRequest)
+    {
+        foreach (var decorator in decorators)
+        {
+            await decorator
+                .Decorate(httpRequest, request)
+                .ConfigureAwait(false);
+        }
+    }
+    
+    
+    protected virtual HttpRequestMessage ContractToHttpRequest(TRequest request, HttpAttribute attribute, string baseUri)
+    {
+        var httpRequest = new HttpRequestMessage(attribute.Method, baseUri);
+        
         var properties = request
             .GetType()
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .ToList();
 
-        var uri = baseUri + http.Route;
+        var uri = baseUri + attribute.Route;
         foreach (var property in properties)
         {
             var parameter = property.GetCustomAttribute<HttpParameterAttribute>();
@@ -61,28 +102,16 @@ public class HttpRequestHandler<TRequest, TResult>(
         }
 
         httpRequest.RequestUri = new Uri(uri);
-        foreach (var decorator in decorators)
-        {
-            await decorator
-                .Decorate(httpRequest, request)
-                .ConfigureAwait(false);
-        }
-        
-        var response = await this.httpClient
-            .SendAsync(httpRequest, cancellationToken)
-            .ConfigureAwait(false);
-        
-        response.EnsureSuccessStatusCode();
-        TResult finalResult = default!;
-        if (typeof(TResult) != typeof(Unit))
-        {
-            var stringResult = await response
-                .Content
-                .ReadAsStringAsync(cancellationToken)
-                .ConfigureAwait(false);
+        return httpRequest;
+    }
+    
 
-            finalResult = JsonSerializer.Deserialize<TResult>(stringResult)!;
-        }
-        return finalResult!;
+    protected virtual string GetBaseUri(TRequest request, HttpAttribute attribute)
+    {
+        var baseUri = attribute.Route.StartsWith("http")
+            ? attribute.Route
+            : configuration.GetSection("Mediator:Http")?["BaseUri"] ?? "http://localhost";
+
+        return baseUri;
     }
 }
