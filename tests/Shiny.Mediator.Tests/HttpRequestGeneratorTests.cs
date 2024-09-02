@@ -1,4 +1,4 @@
-using Shiny.Mediator.HttpRequestGenerator;
+using Shiny.Mediator.SourceGenerators.Http;
 using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests;
@@ -7,15 +7,21 @@ public class HttpRequestGeneratorTests(ITestOutputHelper output)
 {
     [Fact]
     public void Tests()
+    { 
+        this.Write("./OpenApi/runtimeConfigurationApiV1.json", "RuntimeConfigApi");
+        this.Write("./OpenApi/subscriptionManagementApiV1.json", "SubMgmtApi");
+        this.Write("./OpenApi/mapsApiV1.json", "MapsApi");
+        this.Write("./OpenApi/notificationApiV1.json", "NotificationsApi");
+        this.Write("./OpenApi/weatherApiV1.json", "WeatherApi");
+        this.Write("./OpenApi/gamePlanApiV1.json", "GamePlanApi");
+        this.Write("./OpenApi/consumerApiV1.json", "ConsumerApi");
+    }
+
+
+    void Write(string readPath, string nameSpace)
     {
-        var gen = new ContractGenerator();
-        
-        gen.Test(File.OpenRead("./OpenApi/runtimeConfigurationApiV1.json"), "./Contracts", "RuntimeConfigApi", output.WriteLine);
-        gen.Test(File.OpenRead("./OpenApi/subscriptionManagementApiV1.json"), "./Contracts", "SubMgmtApi", output.WriteLine);
-        gen.Test(File.OpenRead("./OpenApi/mapsApiV1.json"), "./Contracts", "MapsApi", output.WriteLine);
-        gen.Test(File.OpenRead("./OpenApi/notificationApiV1.json"), "./Contracts", "NotificationsApi", output.WriteLine);
-        gen.Test(File.OpenRead("./OpenApi/weatherApiV1.json"), "./Contracts", "WeatherApi", output.WriteLine);
-        gen.Test(File.OpenRead("./OpenApi/gamePlanApiV1.json"), "./Contracts", "GamePlanApi", output.WriteLine);
-        gen.Test(File.OpenRead("./OpenApi/consumerApiV1.json"), "./Contracts", "ConsumerApi", output.WriteLine);
+        using var doc = File.OpenRead(readPath);
+        var code = OpenApiContractGenerator.Generate(doc, nameSpace, output.WriteLine);
+        File.WriteAllText(Path.Combine("./Contracts", nameSpace + ".generated.cs"), code);
     }
 }
