@@ -9,14 +9,6 @@ namespace Shiny.Mediator.HttpRequestGenerator;
 // TODO: /api/v1/Feature - no operationId = can I get this from the route?
 // TODO: RequestBody - op.Value.RequestBody
 // TODO: discriminators on type (camera vs feeder
-/*
- inherits baseresponse?
-   "AdditionalPurchaseManualResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/BaseResponse"
-          },
- */
 public class ContractGenerator
 {
     public void Test(Stream stream, string writePath, string nameSpace, Action<string> output)
@@ -27,7 +19,7 @@ public class ContractGenerator
         if (diagnostic.Errors != null && diagnostic.Errors.Count > 0)
         {
             foreach (var e in diagnostic.Errors)
-                Console.WriteLine("Error reading OpenAPI document");
+                output("Error reading OpenAPI document");
             return;
         }
 
@@ -182,6 +174,7 @@ public class ContractGenerator
         _ => throw new InvalidOperationException("Invalid Number Format - " + format)
     };
 
+    
     string GenerateComplexType(KeyValuePair<string, OpenApiSchema> schema, Action<string> output)
     {
         output("COMPONENT: " + schema.Key);
@@ -202,7 +195,18 @@ public class ContractGenerator
         else
         {
             output("GENERATING CLASS COMPONENT");
-            sb.AppendLine("public class " + className);
+            sb.Append("public class " + className);
+
+            // TODO: this will be 2 when discriminators are present
+            if (schema.Value.AllOf.Count == 1)
+            {
+                // add inheritance
+                var baseType = GetSchemaType(schema.Value.AllOf.Single());
+                sb.AppendLine($" : {baseType}");
+
+                output($"INHERITED: {className} ({baseType})");
+            }
+            sb.AppendLine();
             sb.AppendLine("{");
             
             foreach (var prop in schema.Value.Properties)
