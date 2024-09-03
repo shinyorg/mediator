@@ -3,5 +3,13 @@
         <CompilerVisibleProperty Include="OutputType" />
         <CompilerVisibleProperty Include="TargetFrameworkIdentifier" />
         <CompilerVisibleProperty Include="RootNamespace" />
+        
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" />
     </ItemGroup>
+
+    <Target Name="_InjectAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
+        <ItemGroup>
+            <AdditionalFiles Include="@(MediatorHttp)" SourceItemGroup="MediatorHttp" />
+        </ItemGroup>
+    </Target>
 </Project>
