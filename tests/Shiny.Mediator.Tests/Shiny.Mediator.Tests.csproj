@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+    <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\build\Shiny.Mediator.SourceGenerators.targets"/>
+    
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -19,6 +20,7 @@
         <PackageReference Include="FluentAssertions" Version="6.12.0"/>
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0"/>
+        <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.6.19" />
         <PackageReference Include="xunit" Version="2.9.0"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -27,14 +29,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
-                          OutputItemType="Analyzer"/>
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
         <MediatorHttp Include="OpenApi\consumerApiV1.json" Namespace="My.Tests"/>
+        
         <None Update="OpenApi\gamePlanApiV1.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
@@ -61,6 +65,6 @@
         </None>
     </ItemGroup>
 
-    <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\build\Shiny.Mediator.SourceGenerators.targets"/>
 
+    
 </Project>

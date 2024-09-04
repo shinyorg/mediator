@@ -1,7 +1,4 @@
-using System.IO;
 using System.Linq;
-using System.Text.Json;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 
 namespace Shiny.Mediator.SourceGenerators;
@@ -17,6 +14,27 @@ static class Extensions
         return value;
     }
 
+
+    public static void Log(this GeneratorExecutionContext context, string message, DiagnosticSeverity severity)
+    {
+        context.ReportDiagnostic(Diagnostic.Create(
+            new DiagnosticDescriptor(
+                "SHINYMED000",
+                "Mediator",
+                message,
+                "Shiny.Mediator",
+                severity,
+                true
+            ),
+            Location.None
+        ));
+    }
+
+    public static void LogInfo(this GeneratorExecutionContext context, string message)
+        => context.Log(message, DiagnosticSeverity.Info);
+    
+    public static void LogError(this GeneratorExecutionContext context, string message)
+        => context.Log(message, DiagnosticSeverity.Error);
 
     public static string[] GetMSBuildItems(this GeneratorExecutionContext context, string name) => context
         .AdditionalFiles
