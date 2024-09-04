@@ -1,10 +1,14 @@
 <Project>
     <ItemGroup>
+        <AvailableItemName Include="MediatorHttp" />
+    </ItemGroup>
+    
+    <ItemGroup>
         <CompilerVisibleProperty Include="OutputType" />
         <CompilerVisibleProperty Include="TargetFrameworkIdentifier" />
         <CompilerVisibleProperty Include="RootNamespace" />
         
-        <AvailableItemName Include="MediatorHttp" />
+        
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" Visible="false" />
     </ItemGroup>
