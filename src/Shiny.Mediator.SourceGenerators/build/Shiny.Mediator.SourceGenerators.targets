@@ -4,12 +4,14 @@
         <CompilerVisibleProperty Include="TargetFrameworkIdentifier" />
         <CompilerVisibleProperty Include="RootNamespace" />
         
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" />
+        <AvailableItemName Include="MediatorHttp" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" Visible="false" />
     </ItemGroup>
 
     <Target Name="_InjectAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
         <ItemGroup>
-            <AdditionalFiles Include="@(MediatorHttp)" SourceItemGroup="MediatorHttp" />
+            <AdditionalFiles Include="@(MediatorHttp)" Namespace="%(MediatorHttp.Namespace)" SourceItemGroup="MediatorHttp" />
         </ItemGroup>
     </Target>
 </Project>

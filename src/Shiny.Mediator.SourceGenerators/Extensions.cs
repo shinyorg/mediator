@@ -30,7 +30,7 @@ static class Extensions
         .Select(x => x.Path)
         .ToArray();
     
-    public static T[] GetItemGroup<T>(this GeneratorExecutionContext context, string name)
+    public static AdditionalText[] GetAddtionalTexts(this GeneratorExecutionContext context, string name)
         => context
             .AdditionalFiles
             .Where(x => 
@@ -40,7 +40,5 @@ static class Extensions
                     .TryGetValue(SourceItemGroupMetadata, out var sourceItemGroup) && 
                 sourceItemGroup == name
             )
-            .Select(x => x.GetText(CancellationToken.None)!.ToString())
-            .Select(x => JsonSerializer.Deserialize<T>(x)!)
             .ToArray();
 }

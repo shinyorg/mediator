@@ -14,7 +14,7 @@ public class HttpRequestGeneratorTests(ITestOutputHelper output)
         this.Write("./OpenApi/notificationApiV1.json", "NotificationsApi");
         this.Write("./OpenApi/weatherApiV1.json", "WeatherApi");
         this.Write("./OpenApi/gamePlanApiV1.json", "GamePlanApi");
-        this.Write("./OpenApi/consumerApiV1.json", "ConsumerApi");
+        // this.Write("./OpenApi/consumerApiV1.json", "ConsumerApi");
     }
 
 

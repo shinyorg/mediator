@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -17,31 +18,41 @@ public class MediatorHttpRequestGenerator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
-        // context.CancellationToken
-        var items = context.GetItemGroup<MediatorHttpItem>("MediatorHttp");
+        var rootNamespace = context.GetMSBuildProperty("RootNamespace")!;
+        var items = context.GetAddtionalTexts("MediatorHttp");
+        context.AddSource("Test.g.cs", "public class Test {}");
+        
         foreach (var item in items)
         {
-            // if file - the file has already been read
-            if (item.Uri != null)
+            context
+                .AnalyzerConfigOptions
+                .GetOptions(item)
+                .TryGetValue("build_metadata.AdditionalFiles.Namespace", out var nameSpace);
+
+            nameSpace ??= rootNamespace;
+            
+            Uri.TryCreate(item.Path, UriKind.Absolute, out var remoteUri);
+            if (remoteUri == null)
             {
-                var http = new HttpClient { BaseAddress = new Uri(item.Uri) };
-                var stream = http.GetStreamAsync(item.Uri!).GetAwaiter().GetResult();
-                
+                var localCode = item.GetText(context.CancellationToken)!.ToString();
                 var output = OpenApiContractGenerator.Generate(
-                    stream,
-                    item.Namespace!,
-                    e => { }
+                    new MemoryStream(Encoding.UTF8.GetBytes(localCode)),
+                    nameSpace,
+                    e => Debug.WriteLine(e)
                 );
-                context.AddSource(item.Namespace + ".g.cs", output);
+                context.AddSource(nameSpace + ".g.cs", output);
             }
             else
             {
+                var http = new HttpClient { BaseAddress = remoteUri };
+                var stream = http.GetStreamAsync(remoteUri).GetAwaiter().GetResult();
+                
                 var output = OpenApiContractGenerator.Generate(
-                    new MemoryStream(Encoding.UTF8.GetBytes(item.LocalContent!)),
-                    item.Namespace!,
-                    e => { }
+                    stream,
+                    nameSpace,
+                    e => Debug.WriteLine(e)
                 );
-                context.AddSource(item.Namespace + ".g.cs", output);
+                context.AddSource(nameSpace + ".g.cs", output);
             }
         }
     }
