@@ -40,6 +40,7 @@
                 <TextCell Text="Clear" Command="{Binding CacheClearCommand}" />
                 <TextCell Text="Request" Command="{Binding CacheRequestCommand}" />
                 <TextCell Text="Value" Detail="{Binding CacheValue}" />
+                <!-- <SwitchCell Text="Force Refresh" On="{Binding CacheForceRefresh}" /> -->
                 <TextCell Text="Cache has a 20s expiry time" />
             </TableSection>
             
