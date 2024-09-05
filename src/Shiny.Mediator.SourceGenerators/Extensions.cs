@@ -7,6 +7,14 @@ static class Extensions
 {
     const string SourceItemGroupMetadata = "build_metadata.AdditionalFiles.SourceItemGroup";
 
+    public static string Pascalize(this string str)
+    {
+        if (char.IsUpper(str[0]))
+            return str;
+        
+        var r = char.ToUpper(str[0]) + str.Substring(1);
+        return r;
+    }
 
     public static string? GetMSBuildProperty(this GeneratorExecutionContext context, string propertyName)
     {
