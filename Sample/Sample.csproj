@@ -89,26 +89,35 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2"/>
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" Condition="'$(Configuration)' == 'Debug'"/>
 
-        <PackageReference Include="Prism.DryIoc.Maui" Version="9.0.537" />
-        <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+        <PackageReference Include="Prism.DryIoc.Maui" Version="9.0.537"/>
+        <PackageReference Include="sqlite-net-pcl" Version="1.9.172"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj" />
-        <ProjectReference Include="..\src\Shiny.Mediator.Caching\Shiny.Mediator.Caching.csproj" />
+        <ProjectReference Include="..\src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj"/>
+        <ProjectReference Include="..\src\Shiny.Mediator.Caching\Shiny.Mediator.Caching.csproj"/>
         <ProjectReference Include="..\src\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj"/>
-        <ProjectReference Include="..\src\Shiny.Mediator.FluentValidation\Shiny.Mediator.FluentValidation.csproj" />
+        <ProjectReference Include="..\src\Shiny.Mediator.FluentValidation\Shiny.Mediator.FluentValidation.csproj"/>
         <ProjectReference Include="..\src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj"/>
-        <ProjectReference Include="..\src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj" />
-        <ProjectReference Include="..\src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj" />
+        <ProjectReference Include="..\src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj"/>
+        <ProjectReference Include="..\src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj"/>
         <ProjectReference Include="..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
         <ProjectReference Include="..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
                           OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false" />
+                          ReferenceOutputAssembly="false"/>
     </ItemGroup>
+
+    <ItemGroup>
+        <MediatorHttp Include="consumerApiV1.json">
+            <Namespace>My.Tests</Namespace>
+        </MediatorHttp>
+        <Content Remove="consumerApiV1.json"/>
+    </ItemGroup>
+
+    <Import Project="..\src\Shiny.Mediator.SourceGenerators\build\Shiny.Mediator.SourceGenerators.targets"/>
 </Project>
