@@ -36,34 +36,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <MediatorHttp Include="OpenApi\consumerApiV1.json" ContractPostfix="HttpRequest" Namespace="My.Tests"/>
-        
-        <None Update="OpenApi\gamePlanApiV1.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="OpenApi\mapsApiV1.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="OpenApi\notificationApiV1.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="OpenApi\publicFeatureFlagsApiV1.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="OpenApi\runtimeConfigurationApiV1.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="OpenApi\subscriptionManagementApiV1.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="OpenApi\subscriptionManagementCoreV1.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="OpenApi\weatherApiV1.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+        <MediatorHttp Include="OpenApi\consumerApiV1.json" ContractPostfix="HttpRequest" Namespace="Http.Consumer"/>
+        <MediatorHttp Include="OpenApi\gamePlanApiV1.json" ContractPostfix="HttpRequest" Namespace="Http.GamePlan"/>
+        <MediatorHttp Include="OpenApi\mapsApiV1.json" ContractPostfix="HttpRequest" Namespace="Http.Maps"/>
+        <MediatorHttp Include="OpenApi\notificationApiV1.json" ContractPostfix="HttpRequest" Namespace="Http.Notifications"/>
+        <MediatorHttp Include="OpenApi\publicFeatureFlagsApiV1.json" ContractPostfix="HttpRequest" Namespace="Http.Features"/>
+        <MediatorHttp Include="OpenApi\runtimeConfigurationApiV1.json" ContractPostfix="HttpRequest" Namespace="Http.Config"/>
+        <MediatorHttp Include="OpenApi\subscriptionManagementApiV1.json" ContractPostfix="HttpRequest" Namespace="Http.Subs"/>
+        <MediatorHttp Include="OpenApi\weatherApiV1.json" ContractPostfix="HttpRequest" Namespace="Http.Weather"/>
     </ItemGroup>
-
-
     
 </Project>

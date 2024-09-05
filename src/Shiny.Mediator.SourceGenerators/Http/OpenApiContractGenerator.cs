@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -90,16 +91,16 @@ public static class OpenApiContractGenerator
 
                 if (op.Value.RequestBody != null)
                 {
-                    // TODO
                     var body = op.Value.RequestBody;
-                    // body.Content[0].Schema
-                    // var type = body.Reference.Id;
-                    // if (!body.Required)
-                    //     type += "?";
-                    //
-                    // sb.AppendLine($"    [global::Shiny.Mediator.Http.HttpParameter(global::Shiny.Mediator.Http.HttpParameterType.Body)]");
-                    // sb.AppendLine($"    public {type} Body {{ get; set; }}");
-                    // output("BODY: " + type);
+                    var bodyResponseType = GetApplicationJsonResponse(body.Content);
+                    if (bodyResponseType != null)
+                    {
+                        // if (!body.Required)
+                        //     type += "?";
+                        sb.AppendLine($"    [global::Shiny.Mediator.Http.HttpParameter(global::Shiny.Mediator.Http.HttpParameterType.Body)]");
+                        sb.AppendLine($"    public {bodyResponseType} Body {{ get; set; }}");
+                        output("BODY: " + bodyResponseType);
+                    }
                 }
                 sb.AppendLine("}");
                 sb.AppendLine();
@@ -113,15 +114,27 @@ public static class OpenApiContractGenerator
         var responseType = "Shiny.Mediator.Unit";
         if (op.Responses.TryGetValue("200", out var response200))
         {
-            if (response200.Content.TryGetValue("application/json", out var responseContent))
-            {
-                if (responseContent.Schema.Reference != null)
-                    responseType = responseContent.Schema.Reference.Id;
-            }
+            var appJsonType = GetApplicationJsonResponse(response200.Content);
+            if (appJsonType != null)
+                responseType = appJsonType;
         }
 
         return responseType;
     }
+
+
+    static string? GetApplicationJsonResponse(IDictionary<string, OpenApiMediaType> response)
+    {
+        string? responseType = null;
+
+        if (response.TryGetValue("application/json", out var responseContent))
+        {
+            if (responseContent.Schema.Reference != null)
+                responseType = responseContent.Schema.Reference.Id;
+        }
+        return responseType;
+    }
+
 
     static string GetSchemaType(OpenApiSchema schema)
     {
@@ -217,9 +230,14 @@ public static class OpenApiContractGenerator
         else
         {
             output("GENERATING CLASS COMPONENT");
-            sb.Append("public class " + className);
+            sb.Append("public partial class " + className);
 
             // TODO: this will be 2 when discriminators are present
+            //if (schema.Value.AllOf.Count > 1)
+            //{
+            //    Debugger.Launch();
+            //}
+
             if (schema.Value.AllOf.Count == 1)
             {
                 // add inheritance
