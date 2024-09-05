@@ -16,6 +16,7 @@ public class MediatorHttpRequestGenerator : ISourceGenerator
     {
     }
 
+
     public void Execute(GeneratorExecutionContext context)
     {
         var rootNamespace = context.GetMSBuildProperty("RootNamespace")!;
@@ -44,11 +45,16 @@ public class MediatorHttpRequestGenerator : ISourceGenerator
         }
     }
 
+
     void Local(GeneratorExecutionContext context, AdditionalText item, string nameSpace)
     {
         context.LogInfo($"Generating from local file '{item.Path}' with namespace '{nameSpace}'");
+        
+        var codeFile = item.GetText(context.CancellationToken);
+        if (codeFile == null)
+            throw new InvalidOperationException("No code file returned for " + item.Path);
 
-        var localCode = item.GetText(context.CancellationToken)!.ToString();
+        var localCode = codeFile.ToString();
         var output = OpenApiContractGenerator.Generate(
             new MemoryStream(Encoding.UTF8.GetBytes(localCode)),
             nameSpace,

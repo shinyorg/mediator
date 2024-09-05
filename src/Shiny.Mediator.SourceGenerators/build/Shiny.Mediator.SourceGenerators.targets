@@ -9,7 +9,7 @@
         <CompilerVisibleProperty Include="RootNamespace" />
   
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" Visible="false" />
     </ItemGroup>
 
     <Target Name="_InjectAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
