@@ -62,7 +62,16 @@ public class HttpRequestHandler<TRequest, TResult>(
     
     protected virtual HttpRequestMessage ContractToHttpRequest(TRequest request, HttpAttribute attribute, string baseUri)
     {
-        var httpRequest = new HttpRequestMessage(attribute.Method, baseUri);
+        var httpMethod = attribute.Verb switch
+        {
+            HttpVerb.Get => HttpMethod.Get,
+            HttpVerb.Post => HttpMethod.Post,
+            HttpVerb.Put => HttpMethod.Put,
+            HttpVerb.Delete => HttpMethod.Delete,
+            HttpVerb.Patch => HttpMethod.Patch,
+            _ => throw new NotSupportedException("HTTP Verb not supported: " + attribute.Verb)
+        };
+        var httpRequest = new HttpRequestMessage(httpMethod, baseUri);
         
         var properties = request
             .GetType()

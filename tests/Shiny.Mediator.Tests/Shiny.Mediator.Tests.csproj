@@ -36,7 +36,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <MediatorHttp Include="OpenApi\consumerApiV1.json" Namespace="My.Tests"/>
+        <MediatorHttp Include="OpenApi\consumerApiV1.json" ContractPostfix="HttpRequest" Namespace="My.Tests"/>
         
         <None Update="OpenApi\gamePlanApiV1.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

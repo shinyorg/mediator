@@ -55,6 +55,16 @@ static class Extensions
         )
         .Select(x => x.Path)
         .ToArray();
+
+    public static string? GetAdditionalTextProperty(this GeneratorExecutionContext context, AdditionalText text, string name)
+    {
+        context
+            .AnalyzerConfigOptions
+            .GetOptions(text)
+            .TryGetValue($"build_metadata.AdditionalFiles.{name}", out var value);
+
+        return value;
+    }
     
     public static AdditionalText[] GetAddtionalTexts(this GeneratorExecutionContext context, string name)
         => context

@@ -27,16 +27,12 @@ public class MediatorHttpRequestGenerator : ISourceGenerator
         {
             try
             {
-                context
-                    .AnalyzerConfigOptions
-                    .GetOptions(item)
-                    .TryGetValue("build_metadata.AdditionalFiles.Namespace", out var nameSpace);
+                var config = GetConfig(context, item, rootNamespace);
                 
-                nameSpace ??= rootNamespace;
                 if (item.Path.StartsWith("http", StringComparison.InvariantCultureIgnoreCase))
-                    this.Remote(context, item, nameSpace);
+                    Remote(context, item, config);
                 else
-                    this.Local(context, item, nameSpace);
+                    Local(context, item, config);
             }
             catch (Exception ex)
             {
@@ -44,11 +40,20 @@ public class MediatorHttpRequestGenerator : ISourceGenerator
             }
         }
     }
+    
 
-
-    void Local(GeneratorExecutionContext context, AdditionalText item, string nameSpace)
+    static MediatorHttpItemConfig GetConfig(GeneratorExecutionContext context, AdditionalText item, string rootNamespace)
+        => new MediatorHttpItemConfig
+        {
+            Namespace = context.GetAdditionalTextProperty(item, "Namespace") ?? rootNamespace,
+            ContractPrefix = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.ContractPrefix)),
+            ContractPostfix = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.ContractPostfix))
+        };
+    
+    
+    static void Local(GeneratorExecutionContext context, AdditionalText item, MediatorHttpItemConfig itemConfig)
     {
-        context.LogInfo($"Generating from local file '{item.Path}' with namespace '{nameSpace}'");
+        context.LogInfo($"Generating from local file '{item.Path}' with namespace '{itemConfig.Namespace}'");
         
         var codeFile = item.GetText(context.CancellationToken);
         if (codeFile == null)
@@ -57,25 +62,28 @@ public class MediatorHttpRequestGenerator : ISourceGenerator
         var localCode = codeFile.ToString();
         var output = OpenApiContractGenerator.Generate(
             new MemoryStream(Encoding.UTF8.GetBytes(localCode)),
-            nameSpace,
+            itemConfig,
             e => context.LogInfo(e)
         );
-        context.AddSource(nameSpace + ".g.cs", output);
+        
+        // TODO: could allow filename customization
+        context.AddSource(itemConfig.Namespace + ".g.cs", output);
     }
 
 
-    void Remote(GeneratorExecutionContext context, AdditionalText item, string nameSpace)
+    static void Remote(GeneratorExecutionContext context, AdditionalText item, MediatorHttpItemConfig itemConfig)
     {
         var remoteUri = new Uri(item.Path);
-        context.LogInfo($"Generating for remote '{item.Path}' with namespace '{nameSpace}'");
+        context.LogInfo($"Generating for remote '{item.Path}' with namespace '{itemConfig.Namespace}'");
         var http = new HttpClient { BaseAddress = remoteUri };
         var stream = http.GetStreamAsync(remoteUri).GetAwaiter().GetResult();
 
         var output = OpenApiContractGenerator.Generate(
             stream,
-            nameSpace,
+            itemConfig,
             e => context.LogInfo(e)
         );
-        context.AddSource(nameSpace + ".g.cs", output);
+        // TODO: could allow filename customization
+        context.AddSource(itemConfig.Namespace + ".g.cs", output);
     }
 }
