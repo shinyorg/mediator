@@ -29,10 +29,10 @@ public class MediatorHttpRequestGenerator : ISourceGenerator
             {
                 var config = GetConfig(context, item, rootNamespace);
                 
-                if (item.Path.StartsWith("http", StringComparison.InvariantCultureIgnoreCase))
-                    Remote(context, item, config);
-                else
+                if (config.Uri == null)
                     Local(context, item, config);
+                else
+                    Remote(context, item, config);
             }
             catch (Exception ex)
             {
@@ -40,16 +40,28 @@ public class MediatorHttpRequestGenerator : ISourceGenerator
             }
         }
     }
-    
+
 
     static MediatorHttpItemConfig GetConfig(GeneratorExecutionContext context, AdditionalText item, string rootNamespace)
-        => new MediatorHttpItemConfig
+    {
+        var cfg = new MediatorHttpItemConfig
         {
-            Namespace = context.GetAdditionalTextProperty(item, "Namespace") ?? rootNamespace,
+            Namespace = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.Namespace)) ?? rootNamespace,
             ContractPrefix = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.ContractPrefix)),
             ContractPostfix = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.ContractPostfix))
         };
-    
+        
+        var uri = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.Uri));
+        if (String.IsNullOrWhiteSpace(uri))
+        {
+            if (Uri.TryCreate(uri, UriKind.Absolute, out var fullUri))
+                cfg.Uri = fullUri;
+            else
+                throw new InvalidOperationException("Invalid URI: " + uri);
+        }
+        return cfg;
+    }
+
     
     static void Local(GeneratorExecutionContext context, AdditionalText item, MediatorHttpItemConfig itemConfig)
     {
@@ -66,24 +78,21 @@ public class MediatorHttpRequestGenerator : ISourceGenerator
             e => context.LogInfo(e)
         );
         
-        // TODO: could allow filename customization
         context.AddSource(itemConfig.Namespace + ".g.cs", output);
     }
 
 
+    static readonly HttpClient http = new();
     static void Remote(GeneratorExecutionContext context, AdditionalText item, MediatorHttpItemConfig itemConfig)
     {
-        var remoteUri = new Uri(item.Path);
-        context.LogInfo($"Generating for remote '{item.Path}' with namespace '{itemConfig.Namespace}'");
-        var http = new HttpClient { BaseAddress = remoteUri };
-        var stream = http.GetStreamAsync(remoteUri).GetAwaiter().GetResult();
+        context.LogInfo($"Generating for remote '{itemConfig.Uri}' with namespace '{itemConfig.Namespace}'");
+        var stream = http.GetStreamAsync(itemConfig.Uri).GetAwaiter().GetResult();
 
         var output = OpenApiContractGenerator.Generate(
             stream,
             itemConfig,
             e => context.LogInfo(e)
         );
-        // TODO: could allow filename customization
         context.AddSource(itemConfig.Namespace + ".g.cs", output);
     }
 }

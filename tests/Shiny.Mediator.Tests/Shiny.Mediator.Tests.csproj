@@ -36,6 +36,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <MediatorHttp Include="This" Uri="https://localhost:7192/swagger/v1/swagger.json" ContractPostfix="HttpRequest" Namespace="Http.TheActual" />
         <MediatorHttp Include="OpenApi\consumerApiV1.json" ContractPostfix="HttpRequest" Namespace="Http.Consumer"/>
         <MediatorHttp Include="OpenApi\gamePlanApiV1.json" ContractPostfix="HttpRequest" Namespace="Http.GamePlan"/>
         <MediatorHttp Include="OpenApi\mapsApiV1.json" ContractPostfix="HttpRequest" Namespace="Http.Maps"/>

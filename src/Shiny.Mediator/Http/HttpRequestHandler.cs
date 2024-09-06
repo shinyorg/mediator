@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Web;
 using Microsoft.Extensions.Configuration;
 
 namespace Shiny.Mediator.Http;
@@ -12,6 +13,7 @@ public class HttpRequestHandler<TRequest, TResult>(
 ) : IRequestHandler<TRequest, TResult> where TRequest : IHttpRequest<TResult>
 {
     readonly HttpClient httpClient = new();
+    
     
     public async Task<TResult> Handle(TRequest request, CancellationToken cancellationToken)
     {
@@ -60,17 +62,20 @@ public class HttpRequestHandler<TRequest, TResult>(
     }
     
     
+    protected static HttpMethod ToMethod(HttpVerb verb) => verb switch 
+    {
+        HttpVerb.Get => HttpMethod.Get,
+        HttpVerb.Post => HttpMethod.Post,
+        HttpVerb.Put => HttpMethod.Put,
+        HttpVerb.Delete => HttpMethod.Delete,
+        HttpVerb.Patch => HttpMethod.Patch,
+        _ => throw new NotSupportedException("HTTP Verb not supported: " + verb)
+    };
+    
+    
     protected virtual HttpRequestMessage ContractToHttpRequest(TRequest request, HttpAttribute attribute, string baseUri)
     {
-        var httpMethod = attribute.Verb switch
-        {
-            HttpVerb.Get => HttpMethod.Get,
-            HttpVerb.Post => HttpMethod.Post,
-            HttpVerb.Put => HttpMethod.Put,
-            HttpVerb.Delete => HttpMethod.Delete,
-            HttpVerb.Patch => HttpMethod.Patch,
-            _ => throw new NotSupportedException("HTTP Verb not supported: " + attribute.Verb)
-        };
+        var httpMethod = ToMethod(attribute.Verb);
         var httpRequest = new HttpRequestMessage(httpMethod, baseUri);
         
         var properties = request
@@ -84,18 +89,31 @@ public class HttpRequestHandler<TRequest, TResult>(
             var parameter = property.GetCustomAttribute<HttpParameterAttribute>();
             if (parameter != null)
             {
-                var propertyValue = property.GetValue(request);
+                var propertyValue = property.GetValue(request)?.ToString();
+                
                 switch (parameter.Type)
                 {
                     case HttpParameterType.Path:
+                        if (propertyValue != null)
+                            throw new InvalidOperationException($"Path parameter '{property.Name}' not set");
+                           
+                        var epath = HttpUtility.UrlEncode(propertyValue);
+                        uri = uri.Replace("{" + property.Name + "}", epath);
+                        break;
+                    
                     case HttpParameterType.Query:
-                        var value = propertyValue?.ToString() ?? String.Empty;
-                        uri = uri.Replace("{" + property.Name + "}", value);
+                        if (propertyValue != null)
+                        {
+                            var eq = HttpUtility.UrlEncode(propertyValue);
+                            uri += uri.Contains('?') ? "&" : "?";
+                            uri += $"{property.Name}={eq}";
+                        }
+
                         break;
                 
                     case HttpParameterType.Header:
                         if (propertyValue != null)
-                            httpRequest.Headers.Add(property.Name, propertyValue.ToString());
+                            httpRequest.Headers.Add(property.Name, propertyValue);
                         break;
                 
                     case HttpParameterType.Body:

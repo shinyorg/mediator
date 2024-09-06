@@ -43,19 +43,7 @@ static class Extensions
     
     public static void LogError(this GeneratorExecutionContext context, string message)
         => context.Log(message, DiagnosticSeverity.Error);
-
-    public static string[] GetMSBuildItems(this GeneratorExecutionContext context, string name) => context
-        .AdditionalFiles
-        .Where(x => 
-            context
-                .AnalyzerConfigOptions
-                .GetOptions(x)
-                .TryGetValue(SourceItemGroupMetadata, out var sourceItemGroup) && 
-            sourceItemGroup == name
-        )
-        .Select(x => x.Path)
-        .ToArray();
-
+    
     public static string? GetAdditionalTextProperty(this GeneratorExecutionContext context, AdditionalText text, string name)
     {
         context

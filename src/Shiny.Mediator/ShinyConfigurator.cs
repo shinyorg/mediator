@@ -9,7 +9,6 @@ public sealed class ShinyConfigurator(IServiceCollection services)
 {
     public IServiceCollection Services => services;
 
-    
     public bool ExcludeDefaultMiddleware { get; set; }
     
     
@@ -29,9 +28,15 @@ public sealed class ShinyConfigurator(IServiceCollection services)
 
     public ShinyConfigurator AddHttpClient()
     {
-        this.Services.Add(new ServiceDescriptor(typeof(IRequestMiddleware<,>), null, typeof(HttpRequestHandler<,>), ServiceLifetime.Scoped));
+        this.Services.Add(new ServiceDescriptor(
+            typeof(IRequestHandler<,>), 
+            null, 
+            typeof(HttpRequestHandler<,>), 
+            ServiceLifetime.Scoped
+        ));
         return this;
     }
+    
     
     public ShinyConfigurator AddRequestMiddleware<TRequest, TResult, TImpl>(
         ServiceLifetime lifetime = ServiceLifetime.Scoped)
@@ -71,6 +76,7 @@ public sealed class ShinyConfigurator(IServiceCollection services)
         services.Add(new ServiceDescriptor(typeof(IStreamRequestMiddleware<,>), null, implementationType, lifetime));
         return this;
     }
+    
 
     public ShinyConfigurator AddOpenEventMiddleware(Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
@@ -78,6 +84,7 @@ public sealed class ShinyConfigurator(IServiceCollection services)
         services.Add(new ServiceDescriptor(typeof(IEventMiddleware<>), null, implementationType, lifetime));
         return this;
     }
+    
 
     public ShinyConfigurator AddEventCollector<TImpl>() where TImpl : class, IEventCollector
     {
