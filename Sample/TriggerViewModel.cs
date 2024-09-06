@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Http.TheActual;
 using Microsoft.Extensions.Caching.Memory;
 using Sample.Contracts;
 
@@ -76,7 +77,22 @@ public partial class TriggerViewModel(
 
 
     [RelayCommand]
-    async Task CacheRequest() => this.CacheValue = await mediator.Request(new CacheRequest());
+    async Task HttpRequest()
+    {
+        try
+        {
+            await mediator.Request(new TestResultHttpRequest(), this.cancelSource.Token);
+        }
+        catch (Exception ex)
+        {
+            await dialogs.DisplayAlertAsync("ERROR", ex.ToString(), "OK");
+        }
+    }
+
+    [RelayCommand]
+    async Task CacheRequest() 
+        => this.CacheValue = await mediator.Request(new CacheRequest());
+    
     
     [RelayCommand]
     async Task CacheClear()

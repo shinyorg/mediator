@@ -14,7 +14,7 @@
                 <SwitchCell Text="Fire and Forget Events" 
                             On="{Binding FireAndForgetEvents}"/>
             </TableSection>
-
+            
             <TableSection Title="REQUESTS - Standard">
                 <TextCell Text="Send Request" 
                           Command="{Binding TriggerCommand}"/>
@@ -34,6 +34,10 @@
                 
                 <TextCell Text="Value" 
                           Detail="{Binding OfflineValue}" />
+            </TableSection>
+            
+            <TableSection Title="REQUESTS - HTTP">
+                <TextCell Text="Send" Command="{Binding HttpRequestCommand}" />
             </TableSection>
             
             <TableSection Title="REQUESTS - Cache">

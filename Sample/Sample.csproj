@@ -113,10 +113,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <MediatorHttp Include="consumerApiV1.json">
-            <Namespace>My.Tests</Namespace>
-        </MediatorHttp>
-        <Content Remove="consumerApiV1.json"/>
+        <MediatorHttp Include="This" Uri="https://localhost:7192/swagger/v1/swagger.json" ContractPostfix="HttpRequest" Namespace="Http.TheActual" />
+        <None Remove="This" />
     </ItemGroup>
 
     <Import Project="..\src\Shiny.Mediator.SourceGenerators\build\Shiny.Mediator.SourceGenerators.targets"/>

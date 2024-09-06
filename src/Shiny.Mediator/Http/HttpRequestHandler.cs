@@ -135,10 +135,11 @@ public class HttpRequestHandler<TRequest, TResult>(
 
     protected virtual string GetBaseUri(TRequest request, HttpAttribute attribute)
     {
-        var baseUri = attribute.Route.StartsWith("http")
-            ? attribute.Route
-            : configuration.GetSection("Mediator:Http")?["BaseUri"] ?? "http://localhost";
-
-        return baseUri;
+        var cfgKey = $"Mediator:Http:{request.GetType().Namespace}";
+        var cfg = configuration[cfgKey];
+        if (String.IsNullOrWhiteSpace(cfg))
+            throw new InvalidOperationException("No base URI configured for: " + cfgKey);
+        
+        return cfg;
     }
 }
