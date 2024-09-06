@@ -21,6 +21,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Include="..\Shiny.Mediator.SourceGenerators\build\Shiny.Mediator.SourceGenerators.targets"
+              Pack="True"
+              PackagePath="buildTransitive/Shiny.Mediator.SourceGenerators.targets" />
+        
         <None Include="..\Shiny.Mediator.SourceGenerators\bin\$(Configuration)\netstandard2.0\Shiny.Mediator.SourceGenerators.dll" 
               Pack="true" 
               PackagePath="analyzers/dotnet/cs" 
