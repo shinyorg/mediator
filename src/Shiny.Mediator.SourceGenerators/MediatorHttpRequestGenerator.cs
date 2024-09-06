@@ -52,7 +52,7 @@ public class MediatorHttpRequestGenerator : ISourceGenerator
         };
         
         var uri = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.Uri));
-        if (String.IsNullOrWhiteSpace(uri))
+        if (!String.IsNullOrWhiteSpace(uri))
         {
             if (Uri.TryCreate(uri, UriKind.Absolute, out var fullUri))
                 cfg.Uri = fullUri;
