@@ -113,9 +113,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <MediatorHttp Include="This" Uri="https://localhost:7192/swagger/v1/swagger.json" ContractPostfix="HttpRequest" Namespace="Http.TheActual" />
-        <None Remove="This" />
+        <MediatorHttp Include="This" 
+                      Uri="https://localhost:7192/swagger/v1/swagger.json" 
+                      ContractPostfix="HttpRequest" 
+                      Namespace="Http.TheActual" 
+                      Visible="false" />
     </ItemGroup>
 
-    <Import Project="..\src\Shiny.Mediator.SourceGenerators\build\Shiny.Mediator.SourceGenerators.targets"/>
+    <Import Project="..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"/>
 </Project>
