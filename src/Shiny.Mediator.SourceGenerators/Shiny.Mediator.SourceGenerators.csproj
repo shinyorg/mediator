@@ -5,7 +5,8 @@
         <LangVersion>latest</LangVersion>
 
         <IsPackable>true</IsPackable>
-        <!--<IncludeBuildOutput>false</IncludeBuildOutput>-->
+        <developmentDependency>true</developmentDependency>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
         <IsRoslynComponent>true</IsRoslynComponent>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
