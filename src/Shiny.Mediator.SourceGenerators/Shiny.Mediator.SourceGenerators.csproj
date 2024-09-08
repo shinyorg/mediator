@@ -3,12 +3,13 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>latest</LangVersion>
-
+        <IsPackable>false</IsPackable>
+        <!--
         <IsPackable>true</IsPackable>
         <developmentDependency>true</developmentDependency>
-        <IncludeBuildOutput>false</IncludeBuildOutput>
         <IsRoslynComponent>true</IsRoslynComponent>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        -->
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
     </PropertyGroup>
@@ -17,8 +18,8 @@
         <!--4.11 does not generate in project refs on rider-->
         <PackageReference Include="Microsoft.OpenApi" Version="1.6.19" PrivateAssets="All" GeneratePathProperty="true" />
         <PackageReference Include="SharpYaml" Version="2.1.1" PrivateAssets="All" GeneratePathProperty="true" />
-        
         <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.6.19" PrivateAssets="All" GeneratePathProperty="true" />
+        
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="All" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" PrivateAssets="All" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.10.0" PrivateAssets="All" />

@@ -9,12 +9,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj" />
-        <ProjectReference Include="..\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" />
-        <!--
-        <ProjectReference Include="..\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
-                          OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false" />
-        -->
     </ItemGroup>
 
     <ItemGroup>
@@ -27,5 +21,38 @@
         <None Include="build/Package.targets" 
               Pack="True" 
               PackagePath="build/Shiny.Mediator.targets" />
+    </ItemGroup>
+    
+    <PropertyGroup>
+        <SourceGenBinDir>..\Shiny.Mediator.SourceGenerators\bin\Release\netstandard2.0</SourceGenBinDir>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="..\Shiny.Mediator.SourceGenerators\SourceGenerators.targets" 
+              Pack="True" 
+              PackagePath="build/$Shiny.Mediator.SourceGenerators.targets" />
+
+        <None Include="..\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"
+              Pack="True"
+              PackagePath="buildTransitive/$Shiny.Mediator.SourceGenerators.targets" />
+        
+        <None Include="$(SourceGenBinDir)\Shiny.Mediator.SourceGenerators.dll" 
+              Pack="true" 
+              PackagePath="analyzers/dotnet/cs" 
+              Visible="false" />
+
+        <None Include="$(SourceGenBinDir)\Microsoft.OpenApi.Readers.dll"
+              Pack="true"
+              PackagePath="analyzers/dotnet/cs"
+              Visible="false" />
+
+        <None Include="$(SourceGenBinDir)\Microsoft.OpenApi.dll"
+              Pack="true"
+              PackagePath="analyzers/dotnet/cs"
+              Visible="false" />
+
+        <None Include="$(SourceGenBinDir)\SharpYaml.dll"
+              Pack="true"
+              PackagePath="analyzers/dotnet/cs"
+              Visible="false" />
     </ItemGroup>
 </Project>
