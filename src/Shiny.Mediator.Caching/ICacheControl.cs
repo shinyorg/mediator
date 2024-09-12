@@ -5,6 +5,6 @@ namespace Shiny.Mediator;
 
 public interface ICacheControl
 {
-    bool ForceRefresh { get; }
-    void Set(ICacheEntry entry);
+    bool ForceRefresh { get; set; }
+    Action<ICacheEntry>? SetEntry { get; set; }
 }

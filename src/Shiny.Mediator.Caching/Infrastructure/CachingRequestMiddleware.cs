@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Shiny.Mediator.Caching.Infrastructure;
@@ -49,7 +48,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(IMemoryCache cache) : I
     }
 
     
-    protected void SetCacheEntry(CacheAttribute? attribute, TRequest request, ICacheEntry entry)
+    protected virtual void SetCacheEntry(CacheAttribute? attribute, TRequest request, ICacheEntry entry)
     {
         if (attribute != null)
         {
@@ -62,7 +61,6 @@ public class CachingRequestMiddleware<TRequest, TResult>(IMemoryCache cache) : I
                 entry.SlidingExpiration = TimeSpan.FromSeconds(attribute.SlidingExpirationSeconds);
         }
 
-        if (request is ICacheControl control)
-            control.Set(entry);
+        (request as ICacheControl)?.SetEntry?.Invoke(entry);
     }
 }
