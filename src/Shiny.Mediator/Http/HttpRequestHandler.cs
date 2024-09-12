@@ -28,7 +28,7 @@ public class HttpRequestHandler<TRequest, TResult>(
         var result = await this.Send(httpRequest, cancellationToken).ConfigureAwait(false);
         return result;
     }
-
+    
 
     protected virtual async Task<TResult> Send(HttpRequestMessage httpRequest, CancellationToken cancellationToken)
     {
@@ -89,16 +89,17 @@ public class HttpRequestHandler<TRequest, TResult>(
             var parameter = property.GetCustomAttribute<HttpParameterAttribute>();
             if (parameter != null)
             {
+                var parameterName = parameter.ParameterName ?? property.Name;
                 var propertyValue = property.GetValue(request)?.ToString();
                 
                 switch (parameter.Type)
                 {
                     case HttpParameterType.Path:
-                        if (propertyValue != null)
-                            throw new InvalidOperationException($"Path parameter '{property.Name}' not set");
+                        if (propertyValue == null)
+                            throw new InvalidOperationException($"Path parameters cannot be null - '{parameterName}'");
                            
                         var epath = HttpUtility.UrlEncode(propertyValue);
-                        uri = uri.Replace("{" + property.Name + "}", epath);
+                        uri = uri.Replace("{" + parameterName + "}", epath);
                         break;
                     
                     case HttpParameterType.Query:
@@ -106,14 +107,14 @@ public class HttpRequestHandler<TRequest, TResult>(
                         {
                             var eq = HttpUtility.UrlEncode(propertyValue);
                             uri += uri.Contains('?') ? "&" : "?";
-                            uri += $"{property.Name}={eq}";
+                            uri += $"{parameterName}={eq}";
                         }
 
                         break;
                 
                     case HttpParameterType.Header:
                         if (propertyValue != null)
-                            httpRequest.Headers.Add(property.Name, propertyValue);
+                            httpRequest.Headers.Add(parameterName, propertyValue);
                         break;
                 
                     case HttpParameterType.Body:
@@ -128,6 +129,9 @@ public class HttpRequestHandler<TRequest, TResult>(
             }
         }
 
+        if (uri.Contains("{") && uri.Contains("}"))
+            throw new InvalidOperationException("Not all route parameters satisfied");
+        
         httpRequest.RequestUri = new Uri(uri);
         return httpRequest;
     }

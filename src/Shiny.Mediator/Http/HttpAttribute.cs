@@ -9,9 +9,10 @@ public class HttpAttribute(HttpVerb httpVerb, string route) : Attribute
 
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
-public class HttpParameterAttribute(HttpParameterType parameterType) : Attribute
+public class HttpParameterAttribute(HttpParameterType parameterType, string? parameterName = null) : Attribute
 {
     public HttpParameterType Type => parameterType;
+    public string? ParameterName => parameterName;
 }
 
 public enum HttpVerb
