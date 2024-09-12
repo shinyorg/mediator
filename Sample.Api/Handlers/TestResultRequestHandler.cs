@@ -5,7 +5,7 @@ public record TestResult;
 
 
 [ScopedHandler]
-[MediatorHttpPost("/testresult")]
+[MediatorHttpPost("/testresult", Name = "TestResult")]
 public class TestResultRequestHandler : IRequestHandler<TestResultRequest, TestResult>
 {
     public Task<TestResult> Handle(TestResultRequest request, CancellationToken cancellationToken)

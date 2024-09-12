@@ -14,7 +14,7 @@
                 <SwitchCell Text="Fire and Forget Events" 
                             On="{Binding FireAndForgetEvents}"/>
             </TableSection>
-
+            
             <TableSection Title="REQUESTS - Standard">
                 <TextCell Text="Send Request" 
                           Command="{Binding TriggerCommand}"/>
@@ -36,10 +36,15 @@
                           Detail="{Binding OfflineValue}" />
             </TableSection>
             
+            <TableSection Title="REQUESTS - HTTP">
+                <TextCell Text="Send" Command="{Binding HttpRequestCommand}" />
+            </TableSection>
+            
             <TableSection Title="REQUESTS - Cache">
                 <TextCell Text="Clear" Command="{Binding CacheClearCommand}" />
                 <TextCell Text="Request" Command="{Binding CacheRequestCommand}" />
                 <TextCell Text="Value" Detail="{Binding CacheValue}" />
+                <!-- <SwitchCell Text="Force Refresh" On="{Binding CacheForceRefresh}" /> -->
                 <TextCell Text="Cache has a 20s expiry time" />
             </TableSection>
             

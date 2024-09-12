@@ -53,13 +53,13 @@ jobs:
       run: dotnet test tests/Shiny.Mediator.Tests/Shiny.Mediator.Tests.csproj --no-restore --verbosity normal
       
     - name: Post NuGet Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: nuget-artifacts
         path: '**/*.nupkg'
 
     - name: Publish Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: nugets
         path: ${{ github.workspace }}/artifacts

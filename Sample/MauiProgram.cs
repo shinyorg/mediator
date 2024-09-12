@@ -1,4 +1,7 @@
-﻿namespace Sample;
+﻿using Microsoft.Extensions.Configuration;
+using Polly;
+
+namespace Sample;
 
 
 public static class MauiProgram
@@ -34,22 +37,29 @@ public static class MauiProgram
         builder.Logging.AddDebug();
         builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
+        {
+            // NOTE: Mediator:Http is the based sub config - the namespace follows PER http generation
+            // the value is the base URI
+            { "Mediator:Http:Http.TheActual", "https://localhost:7192/" }
+        }!);
         builder.Services.AddShinyMediator(x => x
             .UseMaui()
             .UseBlazor()
+            .AddMauiHttpDecorator()
             .AddTimerRefreshStreamMiddleware()
             .AddPrismSupport()
             .AddDataAnnotations()
             
             // TODO: don't add both
             // .AddFluentValidation()
-            // .AddResiliencyMiddleware(
-            //     ("Test", builder =>
-            //     {
-            //         // builder.AddRetry(new RetryStrategyOptions());
-            //         builder.AddTimeout(TimeSpan.FromSeconds(2.0));
-            //     })
-            // )
+            .AddResiliencyMiddleware(
+                ("Test", builder =>
+                {
+                    // builder.AddRetry(new RetryStrategyOptions());
+                    builder.AddTimeout(TimeSpan.FromSeconds(2.0));
+                })
+            )
             .AddMemoryCaching(y =>
             {
                 y.ExpirationScanFrequency = TimeSpan.FromSeconds(5);

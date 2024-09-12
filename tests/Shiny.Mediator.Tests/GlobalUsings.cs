@@ -3,3 +3,4 @@ global using Shiny.Mediator;
 global using Microsoft.Extensions.DependencyInjection;
 global using System.Diagnostics;
 global using FluentAssertions;
+global using Xunit;

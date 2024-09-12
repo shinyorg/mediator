@@ -30,13 +30,19 @@ public static class MediatorExtensions
                 errorLogger.LogError(x.Exception, "Fire & Forget trapped error");
         }, TaskContinuationOptions.OnlyOnFaulted);
     
-    
+    /// <summary>
+    /// Add Shiny Mediator to the service collection
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configurator"></param>
+    /// <returns></returns>
     public static IServiceCollection AddShinyMediator(this IServiceCollection services, Action<ShinyConfigurator>? configurator = null)
     {
         var cfg = new ShinyConfigurator(services);
         configurator?.Invoke(cfg);
         if (!cfg.ExcludeDefaultMiddleware)
         {
+            cfg.AddHttpClient();
             cfg.AddOpenStreamMiddleware(typeof(TimerRefreshStreamRequestMiddleware<,>));
             cfg.AddEventExceptionHandlingMiddleware();
             cfg.AddTimedMiddleware();

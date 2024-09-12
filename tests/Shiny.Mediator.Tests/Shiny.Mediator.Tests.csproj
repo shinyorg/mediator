@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -7,19 +6,19 @@
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <AssemblyName>UnitTests</AssemblyName>
         <!--<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GF</CompilerGeneratedFilesOutputPath>-->
-<!--        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>-->
-<!--        <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>-->
+        <!--<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>-->
+        <!--<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>-->
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.2" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.11.0" PrivateAssets="all" />
-        <PackageReference Include="FluentAssertions" Version="6.12.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
-        <PackageReference Include="xunit" Version="2.9.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.2"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.11.0" PrivateAssets="all"/>
+        <PackageReference Include="FluentAssertions" Version="6.12.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0"/>
+        <PackageReference Include="xunit" Version="2.9.0"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -27,10 +26,22 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj" />
-        <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj" />
         <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
-                          ReferenceOutputAssembly="false"
-                          OutputItemType="Analyzer" />
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj"/>
     </ItemGroup>
+
+    <!--
+    <ItemGroup>
+        <MediatorHttp Include="This" 
+                      Uri="https://localhost:7192/swagger/v1/swagger.json" 
+                      ContractPostfix="HttpRequest" 
+                      Namespace="Http.TheActual" 
+                      Visible="false" />
+    </ItemGroup>
+    -->
+
+    <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"/>
 </Project>
