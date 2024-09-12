@@ -58,12 +58,12 @@ jobs:
         name: nuget-artifacts
         path: '**/*.nupkg'
 
-    - name: Publish Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: nugets
-        path: ${{ github.workspace }}/artifacts
-        retention-days: 5
+#    - name: Publish Artifacts
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: nugets
+#        path: ${{ github.workspace }}/artifacts
+#        retention-days: 5
 
     - name: Publish NuGets
       if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/v') }}
