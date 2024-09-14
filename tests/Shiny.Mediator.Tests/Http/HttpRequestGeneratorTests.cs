@@ -6,20 +6,14 @@ namespace Shiny.Mediator.Tests;
 
 public class HttpRequestGeneratorTests(ITestOutputHelper output)
 {
-    [Fact]
-    public void Tests()
+    [Theory]
+    [InlineData("./Http/test.json", "TestApi")]
+    public void Tests(string path, string nameSpace)
     { 
-        this.Write("./Http/test.json", "ConsumerApi");
-    }
-
-
-    void Write(string readPath, string nameSpace)
-    {
-        using var doc = File.OpenRead(readPath);
+        using var doc = File.OpenRead(path);
         var item = new MediatorHttpItemConfig { Namespace = nameSpace };
         var code = OpenApiContractGenerator.Generate(doc, item, e => output.WriteLine(e));
         
-        Console.Write(code);
-        // File.WriteAllText(Path.Combine("./Contracts", nameSpace + ".generated.cs"), code);
+        output.WriteLine(code);
     }
 }

@@ -95,8 +95,9 @@ public static class OpenApiContractGenerator
                     var bodyResponseType = GetApplicationJsonResponse(body.Content);
                     if (bodyResponseType != null)
                     {
-                        // if (!body.Required)
-                        //     type += "?";
+                        if (!body.Required)
+                            bodyResponseType += "?";
+                        
                         sb.AppendLine($"    [global::Shiny.Mediator.Http.HttpParameter(global::Shiny.Mediator.Http.HttpParameterType.Body)]");
                         sb.AppendLine($"    public {bodyResponseType} Body {{ get; set; }}");
                         output("BODY: " + bodyResponseType);
@@ -121,7 +122,7 @@ public static class OpenApiContractGenerator
 
         return responseType;
     }
-
+    
 
     static string? GetApplicationJsonResponse(IDictionary<string, OpenApiMediaType> response)
     {
@@ -133,11 +134,14 @@ public static class OpenApiContractGenerator
             if (responseContent.Schema.Reference != null)
                 responseType = responseContent.Schema.Reference.Id;
 
-            else if (responseContent.Schema.Type?.Equals("array", StringComparison.InvariantCultureIgnoreCase) ??
-                     false && responseContent.Schema.Items.Reference != null)
+            else
             {
-                var type = responseContent.Schema.Items.Reference.Id;
-                responseType = $"global::System.Collections.Generic.List<{type}>";
+                var isArray = responseContent.Schema.Type?.Equals("array", StringComparison.InvariantCultureIgnoreCase) ?? false;
+                if (isArray && responseContent.Schema?.Items?.Reference != null)
+                {
+                    var type = responseContent.Schema.Items.Reference.Id;
+                    responseType = $"global::System.Collections.Generic.List<{type}>";
+                }
             }
         }
 
