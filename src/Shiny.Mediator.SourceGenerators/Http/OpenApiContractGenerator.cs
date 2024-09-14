@@ -111,7 +111,7 @@ public static class OpenApiContractGenerator
 
     static string GetResponseType(OpenApiOperation op)
     {
-        var responseType = "Shiny.Mediator.Unit";
+        var responseType = "global::Shiny.Mediator.Unit";
         if (op.Responses.TryGetValue("200", out var response200))
         {
             var appJsonType = GetApplicationJsonResponse(response200.Content);
@@ -129,9 +129,18 @@ public static class OpenApiContractGenerator
 
         if (response.TryGetValue("application/json", out var responseContent))
         {
+            // TODO: array of Property not being found - schema doesn't have much
             if (responseContent.Schema.Reference != null)
                 responseType = responseContent.Schema.Reference.Id;
+
+            else if (responseContent.Schema.Type?.Equals("array", StringComparison.InvariantCultureIgnoreCase) ??
+                     false && responseContent.Schema.Items.Reference != null)
+            {
+                var type = responseContent.Schema.Items.Reference.Id;
+                responseType = $"global::System.Collections.Generic.List<{type}>";
+            }
         }
+
         return responseType;
     }
 
