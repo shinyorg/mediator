@@ -48,6 +48,9 @@ public static class OpenApiContractGenerator
         foreach (var schema in document.Components.Schemas)
         {
             var type = GenerateComplexType(schema, output);
+            if (type == null)
+                throw new InvalidOperationException("Invalid Schema Type");
+
             sb.Append(type);
             sb.AppendLine();
         }
@@ -134,7 +137,7 @@ public static class OpenApiContractGenerator
     }
 
 
-    static string GetSchemaType(OpenApiSchema schema)
+    static string? GetSchemaType(OpenApiSchema schema)
     {
         string type = null!;
         if (schema.Type != null)
@@ -180,11 +183,13 @@ public static class OpenApiContractGenerator
         // TODO: we're not ready for more than 1 right now
         else if ((schema.AllOf?.Count ?? 0) == 1)
         {
-            type = GetSchemaType(schema.AllOf!.Single()!);
+            // if discriminator is present, 2 will come through which means the following will error
+            // we want to return null instead
+            type = GetSchemaType(schema.AllOf!.Single()!)!;
         }
         else
         {
-            throw new InvalidOperationException("Invalid Schema Type");
+            return null;
         }
 
         if (schema.Nullable)
