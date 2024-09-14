@@ -81,7 +81,7 @@ public partial class TriggerViewModel(
     {
         try
         {
-            await mediator.Request(new TestResultHttpRequest(), this.cancelSource.Token);
+            //await mediator.Request(new TestResultHttpRequest(), this.cancelSource.Token);
         }
         catch (Exception ex)
         {
