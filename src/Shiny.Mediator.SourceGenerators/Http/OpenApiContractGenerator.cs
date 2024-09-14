@@ -177,9 +177,10 @@ public static class OpenApiContractGenerator
                     throw new InvalidOperationException("Invalid type " + schema.Type);
             }
         }
-        else if (schema.AllOf != null)
+        // TODO: we're not ready for more than 1 right now
+        else if ((schema.AllOf?.Count ?? 0) == 1)
         {
-            type = GetSchemaType(schema.AllOf.Single()!);
+            type = GetSchemaType(schema.AllOf!.Single()!);
         }
         else
         {
