@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,10 +9,11 @@ using Microsoft.OpenApi.Readers;
 
 namespace Shiny.Mediator.SourceGenerators.Http;
 
-// TODO: discriminators on type (camera vs feeder
-public static class OpenApiContractGenerator
+
+public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<string> output)
 {
-    public static string Generate(Stream stream, MediatorHttpItemConfig itemConfig, Action<string> output)
+
+    public string Generate(Stream stream)
     {
         using var streamReader = new StreamReader(stream);
         var reader = new OpenApiStreamReader();
@@ -42,7 +42,7 @@ public static class OpenApiContractGenerator
     }
 
 
-    static void GenerateComponents(StringBuilder sb, OpenApiDocument document, MediatorHttpItemConfig itemConfig, Action<string> output)
+    void GenerateComponents(StringBuilder sb, OpenApiDocument document, MediatorHttpItemConfig itemConfig, Action<string> output)
     {
         output("Generating Components for " + itemConfig.Namespace);
         foreach (var schema in document.Components.Schemas)
@@ -57,7 +57,7 @@ public static class OpenApiContractGenerator
     }
 
 
-    static void GenerateContracts(StringBuilder sb, OpenApiDocument document, MediatorHttpItemConfig itemConfig, Action<string> output)
+    void GenerateContracts(StringBuilder sb, OpenApiDocument document, MediatorHttpItemConfig itemConfig, Action<string> output)
     {
         foreach (var path in document.Paths)
         {
@@ -71,7 +71,7 @@ public static class OpenApiContractGenerator
                     continue;
                 }
                 output($"OPERATION: {op.Key} - ID: {op.Value.OperationId}");
-                var responseType = GetResponseType(op.Value);
+                var responseType = this.GetResponseType(op.Value);
                 output($"RESPONSE: {responseType}");
                 
                 var contractName = $"{itemConfig.ContractPrefix}{op.Value.OperationId.Pascalize()}{itemConfig.ContractPostfix}";
@@ -84,7 +84,7 @@ public static class OpenApiContractGenerator
                 foreach (var parameter in op.Value.Parameters)
                 {
                     var argType = parameter.In == ParameterLocation.Path ? "Path" : "Query";
-                    var typeName = GetSchemaType(parameter.Schema);
+                    var typeName = this.GetSchemaType(parameter.Schema);
                     var propertyName = parameter.Name.Pascalize();
                     sb.AppendLine($"    [global::Shiny.Mediator.Http.HttpParameter(global::Shiny.Mediator.Http.HttpParameterType.{argType})]");
                     sb.AppendLine($"    public {typeName} {propertyName} {{ get; set; }}");
@@ -95,7 +95,7 @@ public static class OpenApiContractGenerator
                 if (op.Value.RequestBody != null)
                 {
                     var body = op.Value.RequestBody;
-                    var bodyResponseType = GetApplicationJsonResponse(body.Content);
+                    var bodyResponseType = this.GetApplicationJsonResponse(body.Content);
                     if (bodyResponseType != null)
                     {
                         if (!body.Required)
@@ -113,12 +113,12 @@ public static class OpenApiContractGenerator
     }
     
 
-    static string GetResponseType(OpenApiOperation op)
+    string GetResponseType(OpenApiOperation op)
     {
         var responseType = "global::Shiny.Mediator.Unit";
         if (op.Responses.TryGetValue("200", out var response200))
         {
-            var appJsonType = GetApplicationJsonResponse(response200.Content);
+            var appJsonType = this.GetApplicationJsonResponse(response200.Content);
             if (appJsonType != null)
                 responseType = appJsonType;
         }
@@ -127,7 +127,7 @@ public static class OpenApiContractGenerator
     }
     
 
-    static string? GetApplicationJsonResponse(IDictionary<string, OpenApiMediaType> response)
+    string? GetApplicationJsonResponse(IDictionary<string, OpenApiMediaType> response)
     {
         string? responseType = null;
         if (response.TryGetValue("application/json", out var responseContent))
@@ -137,7 +137,7 @@ public static class OpenApiContractGenerator
     }
 
 
-    static string? GetSchemaType(OpenApiSchema schema)
+    string? GetSchemaType(OpenApiSchema schema)
     {
         string type = null!;
         if (schema.Type != null)
@@ -146,7 +146,7 @@ public static class OpenApiContractGenerator
             {
                 case "string":
                     if (schema.Enum.Count > 0)
-                        type = schema.Reference.Id; // TODO: this is being hit but the enum property isn't being generated
+                        type = $"global::{itemConfig.Namespace}.{schema.Reference.Id}";
                     else
                         type = GetStringType(schema);
                     break;
@@ -161,17 +161,17 @@ public static class OpenApiContractGenerator
                     break;
 
                 case "array":
-                    var listType = GetSchemaType(schema.Items);
+                    var listType = this.GetSchemaType(schema.Items);
                     return $"System.Collections.Generic.List<{listType}>";
 
                 case "object":
                     if (schema.AdditionalProperties == null)
                     {
-                        type = schema.Reference.Id;    
+                        type = $"global::{itemConfig.Namespace}.{schema.Reference.Id}";    
                     }
                     else
                     {
-                        var dictionaryValueType = GetSchemaType(schema.AdditionalProperties);
+                        var dictionaryValueType = this.GetSchemaType(schema.AdditionalProperties);
                         type = $"System.Collections.Generic.Dictionary<string, {dictionaryValueType}>";
                     }
                     break;
@@ -185,7 +185,7 @@ public static class OpenApiContractGenerator
         {
             // if discriminator is present, 2 will come through which means the following will error
             // we want to return null instead
-            type = GetSchemaType(schema.AllOf!.Single()!)!;
+            type = this.GetSchemaType(schema.AllOf!.Single()!)!;
         }
         else
         {
@@ -214,7 +214,7 @@ public static class OpenApiContractGenerator
         _ => throw new InvalidOperationException("Invalid Number Format - " + format)
     };
     
-    static string GenerateComplexType(KeyValuePair<string, OpenApiSchema> schema, Action<string> output)
+    string GenerateComplexType(KeyValuePair<string, OpenApiSchema> schema, Action<string> output)
     {
         output("COMPONENT: " + schema.Key);
         var sb = new StringBuilder();

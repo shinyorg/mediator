@@ -71,10 +71,10 @@ public class MediatorHttpRequestGenerator : ISourceGenerator
             throw new InvalidOperationException("No code file returned for " + item.Path);
 
         var localCode = codeFile.ToString();
-        var output = OpenApiContractGenerator.Generate(
-            new MemoryStream(Encoding.UTF8.GetBytes(localCode)),
-            itemConfig,
-            e => context.LogInfo(e)
+        var generator = new OpenApiContractGenerator(itemConfig, e => context.LogInfo(e));
+        
+        var output = generator.Generate(
+            new MemoryStream(Encoding.UTF8.GetBytes(localCode))
         );
         
         context.AddSource(itemConfig.Namespace + ".g.cs", output);
@@ -87,11 +87,9 @@ public class MediatorHttpRequestGenerator : ISourceGenerator
         context.LogInfo($"Generating for remote '{itemConfig.Uri}' with namespace '{itemConfig.Namespace}'");
         var stream = http.GetStreamAsync(itemConfig.Uri).GetAwaiter().GetResult();
 
-        var output = OpenApiContractGenerator.Generate(
-            stream,
-            itemConfig,
-            e => context.LogInfo(e)
-        );
+        var generator = new OpenApiContractGenerator(itemConfig, e => context.LogInfo(e));
+        var output = generator.Generate(stream);
+
         context.AddSource(itemConfig.Namespace + ".g.cs", output);
     }
 }

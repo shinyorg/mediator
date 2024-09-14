@@ -8,10 +8,10 @@
         <IsPackable>true</IsPackable>
         <developmentDependency>true</developmentDependency>
         <IsRoslynComponent>true</IsRoslynComponent>
-        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         -->
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     </PropertyGroup>
 
     <ItemGroup>
