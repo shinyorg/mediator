@@ -1,29 +1,41 @@
-// using Shiny.Mediator.SourceGenerators.Http;
-// using Xunit.Abstractions;
-//
-// namespace Shiny.Mediator.Tests;
-//
-//
-// public class HttpRequestGeneratorTests(ITestOutputHelper output)
-// {
-//     [Fact]
-//     public void Tests()
-//     { 
-//         this.Write("./OpenApi/runtimeConfigurationApiV1.json", "RuntimeConfigApi");
-//         this.Write("./OpenApi/subscriptionManagementApiV1.json", "SubMgmtApi");
-//         this.Write("./OpenApi/mapsApiV1.json", "MapsApi");
-//         this.Write("./OpenApi/notificationApiV1.json", "NotificationsApi");
-//         this.Write("./OpenApi/weatherApiV1.json", "WeatherApi");
-//         this.Write("./OpenApi/gamePlanApiV1.json", "GamePlanApi");
-//         this.Write("./OpenApi/consumerApiV1.json", "ConsumerApi");
-//     }
-//
-//
-//     void Write(string readPath, string nameSpace)
-//     {
-//         using var doc = File.OpenRead(readPath);
-//         var item = new MediatorHttpConfig { Namespace = nameSpace };
-//         var code = OpenApiContractGenerator.Generate(doc, item, e => output.WriteLine(e));
-//         File.WriteAllText(Path.Combine("./Contracts", nameSpace + ".generated.cs"), code);
-//     }
-// }
+using Shiny.Mediator.SourceGenerators.Http;
+using Xunit.Abstractions;
+
+namespace Shiny.Mediator.Tests;
+
+
+public class HttpRequestGeneratorTests(ITestOutputHelper output)
+{
+    [Theory]
+    [InlineData("./Http/test.json", "TestApi")]
+    public void Tests(string path, string nameSpace)
+    { 
+        using var doc = File.OpenRead(path);
+        var item = new MediatorHttpItemConfig
+        {
+            Namespace = nameSpace,
+            ContractPostfix = "HttpRequest"
+        };
+        var code = OpenApiContractGenerator.Generate(doc, item, e => output.WriteLine(e));
+        output.WriteLine(code);
+    }
+
+    // [Theory]
+    // [InlineData("", "TestApi")]
+    // public async Task RemoteTests(string uri, string nameSpace)
+    // {
+    //     var http = new HttpClient();
+    //     var stream = await http.GetStreamAsync(uri);
+    //     var cfg = new MediatorHttpItemConfig
+    //     {
+    //         Namespace = nameSpace,
+    //         ContractPostfix = "HttpRequest"
+    //     };
+    //     var generate = OpenApiContractGenerator.Generate(
+    //         stream,
+    //         cfg,
+    //         e => output.WriteLine(e)
+    //     );
+    //     output.WriteLine(generate);
+    // }
+}

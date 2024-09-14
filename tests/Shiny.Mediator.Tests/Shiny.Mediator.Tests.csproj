@@ -27,10 +27,14 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
-                          OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false"/>
+                          OutputItemType="Analyzer"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="Http\test.json"/>
+        <Content Include="Http\test.json" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
     <!--

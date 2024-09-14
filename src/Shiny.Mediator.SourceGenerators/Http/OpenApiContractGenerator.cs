@@ -48,6 +48,9 @@ public static class OpenApiContractGenerator
         foreach (var schema in document.Components.Schemas)
         {
             var type = GenerateComplexType(schema, output);
+            if (type == null)
+                throw new InvalidOperationException("Invalid Schema Type");
+
             sb.Append(type);
             sb.AppendLine();
         }
@@ -95,8 +98,9 @@ public static class OpenApiContractGenerator
                     var bodyResponseType = GetApplicationJsonResponse(body.Content);
                     if (bodyResponseType != null)
                     {
-                        // if (!body.Required)
-                        //     type += "?";
+                        if (!body.Required)
+                            bodyResponseType += "?";
+                        
                         sb.AppendLine($"    [global::Shiny.Mediator.Http.HttpParameter(global::Shiny.Mediator.Http.HttpParameterType.Body)]");
                         sb.AppendLine($"    public {bodyResponseType} Body {{ get; set; }}");
                         output("BODY: " + bodyResponseType);
@@ -111,7 +115,7 @@ public static class OpenApiContractGenerator
 
     static string GetResponseType(OpenApiOperation op)
     {
-        var responseType = "Shiny.Mediator.Unit";
+        var responseType = "global::Shiny.Mediator.Unit";
         if (op.Responses.TryGetValue("200", out var response200))
         {
             var appJsonType = GetApplicationJsonResponse(response200.Content);
@@ -121,22 +125,19 @@ public static class OpenApiContractGenerator
 
         return responseType;
     }
-
+    
 
     static string? GetApplicationJsonResponse(IDictionary<string, OpenApiMediaType> response)
     {
         string? responseType = null;
-
         if (response.TryGetValue("application/json", out var responseContent))
-        {
-            if (responseContent.Schema.Reference != null)
-                responseType = responseContent.Schema.Reference.Id;
-        }
+            responseType = GetSchemaType(responseContent.Schema);
+
         return responseType;
     }
 
 
-    static string GetSchemaType(OpenApiSchema schema)
+    static string? GetSchemaType(OpenApiSchema schema)
     {
         string type = null!;
         if (schema.Type != null)
@@ -179,13 +180,16 @@ public static class OpenApiContractGenerator
                     throw new InvalidOperationException("Invalid type " + schema.Type);
             }
         }
-        else if (schema.AllOf != null)
+        // TODO: we're not ready for more than 1 right now
+        else if ((schema.AllOf?.Count ?? 0) == 1)
         {
-            type = GetSchemaType(schema.AllOf.Single()!);
+            // if discriminator is present, 2 will come through which means the following will error
+            // we want to return null instead
+            type = GetSchemaType(schema.AllOf!.Single()!)!;
         }
         else
         {
-            throw new InvalidOperationException("Invalid Schema Type");
+            return null;
         }
 
         if (schema.Nullable)
