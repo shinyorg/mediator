@@ -127,23 +127,8 @@ public static class OpenApiContractGenerator
     static string? GetApplicationJsonResponse(IDictionary<string, OpenApiMediaType> response)
     {
         string? responseType = null;
-
         if (response.TryGetValue("application/json", out var responseContent))
-        {
-            // TODO: array of Property not being found - schema doesn't have much
-            if (responseContent.Schema.Reference != null)
-                responseType = responseContent.Schema.Reference.Id;
-
-            else
-            {
-                var isArray = responseContent.Schema.Type?.Equals("array", StringComparison.InvariantCultureIgnoreCase) ?? false;
-                if (isArray && responseContent.Schema?.Items?.Reference != null)
-                {
-                    var type = responseContent.Schema.Items.Reference.Id;
-                    responseType = $"global::System.Collections.Generic.List<{type}>";
-                }
-            }
-        }
+            responseType = GetSchemaType(responseContent.Schema);
 
         return responseType;
     }
