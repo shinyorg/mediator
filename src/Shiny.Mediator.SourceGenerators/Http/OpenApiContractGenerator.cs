@@ -131,7 +131,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
     {
         string? responseType = null;
         if (response.TryGetValue("application/json", out var responseContent))
-            responseType = GetSchemaType(responseContent.Schema);
+            responseType = this.GetSchemaType(responseContent.Schema);
 
         return responseType;
     }
@@ -164,6 +164,9 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                     var listType = this.GetSchemaType(schema.Items);
                     return $"global::System.Collections.Generic.List<{listType}>";
 
+                case "file":
+                    return "global::System.IO.Stream";
+                
                 case "object":
                     if (schema.AdditionalProperties == null)
                     {
@@ -249,7 +252,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
             if (schema.Value.AllOf.Count == 1)
             {
                 // add inheritance
-                var baseType = GetSchemaType(schema.Value.AllOf.Single());
+                var baseType = this.GetSchemaType(schema.Value.AllOf.Single());
                 sb.AppendLine($" : {baseType}");
 
                 output($"INHERITED: {className} ({baseType})");
