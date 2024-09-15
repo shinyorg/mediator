@@ -202,6 +202,10 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
     {
         "date-time" => "System.DateTimeOffset",
         "uuid" => "System.Guid",
+        "date" => "System.DateOnly",
+        "time" => "System.TimeOnly",
+        // "binary" => "byte[]",
+        // "file" => "",
         _ => "string"
     };
 
