@@ -162,7 +162,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
 
                 case "array":
                     var listType = this.GetSchemaType(schema.Items);
-                    return $"System.Collections.Generic.List<{listType}>";
+                    return $"global::System.Collections.Generic.List<{listType}>";
 
                 case "object":
                     if (schema.AdditionalProperties == null)
@@ -172,12 +172,12 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                     else
                     {
                         var dictionaryValueType = this.GetSchemaType(schema.AdditionalProperties);
-                        type = $"System.Collections.Generic.Dictionary<string, {dictionaryValueType}>";
+                        type = $"global::System.Collections.Generic.Dictionary<string, {dictionaryValueType}>";
                     }
                     break;
 
                 default:
-                    throw new InvalidOperationException("Invalid type " + schema.Type);
+                    throw new InvalidOperationException("Invalid type - " + schema.Type);
             }
         }
         // TODO: we're not ready for more than 1 right now
@@ -258,7 +258,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                 var propertyName = prop.Key.Pascalize();
                 if (prop.Value != null)
                 {
-                    var typeName = GetSchemaType(prop.Value);
+                    var typeName = this.GetSchemaType(prop.Value);
                     sb.AppendLine($"    [System.Text.Json.Serialization.JsonPropertyName(\"{prop.Key}\")]");
                     sb.AppendLine( "    public " + typeName + " " + propertyName + " { get; set; }");
                     sb.AppendLine();
