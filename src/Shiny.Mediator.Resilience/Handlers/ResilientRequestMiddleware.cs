@@ -32,7 +32,9 @@ public class ResilientRequestHandlerMiddleware<TRequest, TResult>(ResiliencePipe
         if (attribute == null)
             return await next().ConfigureAwait(false);
 
-        var pipeline = pipelineProvider.GetPipeline<TResult>(attribute.ConfigurationKey);
+        var pipeline = pipelineProvider.GetPipeline(attribute.ConfigurationKey.ToLower());
+        
+        // it can't cancel properly here... may need to make next take a CancellationToken
         var result = await pipeline
             .ExecuteAsync(async _ => await next(), cancellationToken)
             .ConfigureAwait(false);
