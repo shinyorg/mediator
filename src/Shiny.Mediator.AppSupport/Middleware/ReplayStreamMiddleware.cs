@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
@@ -10,8 +9,10 @@ namespace Shiny.Mediator.Middleware;
 /// </summary>
 /// <typeparam name="TRequest"></typeparam>
 /// <typeparam name="TResult"></typeparam>
-public class ReplayStreamMiddleware<TRequest, TResult>(IStorageManager storage) : IStreamRequestMiddleware<TRequest, TResult> 
-    where TRequest : IStreamRequest<TResult>
+public class ReplayStreamMiddleware<TRequest, TResult>(
+    IStorageService storage,
+    IFeatureService features
+) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
         TRequest request, 
@@ -36,7 +37,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(IStorageManager storage) 
         [EnumeratorCancellation] CancellationToken ct
     )
     {
-        var store = storage.Get<TResult>(request, attribute.AvailableAcrossSessions);
+        var store = await storage.Get<TResult>(request, attribute.AvailableAcrossSessions);
         if (store != null)
             yield return store;
 
@@ -44,7 +45,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(IStorageManager storage) 
         while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
         {
             // TODO: if current is null, remove?
-            storage.Store(request, nxt.Current!, attribute.AvailableAcrossSessions);
+            await storage.Store(request, nxt.Current!, attribute.AvailableAcrossSessions);
             yield return nxt.Current;
         }
     }

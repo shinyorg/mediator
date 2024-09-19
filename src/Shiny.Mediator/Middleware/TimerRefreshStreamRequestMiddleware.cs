@@ -1,9 +1,11 @@
 using System.Runtime.CompilerServices;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
 
-public class TimerRefreshStreamRequestMiddleware<TRequest, TResult> : IStreamRequestMiddleware<TRequest, TResult> 
-    where TRequest : IStreamRequest<TResult>
+public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
+    IFeatureService features
+) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
         TRequest request, 
@@ -12,9 +14,9 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult> : IStreamReq
         CancellationToken cancellationToken
     )
     {
-        var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TimerRefreshAttribute>();
-        if (attribute == null)
-            return next();
+        // var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TimerRefreshAttribute>();
+        // if (attribute == null)
+        //     return next();
 
         return Iterate(attribute, next, cancellationToken);
     }

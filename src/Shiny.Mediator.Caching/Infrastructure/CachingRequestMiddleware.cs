@@ -1,10 +1,14 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.Caching.Memory;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Caching.Infrastructure;
 
 
-public class CachingRequestMiddleware<TRequest, TResult>(IMemoryCache cache) : IRequestMiddleware<TRequest, TResult>
+public class CachingRequestMiddleware<TRequest, TResult>(
+    IMemoryCache cache,
+    IFeatureService features
+) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
         TRequest request, 

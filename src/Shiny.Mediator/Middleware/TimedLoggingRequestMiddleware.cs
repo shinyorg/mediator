@@ -1,10 +1,14 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
 
 
-public class TimedLoggingRequestMiddleware<TRequest, TResult>(ILogger<TRequest> logger) : IRequestMiddleware<TRequest, TResult>
+public class TimedLoggingRequestMiddleware<TRequest, TResult>(
+    ILogger<TRequest> logger,
+    IFeatureService features
+) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler requestHandler, CancellationToken cancellationToken)
     {

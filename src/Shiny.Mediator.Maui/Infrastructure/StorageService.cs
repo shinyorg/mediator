@@ -3,14 +3,13 @@ using System.Text.Json;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-// TODO: can the request keys get "dirty" - chances are yes
-public class StorageManager(IFileSystem fileSystem) : IStorageManager
+public class StorageService(IFileSystem fileSystem) : IStorageService
 {
     readonly Dictionary<string, object> memCache = new();
     Dictionary<string, string> keys = null!;
     
     
-    public virtual void Store(object request, object result, bool isPersistent)
+    public virtual Task Store(object request, object result, bool isPersistent)
     {
         if (isPersistent)
         {
@@ -24,10 +23,12 @@ public class StorageManager(IFileSystem fileSystem) : IStorageManager
             lock (this.memCache)
                 this.memCache[key] = result!;
         }
+
+        return Task.CompletedTask;
     }
     
 
-    public virtual TResult? Get<TResult>(object request, bool isPersistent)
+    public virtual Task<TResult?> Get<TResult>(object request, bool isPersistent)
     {
         TResult? returnValue = default;
 
@@ -53,23 +54,9 @@ public class StorageManager(IFileSystem fileSystem) : IStorageManager
                 }
             }
         }
-        return returnValue;
+        return Task.FromResult(returnValue);
     }
     
-
-    // TODO: clear by category (cache/replay/offline)
-    public virtual void ClearAll()
-    {
-        lock (this.memCache)
-            this.memCache.Clear();
-
-        lock (this.keys)
-            this.keys.Clear();
-        
-        Directory.GetFiles(fileSystem.CacheDirectory, "*.mediator").ToList().ForEach(File.Delete);
-        Directory.GetFiles(fileSystem.AppDataDirectory, "*.mediator").ToList().ForEach(File.Delete);
-    }
-
 
     protected virtual string GetStoreKeyFromRequest(object request)
     {
@@ -111,7 +98,22 @@ public class StorageManager(IFileSystem fileSystem) : IStorageManager
         return path;
     }
     
+    
+    public Task Clear()
+    {
+        lock (this.memCache)
+            this.memCache.Clear();
 
+        lock (this.keys)
+            this.keys.Clear();
+        
+        Directory.GetFiles(fileSystem.CacheDirectory, "*.mediator").ToList().ForEach(File.Delete);
+        Directory.GetFiles(fileSystem.AppDataDirectory, "*.mediator").ToList().ForEach(File.Delete);
+
+        return Task.CompletedTask;
+    }
+
+    
     bool initialized = false;
     protected void EnsureKeyLoad()
     {

@@ -40,7 +40,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.AspNet", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.FluentValidation", "src\Shiny.Mediator.FluentValidation\Shiny.Mediator.FluentValidation.csproj", "{4D79C735-8B91-489A-805F-9483FABC0312}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Uno", "src\Shiny.Mediator.Uno\Shiny.Mediator.Uno.csproj", "{408728D7-BD4D-4676-BE02-AB1623875C37}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.AppSupport", "src\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj", "{AE2DF3D8-C0E0-4DDC-8967-CD0CE680FC78}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -100,9 +100,9 @@ Global
 		{4D79C735-8B91-489A-805F-9483FABC0312}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D79C735-8B91-489A-805F-9483FABC0312}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D79C735-8B91-489A-805F-9483FABC0312}.Release|Any CPU.Build.0 = Release|Any CPU
-		{408728D7-BD4D-4676-BE02-AB1623875C37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{408728D7-BD4D-4676-BE02-AB1623875C37}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{408728D7-BD4D-4676-BE02-AB1623875C37}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{408728D7-BD4D-4676-BE02-AB1623875C37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE2DF3D8-C0E0-4DDC-8967-CD0CE680FC78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE2DF3D8-C0E0-4DDC-8967-CD0CE680FC78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE2DF3D8-C0E0-4DDC-8967-CD0CE680FC78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE2DF3D8-C0E0-4DDC-8967-CD0CE680FC78}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

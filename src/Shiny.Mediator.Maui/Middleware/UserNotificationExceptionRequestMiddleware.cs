@@ -1,10 +1,14 @@
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
 
 
-public class UserExceptionRequestMiddleware<TRequest, TResult>(ILogger<TRequest> logger, UserExceptionRequestMiddlewareConfig config) : IRequestMiddleware<TRequest, TResult>
+public class UserExceptionRequestMiddleware<TRequest, TResult>(
+    IFeatureService features,
+    ILogger<TRequest> logger 
+) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler requestHandler, CancellationToken cancellationToken)
     {

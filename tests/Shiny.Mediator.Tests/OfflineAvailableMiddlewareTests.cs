@@ -1,4 +1,4 @@
-using Shiny.Mediator.Infrastructure.Impl;
+using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator.Tests;
@@ -6,9 +6,8 @@ namespace Shiny.Mediator.Tests;
 
 public class OfflineAvailableRequestMiddlewareTests
 {
-    readonly MockConnectivity connectivity;
-    readonly MockFileSystem fileSystem;
-    readonly StorageManager storeMgr;
+    readonly MockInternetService connectivity;
+    readonly MockStorageService storeMgr;
     readonly OfflineAvailableRequestMiddleware<OfflineRequest, long> middleware;
     readonly OfflineRequestHandler handler;
     
@@ -16,8 +15,7 @@ public class OfflineAvailableRequestMiddlewareTests
     {
         this.handler = new();
         this.connectivity = new();
-        this.fileSystem = new();
-        this.storeMgr = new(this.fileSystem);
+        this.storeMgr = new();
 
         this.middleware = new OfflineAvailableRequestMiddleware<OfflineRequest, long>(
             this.connectivity, 
@@ -68,30 +66,27 @@ public class OfflineRequestHandler : IRequestHandler<OfflineRequest, long>
         return Task.FromResult(this.ReturnValue);
     }
 }
-public class MockConnectivity : IConnectivity
+
+public class MockStorageService : IStorageService
 {
-    public bool IsAvailable
+    public Task Store(object request, object result, bool isPeristent)
     {
-        get => this.NetworkAccess == NetworkAccess.Internet;
-        set => this.NetworkAccess = value ? NetworkAccess.Internet : NetworkAccess.None;
+        throw new NotImplementedException();
     }
-    
-    public IEnumerable<ConnectionProfile> ConnectionProfiles { get; set; }// = ConnectionProfile.WiFi;
-    public NetworkAccess NetworkAccess { get; set; } = NetworkAccess.Internet;
-    public event EventHandler<ConnectivityChangedEventArgs>? ConnectivityChanged;
+
+    public Task<TResult?> Get<TResult>(object request, bool isPeristent)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task Clear() => Task.CompletedTask;
 }
-public class MockFileSystem : IFileSystem
+
+public class MockInternetService : IInternetService
 {
-    public Task<Stream> OpenAppPackageFileAsync(string filename)
+    public bool IsAvailable { get; set; }
+    public Task WaitForAvailable(CancellationToken cancelToken = default)
     {
         throw new NotImplementedException();
     }
-
-    public Task<bool> AppPackageFileExistsAsync(string filename)
-    {
-        throw new NotImplementedException();
-    }
-
-    public string CacheDirectory { get; } = ".";
-    public string AppDataDirectory { get; } = ".";
 }

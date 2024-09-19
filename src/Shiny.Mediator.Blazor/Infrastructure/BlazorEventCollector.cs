@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Shiny.Mediator.Infrastructure;
 
-namespace Shiny.Mediator.Blazor;
+namespace Shiny.Mediator.Blazor.Infrastructure;
 
 
 public class BlazorEventCollector : IEventCollector, IComponentActivator

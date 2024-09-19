@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.10" />
+        <ProjectReference Include="..\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj" />
         <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj" />
     </ItemGroup>
 </Project>

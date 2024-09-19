@@ -48,6 +48,7 @@ public static class MediatorExtensions
             cfg.AddTimedMiddleware();
         }
 
+        services.TryAddSingleton<IFeatureService, FeatureService>();
         services.TryAddSingleton<IMediator, Impl.Mediator>();
         services.TryAddSingleton<IRequestSender, DefaultRequestSender>();
         services.TryAddSingleton<IEventPublisher, DefaultEventPublisher>();
@@ -81,6 +82,7 @@ public static class MediatorExtensions
     public static ShinyConfigurator AddDataAnnotations(this ShinyConfigurator configurator)
         => configurator.AddOpenRequestMiddleware(typeof(DataAnnotationsRequestMiddleware<,>));
     
+    
     /// <summary>
     /// Transforms result to a timestamped values
     /// </summary>
@@ -92,35 +94,6 @@ public static class MediatorExtensions
     /// <returns></returns>
     public static TimestampedResult<TResult> ToTimestamp<TRequest, TResult>(this IRequestHandler<TRequest, TResult> handler, TResult result, DateTimeOffset? dt = null) where TRequest : IRequest<TResult>
         => new (dt ?? DateTimeOffset.UtcNow, result);
-    
-    public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TAttribute>(this IRequestHandler handler) where TAttribute : Attribute
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TRequest), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
-    
-    
-    public static TAttribute? GetHandlerHandleMethodAttribute<TEvent, TAttribute>(this IEventHandler<TEvent> handler) 
-        where TEvent : IEvent
-        where TAttribute : Attribute
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TEvent), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
 
     
     public static IServiceCollection AddSingletonAsImplementedInterfaces<TImplementation>(this IServiceCollection services) where TImplementation : class
@@ -150,6 +123,7 @@ public static class MediatorExtensions
         return services;
     }
 
+    
     public static ShinyConfigurator AddTimerRefreshStreamMiddleware(this ShinyConfigurator cfg)
         => cfg.AddOpenStreamMiddleware(typeof(TimerRefreshStreamRequestMiddleware<,>));
 }

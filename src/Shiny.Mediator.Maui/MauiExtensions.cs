@@ -3,7 +3,6 @@ using Shiny.Mediator.Handlers;
 using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Infrastructure.Impl;
-using Shiny.Mediator.Maui.Infrastructure;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;
@@ -19,16 +18,12 @@ public static class MauiExtensions
     /// <returns></returns>
     public static ShinyConfigurator UseMaui(this ShinyConfigurator cfg, bool includeStandardMiddleware = true)
     {
-        cfg.Services.TryAddSingleton<IEventHandler<FlushAllStoresEvent>, FlushAllCacheEventHandler>();
-        cfg.Services.TryAddSingleton<IStorageManager, StorageManager>();
-        cfg.Services.TryAddSingleton(AppInfo.Current);
-        cfg.Services.TryAddSingleton(DeviceDisplay.Current);
-        cfg.Services.TryAddSingleton(DeviceInfo.Current);
-        cfg.Services.TryAddSingleton(Connectivity.Current);
-        cfg.Services.TryAddSingleton(FileSystem.Current);
-        cfg.Services.TryAddSingleton(Geolocation.Default);
-
         cfg.AddEventCollector<MauiEventCollector>();
+        cfg.Services.TryAddSingleton<IStorageService, StorageService>();
+        cfg.Services.TryAddSingleton<IInternetService, InternetService>();
+        cfg.Services.TryAddSingleton(FileSystem.Current);
+        cfg.Services.TryAddSingleton(Connectivity.Current);
+
         
         if (includeStandardMiddleware)
         {
@@ -49,6 +44,11 @@ public static class MauiExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddMauiHttpDecorator(this ShinyConfigurator configurator, bool appendGpsHeader = false)
     {
+        configurator.Services.TryAddSingleton(AppInfo.Current);
+        configurator.Services.TryAddSingleton(DeviceDisplay.Current);
+        configurator.Services.TryAddSingleton(DeviceInfo.Current);
+        configurator.Services.TryAddSingleton(Geolocation.Default);
+        
         configurator.Services.Add(new ServiceDescriptor(
             typeof(IHttpRequestDecorator<,>), 
             null,
@@ -58,6 +58,7 @@ public static class MauiExtensions
         return configurator;
     }
 
+    
     /// <summary>
     /// Add Strongly Typed Shell Navigator
     /// </summary>
@@ -84,32 +85,6 @@ public static class MauiExtensions
     }
 
 
-    /// <summary>
-    /// Allows your request /w result handlers to return a stored value when offline is detected
-    /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
-    public static ShinyConfigurator AddOfflineAvailabilityMiddleware(this ShinyConfigurator cfg)
-    {
-        cfg.Services.AddSingletonAsImplementedInterfaces<OfflineAvailableFlushRequestHandler>();
-        cfg.AddOpenRequestMiddleware(typeof(OfflineAvailableRequestMiddleware<,>));
-        
-        return cfg;
-    }
-    
-    
-    /// <summary>
-    /// Plays the last value for the request while requesting the next value
-    /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
-    public static ShinyConfigurator AddReplayStreamMiddleware(this ShinyConfigurator cfg)
-    {
-        cfg.AddOpenStreamMiddleware(typeof(ReplayStreamMiddleware<,>));
-        return cfg;
-    }
-    
-    
     /// <summary>
     /// Allows you to mark [UserNotify] on your request handlers which logs an error & displays an alert to the user
     /// to show a customized message

@@ -4,7 +4,11 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Middleware;
 
 
-public class OfflineAvailableRequestMiddleware<TRequest, TResult>(IConnectivity connectivity, IStorageManager storage) : IRequestMiddleware<TRequest, TResult>
+public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
+    IInternetService connectivity, 
+    IStorageService storage,
+    IFeatureService features
+) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
         TRequest request, 
@@ -22,16 +26,15 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(IConnectivity 
             return await next().ConfigureAwait(false);
         
         var result = default(TResult);
-        var connected = connectivity.NetworkAccess == NetworkAccess.Internet;
-        if (connected)
+        if (connectivity.IsAvailable)
         {
             result = await next().ConfigureAwait(false);
             if (result != null)
-                storage.Store(request!, result, cfg.AvailableAcrossSessions);
+                await storage.Store(request!, result, cfg.AvailableAcrossSessions);
         }
         else
         {
-            result = storage.Get<TResult>(request, cfg.AvailableAcrossSessions);
+            result = await storage.Get<TResult>(request, cfg.AvailableAcrossSessions);
         }
         return result;
     }
