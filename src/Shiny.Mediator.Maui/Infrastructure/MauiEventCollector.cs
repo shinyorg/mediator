@@ -38,6 +38,10 @@ public class MauiEventCollector : IEventCollector
         {
             TryAppendEvents(navPage, list);
         }
+        else if (page is Shell shell)
+        {
+            TryAppendEvents(shell, list);
+        }
         else
         {
             TryAppendEvents(page, list);
@@ -64,5 +68,20 @@ public class MauiEventCollector : IEventCollector
                 TryAppendEvents(page, list);
             }
         }        
+    }
+
+    static void TryAppendEvents<TEvent>(Shell shell, List<IEventHandler<TEvent>> list) where TEvent : IEvent
+    {
+        var navStack = shell.Navigation?.NavigationStack;
+        if (navStack != null)
+        {
+            foreach (var page in navStack)
+            {
+                if(page != null)
+                {
+                    TryAppendEvents(page, list);
+                }
+            }
+        }
     }
 }
