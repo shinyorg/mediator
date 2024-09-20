@@ -77,7 +77,7 @@ public class MauiEventCollector : IEventCollector
         {
             foreach (var page in navStack)
             {
-                if(page != null)
+                if (page != null)
                 {
                     TryAppendEvents(page, list);
                 }
