@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.8" />
+        <PackageReference Include="Microsoft.JSInterop" Version="8.0.0" />
         <ProjectReference Include="..\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj" />
         <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
     </ItemGroup>

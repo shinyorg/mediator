@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
@@ -76,6 +75,8 @@ public class MediatorSourceGenerator : ISourceGenerator
         var assName = context.Compilation.AssemblyName?.Replace(".", "_");
         var sb = new StringBuilder();
         sb
+            .AppendLine("using Shiny.Mediator;")
+            .AppendLine()
             .AppendLine($"namespace {nameSpace};")
             .AppendLine()
             .AppendLine("public static class __ShinyMediatorSourceGenExtensions {")

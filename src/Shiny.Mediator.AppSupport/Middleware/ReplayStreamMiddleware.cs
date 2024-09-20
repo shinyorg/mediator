@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Configuration;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
@@ -11,7 +12,7 @@ namespace Shiny.Mediator.Middleware;
 /// <typeparam name="TResult"></typeparam>
 public class ReplayStreamMiddleware<TRequest, TResult>(
     IStorageService storage,
-    IFeatureService features
+    IConfiguration config
 ) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(

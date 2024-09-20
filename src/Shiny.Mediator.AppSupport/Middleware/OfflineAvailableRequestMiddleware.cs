@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.Extensions.Configuration;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
@@ -7,7 +8,7 @@ namespace Shiny.Mediator.Middleware;
 public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
     IInternetService connectivity, 
     IStorageService storage,
-    IFeatureService features
+    IConfiguration config
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(

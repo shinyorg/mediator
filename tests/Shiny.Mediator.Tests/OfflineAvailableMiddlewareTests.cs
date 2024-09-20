@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Memory;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Middleware;
 
@@ -10,6 +12,7 @@ public class OfflineAvailableRequestMiddlewareTests
     readonly MockStorageService storeMgr;
     readonly OfflineAvailableRequestMiddleware<OfflineRequest, long> middleware;
     readonly OfflineRequestHandler handler;
+    readonly ConfigurationManager config;
     
     public OfflineAvailableRequestMiddlewareTests()
     {
@@ -17,9 +20,13 @@ public class OfflineAvailableRequestMiddlewareTests
         this.connectivity = new();
         this.storeMgr = new();
 
+        this.config = new ConfigurationManager();
+        // this.config.AddConfiguration(new MemoryConfigurationProvider(new MemoryConfigurationSource().InitialData))
+        
         this.middleware = new OfflineAvailableRequestMiddleware<OfflineRequest, long>(
             this.connectivity, 
-            this.storeMgr
+            this.storeMgr,
+            null
         );
     }
     

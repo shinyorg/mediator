@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.Extensions.Configuration;
 using Polly.Registry;
 using Shiny.Mediator.Infrastructure;
 
@@ -20,7 +21,7 @@ services.AddResiliencePipeline(key, static builder =>
 //https://learn.microsoft.com/en-us/dotnet/core/resilience/?tabs=dotnet-cli
 //https://devblogs.microsoft.com/dotnet/building-resilient-cloud-services-with-dotnet-8/
 public class ResilientRequestHandlerMiddleware<TRequest, TResult>(
-    IFeatureService features,
+    IConfiguration config,
     ResiliencePipelineProvider<string> pipelineProvider
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {

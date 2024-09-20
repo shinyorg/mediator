@@ -1,4 +1,3 @@
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -48,7 +47,6 @@ public static class MediatorExtensions
             cfg.AddTimedMiddleware();
         }
 
-        services.TryAddSingleton<IFeatureService, FeatureService>();
         services.TryAddSingleton<IMediator, Impl.Mediator>();
         services.TryAddSingleton<IRequestSender, DefaultRequestSender>();
         services.TryAddSingleton<IEventPublisher, DefaultEventPublisher>();

@@ -1,3 +1,5 @@
+using Shiny.Mediator.Infrastructure;
+
 namespace Shiny.Mediator.Middleware;
 
 

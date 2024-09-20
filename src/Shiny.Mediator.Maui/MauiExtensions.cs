@@ -90,11 +90,9 @@ public static class MauiExtensions
     /// to show a customized message
     /// </summary>
     /// <param name="cfg"></param>
-    /// <param name="config"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddUserNotificationExceptionMiddleware(this ShinyConfigurator cfg, UserExceptionRequestMiddlewareConfig? config = null)
+    public static ShinyConfigurator AddUserNotificationExceptionMiddleware(this ShinyConfigurator cfg)
     {
-        cfg.Services.AddSingleton(config ?? new());
         cfg.AddOpenRequestMiddleware(typeof(UserExceptionRequestMiddleware<,>));
         return cfg;
     }

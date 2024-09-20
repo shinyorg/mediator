@@ -1,11 +1,13 @@
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Configuration;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
 
 public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
-    IFeatureService features
-) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
+    IConfiguration config
+) : IStreamRequestMiddleware<TRequest, TResult> 
+    where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
         TRequest request, 
@@ -14,19 +16,33 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        // var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TimerRefreshAttribute>();
-        // if (attribute == null)
-        //     return next();
+        var refreshSeconds = 0;
+        var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TimerRefreshAttribute>();
+        if (attribute != null)
+        {
+            refreshSeconds = attribute.RefreshSeconds;
+        }
+        else
+        {
+            var section = config.GetHandlerSection(request, this);
+            if (section.Exists())
+            {
+                section.GetValue("RefreshSeconds", 0);
+            }
+        }
 
-        return Iterate(attribute, next, cancellationToken);
+        if (refreshSeconds <= 0)
+            return next();
+        
+        return this.Iterate(refreshSeconds, next, cancellationToken);
     }
 
 
-    async IAsyncEnumerable<TResult> Iterate(TimerRefreshAttribute attribute, StreamRequestHandlerDelegate<TResult> next, [EnumeratorCancellation] CancellationToken ct)
+    async IAsyncEnumerable<TResult> Iterate(int refreshSeconds, StreamRequestHandlerDelegate<TResult> next, [EnumeratorCancellation] CancellationToken ct)
     {
         while (!ct.IsCancellationRequested)
         {
-            await Task.Delay(attribute.RefreshSeconds, ct);
+            await Task.Delay(refreshSeconds, ct);
         
             var nxt = next().GetAsyncEnumerator(ct);
             while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
