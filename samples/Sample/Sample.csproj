@@ -5,7 +5,7 @@
         <TargetFrameworks>$(TargetFrameworks);net8.0-maccatalyst</TargetFrameworks>
         <IosSimulatorBuild Condition="'$(Configuration)' == 'Debug'">False</IosSimulatorBuild>
 
-        <MauiVersion>8.0.80</MauiVersion>
+        <MauiVersion>8.0.90</MauiVersion>
         <OutputType>Exe</OutputType>
         <RootNamespace>Sample</RootNamespace>
         <SingleProject>true</SingleProject>
@@ -89,10 +89,13 @@
         <MauiImage Include="Resources\Images\*"/>
         <MauiFont Include="Resources\Fonts\*"/>
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)"/>
+        
+        <EmbeddedResource Include="appsettings.json" />
+        <Content Remove="**\appsettings.json" />
     </ItemGroup>
-
+    
     <ItemGroup>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2"/>
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.1"/>
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" Condition="'$(Configuration)' == 'Debug'"/>
@@ -102,15 +105,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj"/>
-        <ProjectReference Include="..\src\Shiny.Mediator.Caching\Shiny.Mediator.Caching.csproj"/>
-        <ProjectReference Include="..\src\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj"/>
-        <ProjectReference Include="..\src\Shiny.Mediator.FluentValidation\Shiny.Mediator.FluentValidation.csproj"/>
-        <ProjectReference Include="..\src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj"/>
-        <ProjectReference Include="..\src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj"/>
-        <ProjectReference Include="..\src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj"/>
-        <ProjectReference Include="..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
-        <ProjectReference Include="..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Caching\Shiny.Mediator.Caching.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.FluentValidation\Shiny.Mediator.FluentValidation.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false"/>
     </ItemGroup>
@@ -124,5 +127,5 @@
                       Visible="false" />
     </ItemGroup>
     -->
-    <Import Project="..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"/>
+    <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"/>
 </Project>

@@ -1,0 +1,28 @@
+﻿@page "/"
+@using Sample.Blazor.Contracts
+@using Shiny.Mediator
+@inject IMediator mediator
+@implements IEventHandler<Sample.Blazor.Contracts.TheThing> 
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<button @onclick="TestSend">Test Send</button>
+
+
+@code {
+    
+    async Task TestSend()
+    {
+        await mediator.Send(new DoThing());
+    }
+
+    public Task Handle(TheThing @event, CancellationToken cancellationToken)
+    {
+        Console.WriteLine("Received TheThing");
+        return Task.CompletedTask;
+    }
+}
