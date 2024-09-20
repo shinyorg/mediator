@@ -27,7 +27,7 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
             var section = config.GetHandlerSection(request, this);
             if (section.Exists())
             {
-                section.GetValue("RefreshSeconds", 0);
+                refreshSeconds = section.GetValue<int>("RefreshSeconds", 0);
             }
         }
 
