@@ -5,7 +5,7 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Middleware;
 
 public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
-    IConfiguration config
+    IConfiguration configuration
 ) : IStreamRequestMiddleware<TRequest, TResult> 
     where TRequest : IStreamRequest<TResult>
 {
@@ -17,7 +17,7 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
     )
     {
         var refreshSeconds = 0;
-        var section = config.GetHandlerSection("TimerRefresh", request, requestHandler);
+        var section = configuration.GetHandlerSection("TimerRefresh", request, requestHandler);
         if (section != null)
         {
             refreshSeconds = section.GetValue("Interval", 0);
@@ -36,7 +36,11 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
     }
 
 
-    async IAsyncEnumerable<TResult> Iterate(int refreshSeconds, StreamRequestHandlerDelegate<TResult> next, [EnumeratorCancellation] CancellationToken ct)
+    async IAsyncEnumerable<TResult> Iterate(
+        int refreshSeconds, 
+        StreamRequestHandlerDelegate<TResult> next, 
+        [EnumeratorCancellation] CancellationToken ct
+    )
     {
         while (!ct.IsCancellationRequested)
         {

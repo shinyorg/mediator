@@ -22,7 +22,7 @@ public class HttpRequestHandler<TRequest, TResult>(
         if (http == null)
             throw new InvalidOperationException("HttpAttribute not specified on request");
         
-        var baseUri = this.GetBaseUri(request, http);
+        var baseUri = this.GetBaseUri(request);
         var httpRequest = this.ContractToHttpRequest(request, http, baseUri);
         await this.Decorate(request, httpRequest).ConfigureAwait(false);
 
@@ -138,14 +138,14 @@ public class HttpRequestHandler<TRequest, TResult>(
     }
     
 
-    protected virtual string GetBaseUri(TRequest request, HttpAttribute attribute)
+    protected virtual string GetBaseUri(TRequest request)
     {
         var cfg = configuration.GetHandlerSection("Http", request, this);
         if (cfg == null)
             throw new InvalidOperationException("No base URI configured for: " + request.GetType().FullName);
 
         var baseUri = cfg.GetValue<string>("BaseUri");
-        if (baseUri == null)
+        if (String.IsNullOrWhiteSpace(baseUri))
             throw new InvalidOperationException("Base URI empty for: " + request.GetType().FullName);
         
         return baseUri;
