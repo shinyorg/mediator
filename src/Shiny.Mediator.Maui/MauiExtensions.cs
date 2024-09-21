@@ -28,9 +28,7 @@ public static class MauiExtensions
         if (includeStandardMiddleware)
         {
             cfg.AddMainThreadMiddleware();
-            cfg.AddUserNotificationExceptionMiddleware();
-            cfg.AddOfflineAvailabilityMiddleware();
-            cfg.AddReplayStreamMiddleware();
+            cfg.AddStandardAppSupportMiddleware();
         }
         return cfg;
     }
@@ -81,19 +79,6 @@ public static class MauiExtensions
         cfg.AddOpenEventMiddleware(typeof(MainTheadEventMiddleware<>));
         cfg.AddOpenRequestMiddleware(typeof(MainThreadRequestHandler<,>));
         
-        return cfg;
-    }
-
-
-    /// <summary>
-    /// Allows you to mark [UserNotify] on your request handlers which logs an error & displays an alert to the user
-    /// to show a customized message
-    /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
-    public static ShinyConfigurator AddUserNotificationExceptionMiddleware(this ShinyConfigurator cfg)
-    {
-        cfg.AddOpenRequestMiddleware(typeof(UserExceptionRequestMiddleware<,>));
         return cfg;
     }
 }

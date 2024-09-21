@@ -9,7 +9,7 @@ namespace Shiny.Mediator;
 
 public static class BlazorExtensions
 {
-    public static ShinyConfigurator UseBlazor(this ShinyConfigurator cfg)
+    public static ShinyConfigurator UseBlazor(this ShinyConfigurator cfg, bool includeStandardMiddleware = true)
     {
         cfg.Services.AddSingletonAsImplementedInterfaces<BlazorEventCollector>();
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")))
@@ -17,6 +17,9 @@ public static class BlazorExtensions
             cfg.Services.TryAddSingleton<IStorageService, StorageService>();
             cfg.Services.TryAddSingleton<IInternetService, InternetService>();
             cfg.Services.TryAddSingleton<IAlertDialogService, AlertDialogService>();
+
+            if (includeStandardMiddleware)
+                cfg.AddStandardAppSupportMiddleware();
         }
         return cfg;
     }
