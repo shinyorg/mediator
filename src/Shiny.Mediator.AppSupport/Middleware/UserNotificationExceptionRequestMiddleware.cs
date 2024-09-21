@@ -23,10 +23,15 @@ public class UserExceptionRequestMiddleware<TRequest, TResult>(
         var section = configuration.GetHandlerSection("UserNotify", request!, requestHandler);
         if (section == null)
             return await next().ConfigureAwait(false);
-
         
         var key = CultureInfo.CurrentUICulture.Name;
-        // TODO: if key for locale not found, default somehow?
+        var locale = section.GetSection(key);
+        if (!locale.Exists())
+        {
+            locale = section.GetSection("*");
+            if (!locale.Exists())
+                logger.LogError("No locale found for {RequestType}", typeof(TRequest).FullName);
+        }
         
         var result = default(TResult);
         try
@@ -35,15 +40,13 @@ public class UserExceptionRequestMiddleware<TRequest, TResult>(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, $"Error executing pipeline for {typeof(TRequest).FullName}");
-        //     try
-        //     {
-        //         var msg = config.ShowFullException ? ex.ToString() : attribute.ErrorMessage ?? config.ErrorMessage;
-        //         await Application.Current!.MainPage!.DisplayAlert(attribute.ErrorTitle ?? config.ErrorTitle, msg, config.ErrorConfirm);
-        //     }
-        //     catch
-        //     {
-        //     }
+            logger.LogError(ex, "Error executing pipeline for {Error}", typeof(TRequest).FullName);
+            if (locale.Exists())
+            {
+                var title = locale.GetValue<string>("Title", "ERROR");
+                var msg = locale.GetValue<string>("Message", "An error occurred with your request");
+                alerts.Display(title!, msg!);
+            }
         }
 
         return result!;
