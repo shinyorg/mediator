@@ -12,7 +12,7 @@ namespace Shiny.Mediator.Middleware;
 /// <typeparam name="TResult"></typeparam>
 public class ReplayStreamMiddleware<TRequest, TResult>(
     IStorageService storage,
-    IConfiguration config
+    IConfiguration configuration
 ) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
@@ -22,23 +22,34 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, ReplayAttribute>();
-        if (attribute == null)
-            return next();
-
-        return this.Iterate(attribute, request, requestHandler, next, cancellationToken);
+        var availableAcrossSessions = true;
+        var section = configuration.GetHandlerSection("ReplayStream", request, this);
+        
+        if (section == null)
+        {
+            var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, ReplayAttribute>();
+            if (attribute == null)
+                return next();
+         
+            availableAcrossSessions = attribute.AvailableAcrossSessions;
+        }
+        else
+        {
+            availableAcrossSessions = section.GetValue("AvailableAcrossSessions", availableAcrossSessions);
+        }
+        return this.Iterate(availableAcrossSessions, request, requestHandler, next, cancellationToken);
     }
 
 
     protected virtual async IAsyncEnumerable<TResult> Iterate(
-        ReplayAttribute attribute,
+        bool availableAcrossSessions,
         TRequest request, 
         IStreamRequestHandler<TRequest, TResult> requestHandler, 
         StreamRequestHandlerDelegate<TResult> next, 
         [EnumeratorCancellation] CancellationToken ct
     )
     {
-        var store = await storage.Get<TResult>(request, attribute.AvailableAcrossSessions);
+        var store = await storage.Get<TResult>(request, availableAcrossSessions);
         if (store != null)
             yield return store;
 
@@ -46,7 +57,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
         {
             // TODO: if current is null, remove?
-            await storage.Store(request, nxt.Current!, attribute.AvailableAcrossSessions);
+            await storage.Store(request, nxt.Current!, availableAcrossSessions);
             yield return nxt.Current;
         }
     }
