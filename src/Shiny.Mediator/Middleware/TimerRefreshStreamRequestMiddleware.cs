@@ -24,11 +24,9 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
         }
         else
         {
-            var section = config.GetHandlerSection(request, this);
-            if (section.Exists())
-            {
-                refreshSeconds = section.GetValue<int>("RefreshSeconds", 0);
-            }
+            var section = config.GetHandlerSection("TimerRefresh", request, this);
+            if (section != null)
+                refreshSeconds = section.GetValue("Interval", 0);
         }
 
         if (refreshSeconds <= 0)
