@@ -4,7 +4,6 @@ namespace Sample.Handlers;
 
 
 [SingletonHandler]
-[TimedLogging(3000)]
 public class SingletonRequestHandler(IMediator mediator, AppSqliteConnection data) : IRequestHandler<MyMessageRequest, MyMessageResponse>
 {
     // [Cache(Storage = StoreType.File, MaxAgeSeconds = 30, OnlyForOffline = true)]

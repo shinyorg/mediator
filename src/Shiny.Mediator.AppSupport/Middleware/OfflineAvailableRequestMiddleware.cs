@@ -22,7 +22,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
             return await next().ConfigureAwait(false);
 
         var acrossSessions = true;
-        var section = configuration.GetHandlerSection("Offline", request!, this);
+        var section = configuration.GetHandlerSection("Offline", request!, requestHandler);
         if (section == null)
         {
             var cfg = requestHandler.GetHandlerHandleMethodAttribute<TRequest, OfflineAvailableAttribute>();

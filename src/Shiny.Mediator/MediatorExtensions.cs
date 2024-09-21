@@ -44,7 +44,7 @@ public static class MediatorExtensions
             cfg.AddHttpClient();
             cfg.AddOpenStreamMiddleware(typeof(TimerRefreshStreamRequestMiddleware<,>));
             cfg.AddEventExceptionHandlingMiddleware();
-            cfg.AddTimedMiddleware();
+            cfg.AddPerformanceLoggingMiddleware();
         }
 
         services.TryAddSingleton<IMediator, Impl.Mediator>();
@@ -55,12 +55,12 @@ public static class MediatorExtensions
     
     
     /// <summary>
-    /// Timed middleware logging
+    /// Performance logging middleware
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddTimedMiddleware(this ShinyConfigurator cfg)
-        => cfg.AddOpenRequestMiddleware(typeof(TimedLoggingRequestMiddleware<,>));
+    public static ShinyConfigurator AddPerformanceLoggingMiddleware(this ShinyConfigurator cfg)
+        => cfg.AddOpenRequestMiddleware(typeof(PerformanceLoggingRequestMiddleware<,>));
 
 
     /// <summary>

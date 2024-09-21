@@ -1,26 +1,29 @@
 using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
 
 
-public class TimedLoggingRequestMiddleware<TRequest, TResult>(
+public class PerformanceLoggingRequestMiddleware<TRequest, TResult>(
+    IConfiguration configuration,
     ILogger<TRequest> logger
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler requestHandler, CancellationToken cancellationToken)
     {
-        var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TimedLoggingAttribute>();
-        if (attribute == null)
+        var section = configuration.GetHandlerSection("Performance", request!, requestHandler);
+        if (section == null)
             return await next().ConfigureAwait(false);
 
+        var millis = section.GetValue("ErrorThresholdMilliseconds", 5000);
+        var ts = TimeSpan.FromMilliseconds(millis);
         var sw = Stopwatch.StartNew();
         var result = await next();
         sw.Stop();
-
-        var ts = TimeSpan.FromMilliseconds(attribute.ErrorThresholdMillis);
-        if (attribute.ErrorThresholdMillis > 0 && sw.Elapsed > ts)
+        
+        if (sw.Elapsed > ts)
             logger.LogError("{RequestType} took longer than {Threshold} to execute - {Elapsed}", typeof(TRequest), ts, sw.Elapsed);
 
         else if (logger.IsEnabled(LogLevel.Debug))

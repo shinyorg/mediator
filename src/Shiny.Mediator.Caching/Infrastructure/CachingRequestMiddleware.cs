@@ -1,11 +1,15 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Caching.Infrastructure;
 
 
-public class CachingRequestMiddleware<TRequest, TResult>(IMemoryCache cache) : IRequestMiddleware<TRequest, TResult>
+public class CachingRequestMiddleware<TRequest, TResult>(
+    IConfiguration configuration,
+    IMemoryCache cache
+) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
         TRequest request, 
@@ -16,6 +20,8 @@ public class CachingRequestMiddleware<TRequest, TResult>(IMemoryCache cache) : I
     {
         if (typeof(TResult) == typeof(Unit))
             return await next().ConfigureAwait(false);
+
+        configuration.GetHandlerSection("Cache", request, requestHandler);
         
         var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
         attribute ??= request!.GetType().GetCustomAttribute<CacheAttribute>();

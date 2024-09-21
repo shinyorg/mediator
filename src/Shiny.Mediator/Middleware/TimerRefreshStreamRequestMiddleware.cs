@@ -17,16 +17,16 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
     )
     {
         var refreshSeconds = 0;
-        var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TimerRefreshAttribute>();
-        if (attribute != null)
+        var section = config.GetHandlerSection("TimerRefresh", request, requestHandler);
+        if (section != null)
         {
-            refreshSeconds = attribute.RefreshSeconds;
+            refreshSeconds = section.GetValue("Interval", 0);
         }
         else
         {
-            var section = config.GetHandlerSection("TimerRefresh", request, this);
-            if (section != null)
-                refreshSeconds = section.GetValue("Interval", 0);
+            var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TimerRefreshAttribute>();
+            if (attribute != null)
+                refreshSeconds = attribute.RefreshSeconds;
         }
 
         if (refreshSeconds <= 0)
