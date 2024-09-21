@@ -18,6 +18,7 @@ public class StorageService(IJSRuntime jsruntime) : IStorageService
         return Task.CompletedTask;
     }
 
+    
     public Task<TResult?> Get<TResult>(object request, bool isPeristent)
     {
         var key = this.GetStoreKeyFromRequest(request);
@@ -49,25 +50,4 @@ public class StorageService(IJSRuntime jsruntime) : IStorageService
     
         return key;
     }
-
-    
-    // protected virtual string GetPersistentStoreKey(object request, bool createIfNotExists)
-    // {
-    //     var key = this.GetStoreKeyFromRequest(request);
-    //     this.EnsureKeyLoad();
-    //     if (this.keys.ContainsKey(key))
-    //     {
-    //         key = this.keys[key];
-    //     }
-    //     else if (createIfNotExists)
-    //     {
-    //         var newKey = Guid.NewGuid().ToString();
-    //         this.keys.Add(key, newKey);
-    //         key = newKey;
-    //
-    //         this.PersistKeyStore();
-    //     }
-    //     
-    //     return key;
-    // }
 }
