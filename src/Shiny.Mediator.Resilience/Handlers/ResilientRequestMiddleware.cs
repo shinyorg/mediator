@@ -21,7 +21,7 @@ services.AddResiliencePipeline(key, static builder =>
 //https://learn.microsoft.com/en-us/dotnet/core/resilience/?tabs=dotnet-cli
 //https://devblogs.microsoft.com/dotnet/building-resilient-cloud-services-with-dotnet-8/
 public class ResilientRequestHandlerMiddleware<TRequest, TResult>(
-    IConfiguration config,
+    IConfiguration configuration,
     ResiliencePipelineProvider<string> pipelineProvider
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
@@ -32,6 +32,9 @@ public class ResilientRequestHandlerMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
+        // TODO: configuration should also setup resilience pipelines at startup?
+        var section = configuration.GetHandlerSection("Resilience", request!, requestHandler);
+        
         var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, ResilientAttribute>();
         attribute ??= request.GetType().GetCustomAttribute<ResilientAttribute>();
         if (attribute == null)
