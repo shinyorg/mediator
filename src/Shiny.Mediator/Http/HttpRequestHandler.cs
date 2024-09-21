@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Web;
 using Microsoft.Extensions.Configuration;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Http;
 
@@ -139,11 +140,14 @@ public class HttpRequestHandler<TRequest, TResult>(
 
     protected virtual string GetBaseUri(TRequest request, HttpAttribute attribute)
     {
-        var cfgKey = $"Mediator:Http:{request.GetType().Namespace}";
-        var cfg = configuration[cfgKey];
-        if (String.IsNullOrWhiteSpace(cfg))
-            throw new InvalidOperationException("No base URI configured for: " + cfgKey);
+        var cfg = configuration.GetHandlerSection("Http", request, this);
+        if (cfg == null)
+            throw new InvalidOperationException("No base URI configured for: " + request.GetType().FullName);
+
+        var baseUri = cfg.GetValue<string>("BaseUri");
+        if (baseUri == null)
+            throw new InvalidOperationException("Base URI empty for: " + request.GetType().FullName);
         
-        return cfg;
+        return baseUri;
     }
 }

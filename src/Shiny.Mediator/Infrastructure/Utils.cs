@@ -8,7 +8,7 @@ public static class Utils
 {
     public static IConfigurationSection? GetHandlerSection(this IConfiguration config, string module, object request, object handler)
     {
-        var moduleCfg = config.GetSection(module);
+        var moduleCfg = config.GetSection("Mediator:" + module);
         if (!moduleCfg.Exists())
             return null;
         
