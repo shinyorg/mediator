@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -8,7 +9,8 @@ namespace Shiny.Mediator.Middleware;
 
 public class UserExceptionRequestMiddleware<TRequest, TResult>(
     ILogger<TRequest> logger,
-    IConfiguration config
+    IAlertDialogService alerts,
+    IConfiguration configuration
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
@@ -18,10 +20,13 @@ public class UserExceptionRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, UserNotifyAttribute>();
-        attribute ??= request!.GetType().GetCustomAttribute<UserNotifyAttribute>();
-        if (attribute == null)
+        var section = configuration.GetHandlerSection("UserNotify", request!, requestHandler);
+        if (section == null)
             return await next().ConfigureAwait(false);
+
+        
+        var key = CultureInfo.CurrentUICulture.Name;
+        // TODO: if key for locale not found, default somehow?
         
         var result = default(TResult);
         try

@@ -21,12 +21,18 @@ public class CachingRequestMiddleware<TRequest, TResult>(
         if (typeof(TResult) == typeof(Unit))
             return await next().ConfigureAwait(false);
 
-        configuration.GetHandlerSection("Cache", request, requestHandler);
-        
-        var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
-        attribute ??= request!.GetType().GetCustomAttribute<CacheAttribute>();
-        if (attribute == null && request is not ICacheControl)
-            return await next().ConfigureAwait(false);
+        var section = configuration.GetHandlerSection("Cache", request!, requestHandler);
+        if (section != null)
+        {
+            // TODO: ICacheControl
+        }
+        else
+        {
+            var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
+            attribute ??= request!.GetType().GetCustomAttribute<CacheAttribute>();
+            if (attribute == null && request is not ICacheControl)
+                return await next().ConfigureAwait(false);
+        }
 
         TResult result = default!;
         var cacheKey = CacheExtensions.GetCacheKey(request!);
@@ -36,7 +42,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
             
             var entry = cache.CreateEntry(cacheKey);
             entry.Value = result;
-            this.SetCacheEntry(attribute, request, entry);
+            // this.SetCacheEntry(attribute, request, entry);
         }
         else
         {
@@ -45,7 +51,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
                     cacheKey,
                     entry =>
                     {
-                        this.SetCacheEntry(attribute, request, entry);
+                        // this.SetCacheEntry(attribute, request, entry);
                         return next();
                     }
                 )

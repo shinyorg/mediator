@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Blazor.Infrastructure;
 using Shiny.Mediator.Infrastructure;
 
@@ -13,8 +14,9 @@ public static class BlazorExtensions
         cfg.Services.AddSingletonAsImplementedInterfaces<BlazorEventCollector>();
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")))
         {
-            cfg.Services.AddSingleton<IStorageService, StorageService>();
-            cfg.Services.AddSingleton<IInternetService, InternetService>();
+            cfg.Services.TryAddSingleton<IStorageService, StorageService>();
+            cfg.Services.TryAddSingleton<IInternetService, InternetService>();
+            cfg.Services.TryAddSingleton<IAlertDialogService, AlertDialogService>();
         }
         return cfg;
     }

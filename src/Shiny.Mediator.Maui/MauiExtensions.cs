@@ -21,9 +21,9 @@ public static class MauiExtensions
         cfg.AddEventCollector<MauiEventCollector>();
         cfg.Services.TryAddSingleton<IStorageService, StorageService>();
         cfg.Services.TryAddSingleton<IInternetService, InternetService>();
+        cfg.Services.TryAddSingleton<IAlertDialogService, AlertDialogService>();
         cfg.Services.TryAddSingleton(FileSystem.Current);
         cfg.Services.TryAddSingleton(Connectivity.Current);
-
         
         if (includeStandardMiddleware)
         {
