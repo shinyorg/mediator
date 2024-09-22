@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Reflection;
+using Microsoft.Extensions.Configuration;
 using Polly;
 
 namespace Sample;
@@ -37,12 +38,8 @@ public static class MauiProgram
         builder.Logging.AddDebug();
         builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
-        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
-        {
-            // NOTE: Mediator:Http is the based sub config - the namespace follows PER http generation
-            // the value is the base URI
-            { "Mediator:Http:Http.TheActual", "https://localhost:7192/" }
-        }!);
+        builder.Configuration.AddJsonStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("Sample.appsettings.json")!);
+        
         builder.Services.AddShinyMediator(x => x
             .UseMaui()
             .UseBlazor()
