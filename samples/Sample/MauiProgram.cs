@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 using Polly;
 
@@ -48,15 +49,8 @@ public static class MauiProgram
             .AddPrismSupport()
             .AddDataAnnotations()
             
-            // TODO: don't add both
-            // .AddFluentValidation()
-            .AddResiliencyMiddleware(
-                ("Test", builder =>
-                {
-                    // builder.AddRetry(new RetryStrategyOptions());
-                    builder.AddTimeout(TimeSpan.FromSeconds(2.0));
-                })
-            )
+            // .AddFluentValidation() // don't add both
+            .AddResiliencyMiddleware(builder.Configuration)
             .AddMemoryCaching(y =>
             {
                 y.ExpirationScanFrequency = TimeSpan.FromSeconds(5);
