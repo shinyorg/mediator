@@ -18,36 +18,41 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        if (typeof(TResult) == typeof(Unit))
+        var acrossSessions = this.IsAcrossSessions(requestHandler, request);
+        if (typeof(TResult) == typeof(Unit) || acrossSessions == null)
             return await next().ConfigureAwait(false);
-
-        var acrossSessions = true;
-        var section = configuration.GetHandlerSection("Offline", request!, requestHandler);
-        if (section == null)
-        {
-            var cfg = requestHandler.GetHandlerHandleMethodAttribute<TRequest, OfflineAvailableAttribute>();
-            cfg ??= request!.GetType().GetCustomAttribute<OfflineAvailableAttribute>();
-            if (cfg == null)
-                return await next().ConfigureAwait(false);
-            
-            acrossSessions = cfg.AvailableAcrossSessions;
-        }
-        else
-        {
-            acrossSessions = section.GetValue("AvailableAcrossSessions", acrossSessions);
-        }
 
         var result = default(TResult);
         if (connectivity.IsAvailable)
         {
             result = await next().ConfigureAwait(false);
             if (result != null)
-                await storage.Store(request!, result, acrossSessions);
+                await storage.Store(request!, result, acrossSessions.Value);
         }
         else
         {
-            result = await storage.Get<TResult>(request!, acrossSessions);
+            result = await storage.Get<TResult>(request!, acrossSessions.Value);
         }
         return result;
+    }
+
+
+    bool? IsAcrossSessions(IRequestHandler requestHandler, TRequest? request)
+    {
+        bool? acrossSessions = null;
+        var section = configuration.GetHandlerSection("Offline", request!, requestHandler);
+        if (section == null)
+        {
+            var cfg = requestHandler.GetHandlerHandleMethodAttribute<TRequest, OfflineAvailableAttribute>();
+            cfg ??= request!.GetType().GetCustomAttribute<OfflineAvailableAttribute>();
+            if (cfg != null)
+                acrossSessions = cfg.AvailableAcrossSessions;
+        }
+        else
+        {
+            acrossSessions = section.GetValue("AvailableAcrossSessions", true);
+        }
+
+        return acrossSessions;
     }
 }
