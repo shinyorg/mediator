@@ -6,7 +6,7 @@ namespace Sample.Handlers;
 [SingletonHandler]
 public class OfflineRequestHandler : IRequestHandler<OfflineRequest, string>
 {
-    [OfflineAvailable(true)]
+    // [OfflineAvailable(true)]
     public Task<string> Handle(OfflineRequest request, CancellationToken cancellationToken)
     {
         var r = DateTimeOffset.Now.ToString("h:mm:ss tt");

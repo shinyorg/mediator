@@ -12,7 +12,7 @@ public static class AppSupportExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddStandardAppSupportMiddleware(this ShinyConfigurator cfg)
     {
-        cfg.AddUserNotificationExceptionMiddleware();
+        cfg.AddUserErrorNotificationsRequestMiddleware();
         cfg.AddOfflineAvailabilityMiddleware();
         cfg.AddReplayStreamMiddleware();
         return cfg;
@@ -20,14 +20,14 @@ public static class AppSupportExtensions
     
     
     /// <summary>
-    /// Allows you to mark [UserNotify] on your request handlers which logs an error & displays an alert to the user
+    /// Allows you to configure error handling on your request handlers which logs an error & displays an alert to the user
     /// to show a customized message
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddUserNotificationExceptionMiddleware(this ShinyConfigurator cfg)
+    public static ShinyConfigurator AddUserErrorNotificationsRequestMiddleware(this ShinyConfigurator cfg)
     {
-        cfg.AddOpenRequestMiddleware(typeof(UserExceptionRequestMiddleware<,>));
+        cfg.AddOpenRequestMiddleware(typeof(UserErrorNotificationsRequestMiddleware<,>));
         return cfg;
     }
     
