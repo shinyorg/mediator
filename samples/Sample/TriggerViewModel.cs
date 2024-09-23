@@ -107,16 +107,20 @@ public partial class TriggerViewModel(
     [RelayCommand]
     async Task RefreshTimerStart()
     {
-        var en = mediator
-            .Request(new AutoRefreshRequest(), this.cancelSource.Token)
-            .GetAsyncEnumerator(this.cancelSource.Token);
-        
-        while (await en.MoveNextAsync())
+        try
         {
-            await MainThread.InvokeOnMainThreadAsync(
-                () => this.LastRefreshTimerValue = en.Current
-            );
+            var en = mediator
+                .Request(new AutoRefreshRequest(), this.cancelSource.Token)
+                .GetAsyncEnumerator(this.cancelSource.Token);
+
+            while (await en.MoveNextAsync())
+            {
+                await MainThread.InvokeOnMainThreadAsync(
+                    () => this.LastRefreshTimerValue = en.Current
+                );
+            }
         }
+        catch (TaskCanceledException) { }
     }
 
     
@@ -148,14 +152,18 @@ public partial class TriggerViewModel(
     [RelayCommand]
     async Task Stream()
     {
-        var stream = mediator.Request(
-            new TickerRequest(this.StreamRepeat, this.StreamMultiplier, this.StreamGapSeconds), 
-            this.cancelSource.Token
-        );
-        await foreach (var item in stream)
+        try
         {
-            this.StreamLastResponse = item;
-        } 
+            var stream = mediator.Request(
+                new TickerRequest(this.StreamRepeat, this.StreamMultiplier, this.StreamGapSeconds),
+                this.cancelSource.Token
+            );
+            await foreach (var item in stream)
+            {
+                this.StreamLastResponse = item;
+            }
+        }
+        catch (TaskCanceledException) {}
     }
     
     [ObservableProperty] int streamGapSeconds = 1;

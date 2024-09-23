@@ -22,22 +22,29 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        var availableAcrossSessions = true;
+        bool? availableAcrossSessions = null;
         var section = configuration.GetHandlerSection("ReplayStream", request, this);
         
         if (section == null)
         {
             var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, ReplayAttribute>();
-            if (attribute == null)
-                return next();
-         
-            availableAcrossSessions = attribute.AvailableAcrossSessions;
+            if (attribute != null)
+                availableAcrossSessions = attribute.AvailableAcrossSessions;
         }
         else
         {
             availableAcrossSessions = section.GetValue("AvailableAcrossSessions", availableAcrossSessions);
         }
-        return this.Iterate(availableAcrossSessions, request, requestHandler, next, cancellationToken);
+        if (availableAcrossSessions == null)
+            return next();
+        
+        return this.Iterate(
+            availableAcrossSessions.Value, 
+            request, 
+            requestHandler, 
+            next, 
+            cancellationToken
+        );
     }
 
 

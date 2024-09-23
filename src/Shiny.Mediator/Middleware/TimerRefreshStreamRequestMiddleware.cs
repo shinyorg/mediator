@@ -16,23 +16,23 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        var refreshSeconds = 0;
+        var interval = 0;
         var section = configuration.GetHandlerSection("TimerRefresh", request, requestHandler);
         if (section != null)
         {
-            refreshSeconds = section.GetValue("Interval", 0);
+            interval = section.GetValue("IntervalSeconds", 0);
         }
         else
         {
             var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TimerRefreshAttribute>();
             if (attribute != null)
-                refreshSeconds = attribute.RefreshSeconds;
+                interval = attribute.IntervalSeconds;
         }
 
-        if (refreshSeconds <= 0)
+        if (interval <= 0)
             return next();
         
-        return this.Iterate(refreshSeconds, next, cancellationToken);
+        return this.Iterate(interval, next, cancellationToken);
     }
 
 
