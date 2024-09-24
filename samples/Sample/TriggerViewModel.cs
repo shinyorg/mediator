@@ -1,8 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Http.TheActual;
 using Microsoft.Extensions.Caching.Memory;
 using Sample.Contracts;
+using Sample.ThemeParksApi;
 
 namespace Sample;
 
@@ -81,7 +81,8 @@ public partial class TriggerViewModel(
     {
         try
         {
-            //await mediator.Request(new TestResultHttpRequest(), this.cancelSource.Token);
+            var result = await mediator.Request(new GetDestinationsHttpRequest(), this.cancelSource.Token);
+            await dialogs.DisplayAlertAsync("Results", result.Destinations.Count.ToString(), "OK");
         }
         catch (Exception ex)
         {

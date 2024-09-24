@@ -128,5 +128,14 @@
                       Visible="false" />
     </ItemGroup>
     -->
+
+    <ItemGroup>
+        <MediatorHttp Include="OpenApiRemote" 
+                      Uri="https://api.themeparks.wiki/docs/v1.yaml" 
+                      Namespace="Sample.ThemeParksApi" 
+                      ContractPostfix="HttpRequest" 
+                      Visible="false" />
+    </ItemGroup>
+    
     <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"/>
 </Project>

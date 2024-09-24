@@ -143,11 +143,10 @@ public class HttpRequestHandler<TRequest, TResult>(
         var cfg = configuration.GetHandlerSection("Http", request, this);
         if (cfg == null)
             throw new InvalidOperationException("No base URI configured for: " + request.GetType().FullName);
-
-        var baseUri = cfg.GetValue<string>("BaseUri");
-        if (String.IsNullOrWhiteSpace(baseUri))
+        
+        if (String.IsNullOrWhiteSpace(cfg.Value))
             throw new InvalidOperationException("Base URI empty for: " + request.GetType().FullName);
         
-        return baseUri;
+        return cfg.Value;
     }
 }
