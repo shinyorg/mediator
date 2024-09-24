@@ -22,8 +22,9 @@ public class HttpRequestGeneratorTests(ITestOutputHelper output)
         output.WriteLine(code);
     }
 
+    
     [Theory]
-    [InlineData("", "TestApi")]
+    [InlineData("https://api.themeparks.wiki/docs/v1.yaml", "ThemeParksApi")]
     public async Task RemoteTests(string uri, string nameSpace)
     {
         var http = new HttpClient();
