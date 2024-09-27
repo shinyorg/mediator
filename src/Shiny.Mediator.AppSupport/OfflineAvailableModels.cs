@@ -5,3 +5,9 @@ namespace Shiny.Mediator;
 public class OfflineAvailableAttribute : Attribute;
 
 public record OfflineAvailableFlushRequest : IRequest;
+
+
+// public static class OfflineExtensions
+// {
+//     public static DateTimeOffset? Timestamp(this RequestContext context)   
+// }

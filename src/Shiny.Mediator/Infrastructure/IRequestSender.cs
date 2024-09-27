@@ -6,7 +6,7 @@ public interface IRequestSender
     // Task<object?> Send(object arg, CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// 
+    /// Request data from a message
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
@@ -16,6 +16,19 @@ public interface IRequestSender
         IRequest<TResult> request,
         CancellationToken cancellationToken = default
     );
+
+
+    // /// <summary>
+    // /// Returns the context routes of 
+    // /// </summary>
+    // /// <param name="request"></param>
+    // /// <param name="cancellationToken"></param>
+    // /// <typeparam name="TResult"></typeparam>
+    // /// <returns></returns>
+    // Task<RequestContext<TResult>> RequestToContext<TResult>(
+    //     IRequest<TResult> request,
+    //     CancellationToken cancellationToken = default
+    // );
     
     /// <summary>
     /// 
@@ -28,6 +41,8 @@ public interface IRequestSender
         CancellationToken cancellationToken = default
     );
 
+    
+    // Task SendReturnContext
 
     /// <summary>
     /// 
