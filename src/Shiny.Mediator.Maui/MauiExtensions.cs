@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Handlers;
 using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
-using Shiny.Mediator.Infrastructure.Impl;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;

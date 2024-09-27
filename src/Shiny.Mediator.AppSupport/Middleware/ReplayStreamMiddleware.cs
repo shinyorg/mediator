@@ -22,24 +22,21 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        bool? availableAcrossSessions = null;
         var section = configuration.GetHandlerSection("ReplayStream", request, this);
+        var enabled = false;
         
         if (section == null)
         {
-            var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, ReplayAttribute>();
-            if (attribute != null)
-                availableAcrossSessions = attribute.AvailableAcrossSessions;
+            enabled = requestHandler.GetHandlerHandleMethodAttribute<TRequest, ReplayStreamAttribute>() != null;
         }
         else
         {
-            availableAcrossSessions = section.GetValue("AvailableAcrossSessions", availableAcrossSessions);
+            enabled = section.Get<bool>();
         }
-        if (availableAcrossSessions == null)
+        if (!enabled)
             return next();
         
         return this.Iterate(
-            availableAcrossSessions.Value, 
             request, 
             requestHandler, 
             next, 
@@ -49,14 +46,13 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
 
 
     protected virtual async IAsyncEnumerable<TResult> Iterate(
-        bool availableAcrossSessions,
         TRequest request, 
         IStreamRequestHandler<TRequest, TResult> requestHandler, 
         StreamRequestHandlerDelegate<TResult> next, 
         [EnumeratorCancellation] CancellationToken ct
     )
     {
-        var store = await storage.Get<TResult>(request, availableAcrossSessions);
+        var store = await storage.Get<TResult>(request);
         if (store != null)
             yield return store;
 
@@ -64,7 +60,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
         {
             // TODO: if current is null, remove?
-            await storage.Store(request, nxt.Current!, availableAcrossSessions);
+            await storage.Store(request, nxt.Current!);
             yield return nxt.Current;
         }
     }

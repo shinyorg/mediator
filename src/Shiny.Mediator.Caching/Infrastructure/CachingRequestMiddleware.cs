@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Shiny.Mediator.Infrastructure;
 
@@ -41,7 +40,6 @@ public class CachingRequestMiddleware<TRequest, TResult>(
         else
         {
             attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
-            attribute ??= request!.GetType().GetCustomAttribute<CacheAttribute>();
         }
 
         if (attribute == null && request is not ICacheControl)

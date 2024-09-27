@@ -29,7 +29,6 @@ public class ResilientRequestHandlerMiddleware<TRequest, TResult>(
         else
         {
             var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, ResilientAttribute>();
-            attribute ??= request.GetType().GetCustomAttribute<ResilientAttribute>();
             if (attribute != null)
                 pipeline = pipelineProvider.GetPipeline(attribute.ConfigurationKey.ToLower());
         }

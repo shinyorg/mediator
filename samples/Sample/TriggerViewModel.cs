@@ -104,6 +104,19 @@ public partial class TriggerViewModel(
     [ObservableProperty] string cacheValue;
     [ObservableProperty] string lastRefreshTimerValue;
 
+    [RelayCommand]
+    async Task NoHandler()
+    {
+        try
+        {
+            await mediator.Send(new NoHandlerRequest());
+            await dialogs.DisplayAlertAsync("NO HANDLER", "You should not be here", "OK");
+        }
+        catch (Exception ex)
+        {
+            await dialogs.DisplayAlertAsync("EXPECTED", ex.ToString(), "OK");
+        }
+    }
 
     [RelayCommand]
     async Task RefreshTimerStart()

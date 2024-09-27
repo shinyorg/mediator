@@ -1,63 +1,58 @@
 using System.Text.Json;
 
-namespace Shiny.Mediator.Infrastructure.Impl;
+namespace Shiny.Mediator.Infrastructure;
 
 
 public class StorageService(IFileSystem fileSystem) : IStorageService
 {
-    readonly Dictionary<string, object> memCache = new();
     Dictionary<string, string> keys = null!;
     
     
-    public virtual Task Store(object request, object result, bool isPersistent)
+    public virtual Task Store(object request, object result)
     {
-        if (isPersistent)
-        {
-            var path = this.GetFilePath(request, true);
-            var json = JsonSerializer.Serialize(result);
-            File.WriteAllText(path, json); 
-        }
-        else
-        {
-            var key = this.GetStoreKeyFromRequest(request);
-            lock (this.memCache)
-                this.memCache[key] = result!;
-        }
-
+        var path = this.GetFilePath(request, true);
+        var json = JsonSerializer.Serialize(result);
+        File.WriteAllText(path, json); 
+     
         return Task.CompletedTask;
     }
     
 
-    public virtual Task<TResult?> Get<TResult>(object request, bool isPersistent)
+    public virtual Task<TResult?> Get<TResult>(object request)
     {
         TResult? returnValue = default;
-
-        if (isPersistent)
+        var path = this.GetFilePath(request, false);
+        if (File.Exists(path))
         {
-            var path = this.GetFilePath(request, false);
-            if (File.Exists(path))
-            {
-                var json = File.ReadAllText(path);
-                var obj = JsonSerializer.Deserialize<TResult>(json)!;
-                returnValue = obj;
-            }
+            var json = File.ReadAllText(path);
+            var obj = JsonSerializer.Deserialize<TResult>(json)!;
+            returnValue = obj;
         }
-        else 
-        {
-            var key = this.GetStoreKeyFromRequest(request);
-            lock (this.memCache)
-            {
-                if (this.memCache.ContainsKey(key))
-                {
-                    var item = this.memCache[key];
-                    returnValue = (TResult)item;
-                }
-            }
-        }
+        
         return Task.FromResult(returnValue);
     }
     
+    
+    public Task Clear()
+    {
+        lock (this.keys)
+            this.keys.Clear();
+        
+        Directory.GetFiles(fileSystem.CacheDirectory, "*.mediator").ToList().ForEach(File.Delete);
+        Directory.GetFiles(fileSystem.AppDataDirectory, "*.mediator").ToList().ForEach(File.Delete);
 
+        return Task.CompletedTask;
+    }
+
+    
+    protected virtual string GetFilePath(object request, bool createIfNotExists)
+    {
+        var key = this.GetPersistentStoreKey(request, createIfNotExists);
+        var path = Path.Combine(fileSystem.CacheDirectory, $"{key}.mediator");
+        return path;
+    }
+
+    
     protected virtual string GetStoreKeyFromRequest(object request)
     {
         if (request is IRequestKey keyProvider)
@@ -89,30 +84,7 @@ public class StorageService(IFileSystem fileSystem) : IStorageService
         
         return key;
     }
-
-
-    protected virtual string GetFilePath(object request, bool createIfNotExists)
-    {
-        var key = this.GetPersistentStoreKey(request, createIfNotExists);
-        var path = Path.Combine(fileSystem.CacheDirectory, $"{key}.mediator");
-        return path;
-    }
     
-    
-    public Task Clear()
-    {
-        lock (this.memCache)
-            this.memCache.Clear();
-
-        lock (this.keys)
-            this.keys.Clear();
-        
-        Directory.GetFiles(fileSystem.CacheDirectory, "*.mediator").ToList().ForEach(File.Delete);
-        Directory.GetFiles(fileSystem.AppDataDirectory, "*.mediator").ToList().ForEach(File.Delete);
-
-        return Task.CompletedTask;
-    }
-
     
     bool initialized = false;
     protected void EnsureKeyLoad()

@@ -7,23 +7,20 @@ namespace Shiny.Mediator.Blazor.Infrastructure;
 
 public class StorageService(IJSRuntime jsruntime) : IStorageService
 {
-    public Task Store(object request, object result, bool isPeristent)
+    public Task Store(object request, object result)
     {
         var key = this.GetStoreKeyFromRequest(request);
-        var store = isPeristent ? "localStorage" : "sessionStorage";
-
         var json = JsonSerializer.Serialize(result);
-        ((IJSInProcessRuntime)jsruntime).Invoke<string?>(store + ".setItem", key, json);
+        ((IJSInProcessRuntime)jsruntime).Invoke<string?>("localStorage.setItem", key, json);
 
         return Task.CompletedTask;
     }
 
     
-    public Task<TResult?> Get<TResult>(object request, bool isPeristent)
+    public Task<TResult?> Get<TResult>(object request)
     {
         var key = this.GetStoreKeyFromRequest(request);
-        var store = isPeristent ? "localStorage" : "sessionStorage";
-        var stringValue = ((IJSInProcessRuntime)jsruntime).Invoke<string?>(store + ".getItem", key);
+        var stringValue = ((IJSInProcessRuntime)jsruntime).Invoke<string?>("localStorage.getItem", key);
         if (String.IsNullOrWhiteSpace(stringValue))
             return null!;
 
@@ -35,7 +32,6 @@ public class StorageService(IJSRuntime jsruntime) : IStorageService
     {
         var inproc = (IJSInProcessRuntime)jsruntime;
         inproc.InvokeVoid("localStorage.clear");
-        inproc.InvokeVoid("sessionStorage.clear");
         return Task.CompletedTask;
     }
     

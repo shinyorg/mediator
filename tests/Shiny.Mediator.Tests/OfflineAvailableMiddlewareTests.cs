@@ -76,12 +76,12 @@ public class OfflineRequestHandler : IRequestHandler<OfflineRequest, long>
 
 public class MockStorageService : IStorageService
 {
-    public Task Store(object request, object result, bool isPeristent)
+    public Task Store(object request, object result)
     {
         throw new NotImplementedException();
     }
 
-    public Task<TResult?> Get<TResult>(object request, bool isPeristent)
+    public Task<TResult?> Get<TResult>(object request)
     {
         throw new NotImplementedException();
     }

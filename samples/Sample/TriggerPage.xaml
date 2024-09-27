@@ -93,6 +93,9 @@
                 <TextCell Text="Last Value" Detail="{Binding LastRefreshTimerValue}" />
             </TableSection>
             
+            <TableSection Title="Test No Handler">
+                <TextCell Text="Run" Command="{Binding NoHandlerCommand}" />
+            </TableSection>
             <!--
             <TableSection Title="STREAMING - Replay">
             </TableSection>

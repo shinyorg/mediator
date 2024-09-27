@@ -18,41 +18,37 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        var acrossSessions = this.IsAcrossSessions(requestHandler, request);
-        if (typeof(TResult) == typeof(Unit) || acrossSessions == null)
+        if (typeof(TResult) == typeof(Unit))
             return await next().ConfigureAwait(false);
 
         var result = default(TResult);
         if (connectivity.IsAvailable)
         {
             result = await next().ConfigureAwait(false);
-            if (result != null)
-                await storage.Store(request!, result, acrossSessions.Value);
+            if (this.IsEnabled(requestHandler, request))
+                await storage.Store(request!, result);
         }
         else
         {
-            result = await storage.Get<TResult>(request!, acrossSessions.Value);
+            result = await storage.Get<TResult>(request!);
         }
         return result;
     }
 
 
-    bool? IsAcrossSessions(IRequestHandler requestHandler, TRequest? request)
+    bool IsEnabled(IRequestHandler requestHandler, TRequest request)
     {
-        bool? acrossSessions = null;
+        var enabled = false;
         var section = configuration.GetHandlerSection("Offline", request!, requestHandler);
         if (section == null)
         {
-            var cfg = requestHandler.GetHandlerHandleMethodAttribute<TRequest, OfflineAvailableAttribute>();
-            cfg ??= request!.GetType().GetCustomAttribute<OfflineAvailableAttribute>();
-            if (cfg != null)
-                acrossSessions = cfg.AvailableAcrossSessions;
+            enabled = requestHandler.GetHandlerHandleMethodAttribute<TRequest, OfflineAvailableAttribute>() != null;
         }
         else
         {
-            acrossSessions = section.GetValue("AvailableAcrossSessions", true);
+            enabled = section.Get<bool>();
         }
 
-        return acrossSessions;
+        return enabled;
     }
 }
