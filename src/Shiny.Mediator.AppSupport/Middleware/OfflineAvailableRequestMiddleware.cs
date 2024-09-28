@@ -1,11 +1,12 @@
-using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
 
 
 public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
+    ILogger<OfflineAvailableRequestMiddleware<TRequest, TResult>> logger,
     IInternetService connectivity, 
     IStorageService storage,
     IConfiguration configuration
@@ -20,17 +21,21 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
     {
         if (typeof(TResult) == typeof(Unit))
             return await next().ConfigureAwait(false);
-
+        
         var result = default(TResult);
         if (connectivity.IsAvailable)
         {
             result = await next().ConfigureAwait(false);
             if (this.IsEnabled(requestHandler, request))
+            {
                 await storage.Store(request!, result);
+                logger.LogDebug("Cache Store - {Request}", request);
+            }
         }
         else
         {
             result = await storage.Get<TResult>(request!);
+            logger.LogDebug("Cache Hit - {Request}", request);
         }
         return result;
     }
@@ -48,7 +53,6 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         {
             enabled = section.Get<bool>();
         }
-
         return enabled;
     }
 }

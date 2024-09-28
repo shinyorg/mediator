@@ -7,7 +7,7 @@ namespace Shiny.Mediator.Middleware;
 
 
 public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
-    ILogger<TRequest> logger,
+    ILogger<UserErrorNotificationsRequestMiddleware<TRequest, TResult>> logger,
     IAlertDialogService alerts,
     IConfiguration configuration
 ) : IRequestMiddleware<TRequest, TResult>
@@ -26,6 +26,7 @@ public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
         var result = default(TResult);
         try
         {
+            logger.LogDebug("UserErrorNotifications Enabled - {Request}", request);
             result = await next().ConfigureAwait(false);
         }
         catch (Exception ex)
