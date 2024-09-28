@@ -8,8 +8,17 @@ public class Mediator(
     IEventPublisher eventPublisher
 ) : IMediator
 {
-    public Task<TResult> Request<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default)
-        => requestSender.Request(request, cancellationToken);
+    public async Task<TResult> Request<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default)
+    {
+        var result = await requestSender
+            .Request(request, cancellationToken)
+            .ConfigureAwait(false);
+        
+        if (result is IEvent @event)
+            await this.Publish(@event, cancellationToken).ConfigureAwait(false);
+        
+        return result;
+    }
 
     public Task Send(IRequest request, CancellationToken cancellationToken = default)
         => requestSender.Send(request, cancellationToken);
