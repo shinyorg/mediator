@@ -24,6 +24,7 @@ public class OfflineAvailableRequestMiddlewareTests
         // this.config.AddConfiguration(new MemoryConfigurationProvider(new MemoryConfigurationSource().InitialData))
         
         this.middleware = new OfflineAvailableRequestMiddleware<OfflineRequest, long>(
+            null,
             this.connectivity, 
             this.storeMgr,
             null

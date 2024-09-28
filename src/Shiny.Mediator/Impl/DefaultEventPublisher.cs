@@ -4,9 +4,9 @@ using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Impl;
 
+
 public class DefaultEventPublisher(
     IServiceProvider services, 
-    ILogger<IEventPublisher> logger,
     IEnumerable<IEventCollector> collectors
 ) : IEventPublisher
 {
@@ -34,6 +34,7 @@ public class DefaultEventPublisher(
         if (handlers.Count == 0)
             return;
 
+        var logger = services.GetRequiredService<ILogger<TEvent>>();
         var middlewares = scope.ServiceProvider.GetServices<IEventMiddleware<TEvent>>().ToList();
         var tasks = handlers
             .Select(x => Execute(@event, x, logger, middlewares, cancellationToken))
@@ -56,7 +57,7 @@ public class DefaultEventPublisher(
     static async Task Execute<TEvent>(
         TEvent @event,
         IEventHandler<TEvent> eventHandler, 
-        ILogger<IEventPublisher> logger,
+        ILogger logger,
         IEnumerable<IEventMiddleware<TEvent>> middlewares,
         CancellationToken cancellationToken
     ) where TEvent : IEvent
@@ -64,9 +65,8 @@ public class DefaultEventPublisher(
         var handlerDelegate = new EventHandlerDelegate(() =>
         {
             logger.LogDebug(
-                "Executing Event Handler {HandlerType} for {EventType}", 
-                eventHandler.GetType().FullName,
-                @event.GetType().FullName
+                "Executing Event Handler {HandlerType}", 
+                eventHandler.GetType().FullName
             );
             return eventHandler.Handle(@event, cancellationToken);
         });

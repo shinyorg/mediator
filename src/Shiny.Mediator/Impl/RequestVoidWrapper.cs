@@ -16,9 +16,8 @@ class RequestVoidWrapper<TRequest> where TRequest : IRequest
         var handlerExec = new RequestHandlerDelegate<Unit>(async () =>
         {
             logger.LogDebug(
-                "Executing request handler {RequestHandlerType} for {RequestType}", 
-                requestHandler.GetType().FullName, 
-                request.GetType().FullName
+                "Executing request handler {RequestHandlerType}", 
+                requestHandler.GetType().FullName 
             );
             await requestHandler.Handle(request, cancellationToken).ConfigureAwait(false);
             return Unit.Value;

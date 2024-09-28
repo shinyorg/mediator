@@ -16,9 +16,8 @@ class RequestWrapper<TRequest, TResult> where TRequest : IRequest<TResult>
         var handlerExec = new RequestHandlerDelegate<TResult>(() =>
         {
             logger.LogDebug(
-                "Executing request handler {RequestHandlerType} for {RequestType}", 
-                requestHandler.GetType().FullName, 
-                request.GetType().FullName
+                "Executing request handler {RequestHandlerType}", 
+                requestHandler.GetType().FullName 
             );
             return requestHandler.Handle(request, cancellationToken);
         });

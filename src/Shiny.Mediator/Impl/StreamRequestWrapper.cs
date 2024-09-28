@@ -16,15 +16,13 @@ class StreamRequestWrapper<TRequest, TResult> where TRequest : IStreamRequest<TR
         var handlerExec = new StreamRequestHandlerDelegate<TResult>(() =>
         {
             logger.LogDebug(
-                "Executing streaming request handler {RequestHandlerType} for {RequestType}",
-                requestHandler.GetType().FullName,
-                request.GetType().FullName
+                "Executing streaming request handler {RequestHandlerType}",
+                requestHandler.GetType().FullName
             );
             return requestHandler.Handle(request, cancellationToken);
         });
 
         var middlewares = services.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
-
         var enumerable = middlewares
             .Reverse()
             .Aggregate(
@@ -32,9 +30,8 @@ class StreamRequestWrapper<TRequest, TResult> where TRequest : IStreamRequest<TR
                 (next, middleware) => () =>
                 {
                     logger.LogDebug(
-                        "Executing stream middleware {MiddlewareType} for {RequestType}",
-                        middleware.GetType().FullName,
-                        request.GetType().FullName
+                        "Executing stream middleware {MiddlewareType}",
+                        middleware.GetType().FullName
                     );
                     return middleware.Process(
                         request,

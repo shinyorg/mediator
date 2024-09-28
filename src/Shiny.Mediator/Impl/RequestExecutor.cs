@@ -23,9 +23,8 @@ static class RequestExecutor
                 (next, middleware) => () =>
                 {
                     logger.LogDebug(
-                        "Executing request middleware {MiddlewareType} for {RequestType}",
-                        middleware.GetType().FullName,
-                        request.GetType().FullName
+                        "Executing request middleware {MiddlewareType}",
+                        middleware.GetType().FullName
                     );
                     
                     return middleware.Process(
