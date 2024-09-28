@@ -9,6 +9,8 @@ public interface IRequestContext
     IRequestHandler RequestHandler { get; }
 }
 
+// TODO: middleware could ref the request handler, CT, request - all from the context
+// TODO: result could/should(?) come back on context?  how to protect it?
 // TODO: RequestStreamContext OR reuse IRequestContext?
 // public class EventContext
 // {

@@ -1,6 +1,6 @@
 namespace Shiny.Mediator.Middleware;
 
-public record FlushAllStoresEvent : IEvent;
+public record FlushStoreByRequestKeyEvent(IRequestKey requestKey) : IEvent;
 
 
 public static partial class MiddlewareExtensions
@@ -11,6 +11,6 @@ public static partial class MiddlewareExtensions
     /// <param name="mediator"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task FlushAllStores(this IMediator mediator, CancellationToken cancellationToken = default) 
-        => mediator.Publish(new FlushAllStoresEvent(), cancellationToken);
+    public static Task FlushStoreByRequest(this IMediator mediator, IRequestKey requestKey, CancellationToken cancellationToken = default)
+        => mediator.Publish(new FlushStoreByRequestKeyEvent(requestKey), cancellationToken);
 }
