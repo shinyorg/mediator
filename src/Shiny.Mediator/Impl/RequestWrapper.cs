@@ -11,7 +11,7 @@ class RequestWrapper<TRequest, TResult> where TRequest : IRequest<TResult>
         var requestHandler = services.GetService<IRequestHandler<TRequest, TResult>>();
         if (requestHandler == null)
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
-
+        
         var logger = services.GetRequiredService<ILogger<TRequest>>();
         var handlerExec = new RequestHandlerDelegate<TResult>(() =>
         {

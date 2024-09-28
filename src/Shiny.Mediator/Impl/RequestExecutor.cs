@@ -15,6 +15,7 @@ static class RequestExecutor
     )
     {
         var middlewares = services.GetServices<IRequestMiddleware<TRequest, TResult>>();
+        var context = new RequestContext(requestHandler);
         
         var result = await middlewares
             .Reverse()
@@ -31,6 +32,7 @@ static class RequestExecutor
                         request,
                         next,
                         requestHandler,
+                        context,
                         cancellationToken
                     );
                 })

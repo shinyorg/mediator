@@ -9,6 +9,7 @@ public abstract class AbstractValidationRequestMiddleware<TRequest, TResult> : I
         TRequest request,
         RequestHandlerDelegate<TResult> next,
         IRequestHandler requestHandler,
+        IRequestContext context,
         CancellationToken cancellationToken
     )
     {

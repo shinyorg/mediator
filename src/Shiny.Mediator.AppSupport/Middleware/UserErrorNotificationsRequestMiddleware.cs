@@ -16,6 +16,7 @@ public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
         TRequest request, 
         RequestHandlerDelegate<TResult> next, 
         IRequestHandler requestHandler, 
+        IRequestContext context,
         CancellationToken cancellationToken
     )
     {
@@ -32,6 +33,7 @@ public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error executing pipeline for {Error}", typeof(TRequest).FullName);
+            context.SetUserErrorNotificationException(ex);
             
             var key = CultureInfo.CurrentUICulture.Name.ToLower();
             var locale = section.GetSection(key);
@@ -46,6 +48,8 @@ public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
             {
                 var title = locale.GetValue<string>("Title", "ERROR");
                 var msg = locale.GetValue<string>("Message", "An error occurred with your request");
+                context.SetUserErrorNotificationAlert((title, msg)!);
+                
                 alerts.Display(title!, msg!);
             }
         }

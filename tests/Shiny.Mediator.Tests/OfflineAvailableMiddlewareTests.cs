@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
+using Shiny.Mediator.Impl;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Middleware;
 
@@ -37,11 +38,13 @@ public class OfflineAvailableRequestMiddlewareTests
     {
         this.handler.ReturnValue = 99L;
         this.connectivity.IsAvailable = true;
+        var context = new RequestContext(this.handler);
         
         var func = () => this.middleware.Process(
             new OfflineRequest(),
             () => this.handler.Handle(new OfflineRequest(), CancellationToken.None),
             this.handler,
+            context,
             CancellationToken.None
         );
 

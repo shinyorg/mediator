@@ -12,6 +12,7 @@ public class MainThreadRequestHandler<TRequest, TResult>(
         TRequest request, 
         RequestHandlerDelegate<TResult> next, 
         IRequestHandler requestHandler,
+        IRequestContext context,
         CancellationToken cancellationToken
     )
     {

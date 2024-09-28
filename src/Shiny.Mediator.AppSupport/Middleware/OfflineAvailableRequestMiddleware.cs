@@ -16,6 +16,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         TRequest request, 
         RequestHandlerDelegate<TResult> next, 
         IRequestHandler requestHandler,
+        IRequestContext context,
         CancellationToken cancellationToken
     )
     {
@@ -28,14 +29,17 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
             result = await next().ConfigureAwait(false);
             if (this.IsEnabled(requestHandler, request))
             {
-                await storage.Store(request!, result);
-                logger.LogDebug("Cache Store - {Request}", request);
+                var timestampedResult = new TimestampedResult<TResult>(DateTimeOffset.UtcNow, result);
+                await storage.Store(request!, timestampedResult);
+                logger.LogDebug("Offline Store - {Request}", request);
             }
         }
         else
         {
-            result = await storage.Get<TResult>(request!);
-            logger.LogDebug("Cache Hit - {Request}", request);
+            var timestampedResult = await storage.Get<TimestampedResult<TResult>>(request!);
+            context.SetOfflineTimestamp(timestampedResult!.Timestamp);
+            result = timestampedResult!.Value;
+            logger.LogDebug("Offline Hit: {Request} - Timestamp: {Timestamp}", request, timestampedResult.Value);
         }
         return result;
     }

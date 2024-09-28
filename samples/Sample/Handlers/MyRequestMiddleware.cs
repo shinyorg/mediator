@@ -7,7 +7,13 @@ namespace Sample.Handlers;
 [SingletonMiddleware]
 public class MyRequestMiddleware(AppSqliteConnection conn) : IRequestMiddleware<MyMessageRequest, MyMessageResponse>
 {
-    public async Task<MyMessageResponse> Process(MyMessageRequest request, RequestHandlerDelegate<MyMessageResponse> next, IRequestHandler requestHandler, CancellationToken cancellationToken)
+    public async Task<MyMessageResponse> Process(
+        MyMessageRequest request, 
+        RequestHandlerDelegate<MyMessageResponse> next, 
+        IRequestHandler requestHandler, 
+        IRequestContext context,
+        CancellationToken cancellationToken
+    )
     {
         var sw = Stopwatch.StartNew();
         var result = await next().ConfigureAwait(false);
