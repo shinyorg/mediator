@@ -54,27 +54,32 @@ public class CachingRequestMiddleware<TRequest, TResult>(
             logger.LogDebug("Cache Forced Refresh - {Request}", request);
             result = await next().ConfigureAwait(false);
             var entry = cache.CreateEntry(cacheKey);
-            entry.Value = result;
+            entry.Value = new TimestampedResult<TResult>(DateTimeOffset.UtcNow, result);
             this.SetCacheEntry(attribute, request, entry);
         }
         else
         {
             var hit = true;
-            result = await cache
-                .GetOrCreateAsync<TResult>(
+            var timestampedResult = await cache
+                .GetOrCreateAsync<TimestampedResult<TResult>>(
                     cacheKey,
-                    entry =>
+                    async entry =>
                     {
                         hit = false;
                         logger.LogDebug("Cache Miss - {Request}", request);
                         this.SetCacheEntry(attribute, request, entry);
-                        return next();
+                        var nextResult = await next().ConfigureAwait(false);
+                        return new TimestampedResult<TResult>(DateTimeOffset.UtcNow, nextResult);
                     }
                 )
                 .ConfigureAwait(false)!;
-            
-            if (!hit)
+
+            result = timestampedResult!.Value;
+            if (hit)
+            {
+                context.SetCacheTimestamp(timestampedResult.Timestamp);
                 logger.LogDebug("Cache Hit - {Request}", request);
+            }
         }
         return result!;
     }

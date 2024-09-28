@@ -11,7 +11,7 @@ namespace Shiny.Mediator;
 public static class CacheExtensions
 {
     static readonly FieldInfo CoherentStateField = typeof(MemoryCache).GetField("_coherentState", BindingFlags.Instance | BindingFlags.NonPublic)!;
-
+    
     public static ShinyConfigurator AddMemoryCaching(this ShinyConfigurator cfg, Action<MemoryCacheOptions>? configureCache = null)
     {
         cfg.Services.AddMemoryCache(x => configureCache?.Invoke(x));
@@ -19,7 +19,13 @@ public static class CacheExtensions
         cfg.AddOpenRequestMiddleware(typeof(CachingRequestMiddleware<,>));
         return cfg;
     }
+
+
+    public static DateTimeOffset? CacheTimestamp(this IRequestContext context)
+        => context.TryGetValue<DateTimeOffset>("Cache.Timestamp");
     
+    internal static void SetCacheTimestamp(this IRequestContext context, DateTimeOffset timestamp)
+        => context.Add("Cache.Timestamp", timestamp);
     
     public static string GetCacheKey(object request)
     {
