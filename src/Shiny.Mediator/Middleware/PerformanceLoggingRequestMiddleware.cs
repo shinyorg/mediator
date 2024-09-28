@@ -11,7 +11,13 @@ public class PerformanceLoggingRequestMiddleware<TRequest, TResult>(
     ILogger<TRequest> logger
 ) : IRequestMiddleware<TRequest, TResult>
 {
-    public async Task<TResult> Process(TRequest request, RequestHandlerDelegate<TResult> next, IRequestHandler requestHandler, CancellationToken cancellationToken)
+    public async Task<TResult> Process(
+        TRequest request, 
+        RequestHandlerDelegate<TResult> next, 
+        IRequestHandler requestHandler, 
+        IRequestContext context,
+        CancellationToken cancellationToken
+    )
     {
         var section = configuration.GetHandlerSection("PerformanceLogging", request!, requestHandler);
         if (section == null)
@@ -22,10 +28,17 @@ public class PerformanceLoggingRequestMiddleware<TRequest, TResult>(
         var sw = Stopwatch.StartNew();
         var result = await next();
         sw.Stop();
-        
-        if (sw.Elapsed > ts)
-            logger.LogError("{RequestType} took longer than {Threshold} to execute - {Elapsed}", typeof(TRequest), ts, sw.Elapsed);
 
+        if (sw.Elapsed > ts)
+        {
+            context.SetPerformanceLoggingThresholdBreached(sw.Elapsed);
+            logger.LogError(
+                "{RequestType} took longer than {Threshold} to execute - {Elapsed}", 
+                typeof(TRequest), 
+                ts,
+                sw.Elapsed
+            );
+        }
         else if (logger.IsEnabled(LogLevel.Debug))
             logger.LogDebug("{RequestType} took {Elapsed} to execute", typeof(TRequest), sw.Elapsed);
         

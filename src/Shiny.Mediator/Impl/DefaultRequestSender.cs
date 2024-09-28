@@ -7,6 +7,11 @@ namespace Shiny.Mediator.Impl;
 
 public class DefaultRequestSender(IServiceProvider services) : IRequestSender
 {
+    public Task<(TResult Result, IRequestContext Context)> RequestWithContext<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task Send(IRequest request, CancellationToken cancellationToken)
     {
         using var scope = services.CreateScope();
@@ -18,7 +23,12 @@ public class DefaultRequestSender(IServiceProvider services) : IRequestSender
         
         await task.ConfigureAwait(false);
     }
-    
+
+    public Task<IRequestContext> SendWithContext(IRequest request, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
 
     public IAsyncEnumerable<TResult> Request<TResult>(IStreamRequest<TResult> request, CancellationToken cancellationToken = default)
     {
