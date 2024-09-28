@@ -18,6 +18,7 @@ public static class MauiExtensions
     public static ShinyConfigurator UseMaui(this ShinyConfigurator cfg, bool includeStandardMiddleware = true)
     {
         cfg.AddEventCollector<MauiEventCollector>();
+        cfg.Services.TryAddSingleton<ISerializerService, SerializerService>();
         cfg.Services.TryAddSingleton<IStorageService, StorageService>();
         cfg.Services.TryAddSingleton<IInternetService, InternetService>();
         cfg.Services.TryAddSingleton<IAlertDialogService, AlertDialogService>();

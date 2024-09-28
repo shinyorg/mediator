@@ -1,9 +1,7 @@
-using System.Text.Json;
-
 namespace Shiny.Mediator.Infrastructure;
 
 
-public class StorageService(IFileSystem fileSystem) : IStorageService
+public class StorageService(IFileSystem fileSystem, ISerializerService serializer) : IStorageService
 {
     Dictionary<string, string> keys = null!;
     
@@ -11,7 +9,7 @@ public class StorageService(IFileSystem fileSystem) : IStorageService
     public virtual Task Store(object request, object result)
     {
         var path = this.GetFilePath(request, true);
-        var json = JsonSerializer.Serialize(result);
+        var json = serializer.Serialize(result);
         File.WriteAllText(path, json); 
      
         return Task.CompletedTask;
@@ -25,7 +23,7 @@ public class StorageService(IFileSystem fileSystem) : IStorageService
         if (File.Exists(path))
         {
             var json = File.ReadAllText(path);
-            var obj = JsonSerializer.Deserialize<TResult>(json)!;
+            var obj = serializer.Deserialize<TResult>(json)!;
             returnValue = obj;
         }
         
@@ -96,7 +94,7 @@ public class StorageService(IFileSystem fileSystem) : IStorageService
         if (File.Exists(storePath))
         {
             var json = File.ReadAllText(storePath);
-            this.keys = JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
+            this.keys = serializer.Deserialize<Dictionary<string, string>>(json)!;
         }
         else
         {
@@ -108,7 +106,7 @@ public class StorageService(IFileSystem fileSystem) : IStorageService
 
     protected void PersistKeyStore()
     {
-        var json = JsonSerializer.Serialize(this.keys);
+        var json = serializer.Serialize(this.keys);
         File.WriteAllText(this.KeyStorePath, json);
     }
 
