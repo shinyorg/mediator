@@ -6,12 +6,16 @@ public class OfflineAvailableAttribute : Attribute;
 
 public record OfflineAvailableFlushRequest : IRequest;
 
+public record OfflineAvailableContext(
+    string RequestKey,
+    DateTimeOffset Timestamp
+);
 
 public static class OfflineExtensions
 {
-    public static DateTimeOffset? OfflineTimestamp(this ExecutionContext context)
-        => context.TryGetValue<DateTimeOffset>("Offline.Timestamp");
+    public static OfflineAvailableContext? Offline(this ExecutionContext context)
+        => context.TryGetValue<OfflineAvailableContext>("Offline");
     
-    internal static void SetOfflineTimestamp(this ExecutionContext context, DateTimeOffset timestamp)
-        => context.Add("Offline.Timestamp", timestamp);
+    internal static void Offline(this ExecutionContext context, OfflineAvailableContext offlineContext)
+        => context.Add("Offline", offlineContext);
 }

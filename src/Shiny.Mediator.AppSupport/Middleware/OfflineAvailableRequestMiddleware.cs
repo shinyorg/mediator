@@ -33,8 +33,9 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         }
         else
         {
+            // TODO: request key
             var timestampedResult = await storage.Get<TimestampedResult<TResult>>(context.Request!);
-            context.SetOfflineTimestamp(timestampedResult!.Timestamp);
+            context.Offline(new OfflineAvailableContext("TODO", timestampedResult!.Timestamp));
             result = timestampedResult!.Value;
             logger.LogDebug("Offline Hit: {Request} - Timestamp: {Timestamp}", context.Request, timestampedResult.Value);
         }

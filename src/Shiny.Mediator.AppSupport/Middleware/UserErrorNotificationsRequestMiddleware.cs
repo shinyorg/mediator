@@ -30,10 +30,12 @@ public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error executing pipeline for {Error}", typeof(TRequest).FullName);
-            context.SetUserErrorNotificationException(ex);
-            
+
+            var title = String.Empty;
+            var msg = String.Empty;
             var key = CultureInfo.CurrentUICulture.Name.ToLower();
             var locale = section.GetSection(key);
+
             if (!locale.Exists())
             {
                 locale = section.GetSection("*");
@@ -43,12 +45,12 @@ public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
             
             if (locale.Exists())
             {
-                var title = locale.GetValue<string>("Title", "ERROR");
-                var msg = locale.GetValue<string>("Message", "An error occurred with your request");
-                context.SetUserErrorNotificationAlert((title, msg)!);
-                
+                title = locale.GetValue<string>("Title", "ERROR");
+                msg = locale.GetValue<string>("Message", "An error occurred with your request");
                 alerts.Display(title!, msg!);
             }
+
+            context.UserErrorNotification(new UserErrorNotificationContext(ex, title!, msg!));
         }
 
         return result!;

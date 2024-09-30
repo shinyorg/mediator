@@ -63,7 +63,6 @@ public class CachingRequestMiddleware<TRequest, TResult>(
                     async entry =>
                     {
                         hit = false;
-                        logger.LogDebug("Cache Miss - {Request}", context.Request);
                         this.SetCacheEntry(attribute, context.Request, entry);
                         var nextResult = await next().ConfigureAwait(false);
                         return new TimestampedResult<TResult>(DateTimeOffset.UtcNow, nextResult);
@@ -74,8 +73,13 @@ public class CachingRequestMiddleware<TRequest, TResult>(
             result = timestampedResult!.Value;
             if (hit)
             {
-                context.SetCacheTimestamp(timestampedResult.Timestamp);
                 logger.LogDebug("Cache Hit - {Request}", context.Request);
+                context.Cache(new CacheContext(cacheKey, true, timestampedResult.Timestamp));
+            }
+            else
+            {
+                logger.LogDebug("Cache Miss - {Request}", context.Request);
+                context.Cache(new CacheContext(cacheKey, false, DateTimeOffset.UtcNow));
             }
         }
         return result!;

@@ -25,13 +25,9 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         if (!this.IsEnabled(context.Request, context.RequestHandler))
             return next();
 
-        if (context.RequestHandler is not IStreamRequestHandler<TRequest, TResult> streamHandler)
-            throw new InvalidOperationException("RequestHandler must implement IStreamRequestHandler");
-        
         logger.LogDebug("ReplayStream Enabled - {Request}", context.Request);
         return this.Iterate(
             context.Request, 
-            streamHandler, 
             next, 
             context.CancellationToken
         );
@@ -54,9 +50,9 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         return enabled;
     }
 
+    
     protected virtual async IAsyncEnumerable<TResult> Iterate(
         TRequest request, 
-        IStreamRequestHandler<TRequest, TResult> requestHandler, 
         StreamRequestHandlerDelegate<TResult> next, 
         [EnumeratorCancellation] CancellationToken ct
     )
