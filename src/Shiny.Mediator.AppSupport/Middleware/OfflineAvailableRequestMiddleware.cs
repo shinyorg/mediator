@@ -17,6 +17,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         RequestHandlerDelegate<TResult> next 
     )
     {
+        // TODO: request key
         if (typeof(TResult) == typeof(Unit))
             return await next().ConfigureAwait(false);
         
@@ -28,16 +29,20 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
             {
                 var timestampedResult = new TimestampedResult<TResult>(DateTimeOffset.UtcNow, result);
                 await storage.Store(context.Request!, timestampedResult);
-                logger.LogDebug("Offline Store - {Request}", context.Request);
+                logger.LogDebug("Offline: {Request} - Key: {RequestKey}", context.Request, "TODO");
             }
         }
         else
         {
-            // TODO: request key
             var timestampedResult = await storage.Get<TimestampedResult<TResult>>(context.Request!);
             context.Offline(new OfflineAvailableContext("TODO", timestampedResult!.Timestamp));
             result = timestampedResult!.Value;
-            logger.LogDebug("Offline Hit: {Request} - Timestamp: {Timestamp}", context.Request, timestampedResult.Value);
+            logger.LogDebug(
+                "Offline Hit: {Request} - Timestamp: {Timestamp} - Key: {RequestKey}", 
+                context.Request, 
+                timestampedResult.Value,
+                "TODO"
+            );
         }
         return result;
     }

@@ -73,12 +73,12 @@ public class CachingRequestMiddleware<TRequest, TResult>(
             result = timestampedResult!.Value;
             if (hit)
             {
-                logger.LogDebug("Cache Hit - {Request}", context.Request);
+                logger.LogDebug("Cache Hit: {Request} - Key: {RequestKey}", context.Request, cacheKey);
                 context.Cache(new CacheContext(cacheKey, true, timestampedResult.Timestamp));
             }
             else
             {
-                logger.LogDebug("Cache Miss - {Request}", context.Request);
+                logger.LogDebug("Cache Miss: {Request} - Key: {RequestKey}", context.Request, cacheKey);
                 context.Cache(new CacheContext(cacheKey, false, DateTimeOffset.UtcNow));
             }
         }
