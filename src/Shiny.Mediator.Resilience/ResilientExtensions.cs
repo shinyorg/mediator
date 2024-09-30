@@ -22,15 +22,6 @@ public static class ResilientExtensions
 
     public static ShinyConfigurator AddResiliencyMiddleware(this ShinyConfigurator configurator, IConfiguration configuration)
     {
-        
-/*
-"*": {
-"RetryCount": 3,
-"RetryDelay": 2000,
-"CircuitBreakerCount": 5,
-"CircuitBreakerDelay": 5000
-}        
-*/
         var items = configuration.GetSection("Resilience").Get<Dictionary<string, ResilienceConfig>>();
         if (items != null)
         {
