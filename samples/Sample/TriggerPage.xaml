@@ -32,6 +32,9 @@
                 <TextCell Text="Request" 
                           Command="{Binding OfflineCommand}" />
                 
+                <TextCell Text="Timestamp" 
+                          Detail="{Binding OfflineTimestamp}" />
+                
                 <TextCell Text="Value" 
                           Detail="{Binding OfflineValue}" />
             </TableSection>
@@ -44,6 +47,7 @@
                 <TextCell Text="Clear" Command="{Binding CacheClearCommand}" />
                 <TextCell Text="Request" Command="{Binding CacheRequestCommand}" />
                 <TextCell Text="Value" Detail="{Binding CacheValue}" />
+                <TextCell Text="Timestamp" Detail="{Binding CacheTimestamp}" />
                 <!-- <SwitchCell Text="Force Refresh" On="{Binding CacheForceRefresh}" /> -->
                 <TextCell Text="Cache has a 20s expiry time" />
             </TableSection>

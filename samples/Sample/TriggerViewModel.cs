@@ -38,11 +38,19 @@ public partial class TriggerViewModel(
     
     [ObservableProperty] string prismNavArg;
 
-    
-    [RelayCommand]
-    async Task Offline() => this.OfflineValue = await mediator.Request(new OfflineRequest());
-    [ObservableProperty] string offlineValue;
 
+    [RelayCommand]
+    async Task Offline()
+    {
+        var context = await mediator.RequestWithContext(new OfflineRequest());
+        this.OfflineValue = context.Result;
+        this.OfflineTimestamp = context.Context.Offline()?.Timestamp;
+    }
+    
+    [ObservableProperty] string offlineValue;
+    [ObservableProperty] DateTimeOffset? offlineTimestamp;
+
+    
     [RelayCommand]
     Task ErrorTrap() => mediator.Send(new ErrorRequest());
 
@@ -90,11 +98,16 @@ public partial class TriggerViewModel(
         }
     }
 
+    
     [RelayCommand]
-    async Task CacheRequest() 
-        => this.CacheValue = await mediator.Request(new CacheRequest());
-    
-    
+    async Task CacheRequest()
+    {
+        var context = await mediator.RequestWithContext(new CacheRequest());
+        this.CacheValue = context.Result;
+        this.CacheTimestamp = context.Context.Cache()?.Timestamp;
+    }
+
+
     [RelayCommand]
     async Task CacheClear()
     {
@@ -102,6 +115,7 @@ public partial class TriggerViewModel(
         await dialogs.DisplayAlertAsync("Cache Cleared", "DONE", "Ok");
     }
     [ObservableProperty] string cacheValue;
+    [ObservableProperty] DateTimeOffset? cacheTimestamp;
     [ObservableProperty] string lastRefreshTimerValue;
 
     [RelayCommand]

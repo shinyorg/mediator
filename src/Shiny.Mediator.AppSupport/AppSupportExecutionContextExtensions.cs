@@ -13,4 +13,11 @@ public static class AppSupportExecutionContextExtensions
 
     internal static void UserErrorNotification(this ExecutionContext context, UserErrorNotificationContext info)
         => context.Add(nameof(UserErrorNotification), info);
+    
+    
+    public static OfflineAvailableContext? Offline(this ExecutionContext context)
+        => context.TryGetValue<OfflineAvailableContext>("Offline");
+    
+    internal static void Offline(this ExecutionContext context, OfflineAvailableContext offlineContext)
+        => context.Add("Offline", offlineContext);
 }
