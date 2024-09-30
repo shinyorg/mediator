@@ -24,10 +24,10 @@ public interface IRequestSender
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    // Task<(TResult Result, IRequestContext Context)> RequestWithContext<TResult>(
-    //     IRequest<TResult> request,
-    //     CancellationToken cancellationToken = default
-    // );
+    Task<ExecutionResult<TResult>> RequestWithContext<TResult>(
+        IRequest<TResult> request,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Send a `void` return request
@@ -35,19 +35,31 @@ public interface IRequestSender
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task Send(
+    Task<ExecutionContext> Send(
         IRequest request,
         CancellationToken cancellationToken = default
     );
   
     /// <summary>
-    /// 
+    /// Requests a stream of data from a message
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
     IAsyncEnumerable<TResult> Request<TResult>(
+        IStreamRequest<TResult> request,
+        CancellationToken cancellationToken = default
+    );
+    
+    /// <summary>
+    /// Requests a stream of data from a message
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    ExecutionResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default
     );

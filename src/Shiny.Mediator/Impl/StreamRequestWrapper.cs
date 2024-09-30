@@ -6,7 +6,7 @@ namespace Shiny.Mediator.Impl;
 
 class StreamRequestWrapper<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
-    public IAsyncEnumerable<TResult> Handle(IServiceProvider services, TRequest request, CancellationToken cancellationToken)
+    public ExecutionResult<IAsyncEnumerable<TResult>> Handle(IServiceProvider services, TRequest request, CancellationToken cancellationToken)
     {
         var requestHandler = services.GetService<IStreamRequestHandler<TRequest, TResult>>();
         if (requestHandler == null)
@@ -38,9 +38,10 @@ class StreamRequestWrapper<TRequest, TResult> where TRequest : IStreamRequest<TR
                         context,
                         next
                     );
-                })
+                }
+            )
             .Invoke();
         
-        return enumerable;
+        return new ExecutionResult<IAsyncEnumerable<TResult>>(context, enumerable);
     }
 }

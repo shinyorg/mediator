@@ -6,7 +6,7 @@ namespace Shiny.Mediator.Impl;
 
 class RequestVoidWrapper<TRequest> where TRequest : IRequest
 {
-    public async Task Handle(IServiceProvider services, TRequest request, CancellationToken cancellationToken)
+    public async Task<ExecutionContext> Handle(IServiceProvider services, TRequest request, CancellationToken cancellationToken)
     {
         var requestHandler = services.GetService<IRequestHandler<TRequest>>();
         if (requestHandler == null)
@@ -31,5 +31,7 @@ class RequestVoidWrapper<TRequest> where TRequest : IRequest
                 handlerExec 
             )
             .ConfigureAwait(false);
+
+        return context;
     }
 }

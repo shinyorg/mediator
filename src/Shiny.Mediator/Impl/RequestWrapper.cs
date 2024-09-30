@@ -6,7 +6,7 @@ namespace Shiny.Mediator.Impl;
 
 class RequestWrapper<TRequest, TResult> where TRequest : IRequest<TResult>
 {
-    public async Task<TResult> Handle(IServiceProvider services, TRequest request, CancellationToken cancellationToken)
+    public async Task<ExecutionResult<TResult>> Handle(IServiceProvider services, TRequest request, CancellationToken cancellationToken)
     {
         var requestHandler = services.GetService<IRequestHandler<TRequest, TResult>>();
         if (requestHandler == null)
@@ -27,6 +27,6 @@ class RequestWrapper<TRequest, TResult> where TRequest : IRequest<TResult>
             .Execute(services, context, handlerExec)
             .ConfigureAwait(false);
         
-        return result;
+        return new ExecutionResult<TResult>(context, result);
     }
 }
