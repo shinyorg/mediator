@@ -10,21 +10,19 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
     where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
-        TRequest request, 
-        StreamRequestHandlerDelegate<TResult> next, 
-        IStreamRequestHandler<TRequest, TResult> requestHandler,
-        CancellationToken cancellationToken
+        ExecutionContext<TRequest> context, 
+        StreamRequestHandlerDelegate<TResult> next 
     )
     {
         var interval = 0;
-        var section = configuration.GetHandlerSection("TimerRefresh", request, requestHandler);
+        var section = configuration.GetHandlerSection("TimerRefresh", context.Request, context.RequestHandler);
         if (section != null)
         {
             interval = section.GetValue("IntervalSeconds", 0);
         }
         else
         {
-            var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, TimerRefreshAttribute>();
+            var attribute = context.RequestHandler.GetHandlerHandleMethodAttribute<TRequest, TimerRefreshAttribute>();
             if (attribute != null)
                 interval = attribute.IntervalSeconds;
         }
@@ -32,7 +30,7 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
         if (interval <= 0)
             return next();
         
-        return this.Iterate(interval, next, cancellationToken);
+        return this.Iterate(interval, next, context.CancellationToken);
     }
 
 

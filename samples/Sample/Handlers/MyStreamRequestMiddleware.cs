@@ -4,10 +4,8 @@ namespace Sample.Handlers;
 public class MyStreamRequestMiddleware<TRequest, TResult>(ILogger<MyStreamRequestMiddleware<TRequest, TResult>> logger) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
-        TRequest request, 
-        StreamRequestHandlerDelegate<TResult> next, 
-        IStreamRequestHandler<TRequest, TResult> requestHandler,
-        CancellationToken cancellationToken
+        ExecutionContext<TRequest> context, 
+        StreamRequestHandlerDelegate<TResult> next 
     )
     {
         logger.LogInformation($"MyStreamRequestMiddleware called for {typeof(TRequest).FullName}");

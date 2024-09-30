@@ -10,6 +10,11 @@ namespace Shiny.Mediator;
 
 public static class MediatorExtensions
 {
+    /// <summary>
+    /// Fire & Forget task pattern
+    /// </summary>
+    /// <param name="task"></param>
+    /// <param name="onError"></param>
     public static void RunInBackground(this Task task, Action<Exception> onError)
         => task.ContinueWith(x =>
         {

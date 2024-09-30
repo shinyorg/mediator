@@ -22,6 +22,7 @@ class StreamRequestWrapper<TRequest, TResult> where TRequest : IStreamRequest<TR
             return requestHandler.Handle(request, cancellationToken);
         });
 
+        var context = new ExecutionContext<TRequest>(request, requestHandler, cancellationToken);
         var middlewares = services.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
         var enumerable = middlewares
             .Reverse()
@@ -34,10 +35,8 @@ class StreamRequestWrapper<TRequest, TResult> where TRequest : IStreamRequest<TR
                         middleware.GetType().FullName
                     );
                     return middleware.Process(
-                        request,
-                        next,
-                        requestHandler,
-                        cancellationToken
+                        context,
+                        next
                     );
                 })
             .Invoke();

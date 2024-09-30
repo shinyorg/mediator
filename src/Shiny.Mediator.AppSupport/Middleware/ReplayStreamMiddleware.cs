@@ -18,26 +18,27 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
 ) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
-        TRequest request, 
-        StreamRequestHandlerDelegate<TResult> next, 
-        IStreamRequestHandler<TRequest, TResult> requestHandler,
-        CancellationToken cancellationToken
+        ExecutionContext<TRequest> context,
+        StreamRequestHandlerDelegate<TResult> next 
     )
     {
-        if (!this.IsEnabled(request, requestHandler))
+        if (!this.IsEnabled(context.Request, context.RequestHandler))
             return next();
 
-        logger.LogDebug("ReplayStream Enabled - {Request}", request);
+        if (context.RequestHandler is not IStreamRequestHandler<TRequest, TResult> streamHandler)
+            throw new InvalidOperationException("RequestHandler must implement IStreamRequestHandler");
+        
+        logger.LogDebug("ReplayStream Enabled - {Request}", context.Request);
         return this.Iterate(
-            request, 
-            requestHandler, 
+            context.Request, 
+            streamHandler, 
             next, 
-            cancellationToken
+            context.CancellationToken
         );
     }
 
 
-    protected bool IsEnabled(TRequest request, IStreamRequestHandler<TRequest, TResult> requestHandler)
+    protected bool IsEnabled(TRequest request, IRequestHandler requestHandler)
     {
         var section = configuration.GetHandlerSection("ReplayStream", request, requestHandler);
         var enabled = false;
