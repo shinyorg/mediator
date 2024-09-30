@@ -21,10 +21,10 @@ public static class CacheExtensions
     }
 
 
-    public static DateTimeOffset? CacheTimestamp(this IRequestContext context)
+    public static DateTimeOffset? CacheTimestamp<TRequest>(this ExecutionContext context)
         => context.TryGetValue<DateTimeOffset>("Cache.Timestamp");
     
-    internal static void SetCacheTimestamp(this IRequestContext context, DateTimeOffset timestamp)
+    internal static void SetCacheTimestamp(this ExecutionContext context, DateTimeOffset timestamp)
         => context.Add("Cache.Timestamp", timestamp);
     
     public static string GetCacheKey(object request)

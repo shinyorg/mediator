@@ -8,21 +8,18 @@ public class MainThreadRequestHandler<TRequest, TResult>(
     ILogger<MainThreadRequestHandler<TRequest, TResult>> logger
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
-    public async Task<TResult> Process(
-        TRequest request, 
-        RequestHandlerDelegate<TResult> next, 
-        IRequestHandler requestHandler,
-        IRequestContext context,
-        CancellationToken cancellationToken
+    public Task<TResult> Process(
+        ExecutionContext<TRequest> context, 
+        RequestHandlerDelegate<TResult> next 
     )
     {
-        var attr = requestHandler.GetHandlerHandleMethodAttribute<TRequest, MainThreadAttribute>();
+        var attr = context.RequestHandler.GetHandlerHandleMethodAttribute<TRequest, MainThreadAttribute>();
         TResult result = default!;
 
         if (attr == null)
-            return await next().ConfigureAwait(false);
+            return next();
 
-        logger.LogDebug("MainThread Enabled - {Request}", request);
+        logger.LogDebug("MainThread Enabled - {Request}", context.Request);
         var tcs = new TaskCompletionSource<TResult>();
         MainThread.BeginInvokeOnMainThread(async () =>
         {
@@ -36,6 +33,6 @@ public class MainThreadRequestHandler<TRequest, TResult>(
                 tcs.SetException(ex);
             }
         });
-        return await tcs.Task.ConfigureAwait(false);
+        return tcs.Task;
     }
 }

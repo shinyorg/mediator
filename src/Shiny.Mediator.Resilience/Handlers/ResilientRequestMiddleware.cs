@@ -14,15 +14,12 @@ public class ResilientRequestHandlerMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     public async Task<TResult> Process(
-        TRequest request, 
-        RequestHandlerDelegate<TResult> next, 
-        IRequestHandler requestHandler,
-        IRequestContext context,
-        CancellationToken cancellationToken
+        ExecutionContext<TRequest> context,
+        RequestHandlerDelegate<TResult> next 
     )
     {
         ResiliencePipeline? pipeline = null;
-        var section = configuration.GetHandlerSection("Resilience", request!, requestHandler);
+        var section = configuration.GetHandlerSection("Resilience", context.Request!, context.RequestHandler);
         
         if (section != null)
         {
@@ -30,7 +27,7 @@ public class ResilientRequestHandlerMiddleware<TRequest, TResult>(
         }
         else
         {
-            var attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, ResilientAttribute>();
+            var attribute = context.RequestHandler.GetHandlerHandleMethodAttribute<TRequest, ResilientAttribute>();
             if (attribute != null)
                 pipeline = pipelineProvider.GetPipeline(attribute.ConfigurationKey.ToLower());
         }
@@ -38,9 +35,9 @@ public class ResilientRequestHandlerMiddleware<TRequest, TResult>(
             return await next().ConfigureAwait(false);
 
         // it can't cancel properly here... may need to make next take a CancellationToken
-        logger.LogDebug("Resilience Enabled - {Request}", request);
+        logger.LogDebug("Resilience Enabled - {Request}", context.Request);
         var result = await pipeline
-            .ExecuteAsync(async _ => await next(), cancellationToken)
+            .ExecuteAsync(async _ => await next(), context.CancellationToken)
             .ConfigureAwait(false);
         
         return result;

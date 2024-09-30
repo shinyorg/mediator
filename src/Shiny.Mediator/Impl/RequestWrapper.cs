@@ -22,8 +22,9 @@ class RequestWrapper<TRequest, TResult> where TRequest : IRequest<TResult>
             return requestHandler.Handle(request, cancellationToken);
         });
 
+        var context = new ExecutionContext<TRequest>(request, requestHandler, cancellationToken);
         var result = await RequestExecutor
-            .Execute(services, request, logger, requestHandler, handlerExec, cancellationToken)
+            .Execute(services, context, handlerExec)
             .ConfigureAwait(false);
         
         return result;

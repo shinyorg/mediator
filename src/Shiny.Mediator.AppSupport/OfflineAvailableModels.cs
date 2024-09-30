@@ -9,9 +9,9 @@ public record OfflineAvailableFlushRequest : IRequest;
 
 public static class OfflineExtensions
 {
-    public static DateTimeOffset? OfflineTimestamp(this IRequestContext context)
+    public static DateTimeOffset? OfflineTimestamp(this ExecutionContext context)
         => context.TryGetValue<DateTimeOffset>("Offline.Timestamp");
     
-    internal static void SetOfflineTimestamp(this IRequestContext context, DateTimeOffset timestamp)
+    internal static void SetOfflineTimestamp(this ExecutionContext context, DateTimeOffset timestamp)
         => context.Add("Offline.Timestamp", timestamp);
 }

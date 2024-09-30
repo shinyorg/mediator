@@ -13,21 +13,18 @@ public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
-        TRequest request, 
-        RequestHandlerDelegate<TResult> next, 
-        IRequestHandler requestHandler, 
-        IRequestContext context,
-        CancellationToken cancellationToken
+        ExecutionContext<TRequest> context,
+        RequestHandlerDelegate<TResult> next 
     )
     {
-        var section = configuration.GetHandlerSection("UserErrorNotifications", request!, requestHandler);
+        var section = configuration.GetHandlerSection("UserErrorNotifications", context.Request!, context.RequestHandler);
         if (section == null)
             return await next().ConfigureAwait(false);
         
         var result = default(TResult);
         try
         {
-            logger.LogDebug("UserErrorNotifications Enabled - {Request}", request);
+            logger.LogDebug("UserErrorNotifications Enabled - {Request}", context.Request);
             result = await next().ConfigureAwait(false);
         }
         catch (Exception ex)

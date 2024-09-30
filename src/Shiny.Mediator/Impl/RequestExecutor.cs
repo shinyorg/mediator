@@ -3,19 +3,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Impl;
 
+
 static class RequestExecutor
 {
     public static async Task<TResult> Execute<TRequest, TResult>(
         IServiceProvider services, 
-        TRequest request, 
-        ILogger<TRequest> logger,
-        IRequestHandler requestHandler,
-        RequestHandlerDelegate<TResult> handlerExec,
-        CancellationToken cancellationToken
+        ExecutionContext<TRequest> context,
+        RequestHandlerDelegate<TResult> handlerExec
     )
     {
         var middlewares = services.GetServices<IRequestMiddleware<TRequest, TResult>>();
-        var context = new RequestContext(requestHandler);
+        var logger = services.GetRequiredService<ILogger<TRequest>>();
         
         var result = await middlewares
             .Reverse()
@@ -28,13 +26,7 @@ static class RequestExecutor
                         middleware.GetType().FullName
                     );
                     
-                    return middleware.Process(
-                        request,
-                        next,
-                        requestHandler,
-                        context,
-                        cancellationToken
-                    );
+                    return middleware.Process(context, next);
                 })
             .Invoke()
             .ConfigureAwait(false);

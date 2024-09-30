@@ -4,10 +4,7 @@ public delegate Task<TResult> RequestHandlerDelegate<TResult>();
 public interface IRequestMiddleware<TRequest, TResult>
 {
     Task<TResult> Process(
-        TRequest request, 
-        RequestHandlerDelegate<TResult> next, 
-        IRequestHandler requestHandler,
-        IRequestContext context,
-        CancellationToken cancellationToken
+        ExecutionContext<TRequest> context, 
+        RequestHandlerDelegate<TResult> next
     );
 }

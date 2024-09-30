@@ -13,11 +13,8 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
-        TRequest request, 
-        RequestHandlerDelegate<TResult> next, 
-        IRequestHandler requestHandler,
-        IRequestContext context,
-        CancellationToken cancellationToken
+        ExecutionContext<TRequest> context,
+        RequestHandlerDelegate<TResult> next 
     )
     {
         if (typeof(TResult) == typeof(Unit))
@@ -27,19 +24,19 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         if (connectivity.IsAvailable)
         {
             result = await next().ConfigureAwait(false);
-            if (this.IsEnabled(requestHandler, request))
+            if (this.IsEnabled(context.RequestHandler, context.Request))
             {
                 var timestampedResult = new TimestampedResult<TResult>(DateTimeOffset.UtcNow, result);
-                await storage.Store(request!, timestampedResult);
-                logger.LogDebug("Offline Store - {Request}", request);
+                await storage.Store(context.Request!, timestampedResult);
+                logger.LogDebug("Offline Store - {Request}", context.Request);
             }
         }
         else
         {
-            var timestampedResult = await storage.Get<TimestampedResult<TResult>>(request!);
+            var timestampedResult = await storage.Get<TimestampedResult<TResult>>(context.Request!);
             context.SetOfflineTimestamp(timestampedResult!.Timestamp);
             result = timestampedResult!.Value;
-            logger.LogDebug("Offline Hit: {Request} - Timestamp: {Timestamp}", request, timestampedResult.Value);
+            logger.LogDebug("Offline Hit: {Request} - Timestamp: {Timestamp}", context.Request, timestampedResult.Value);
         }
         return result;
     }

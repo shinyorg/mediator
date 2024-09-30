@@ -20,16 +20,16 @@ public class Mediator(
         return result;
     }
 
-    public Task<(TResult Result, IRequestContext Context)> RequestWithContext<TResult>(
-        IRequest<TResult> request,
-        CancellationToken cancellationToken = default
-    ) => requestSender.RequestWithContext(request, cancellationToken);
+    // public Task<(TResult Result, IRequestContext Context)> RequestWithContext<TResult>(
+    //     IRequest<TResult> request,
+    //     CancellationToken cancellationToken = default
+    // ) => requestSender.RequestWithContext(request, cancellationToken);
 
     public Task Send(IRequest request, CancellationToken cancellationToken = default)
         => requestSender.Send(request, cancellationToken);
 
-    public Task<IRequestContext> SendWithContext(IRequest request, CancellationToken cancellationToken = default)
-        => requestSender.SendWithContext(request, cancellationToken);
+    // public Task<IRequestContext> SendWithContext(IRequest request, CancellationToken cancellationToken = default)
+    //     => requestSender.SendWithContext(request, cancellationToken);
 
     public IAsyncEnumerable<TResult> Request<TResult>(IStreamRequest<TResult> request, CancellationToken cancellationToken = default)
         => requestSender.Request(request, cancellationToken);

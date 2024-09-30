@@ -8,11 +8,8 @@ namespace Sample.Handlers;
 public class MyRequestMiddleware(AppSqliteConnection conn) : IRequestMiddleware<MyMessageRequest, MyMessageResponse>
 {
     public async Task<MyMessageResponse> Process(
-        MyMessageRequest request, 
-        RequestHandlerDelegate<MyMessageResponse> next, 
-        IRequestHandler requestHandler, 
-        IRequestContext context,
-        CancellationToken cancellationToken
+        ExecutionContext<MyMessageRequest> context, 
+        RequestHandlerDelegate<MyMessageResponse> next 
     )
     {
         var sw = Stopwatch.StartNew();
@@ -22,8 +19,8 @@ public class MyRequestMiddleware(AppSqliteConnection conn) : IRequestMiddleware<
         await conn.Log(
             nameof(MyRequestMiddleware), 
             new MyMessageEvent(
-                request.Arg, 
-                request.FireAndForgetEvents
+                context.Request.Arg, 
+                context.Request.FireAndForgetEvents
             ), 
             sw.ElapsedMilliseconds
         );

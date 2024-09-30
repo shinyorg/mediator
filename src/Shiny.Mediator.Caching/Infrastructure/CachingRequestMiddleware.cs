@@ -13,23 +13,20 @@ public class CachingRequestMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
-        TRequest request, 
-        RequestHandlerDelegate<TResult> next, 
-        IRequestHandler requestHandler,
-        IRequestContext context,
-        CancellationToken cancellationToken
+        ExecutionContext<TRequest> context,
+        RequestHandlerDelegate<TResult> next 
     )
     {
         if (typeof(TResult) == typeof(Unit))
             return await next().ConfigureAwait(false);
 
         CacheAttribute? attribute = null;
-        var cacheKey = CacheExtensions.GetCacheKey(request!);
-        var section = configuration.GetHandlerSection("Cache", request!, requestHandler);
+        var cacheKey = CacheExtensions.GetCacheKey(context.Request!);
+        var section = configuration.GetHandlerSection("Cache", context.Request!, context.RequestHandler);
 
         if (section == null)
         {
-            attribute = requestHandler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
+            attribute = context.RequestHandler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
         }
         else
         {
@@ -45,17 +42,17 @@ public class CachingRequestMiddleware<TRequest, TResult>(
             };
         }
         
-        if (attribute == null && request is not ICacheControl)
+        if (attribute == null && context.Request is not ICacheControl)
             return await next().ConfigureAwait(false);
 
         TResult result = default!;
-        if (request is ICacheControl { ForceRefresh: true })
+        if (context.Request is ICacheControl { ForceRefresh: true })
         {
-            logger.LogDebug("Cache Forced Refresh - {Request}", request);
+            logger.LogDebug("Cache Forced Refresh - {Request}", context.Request);
             result = await next().ConfigureAwait(false);
             var entry = cache.CreateEntry(cacheKey);
             entry.Value = new TimestampedResult<TResult>(DateTimeOffset.UtcNow, result);
-            this.SetCacheEntry(attribute, request, entry);
+            this.SetCacheEntry(attribute, context.Request, entry);
         }
         else
         {
@@ -66,8 +63,8 @@ public class CachingRequestMiddleware<TRequest, TResult>(
                     async entry =>
                     {
                         hit = false;
-                        logger.LogDebug("Cache Miss - {Request}", request);
-                        this.SetCacheEntry(attribute, request, entry);
+                        logger.LogDebug("Cache Miss - {Request}", context.Request);
+                        this.SetCacheEntry(attribute, context.Request, entry);
                         var nextResult = await next().ConfigureAwait(false);
                         return new TimestampedResult<TResult>(DateTimeOffset.UtcNow, nextResult);
                     }
@@ -78,7 +75,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
             if (hit)
             {
                 context.SetCacheTimestamp(timestampedResult.Timestamp);
-                logger.LogDebug("Cache Hit - {Request}", request);
+                logger.LogDebug("Cache Hit - {Request}", context.Request);
             }
         }
         return result!;
