@@ -7,5 +7,5 @@ namespace Sample.Blazor.Handlers;
 public class DoThingRequestHandler(IMediator mediator) : IRequestHandler<DoThing>
 {
     public Task Handle(DoThing request, CancellationToken cancellationToken)
-        => mediator.Publish(new TheThing(), cancellationToken);
+        => mediator.Publish(new TheThing(request.Text), cancellationToken);
 }

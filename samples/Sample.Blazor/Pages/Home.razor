@@ -1,6 +1,8 @@
 ﻿@page "/"
 @using Sample.Blazor.Contracts
 @using Shiny.Mediator
+@using Shiny.Mediator.Infrastructure
+@inject IInternetService internet
 @inject IMediator mediator
 @implements IEventHandler<Sample.Blazor.Contracts.TheThing> 
 
@@ -10,14 +12,23 @@
 
 Welcome to your new app.
 
+<input type="text" @bind-value="this.text" />
 <button @onclick="TestSend">Test Send</button>
+
+@if (this.text != null)
+{
+    <br />
+    <text>Text from Mediator: @this.text</text>
+}
 
 
 @code {
+    string text;
+
     
     async Task TestSend()
     {
-        await mediator.Send(new DoThing());
+        await mediator.Send(new DoThing(this.text));
     }
 
     public Task Handle(TheThing @event, CancellationToken cancellationToken)

@@ -8,5 +8,6 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddShinyMediator(x => x.UseBlazor());
+builder.Services.AddDiscoveredMediatorHandlersFromSample_Blazor();
 
 await builder.Build().RunAsync();
