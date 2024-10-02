@@ -7,43 +7,30 @@ namespace Shiny.Mediator.Blazor.Infrastructure;
 
 public class StorageService(IJSRuntime jsruntime) : IStorageService
 {
-    public Task Store(object request, object result)
+    public Task Set<T>(string key, T value)
     {
-        var key = this.GetStoreKeyFromRequest(request);
-        var json = JsonSerializer.Serialize(result);
+        var json = JsonSerializer.Serialize(value);
         ((IJSInProcessRuntime)jsruntime).Invoke<string?>("localStorage.setItem", key, json);
 
-        return Task.CompletedTask;
+        return Task.FromResult(key);
     }
 
     
-    public Task<TResult?> Get<TResult>(object request)
+    public Task<T> Get<T>(string key)
     {
-        var key = this.GetStoreKeyFromRequest(request);
         var stringValue = ((IJSInProcessRuntime)jsruntime).Invoke<string?>("localStorage.getItem", key);
         if (String.IsNullOrWhiteSpace(stringValue))
             return null!;
 
-        var final = JsonSerializer.Deserialize<TResult>(stringValue);
+        var final = JsonSerializer.Deserialize<T>(stringValue);
         return Task.FromResult(final);
     }
 
-    public Task Clear()
+    
+    public Task Remove(string key)
     {
         var inproc = (IJSInProcessRuntime)jsruntime;
-        inproc.InvokeVoid("localStorage.clear");
+        inproc.InvokeVoid("localStorage.removeItem", key);
         return Task.CompletedTask;
-    }
-    
-    
-    protected virtual string GetStoreKeyFromRequest(object request)
-    {
-        if (request is IRequestKey keyProvider)
-            return keyProvider.GetKey();
-        
-        var t = request.GetType();
-        var key = $"{t.Namespace}_{t.Name}";
-    
-        return key;
     }
 }

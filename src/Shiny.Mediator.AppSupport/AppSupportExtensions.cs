@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;
@@ -39,6 +41,8 @@ public static class AppSupportExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddOfflineAvailabilityMiddleware(this ShinyConfigurator cfg)
     {
+        cfg.Services.TryAddSingleton<IOfflineService, OfflineService>();
+        cfg.Services.TryAddSingleton<ISerializerService, SerializerService>();
         cfg.Services.AddSingletonAsImplementedInterfaces<OfflineAvailableFlushRequestHandler>();
         cfg.AddOpenRequestMiddleware(typeof(OfflineAvailableRequestMiddleware<,>));
         

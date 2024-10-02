@@ -8,7 +8,7 @@ namespace Shiny.Mediator.Middleware;
 public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
     ILogger<OfflineAvailableRequestMiddleware<TRequest, TResult>> logger,
     IInternetService connectivity, 
-    IStorageService storage,
+    IOfflineService offline,
     IConfiguration configuration
 ) : IRequestMiddleware<TRequest, TResult>
 {
@@ -17,32 +17,35 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         RequestHandlerDelegate<TResult> next 
     )
     {
-        // TODO: request key
         if (typeof(TResult) == typeof(Unit))
+            return await next().ConfigureAwait(false);
+        
+        if (!this.IsEnabled(context.RequestHandler, context.Request))
             return await next().ConfigureAwait(false);
         
         var result = default(TResult);
         if (connectivity.IsAvailable)
         {
             result = await next().ConfigureAwait(false);
-            if (this.IsEnabled(context.RequestHandler, context.Request))
-            {
-                var timestampedResult = new TimestampedResult<TResult>(DateTimeOffset.UtcNow, result);
-                await storage.Store(context.Request!, timestampedResult);
-                logger.LogDebug("Offline: {Request} - Key: {RequestKey}", context.Request, "TODO");
-            }
+            var requestKey = await offline.Set(context.Request!, result!);
+            logger.LogDebug("Offline: {Request} - Key: {RequestKey}", context.Request, requestKey);
         }
         else
         {
-            var timestampedResult = await storage.Get<TimestampedResult<TResult>>(context.Request!);
-            context.Offline(new OfflineAvailableContext("TODO", timestampedResult!.Timestamp));
-            result = timestampedResult!.Value;
-            logger.LogDebug(
-                "Offline Hit: {Request} - Timestamp: {Timestamp} - Key: {RequestKey}", 
-                context.Request, 
-                timestampedResult.Value,
-                "TODO"
-            );
+            var offlineResult = await offline.Get<TResult>(context.Request!);
+            
+            // TODO: offline miss to context
+            if (offlineResult != null)
+            {
+                context.Offline(new OfflineAvailableContext(offlineResult.RequestKey, offlineResult.Timestamp));
+                result = offlineResult.Value;
+                logger.LogDebug(
+                    "Offline Hit: {Request} - Timestamp: {Timestamp} - Key: {RequestKey}", 
+                    context.Request, 
+                    offlineResult.Timestamp,
+                    offlineResult.RequestKey
+                );
+            }
         }
         return result;
     }

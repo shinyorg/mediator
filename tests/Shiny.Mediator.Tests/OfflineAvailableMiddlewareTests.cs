@@ -10,7 +10,7 @@ namespace Shiny.Mediator.Tests;
 public class OfflineAvailableRequestMiddlewareTests
 {
     readonly MockInternetService connectivity;
-    readonly MockStorageService storeMgr;
+    readonly MockOfflineService offline;
     readonly OfflineAvailableRequestMiddleware<OfflineRequest, long> middleware;
     readonly OfflineRequestHandler handler;
     readonly ConfigurationManager config;
@@ -19,7 +19,7 @@ public class OfflineAvailableRequestMiddlewareTests
     {
         this.handler = new();
         this.connectivity = new();
-        this.storeMgr = new();
+        this.offline = new();
 
         this.config = new ConfigurationManager();
         // this.config.AddConfiguration(new MemoryConfigurationProvider(new MemoryConfigurationSource().InitialData))
@@ -27,7 +27,7 @@ public class OfflineAvailableRequestMiddlewareTests
         this.middleware = new OfflineAvailableRequestMiddleware<OfflineRequest, long>(
             null,
             this.connectivity, 
-            this.storeMgr,
+            this.offline,
             null
         );
     }
@@ -77,19 +77,32 @@ public class OfflineRequestHandler : IRequestHandler<OfflineRequest, long>
     }
 }
 
-public class MockStorageService : IStorageService
+public class MockOfflineService : IOfflineService
 {
-    public Task Store(object request, object result)
+    public Task<string> Set(object request, object result)
     {
         throw new NotImplementedException();
     }
 
-    public Task<TResult?> Get<TResult>(object request)
+    public Task<OfflineResult<TResult>?> Get<TResult>(object request)
     {
         throw new NotImplementedException();
     }
 
-    public Task Clear() => Task.CompletedTask;
+    public Task ClearByType(Type requestType)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task ClearByRequest(object request)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task Clear()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public class MockInternetService : IInternetService
