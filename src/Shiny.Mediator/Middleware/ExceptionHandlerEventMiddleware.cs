@@ -17,6 +17,7 @@ public class ExceptionHandlerEventMiddleware<TEvent>(ILogger<TEvent> logger) : I
         catch (Exception ex)
         {
             logger.LogError(ex, "Error in event {EventType}", context.Event.GetType().FullName);
+            
         }
     }
 }

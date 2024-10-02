@@ -1,18 +1,26 @@
 namespace Shiny.Mediator;
 
 
+public class EventExecutionContext(
+    CancellationToken cancellationToken
+)
+{
+    public CancellationToken CancellationToken => cancellationToken;
+    
+    public Guid ExecutionId { get; }= Guid.NewGuid();
+    
+    readonly Dictionary<string, object> store = new();
+    public IReadOnlyDictionary<string, object> Values => this.store.ToDictionary();
+    public void Add(string key, object value) => this.store.Add(key, value);
+}
+
+
 public class EventExecutionContext<TEvent>(
     TEvent @event,
     IEventHandler<TEvent> eventHandler,
     CancellationToken cancellationToken
-) where TEvent : IEvent
+) : EventExecutionContext(cancellationToken) where TEvent : IEvent
 {
     public TEvent Event => @event;
     public IEventHandler<TEvent> EventHandler => eventHandler;
-    public CancellationToken CancellationToken => cancellationToken;
-}
-public class EventAggregatedExecutionContext<TEvent>(IReadOnlyList<EventExecutionContext<TEvent>> contexts)
-    where TEvent : IEvent
-{
-    
 }

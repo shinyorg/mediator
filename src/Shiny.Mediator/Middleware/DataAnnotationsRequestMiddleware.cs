@@ -5,7 +5,11 @@ namespace Shiny.Mediator.Middleware;
 
 public class DataAnnotationsRequestMiddleware<TRequest, TResult> : AbstractValidationRequestMiddleware<TRequest, TResult>
 {
-    protected override Task Validate(TRequest request, Dictionary<string, List<string>> populate, CancellationToken cancellationToken)
+    protected override Task Validate(
+        TRequest request, 
+        Dictionary<string, List<string>> populate, 
+        CancellationToken cancellationToken
+    )
     {
         var results = new List<ValidationResult>();
         
