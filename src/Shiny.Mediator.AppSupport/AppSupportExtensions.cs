@@ -43,7 +43,7 @@ public static class AppSupportExtensions
     {
         cfg.Services.TryAddSingleton<IOfflineService, OfflineService>();
         cfg.Services.TryAddSingleton<ISerializerService, SerializerService>();
-        cfg.Services.AddSingletonAsImplementedInterfaces<OfflineAvailableFlushRequestHandler>();
+        cfg.Services.AddSingletonAsImplementedInterfaces<OfflineFlushEventHandlers>();
         cfg.AddOpenRequestMiddleware(typeof(OfflineAvailableRequestMiddleware<,>));
         
         return cfg;
