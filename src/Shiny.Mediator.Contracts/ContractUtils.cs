@@ -3,7 +3,7 @@ using System.Reflection;
 namespace Shiny.Mediator;
 
 
-public static class Utils
+public static class ContractUtils
 {
     public static TimestampedResult<T> Timestamped<T>(T result, DateTimeOffset? dt = null)
         => new (dt ?? DateTimeOffset.UtcNow, result);

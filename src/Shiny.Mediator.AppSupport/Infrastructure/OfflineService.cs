@@ -20,7 +20,7 @@ public class OfflineService(IStorageService storage, ISerializerService serializ
 {
     public async Task<string> Set(object request, object result)
     {
-        var requestKey = this.GetRequestKey(request);
+        var requestKey = Utils.GetRequestKey(request);
         await this.DoTransaction(dict =>
         {
             dict[requestKey] = new OfflineStore(
@@ -41,7 +41,7 @@ public class OfflineService(IStorageService storage, ISerializerService serializ
         await this
             .DoTransaction(dict =>
             {
-                var requestKey = this.GetRequestKey(request);
+                var requestKey = Utils.GetRequestKey(request);
                 if (dict.TryGetValue(requestKey, out var store))
                 {
                     var jsonObj = serializer.Deserialize<TResult>(store.Json);
@@ -75,7 +75,7 @@ public class OfflineService(IStorageService storage, ISerializerService serializ
     
     public Task ClearByRequest(object request) => this.DoTransaction(dict =>
     {
-        var requestKey = this.GetRequestKey(request);
+        var requestKey = Utils.GetRequestKey(request);
         if (dict.ContainsKey(requestKey))
         {
             dict.Remove(requestKey);
@@ -111,19 +111,7 @@ public class OfflineService(IStorageService storage, ISerializerService serializ
 
         this.semaphore.Release();
     });
-
     
-    string GetRequestKey(object request)
-    {
-        if (request is IRequestKey keyProvider)
-            return keyProvider.GetKey();
-        
-        var t = request.GetType();
-        var key = $"{t.Namespace}_{t.Name}";
-
-        return key;
-    }
-
 
     string GetTypeKey(Type type) => $"{type.Namespace}.{type.Name}";
 }

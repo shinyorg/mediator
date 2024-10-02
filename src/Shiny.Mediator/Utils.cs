@@ -1,7 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 
-namespace Shiny.Mediator.Infrastructure;
+namespace Shiny.Mediator;
 
 
 public static class Utils
@@ -74,5 +74,17 @@ public static class Utils
                 [ typeof(TEvent), typeof(CancellationToken) ],
                 null
             )!
-            .GetCustomAttribute<TAttribute>();    
+            .GetCustomAttribute<TAttribute>();
+
+
+    public static string GetRequestKey(object request)
+    {
+        if (request is IRequestKey keyProvider)
+            return keyProvider.GetKey();
+        
+        var t = request.GetType();
+        var key = $"{t.Namespace}_{t.Name}";
+
+        return key;
+    }
 }
