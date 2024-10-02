@@ -1,8 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Shiny.Mediator.Infrastructure;
 
-namespace Shiny.Mediator.Impl;
+namespace Shiny.Mediator.Infrastructure.Impl;
 
 
 public class DefaultRequestSender(IServiceProvider services) : IRequestSender

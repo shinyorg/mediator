@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Shiny.Mediator.Impl;
 using Shiny.Mediator.Infrastructure;
+using Shiny.Mediator.Infrastructure.Impl;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;
@@ -52,7 +52,7 @@ public static class MediatorExtensions
             cfg.AddPerformanceLoggingMiddleware();
         }
 
-        services.TryAddSingleton<IMediator, Impl.Mediator>();
+        services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();
         services.TryAddSingleton<IRequestSender, DefaultRequestSender>();
         services.TryAddSingleton<IEventPublisher, DefaultEventPublisher>();
         return services;

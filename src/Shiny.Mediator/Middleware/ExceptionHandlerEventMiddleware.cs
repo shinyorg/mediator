@@ -6,10 +6,8 @@ namespace Shiny.Mediator.Middleware;
 public class ExceptionHandlerEventMiddleware<TEvent>(ILogger<TEvent> logger) : IEventMiddleware<TEvent> where TEvent : IEvent
 {
     public async Task Process(
-        IEvent @event,
-        EventHandlerDelegate next, 
-        IEventHandler<TEvent> eventHandler, 
-        CancellationToken cancellationToken
+        EventExecutionContext<TEvent> context,
+        EventHandlerDelegate next
     )
     {
         try
@@ -18,7 +16,7 @@ public class ExceptionHandlerEventMiddleware<TEvent>(ILogger<TEvent> logger) : I
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error in event {EventType}", @event.GetType().FullName);
+            logger.LogError(ex, "Error in event {EventType}", context.Event.GetType().FullName);
         }
     }
 }

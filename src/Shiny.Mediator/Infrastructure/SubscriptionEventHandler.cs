@@ -1,4 +1,4 @@
-namespace Shiny.Mediator.Impl;
+namespace Shiny.Mediator.Infrastructure;
 
 
 public class SubscriptionEventHandler<TEvent> : IDisposable, IEventHandler<TEvent> where TEvent : IEvent

@@ -1,6 +1,6 @@
 using Shiny.Mediator.Infrastructure;
 
-namespace Shiny.Mediator.Impl;
+namespace Shiny.Mediator.Infrastructure;
 
 
 public class SubscriptionEventCollector : IEventCollector

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Shiny.Mediator.Impl;
+namespace Shiny.Mediator.Infrastructure.Impl;
 
 
 class StreamRequestWrapper<TRequest, TResult> where TRequest : IStreamRequest<TResult>

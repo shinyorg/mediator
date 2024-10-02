@@ -9,13 +9,11 @@ public interface IEventPublisher
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
-    Task Publish<TEvent>(
+    Task<EventAggregatedExecutionContext<TEvent>> Publish<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default
     ) where TEvent : IEvent;
     
-    // Task Publish(object arg, CancellationToken cancellationToken = default)
-
     /// <summary>
     /// 
     /// </summary>

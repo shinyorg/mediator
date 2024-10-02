@@ -1,6 +1,4 @@
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Memory;
-using Shiny.Mediator.Impl;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Middleware;
 
