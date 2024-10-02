@@ -5,7 +5,6 @@ using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
 
-// TODO: pump when connectivity is restored
 
 /// <summary>
 /// Replays the last result before requesting a new one
@@ -14,6 +13,7 @@ namespace Shiny.Mediator.Middleware;
 /// <typeparam name="TResult"></typeparam>
 public class ReplayStreamMiddleware<TRequest, TResult>(
     ILogger<ReplayStreamMiddleware<TRequest, TResult>> logger,
+    IInternetService internet,
     IOfflineService offline,
     IConfiguration configuration
 ) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
@@ -62,11 +62,15 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         if (store != null)
             yield return store.Value;
 
+        if (!internet.IsAvailable)
+            await internet.WaitForAvailable(ct).ConfigureAwait(false);
+        
         var nxt = next().GetAsyncEnumerator(ct);
         while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
         {
             // TODO: if current is null, remove?
             await offline.Set(request, nxt.Current!);
+            
             yield return nxt.Current;
         }
     }
