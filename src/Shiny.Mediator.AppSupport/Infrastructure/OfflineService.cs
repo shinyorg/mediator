@@ -94,7 +94,6 @@ public class OfflineService(IStorageService storage, ISerializerService serializ
 
     SemaphoreSlim semaphore = new(1, 1);
     Dictionary<string, OfflineStore> cache = null!;
-    
     Task DoTransaction(Func<IDictionary<string, OfflineStore>, bool> action) => Task.Run(async () =>
     {
         await this.semaphore.WaitAsync();
@@ -114,7 +113,7 @@ public class OfflineService(IStorageService storage, ISerializerService serializ
     });
 
     
-    protected virtual string GetRequestKey(object request)
+    string GetRequestKey(object request)
     {
         if (request is IRequestKey keyProvider)
             return keyProvider.GetKey();
@@ -126,7 +125,7 @@ public class OfflineService(IStorageService storage, ISerializerService serializ
     }
 
 
-    protected string GetTypeKey(Type type) => $"{type.Namespace}.{type.Name}";
+    string GetTypeKey(Type type) => $"{type.Namespace}.{type.Name}";
 }
 
 record OfflineStore(
