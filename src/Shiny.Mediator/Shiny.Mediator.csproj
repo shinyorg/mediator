@@ -22,11 +22,16 @@
         <None Include="build/Package.targets" 
               Pack="True" 
               PackagePath="build/Shiny.Mediator.targets" />
+
+        <None Include="build/Package.targets"
+              Pack="True"
+              PackagePath="buildTransitive/Shiny.Mediator.targets" />    
     </ItemGroup>
     
     <PropertyGroup>
         <SourceGenBinDir>..\Shiny.Mediator.SourceGenerators\bin\Release\netstandard2.0</SourceGenBinDir>
     </PropertyGroup>
+    
     <ItemGroup>
         <None Include="..\Shiny.Mediator.SourceGenerators\SourceGenerators.targets" 
               Pack="True" 
@@ -34,15 +39,7 @@
 
         <None Include="..\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"
               Pack="True"
-              PackagePath="build/Shiny.Mediator.targets" />
-        
-        <None Include="..\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"
-              Pack="True"
               PackagePath="buildTransitive/Shiny.Mediator.SourceGenerators.targets" />
-        
-        <None Include="..\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"
-              Pack="True"
-              PackagePath="buildTransitive/Shiny.Mediator.targets" />
         
         <None Include="$(SourceGenBinDir)\Shiny.Mediator.SourceGenerators.dll" 
               Pack="true" 
