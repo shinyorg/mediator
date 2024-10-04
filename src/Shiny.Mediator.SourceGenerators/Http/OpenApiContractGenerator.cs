@@ -322,8 +322,8 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
             if (typeName != null)
             {
                 // throw new InvalidOperationException("TypeName is null");
-                sb.AppendLine($"    [System.Text.Json.Serialization.JsonPropertyName(\"{prop.Key}\")]");
-                sb.AppendLine("    public " + typeName + " " + propertyName + " { get; set; }");
+                sb.AppendLine($"    [global::System.Text.Json.Serialization.JsonPropertyName(\"{prop.Key}\")]");
+                sb.AppendLine( "    public " + typeName + " " + propertyName + " { get; set; }");
                 sb.AppendLine();
                 output($"PROPERTY: {propertyName} ({typeName})");
             }
@@ -335,39 +335,3 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         return sb.ToString();
     }
 }
-
-
-// TODO: properties within properties
-/*
-properties:
-   STANDBY:
-     type: object
-     properties:
-       waitTime:
-         type: number
-   SINGLE_RIDER:
-     type: object
-     properties:
-       waitTime:
-         type: number
-         nullable: true
-     required:
-       - waitTime
-   RETURN_TIME:
-     type: object
-     properties:
-       state:
-         $ref: '#/components/schemas/ReturnTimeState'
-       returnStart:
-         type: string
-         format: date-time
-         nullable: true
-       returnEnd:
-         type: string
-         format: date-time
-         nullable: true
-     required:
-       - state
-       - returnStart
-       - returnEnd
- */
