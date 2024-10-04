@@ -4,8 +4,15 @@ using Shiny.Mediator;
 namespace Sample.Blazor.Handlers;
 
 [SingletonHandler]
-public class DoThingRequestHandler(IMediator mediator) : IRequestHandler<DoThing>
+public class DoThingRequestHandler(IMediator mediator) : IRequestHandler<DoThing, int>
 {
-    public Task Handle(DoThing request, CancellationToken cancellationToken)
-        => mediator.Publish(new TheThing(request.Text), cancellationToken);
+    [OfflineAvailable]
+    public async Task<int> Handle(DoThing request, CancellationToken cancellationToken)
+    {
+        var num = new Random().Next(1, 1000000);
+        var value = $"{request.Text} - number: {num}";
+        await mediator.Publish(new TheThing(value), cancellationToken);
+        
+        return num;
+    }
 }

@@ -12,9 +12,14 @@ public class ConfigurationTests(ITestOutputHelper output)
     {
         // TODO: ORDER: config, attribute contract, attribute handler
         // TODO: config order: full type, exact namespace, sub namespace, *
-        var dict = new Dictionary<string, object>();
+
+    }
+
+
+    ConfigurationManager SetupConfig(params (string Key, bool Enabled)[] keys)
+    {
         var config = new ConfigurationManager();
-        // config.AddConfiguration(new MemoryConfigurationProvider(new MemoryConfigurationSource().InitialData));
-        // config.Get("key1").Should().Be("value1");
+        config.AddInMemoryCollection(keys.ToDictionary(x => x.Key, x => x.Enabled.ToString())!);
+        return config;
     }
 }

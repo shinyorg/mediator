@@ -14,26 +14,54 @@ Welcome to your new app.
 
 <input type="text" @bind-value="this.text" />
 <button @onclick="TestSend">Test Send</button>
-
-@if (this.text != null)
+@if (this.resultText != null)
 {
     <br />
-    <text>Text from Mediator: @this.text</text>
+    <text>Result from Mediator: @this.resultText</text>
+}
+@if (this.eventText != null)
+{
+    <br />
+    <text>Event from Mediator: @this.eventText</text>
+}
+@if (this.offlineText != null)
+{
+    <br />
+    <text>Value is from Offline: @this.offlineText</text>
 }
 
 
 @code {
-    string text;
-
+    string? text;
+    string? resultText;
+    string? eventText;
+    string? offlineText;
     
     async Task TestSend()
     {
-        await mediator.Send(new DoThing(this.text));
+        this.eventText = null;
+        this.offlineText = null;
+        this.resultText = null;
+
+        try
+        {
+            var context = await mediator.RequestWithContext(new DoThing(this.text ?? "No Text Sent"));
+            this.resultText = context.Result.ToString();
+            var off = context.Context.Offline();
+            if (off != null)
+                this.offlineText = $"Data From: {off.Timestamp.ToLocalTime():h:mm:ss tt} - Key: {off.RequestKey}";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+        this.text = null;
     }
 
     public Task Handle(TheThing @event, CancellationToken cancellationToken)
     {
         Console.WriteLine("Received TheThing");
+        this.eventText = @event.Text;
         return Task.CompletedTask;
     }
 }

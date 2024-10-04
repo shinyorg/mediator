@@ -1,10 +1,14 @@
 let handler;
 
-window.InternetService = {
+window.MediatorServices = {
+    isOnline: function() {
+        return navigator.onLine;    
+    },
+    
     subscribe: function(interop) {
 
         handler = function() {
-            interop.invokeMethodAsync("InternetService.OnStatusChanged", navigator.onLine);
+            interop.invokeMethodAsync("MediatorServices.OnStatusChanged", navigator.onLine);
         }
 
         window.addEventListener("online", handler);
@@ -17,5 +21,17 @@ window.InternetService = {
 
         window.removeEventListener("online", handler);
         window.removeEventListener("offline", handler);
+    },
+    
+    setStore: function(key, value) {
+        localStorage.setItem(key, value);
+    },
+    
+    getStore: function(key) {
+        return localStorage.getItem(key);
+    },
+    
+    removeStore: function(key) {
+        localStorage.removeItem(key);
     }
 };

@@ -6,10 +6,10 @@ namespace Shiny.Mediator.Blazor.Infrastructure;
 
 public class InternetService(IJSRuntime jsruntime) : IInternetService, IDisposable
 {
-    public bool IsAvailable => ((IJSInProcessRuntime)jsruntime).Invoke<bool>("navigator.onLine");
+    public bool IsAvailable => ((IJSInProcessRuntime)jsruntime).Invoke<bool>("MediatorServices.isOnline");
 
 
-    [JSInvokable("InternetService.OnStatusChanged")]
+    [JSInvokable("MediatorServices.OnStatusChanged")]
     public void OnStatusChanged(bool isOnline)
     {
         if (isOnline)
@@ -24,12 +24,12 @@ public class InternetService(IJSRuntime jsruntime) : IInternetService, IDisposab
             return;
 
         var objRef = DotNetObjectReference.Create(this);
-        ((IJSInProcessRuntime)jsruntime).InvokeVoid("InternetService.subscribe", objRef);
+        ((IJSInProcessRuntime)jsruntime).InvokeVoid("MediatorServices.subscribe", objRef);
         
         this.waitSource = new();
         await this.waitSource.Task.ConfigureAwait(false);
         this.waitSource = null;
     }
 
-    public void Dispose() => ((IJSInProcessRuntime)jsruntime).InvokeVoid("InternetService.unsubscribe");
+    public void Dispose() => ((IJSInProcessRuntime)jsruntime).InvokeVoid("MediatorServices.unsubscribe");
 }
