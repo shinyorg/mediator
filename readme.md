@@ -34,8 +34,9 @@ were aimed more at server scenarios, while also adding some features we feel ben
 - Help remove service overrun and reduce your constructor fat
 - Easy to Unit Test
 - Direct Handler to ASP.NET Core endpoint
+- OpenAPI Contract & Handler Generation
 - Epic Out-of-the-Box Middleware
-  - Offline Caching
+  - Offline Storage
   - Validation with Data Annotations or FluentValidation
   - Caching
   - Resiliency
@@ -48,7 +49,8 @@ were aimed more at server scenarios, while also adding some features we feel ben
   - Registration straight from startup to mediator (we do the minimal api reg for you)
 
 ## Works With
-- .NET MAUI - all platforms
+- .NET MAUI
+- Blazor Web Assembly
+- ASP.NET Core - Handler to Endpoint
 - MVVM Frameworks like Prism, ReactiveUI, & .NET MAUI Shell
-- Blazor - Work In Progress
 - Any other .NET platform - but you'll have to come up with your own "event collector" for the out-of-state stuff
