@@ -6,7 +6,7 @@ public record TestStreamRequest(int SecondsBetween) : IStreamRequest<string>;
 
 // swagger does not work well with async enumerables
 [ScopedHandler]
-[MediatorHttpPost("/stream", Name = "GetStream")]
+[MediatorHttpPost("GetStream", "/stream")]
 public class TheStreamHandler(ILogger<TheStreamHandler> logger) : IStreamRequestHandler<TestStreamRequest, string>
 {
     public async IAsyncEnumerable<string> Handle(TestStreamRequest request, [EnumeratorCancellation] CancellationToken cancellationToken)

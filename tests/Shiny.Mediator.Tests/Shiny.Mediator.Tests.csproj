@@ -34,8 +34,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="Http\test.json"/>
-        <Content Include="Http\test.json" CopyToOutputDirectory="Always" />
+        <None Remove="Http\*.json"/>
+        <Content Include="Http\*.json" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
     <!--

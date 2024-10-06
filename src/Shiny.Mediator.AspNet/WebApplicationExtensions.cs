@@ -339,8 +339,7 @@ public class WebAppMap
 
     static void Visit(RouteHandlerBuilder routeBuilder, MediatorHttpAttribute attribute)
     {
-        if (attribute.Name != null)
-            routeBuilder.WithName(attribute.Name);
+        routeBuilder.WithName(attribute.OperationId);
         
         if (attribute.Summary != null)
              routeBuilder.WithSummary(attribute.Summary);

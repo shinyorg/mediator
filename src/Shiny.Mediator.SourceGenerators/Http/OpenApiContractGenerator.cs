@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.CodeAnalysis;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
@@ -10,7 +11,7 @@ using Microsoft.OpenApi.Readers;
 namespace Shiny.Mediator.SourceGenerators.Http;
 
 
-public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<string> output)
+public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<string, DiagnosticSeverity> output)
 {
     readonly StringBuilder typeBuilder = new();
     readonly StringBuilder contractBuilder = new();
@@ -50,7 +51,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
 
     void GenerateComponents(OpenApiDocument document)
     {
-        output("Generating Components for " + itemConfig.Namespace);
+        output("Generating Components for " + itemConfig.Namespace, DiagnosticSeverity.Info);
         foreach (var schema in document.Components.Schemas)
         {
             this.GenerateComplexType(schema);
@@ -62,18 +63,18 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
     {
         foreach (var path in document.Paths)
         {
-            output("PATH: " + path.Key);
+            output("PATH: " + path.Key, DiagnosticSeverity.Info);
             
             foreach (var op in path.Value.Operations)
             {
                 if (String.IsNullOrWhiteSpace(op.Value.OperationId))
                 {
-                    output("NO OPERATION ID on " + op.Key);
+                    output("NO OPERATION ID on " + op.Key, DiagnosticSeverity.Warning);
                     continue;
                 }
-                output($"OPERATION: {op.Key} - ID: {op.Value.OperationId}");
+                output($"OPERATION: {op.Key} - ID: {op.Value.OperationId}", DiagnosticSeverity.Info);
                 var responseType = this.GetResponseType(op.Value);
-                output($"RESPONSE: {responseType}");
+                output($"RESPONSE: {responseType}", DiagnosticSeverity.Info);
                 
                 var contractName = $"{itemConfig.ContractPrefix}{op.Value.OperationId.Pascalize()}{itemConfig.ContractPostfix}";
                 var httpMethod = op.Key.ToString();
@@ -90,7 +91,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                     this.contractBuilder.AppendLine($"    [global::Shiny.Mediator.Http.HttpParameter(global::Shiny.Mediator.Http.HttpParameterType.{argType}, \"{parameter.Name}\")]");
                     this.contractBuilder.AppendLine($"    public {typeName} {propertyName} {{ get; set; }}");
                     this.contractBuilder.AppendLine();
-                    output($"PROPERTY: {propertyName} ({typeName} - {argType})");
+                    output($"PROPERTY: {propertyName} ({typeName} - {argType})", DiagnosticSeverity.Info);
                 }
 
                 if (op.Value.RequestBody != null)
@@ -104,7 +105,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                         
                         this.contractBuilder.AppendLine($"    [global::Shiny.Mediator.Http.HttpParameter(global::Shiny.Mediator.Http.HttpParameterType.Body)]");
                         this.contractBuilder.AppendLine($"    public {bodyResponseType} Body {{ get; set; }}");
-                        output("BODY: " + bodyResponseType);
+                        output("BODY: " + bodyResponseType, DiagnosticSeverity.Info);
                     }
                 }
                 this.contractBuilder.AppendLine("}");
@@ -209,7 +210,8 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         return type;
     }
     
-    static string GetStringType(OpenApiSchema schema) => schema.Type switch
+    
+    static string GetStringType(OpenApiSchema schema) => schema.Format switch
     {
         "date-time" => "System.DateTimeOffset",
         "uuid" => "System.Guid",
@@ -234,7 +236,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
     
     void GenerateComplexType(KeyValuePair<string, OpenApiSchema> schema)
     {
-        output("COMPONENT: " + schema.Key);
+        output("COMPONENT: " + schema.Key, DiagnosticSeverity.Info);
         var className = schema.Key.Pascalize();
 
         if (schema.Value.Enum.Count > 0)
@@ -254,7 +256,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
     {
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/customize-properties?pivots=dotnet-8-0
         //[JsonConverter(typeof(JsonStringEnumConverter<TYPE>))]        
-        output("ENUM COMPONENT GENERATING - " + enumName);
+        output("ENUM COMPONENT GENERATING - " + enumName, DiagnosticSeverity.Info);
 
         var sb = new StringBuilder();
         sb.AppendLine($"public enum {enumName}");
@@ -262,12 +264,12 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         
         foreach (var ev in schema.Enum.OfType<OpenApiString>())
         {
-            // TODO: pascal case the value
-            output("ENUM VALUE: " + ev.Value);
+            // TODO: pascal case the value - need custom serialization fix though
+            output("ENUM VALUE: " + ev.Value, DiagnosticSeverity.Info);
             sb.AppendLine($"    {ev.Value},");
         }
         sb.AppendLine("}");
-        output("DONE ENUM COMPONENT GENERATING - " + enumName);
+        output("DONE ENUM COMPONENT GENERATING - " + enumName, DiagnosticSeverity.Info);
         
         return sb.ToString();
     }
@@ -275,7 +277,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
 
     string GenerateObject(OpenApiSchema schema, string className)
     {
-        output("===GENERATING CLASS COMPONENT: " + className);
+        output("===GENERATING CLASS COMPONENT: " + className, DiagnosticSeverity.Info);
         var sb = new StringBuilder();
         sb.Append("public partial class " + className);
 
@@ -291,7 +293,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
             var baseType = this.GetSchemaType(schema.AllOf.Single());
             sb.AppendLine($" : {baseType}");
 
-            output($"INHERITED: {className} ({baseType})");
+            output($"INHERITED: {className} ({baseType})", DiagnosticSeverity.Info);
         }
         sb.AppendLine();
         sb.AppendLine("{");
@@ -325,13 +327,13 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                 sb.AppendLine($"    [global::System.Text.Json.Serialization.JsonPropertyName(\"{prop.Key}\")]");
                 sb.AppendLine( "    public " + typeName + " " + propertyName + " { get; set; }");
                 sb.AppendLine();
-                output($"PROPERTY: {propertyName} ({typeName})");
+                output($"PROPERTY: {propertyName} ({typeName})", DiagnosticSeverity.Info);
             }
         }
 
         sb.AppendLine("}");
         
-        output("===DONE GENERATING CLASS COMPONENT: " + className);
+        output("===DONE GENERATING CLASS COMPONENT: " + className, DiagnosticSeverity.Info);
         return sb.ToString();
     }
 }
