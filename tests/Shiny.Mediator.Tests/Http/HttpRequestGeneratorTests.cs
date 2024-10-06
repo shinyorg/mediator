@@ -16,7 +16,7 @@ public class HttpRequestGeneratorTests(ITestOutputHelper output)
             Namespace = nameSpace,
             ContractPostfix = "HttpRequest"
         };
-        var generator = new OpenApiContractGenerator(item, output.WriteLine);
+        var generator = new OpenApiContractGenerator(item, (msg, level) => output.WriteLine(msg));
         var code = generator.Generate(doc);
         
         output.WriteLine(code);
@@ -34,7 +34,7 @@ public class HttpRequestGeneratorTests(ITestOutputHelper output)
             Namespace = nameSpace,
             ContractPostfix = "HttpRequest"
         };
-        var generator = new OpenApiContractGenerator(cfg, output.WriteLine);
+        var generator = new OpenApiContractGenerator(cfg, (msg, level) => output.WriteLine(msg));
         var code = generator.Generate(stream);
     
         output.WriteLine(code);

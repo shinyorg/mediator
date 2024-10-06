@@ -1,7 +1,7 @@
 namespace Sample.Api.Handlers;
 
 [ScopedHandler]
-[MediatorHttpGet("/getthing/{parameter}", Name = "GetThing")]
+[MediatorHttpGet("GetThing", "/getthing/{parameter}")]
 public class GetResultRequestHandler : IRequestHandler<GetThingRequest, string>
 {
     public Task<string> Handle(GetThingRequest request, CancellationToken cancellationToken)
