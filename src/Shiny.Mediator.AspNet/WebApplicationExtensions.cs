@@ -274,36 +274,22 @@ public class WebAppMap
         {
             routerBuilder = app.MapPost(
                 attribute.UriTemplate,
-                async (
+                (
                     [FromServices] IMediator mediator,
                     [FromBody] TRequest request,
                     CancellationToken cancellationToken
-                ) =>
-                {
-                    var result = await mediator
-                        .Request(request, cancellationToken)
-                        .ConfigureAwait(false);
-                    
-                    return Results.Ok(result);
-                }
+                ) => mediator.Request(request, cancellationToken)
             );
         }
         else if (attribute.Method == HttpMethod.Put)
         {
             routerBuilder = app.MapGet(
                 attribute.UriTemplate,
-                async (
+                (
                     [FromServices] IMediator mediator,
                     [FromBody] TRequest request,
                     CancellationToken cancellationToken
-                ) =>
-                {
-                    var result = await mediator
-                        .Request(request, cancellationToken)
-                        .ConfigureAwait(false);
-
-                    return Results.Ok(result);
-                }
+                ) => mediator.Request(request, cancellationToken)
             );
         }
         else if (attribute.Method == HttpMethod.Get)
