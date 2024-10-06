@@ -1,25 +1,25 @@
 namespace Shiny.Mediator;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class MediatorHttpGetAttribute(string uriTemplate) : MediatorHttpAttribute(uriTemplate, HttpMethod.Get);
+public class MediatorHttpGetAttribute(string operationId, string uriTemplate) : MediatorHttpAttribute(operationId, uriTemplate, HttpMethod.Get);
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class MediatorHttpDeleteAttribute(string uriTemplate) : MediatorHttpAttribute(uriTemplate, HttpMethod.Delete);
+public class MediatorHttpDeleteAttribute(string operationId, string uriTemplate) : MediatorHttpAttribute(operationId, uriTemplate, HttpMethod.Delete);
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class MediatorHttpPostAttribute(string uriTemplate) : MediatorHttpAttribute(uriTemplate, HttpMethod.Post);
+public class MediatorHttpPostAttribute(string operationId, string uriTemplate) : MediatorHttpAttribute(operationId, uriTemplate, HttpMethod.Post);
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class MediatorHttpPutAttribute(string uriTemplate) : MediatorHttpAttribute(uriTemplate, HttpMethod.Put);
+public class MediatorHttpPutAttribute(string operationId, string uriTemplate) : MediatorHttpAttribute(operationId, uriTemplate, HttpMethod.Put);
 
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class MediatorHttpAttribute(string uriTemplate, HttpMethod httpMethod) : Attribute
+public class MediatorHttpAttribute(string operationId, string uriTemplate, HttpMethod httpMethod) : Attribute
 {
     public string UriTemplate => uriTemplate;
     public HttpMethod Method => httpMethod;
-    
-    public string? Name { get; set; }
+
+    public string OperationId => operationId;
     public bool RequiresAuthorization { get; set; }
     public string[]? AuthorizationPolicies { get; set; }
     public string? DisplayName { get; set; }
