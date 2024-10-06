@@ -210,7 +210,8 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         return type;
     }
     
-    static string GetStringType(OpenApiSchema schema) => schema.Type switch
+    
+    static string GetStringType(OpenApiSchema schema) => schema.Format switch
     {
         "date-time" => "System.DateTimeOffset",
         "uuid" => "System.Guid",
@@ -263,7 +264,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         
         foreach (var ev in schema.Enum.OfType<OpenApiString>())
         {
-            // TODO: pascal case the value
+            // TODO: pascal case the value - need custom serialization fix though
             output("ENUM VALUE: " + ev.Value, DiagnosticSeverity.Info);
             sb.AppendLine($"    {ev.Value},");
         }
