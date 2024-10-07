@@ -10,6 +10,27 @@ namespace Shiny.Mediator;
 public static class MauiExtensions
 {
     /// <summary>
+    /// Easier path to add Shiny Mediator to Maui
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="configAction"></param>
+    /// <param name="includeStandardMiddleware"></param>
+    /// <returns></returns>
+    public static MauiAppBuilder AddShinyMediator(
+        this MauiAppBuilder builder,
+        Action<ShinyConfigurator>? configAction = null,
+        bool includeStandardMiddleware = true
+    )
+    {
+        builder.Services.AddShinyMediator(cfg =>
+        {
+            cfg.UseMaui(includeStandardMiddleware);
+            configAction?.Invoke(cfg);
+        });
+        return builder;
+    }
+    
+    /// <summary>
     /// Adds Maui Event Collector to mediator
     /// </summary>
     /// <param name="cfg"></param>
