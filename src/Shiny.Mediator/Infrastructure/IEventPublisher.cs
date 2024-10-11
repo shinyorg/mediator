@@ -6,12 +6,14 @@ public interface IEventPublisher
     /// 
     /// </summary>
     /// <param name="event"></param>
+    /// <param name="executeInParallel"></param>
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
     Task<EventAggregatedExecutionContext<TEvent>> Publish<TEvent>(
         TEvent @event,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        bool executeInParallel = true
     ) where TEvent : IEvent;
     
     /// <summary>

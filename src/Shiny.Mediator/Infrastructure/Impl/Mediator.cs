@@ -47,8 +47,11 @@ public class Mediator(
     public ExecutionResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(IStreamRequest<TResult> request, CancellationToken cancellationToken = default)
         => requestSender.RequestWithContext(request, cancellationToken);
 
-    public Task<EventAggregatedExecutionContext<TEvent>> Publish<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : IEvent
-        => eventPublisher.Publish(@event, cancellationToken);
+    public Task<EventAggregatedExecutionContext<TEvent>> Publish<TEvent>(
+        TEvent @event, 
+        CancellationToken cancellationToken = default,
+        bool executeInParallel = true
+    ) where TEvent : IEvent => eventPublisher.Publish(@event, cancellationToken, executeInParallel);
 
     public IDisposable Subscribe<TEvent>(Func<TEvent, CancellationToken, Task> action) where TEvent : IEvent
         => eventPublisher.Subscribe(action);

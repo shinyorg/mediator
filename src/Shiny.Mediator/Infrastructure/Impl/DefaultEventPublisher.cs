@@ -14,7 +14,8 @@ public class DefaultEventPublisher(
     
     public async Task<EventAggregatedExecutionContext<TEvent>> Publish<TEvent>(
         TEvent @event, 
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        bool executeInParallel = true
     ) where TEvent : IEvent
     {
         // allow registered services to be transient/scoped/singleton
@@ -45,10 +46,18 @@ public class DefaultEventPublisher(
                 list.Add(econtext);
             })
             .ToList();
-        
-        await Task
-            .WhenAll(tasks)
-            .ConfigureAwait(false);
+
+        if (executeInParallel)
+        {
+            await Task
+                .WhenAll(tasks)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            foreach (var task in tasks)
+                await task.ConfigureAwait(false);
+        }
 
         return context;
     }
