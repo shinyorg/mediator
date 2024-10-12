@@ -12,18 +12,38 @@ public partial class Mediator
         return context.Result;
     }
 
-    
-    public ExecutionResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(IStreamRequest<TResult> request, CancellationToken cancellationToken = default)
-        => this.StreamCore<IStreamRequest<TResult>, TResult>(request, cancellationToken);
 
-
-    ExecutionResult<IAsyncEnumerable<TResult>> StreamCore<TRequest, TResult>(TRequest request, CancellationToken cancellationToken) where TRequest : IStreamRequest<TResult>
+    public ExecutionResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
+        IStreamRequest<TResult> request,
+        CancellationToken cancellationToken = default
+    )
     {
-        var requestHandler = services.GetService<IStreamRequestHandler<TRequest, TResult>>();
+        var scope = services.CreateScope();
+        var wrapperType = typeof(StreamRequestWrapper<,>).MakeGenericType([request.GetType(), typeof(TResult)]);
+        var wrapper = (IStreamRequestWrapper<TResult>)Activator.CreateInstance(wrapperType, [scope.ServiceProvider, request, cancellationToken]);
+        var execution = wrapper.Handle();
+        return execution;
+    }
+}
+
+public interface IStreamRequestWrapper<TResult>
+{
+    ExecutionResult<IAsyncEnumerable<TResult>> Handle();
+}
+
+public class StreamRequestWrapper<TRequest, TResult>(
+    IServiceProvider scope,
+    TRequest request,
+    CancellationToken cancellationToken
+) : IStreamRequestWrapper<TResult> where TRequest : IStreamRequest<TResult>
+{
+    public ExecutionResult<IAsyncEnumerable<TResult>> Handle()
+    {
+        var requestHandler = scope.GetService<IStreamRequestHandler<TRequest, TResult>>();
         if (requestHandler == null)
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
 
-        var logger = services.GetRequiredService<ILogger<TRequest>>();
+        var logger = scope.GetRequiredService<ILogger<TRequest>>();
         var handlerExec = new StreamRequestHandlerDelegate<TResult>(() =>
         {
             logger.LogDebug(
@@ -34,7 +54,7 @@ public partial class Mediator
         });
 
         var context = new ExecutionContext<TRequest>(request, requestHandler, cancellationToken);
-        var middlewares = services.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
+        var middlewares = scope.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
         var enumerable = middlewares
             .Reverse()
             .Aggregate(
@@ -53,7 +73,7 @@ public partial class Mediator
             )
             .Invoke();
         
+        // TODO: scope can't die until the enumerable is done - how to handle this?
         return new ExecutionResult<IAsyncEnumerable<TResult>>(context, enumerable);
     }
-
 }
