@@ -4,9 +4,20 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-class StreamRequestWrapper<TRequest, TResult> where TRequest : IStreamRequest<TResult>
+public partial class Mediator
 {
-    public ExecutionResult<IAsyncEnumerable<TResult>> Handle(IServiceProvider services, TRequest request, CancellationToken cancellationToken)
+    public IAsyncEnumerable<TResult> Request<TResult>(IStreamRequest<TResult> request, CancellationToken cancellationToken = default)
+    {
+        var context = this.RequestWithContext(request, cancellationToken);
+        return context.Result;
+    }
+
+    
+    public ExecutionResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(IStreamRequest<TResult> request, CancellationToken cancellationToken = default)
+        => this.StreamCore<IStreamRequest<TResult>, TResult>(request, cancellationToken);
+
+
+    ExecutionResult<IAsyncEnumerable<TResult>> StreamCore<TRequest, TResult>(TRequest request, CancellationToken cancellationToken) where TRequest : IStreamRequest<TResult>
     {
         var requestHandler = services.GetService<IStreamRequestHandler<TRequest, TResult>>();
         if (requestHandler == null)
@@ -44,4 +55,5 @@ class StreamRequestWrapper<TRequest, TResult> where TRequest : IStreamRequest<TR
         
         return new ExecutionResult<IAsyncEnumerable<TResult>>(context, enumerable);
     }
+
 }

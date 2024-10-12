@@ -4,16 +4,12 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-public class DefaultEventPublisher(
-    IServiceProvider services, 
-    IEnumerable<IEventCollector> collectors
-) : IEventPublisher
+public partial class Mediator
 {
     readonly SubscriptionEventCollector subscriptions = new();
 
-    
     public async Task<EventAggregatedExecutionContext<TEvent>> Publish<TEvent>(
-        TEvent @event, 
+        TEvent @event,
         CancellationToken cancellationToken = default,
         bool executeInParallel = true
     ) where TEvent : IEvent
@@ -21,28 +17,37 @@ public class DefaultEventPublisher(
         // allow registered services to be transient/scoped/singleton
         using var scope = services.CreateScope();
         var handlers = scope.ServiceProvider.GetServices<IEventHandler<TEvent>>().ToList();
-        
+           
         // "covariance" event publishing chain
         // typeof(TEvent).BaseType == typeof(object) // loop on basetype until object
         //typeof(TEvent).BaseType.GetInterfaces().Any(x => x == typeof(IEvent)); // must be implementing IEvent although it wouldn't have been able to compile anyhow
         //var globalHandlers = scope.ServiceProvider.GetServices<IEventHandler<IEvent>>().ToList(); // global handlers
-        
+           
         AppendHandlersIf(handlers, this.subscriptions);
         foreach (var collector in collectors)
             AppendHandlersIf(handlers, collector);
 
         var list = new List<EventExecutionContext<TEvent>>();
         var context = new EventAggregatedExecutionContext<TEvent>(list);
-        
+           
         if (handlers.Count == 0)
             return context;
 
         var logger = services.GetRequiredService<ILogger<TEvent>>();
         var middlewares = scope.ServiceProvider.GetServices<IEventMiddleware<TEvent>>().ToList();
         var tasks = handlers
-            .Select(async x =>
+            .Select(async handler =>
             {
-                var econtext = await Execute(@event, x, logger, middlewares, cancellationToken).ConfigureAwait(false);
+                var econtext = await this
+                    .PublishCore(
+                        @event, 
+                        handler, 
+                        logger, 
+                        middlewares,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
+                
                 list.Add(econtext);
             })
             .ToList();
@@ -62,16 +67,15 @@ public class DefaultEventPublisher(
         return context;
     }
 
-    
     public IDisposable Subscribe<TEvent>(Func<TEvent, CancellationToken, Task> action) where TEvent : IEvent
     {
         var handler = new SubscriptionEventHandler<TEvent>(this.subscriptions);
         handler.OnHandle = action;
         return handler;
     }
-
-
-    static async Task<EventExecutionContext<TEvent>> Execute<TEvent>(
+    
+    
+    async Task<EventExecutionContext<TEvent>> PublishCore<TEvent>(
         TEvent @event,
         IEventHandler<TEvent> eventHandler, 
         ILogger logger,
@@ -80,7 +84,7 @@ public class DefaultEventPublisher(
     ) where TEvent : IEvent
     {
         var context = new EventExecutionContext<TEvent>(@event, eventHandler, cancellationToken);
-        
+           
         var handlerDelegate = new EventHandlerDelegate(() =>
         {
             logger.LogDebug(
@@ -89,7 +93,7 @@ public class DefaultEventPublisher(
             );
             return eventHandler.Handle(context.Event, context.CancellationToken);
         });
-        
+           
         await middlewares
             .Reverse()
             .Aggregate(
@@ -100,7 +104,7 @@ public class DefaultEventPublisher(
                         "Executing event middleware {MiddlewareType}",
                         middleware.GetType().FullName
                     );
-                    
+                       
                     return middleware.Process(context, next);
                 }
             )

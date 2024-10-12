@@ -11,20 +11,6 @@ public sealed class ShinyConfigurator(IServiceCollection services)
 
     public bool ExcludeDefaultMiddleware { get; set; }
     
-    
-    public ShinyConfigurator SetRequestSender<TRequestSender>() where TRequestSender : class, IRequestSender
-    {
-        this.Services.AddSingleton<IRequestSender, TRequestSender>();
-        return this;
-    }
-    
-    
-    public ShinyConfigurator SetEventPublisher<TEventPublisher>() where TEventPublisher : class, IEventPublisher
-    {
-        this.Services.AddSingleton<IEventPublisher, TEventPublisher>();
-        return this;
-    }
-
 
     public ShinyConfigurator AddHttpClient()
     {
