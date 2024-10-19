@@ -11,11 +11,9 @@ public interface ISerializerService
 
 public class SerializerService : ISerializerService
 {
-    readonly JsonSerializerOptions jsonOptions;
-
-    public SerializerService(JsonSerializerOptions? options = null)
+    public SerializerService()
     {
-        this.jsonOptions = options ?? new JsonSerializerOptions
+        this.JsonOptions = new JsonSerializerOptions
         {
             Converters =
             {
@@ -24,15 +22,18 @@ public class SerializerService : ISerializerService
         };
     }
     
+    
+    public JsonSerializerOptions JsonOptions { get; set; }
+    
     public string Serialize<T>(T obj)
     {
-        var json = JsonSerializer.Serialize(obj, this.jsonOptions);
+        var json = JsonSerializer.Serialize(obj, this.JsonOptions);
         return json;
     }
 
     public T Deserialize<T>(string json)
     {
-        var obj = JsonSerializer.Deserialize<T>(json, this.jsonOptions)!;
+        var obj = JsonSerializer.Deserialize<T>(json, this.JsonOptions)!;
         return obj;
     }
 }
