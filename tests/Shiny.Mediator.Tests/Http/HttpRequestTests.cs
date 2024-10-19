@@ -1,4 +1,5 @@
 using Shiny.Mediator.Http;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Tests;
 
@@ -16,7 +17,8 @@ public class HttpRequestTests
             TheValue = path,
             QueryValue = query
         };
-        var handler = new TestHttpRequestHandler<MyHttpResultRequest, HttpResult>(null!, null!);
+        var serializer = new SerializerService();
+        var handler = new TestHttpRequestHandler<MyHttpResultRequest, HttpResult>(null!, serializer, null!);
         var message = handler.GetMessage(request, "https://test.com");
         message.RequestUri.Should().Be(expectedUri);
     }
