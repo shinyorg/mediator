@@ -88,7 +88,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                     var argType = parameter.In == ParameterLocation.Path ? "Path" : "Query";
                     var typeName = this.GetSchemaType(parameter.Schema);
                     var propertyName = parameter.Name.Pascalize();
-                    this.contractBuilder.AppendLine($"    [global::Shiny.Mediator.Http.HttpParameter(global::Shiny.Mediator.Http.HttpParameterType.{argType}, \"{parameter.Name}\")]");
+                    this.contractBuilder.AppendLine($"    [global::Shiny.Mediator.Http.HttpParameterAttribute(global::Shiny.Mediator.Http.HttpParameterType.{argType}, \"{parameter.Name}\")]");
                     this.contractBuilder.AppendLine($"    public {typeName} {propertyName} {{ get; set; }}");
                     this.contractBuilder.AppendLine();
                     output($"PROPERTY: {propertyName} ({typeName} - {argType})", DiagnosticSeverity.Info);
