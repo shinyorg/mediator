@@ -11,7 +11,14 @@ public sealed class ShinyConfigurator(IServiceCollection services)
 
     public bool ExcludeDefaultMiddleware { get; set; }
     
+    
+    public ShinyConfigurator SetSerializer<TSerializer>() where TSerializer : class, ISerializerService
+    {
+        this.Services.AddSingleton<ISerializerService, TSerializer>();
+        return this;
+    }
 
+    
     public ShinyConfigurator AddHttpClient()
     {
         this.Services.Add(new ServiceDescriptor(

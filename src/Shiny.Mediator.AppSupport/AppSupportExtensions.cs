@@ -8,13 +8,6 @@ namespace Shiny.Mediator;
 
 public static class AppSupportExtensions
 {
-    public static ShinyConfigurator SetSerializer<TSerializer>(this ShinyConfigurator cfg) where TSerializer : class, ISerializerService
-    {
-        cfg.Services.AddSingleton<ISerializerService, TSerializer>();
-        return cfg;
-    }
-
-    
     /// <summary>
     /// Adds standard app support middleware - offline, replay stream, & user notification
     /// </summary>
