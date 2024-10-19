@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -51,10 +52,9 @@ public static class MediatorExtensions
             cfg.AddEventExceptionHandlingMiddleware();
             cfg.AddPerformanceLoggingMiddleware();
         }
-
+        
+        services.TryAddSingleton<ISerializerService, SerializerService>();
         services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();
-        services.TryAddSingleton<IRequestSender, DefaultRequestSender>();
-        services.TryAddSingleton<IEventPublisher, DefaultEventPublisher>();
         return services;
     }
     
@@ -86,20 +86,9 @@ public static class MediatorExtensions
         => configurator.AddOpenRequestMiddleware(typeof(DataAnnotationsRequestMiddleware<,>));
     
     
-    /// <summary>
-    /// Transforms result to a timestamped values
-    /// </summary>
-    /// <param name="handler"></param>
-    /// <param name="result"></param>
-    /// <param name="dt"></param>
-    /// <typeparam name="TRequest"></typeparam>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
-    public static TimestampedResult<TResult> ToTimestamp<TRequest, TResult>(this IRequestHandler<TRequest, TResult> handler, TResult result, DateTimeOffset? dt = null) where TRequest : IRequest<TResult>
-        => new (dt ?? DateTimeOffset.UtcNow, result);
-
-    
-    public static IServiceCollection AddSingletonAsImplementedInterfaces<TImplementation>(this IServiceCollection services) where TImplementation : class
+    public static IServiceCollection AddSingletonAsImplementedInterfaces<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.Interfaces)] TImplementation
+    >(this IServiceCollection services) where TImplementation : class
     {
         var interfaceTypes = typeof(TImplementation).GetInterfaces();
         if (interfaceTypes.Length == 0)
@@ -113,7 +102,13 @@ public static class MediatorExtensions
     }
     
     
-    public static IServiceCollection AddScopedAsImplementedInterfaces<TImplementation>(this IServiceCollection services) where TImplementation : class
+    public static IServiceCollection AddScopedAsImplementedInterfaces<
+        [DynamicallyAccessedMembers(
+            DynamicallyAccessedMemberTypes.PublicConstructors | 
+            DynamicallyAccessedMemberTypes.NonPublicConstructors | 
+            DynamicallyAccessedMemberTypes.Interfaces
+        )] TImplementation
+    >(this IServiceCollection services) where TImplementation : class
     {
         var interfaceTypes = typeof(TImplementation).GetInterfaces();
         if (interfaceTypes.Length == 0)

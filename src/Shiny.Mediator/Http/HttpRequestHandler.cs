@@ -10,6 +10,7 @@ namespace Shiny.Mediator.Http;
 
 public class HttpRequestHandler<TRequest, TResult>(
     IConfiguration configuration,
+    ISerializerService serializer,
     IEnumerable<IHttpRequestDecorator<TRequest, TResult>> decorators
 ) : IRequestHandler<TRequest, TResult> where TRequest : IHttpRequest<TResult>
 {
@@ -46,7 +47,7 @@ public class HttpRequestHandler<TRequest, TResult>(
                 .ReadAsStringAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            finalResult = JsonSerializer.Deserialize<TResult>(stringResult)!;
+            finalResult = serializer.Deserialize<TResult>(stringResult)!;
         }
         return finalResult!;
     }
