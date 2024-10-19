@@ -50,7 +50,6 @@ public static class AppSupportExtensions
     public static ShinyConfigurator AddOfflineAvailabilityMiddleware(this ShinyConfigurator cfg)
     {
         cfg.Services.TryAddSingleton<IOfflineService, OfflineService>();
-        cfg.Services.TryAddSingleton<ISerializerService, SerializerService>();
         cfg.Services.AddSingletonAsImplementedInterfaces<OfflineFlushEventHandlers>();
         cfg.AddOpenRequestMiddleware(typeof(OfflineAvailableRequestMiddleware<,>));
         

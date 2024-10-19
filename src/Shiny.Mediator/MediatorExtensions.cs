@@ -52,7 +52,8 @@ public static class MediatorExtensions
             cfg.AddEventExceptionHandlingMiddleware();
             cfg.AddPerformanceLoggingMiddleware();
         }
-
+        
+        services.TryAddSingleton<ISerializerService, SerializerService>();
         services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();
         return services;
     }
