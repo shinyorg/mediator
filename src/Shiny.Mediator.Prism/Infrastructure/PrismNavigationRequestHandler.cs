@@ -8,12 +8,20 @@ public class PrismNavigationRequestHandler<TRequest>(IGlobalNavigationService na
         var pn = request.NavigationParameterName ?? request.GetType().Name;
         var nav = request.Navigator ?? navigator;
         var tcs = new TaskCompletionSource();
+        var navParams = new NavigationParameters();
+        navParams.Add(pn, request);
+        
+        if (request.IsModal)
+            navParams.Add(KnownNavigationParameters.UseModalNavigation, true);
+        
+        if (request.IsAnimated ?? true)
+            navParams.Add(KnownNavigationParameters.Animated, true);
         
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             try
             {
-                var result = await nav.NavigateAsync(request.PageUri, (pn, request));
+                var result = await nav.NavigateAsync(request.PageUri, navParams);
                 if (!result.Success)
                     throw new InvalidOperationException("Failed to Navigate", result.Exception);
                 
