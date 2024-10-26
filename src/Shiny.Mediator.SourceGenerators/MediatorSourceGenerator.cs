@@ -25,23 +25,23 @@ public class MediatorSourceGenerator : ISourceGenerator
                 // </auto-generated>
                 #nullable disable
                 
-                [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class SingletonHandlerAttribute : System.Attribute
+                [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
+                internal sealed class SingletonHandlerAttribute : global::System.Attribute
                 {
                 }
                 
-                [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class ScopedHandlerAttribute : System.Attribute
+                [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
+                internal sealed class ScopedHandlerAttribute : global::System.Attribute
                 {
                 }
                 
-                [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class SingletonMiddlewareAttribute : System.Attribute
+                [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
+                internal sealed class SingletonMiddlewareAttribute : global::System.Attribute
                 {
                 }
                 
-                [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class ScopedMiddlewareAttribute : System.Attribute
+                [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
+                internal sealed class ScopedMiddlewareAttribute : global::System.Attribute
                 {
                 }
                 """,
@@ -54,7 +54,7 @@ public class MediatorSourceGenerator : ISourceGenerator
     
     public void Execute(GeneratorExecutionContext context)
     {
-        if (!(context.SyntaxContextReceiver is SyntaxReceiver))
+        if (context.SyntaxContextReceiver is not RegisterHandlerAttributeSyntaxReceiver)
             return;
 
         // TODO: detect double registration of request handlers?
