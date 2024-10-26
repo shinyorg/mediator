@@ -8,7 +8,10 @@ public class PrismNavigationRequestHandler<TRequest>(IGlobalNavigationService na
         var pn = request.NavigationParameterName ?? request.GetType().Name;
         var nav = request.Navigator ?? navigator;
         var tcs = new TaskCompletionSource();
+        
+        var navUri = request.PrependedNavigationUri + request.PageUri;
         var navParams = new NavigationParameters();
+        
         navParams.Add(pn, request);
         
         if (request.IsModal)
@@ -21,7 +24,7 @@ public class PrismNavigationRequestHandler<TRequest>(IGlobalNavigationService na
         {
             try
             {
-                var result = await nav.NavigateAsync(request.PageUri, navParams);
+                var result = await nav.NavigateAsync(navUri, navParams);
                 if (!result.Success)
                     throw new InvalidOperationException("Failed to Navigate", result.Exception);
                 

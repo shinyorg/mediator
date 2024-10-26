@@ -1,7 +1,10 @@
 namespace Shiny.Mediator;
 
+// TODO: what about dialogs?
 public interface IPrismNavigationRequest : IRequest
 {
+    // contract can choose to open these up
+    string? PrependedNavigationUri { get; }
     string PageUri { get; }
     string? NavigationParameterName { get; }
     bool? IsAnimated { get; }  
