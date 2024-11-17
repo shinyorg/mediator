@@ -1,4 +1,4 @@
-namespace Shiny.Mediator.Server.Client;
+namespace Shiny.Mediator.Server;
 
 public interface IServerEvent : IEvent
 {

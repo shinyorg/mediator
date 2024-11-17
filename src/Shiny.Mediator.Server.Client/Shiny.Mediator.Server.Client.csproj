@@ -16,6 +16,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj" />
+      <ProjectReference Include="..\Shiny.Mediator.Server.Core\Shiny.Mediator.Server.Core.csproj" />
       <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj" />
     </ItemGroup>
 </Project>

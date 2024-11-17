@@ -1,5 +1,5 @@
-using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.SignalR;
+using Shiny.Mediator.Server.Infrastructure;
 
 namespace Shiny.Mediator.Server;
 
@@ -7,22 +7,20 @@ namespace Shiny.Mediator.Server;
 public class MediatorHub : Hub
 {
     // TODO: return response
-    public async Task Request()
-    {
-        // TODO: handler must be online or return error
-        
-    }
-
-
-    public async Task Publish(EventRequest eventRequest)
+    public async Task Push(ServerMessage message)
     {
         // TODO: if scheduled, send to registered inboxes
-        // TODO: if registration not online, send to inbox 
-        // this.Clients.Group(eventRequest.EventType).SendAsync(eventRequest);
+        
+        // if request
+            // TODO: handler must be online or return error
+            
+        // if event
+            // this.Clients.Group(eventRequest.EventType).SendAsync(eventRequest);
+            // TODO: if 1 or more clusters registered are not online, send to inbox 
     }
+
     
-    
-    public async Task Register(AppRegistration register)
+    public async Task Register(ClusterRegistration register)
     {
         // TODO: data store - clear out all event registrations
         // TODO: reregister for events incoming
@@ -39,16 +37,3 @@ public class MediatorHub : Hub
         // TODO: send any events that remain in inbox that have not expired
     }    
 }
-
-public record AppRegistration(
-    string AppIdentifier,
-    string[] OwnedCommandTypes,
-    string[] EventTypes
-);
-
-public record EventRequest(
-    string EventType,
-    JsonObject Payload,
-    DateTimeOffset? ScheduledTime,
-    DateTimeOffset? ExpiresAt
-);
