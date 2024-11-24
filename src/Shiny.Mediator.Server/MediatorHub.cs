@@ -4,7 +4,7 @@ using Shiny.Mediator.Server.Infrastructure;
 namespace Shiny.Mediator.Server;
 
 
-public class MediatorHub : Hub
+public class MediatorHub(IDataStore store) : Hub
 {
     // TODO: return response
     public async Task Push(ServerMessage message)
@@ -25,7 +25,9 @@ public class MediatorHub : Hub
         // TODO: data store - clear out all event registrations
         // TODO: reregister for events incoming
         // TODO: add event types to group for perf push
-        foreach (var e in register.EventTypes)
+            // TODO: delete any event inboxes that aren't in this latest batch (and registrations)
+            // TODO: don't just clear all inboxes and recreate as messages will be lost
+        foreach (var e in register.SubscribedEventTypes)
         {
             await this.Groups.AddToGroupAsync(this.Context.ConnectionId, e);
         }

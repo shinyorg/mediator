@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
     <PropertyGroup>
-        <TargetFrameworks>$(TargetFrameworks);net8.0-ios</TargetFrameworks>
-        <TargetFrameworks>$(TargetFrameworks);net8.0-android</TargetFrameworks>
-        <TargetFrameworks>$(TargetFrameworks);net8.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks);net9.0-ios</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks);net9.0-android</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks);net9.0-maccatalyst</TargetFrameworks>
         <IosSimulatorBuild Condition="'$(Configuration)' == 'Debug'">False</IosSimulatorBuild>
 
-        <MauiVersion>8.0.91</MauiVersion>
+        <MauiVersion>9.0.10</MauiVersion>
         <OutputType>Exe</OutputType>
         <RootNamespace>Sample</RootNamespace>
         <SingleProject>true</SingleProject>
@@ -31,7 +31,7 @@
     <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
         <DefineConstants>$(DefineConstants);PLATFORM</DefineConstants>
         <SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
-        <TargetPlatformVersion>34</TargetPlatformVersion>
+        <TargetPlatformVersion>35</TargetPlatformVersion>
         <!--
         <EmbedAssembliesIntoApk Condition="'$(Configuration)' == 'Debug'">true</EmbedAssembliesIntoApk>
         <AndroidPackageFormats Condition="'$(Configuration)' == 'Release'">aab</AndroidPackageFormats>
@@ -41,7 +41,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' OR $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
-        <SupportedOSPlatformVersion>14.2</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
         <DefineConstants>$(DefineConstants);APPLE;PLATFORM</DefineConstants>
     </PropertyGroup>
 
@@ -57,7 +57,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
-        <SupportedOSPlatformVersion>14.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
         <DefineConstants>$(DefineConstants);APPLE;PLATFORM</DefineConstants>
 
         <UseHardenedRuntime Condition="'$(Configuration)' == 'Release'">true</UseHardenedRuntime>
@@ -96,11 +96,11 @@
     </ItemGroup>
     
     <ItemGroup>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.1"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" Condition="'$(Configuration)' == 'Debug'"/>
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" Condition="'$(Configuration)' == 'Debug'" />
 
         <PackageReference Include="Prism.DryIoc.Maui" Version="9.0.537"/>
         <PackageReference Include="sqlite-net-pcl" Version="1.9.172"/>

@@ -10,7 +10,7 @@ public class MemoryDataStore : IDataStore
     readonly List<MessageError> errors = new();
     
     
-    public Task Queue(Message message)
+    public Task Queue(Message message, CancellationToken cancellationToken)
     {
         lock (this.inbox)
         {
@@ -20,7 +20,7 @@ public class MemoryDataStore : IDataStore
         return Task.CompletedTask;
     }
 
-    public Task FailExpiredMessages()
+    public Task FailExpiredMessages(CancellationToken cancellationToken)
     {
         lock (this.inbox)
         {
@@ -38,7 +38,7 @@ public class MemoryDataStore : IDataStore
     }
     
 
-    public Task<IEnumerable<Message>> GetInboxMessages(string cluster)
+    public Task<IEnumerable<Message>> GetInboxMessages(string cluster, CancellationToken cancellationToken)
     {
         lock (this.inbox)
         {
@@ -53,7 +53,7 @@ public class MemoryDataStore : IDataStore
         }
     }
 
-    public Task MarkProcessed(Guid messageId)
+    public Task MarkProcessed(Guid messageId, CancellationToken cancellationToken)
     {
         lock (this.inbox)
         {
@@ -69,7 +69,7 @@ public class MemoryDataStore : IDataStore
     }
     
 
-    public Task ProcessError(Guid messageId, Exception exception)
+    public Task ProcessError(Guid messageId, Exception exception, CancellationToken cancellationToken)
     {
         lock (this.inbox)
         {

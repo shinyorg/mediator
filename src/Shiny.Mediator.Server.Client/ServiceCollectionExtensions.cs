@@ -9,7 +9,24 @@ public static class ServiceCollectionExtensions
     public static ShinyConfigurator AddRemoteBus(this ShinyConfigurator configurator)
     {
         configurator.Services.AddHostedService<RemoteBackgroundService>();
-        // TODO: namespace/contracts to a specific address?
+        configurator.Services.AddSingleton(configurator.Services);
+        
+        
+        // TODO: create a mediator options hub with contract to uri maps
+        // TODO: contract collector scans all registered request & event handlers existings HERE
+        // TODO: if a contract type handler is found without a configuration, we warn or error depending on config
+            // TODO: we should only be looking at server bound specific handlers!!
+        // TODO: log/consolewrite all handler to URIs
+            
+        // TODO: background task turns on and hooks REQUEST against remote hub server for each unique URL and request handler
+        // TODO: background task registers with HUB and ensures hub likes requests
+            // TODO: hub will begin pushing any scheduled requests (that haven't expired)
+            // and events (that haven't expired) IF the app is still interested in those events
+        // TODO: background task hooks all EVENT handlers against remote hub server for each unique URL
+        // TODO: background task executes mediator for each incoming request
+            // TODO: if mediator errors, we report back to hub
+            // TODO: we should report back to the server with execution time?
+            
         return configurator;
     }
 }

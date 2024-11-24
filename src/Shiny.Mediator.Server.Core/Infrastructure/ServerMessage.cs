@@ -9,4 +9,5 @@ public class ServerMessage
     public JsonObject Payload { get; set; }
     public DateTimeOffset? Expires { get; set; }
     public DateTimeOffset? DateScheduled { get; set; }
+    public bool IsEvent { get; set; }
 }

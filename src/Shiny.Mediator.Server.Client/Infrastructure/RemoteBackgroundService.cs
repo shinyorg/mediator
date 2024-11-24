@@ -1,14 +1,17 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
+using Shiny.Mediator.Server.Infrastructure;
 
 namespace Shiny.Mediator.Server.Client.Infrastructure;
 
 
-public class RemoteBackgroundService(IServiceProvider services, IOptions<MediatorRemoteOptions> options) : BackgroundService
+public class RemoteBackgroundService(IServiceCollection services) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // TODO: configuration
+        // TODO: connection per distinct URI
         var conn = new HubConnectionBuilder()
             .WithUrl("http://localhost:5000")
             .WithServerTimeout(TimeSpan.FromSeconds(10))
@@ -26,10 +29,17 @@ public class RemoteBackgroundService(IServiceProvider services, IOptions<Mediato
         {
 
         });
-        await conn.SendAsync("Register", new
-        {
 
-        });
+        
+        
+
+
+        
+        // await conn.SendAsync("Register", new ClusterRegistration(
+        //     "TODO",
+        //     handledRequests.ToArray(),
+        //     subEventTypes.ToArray()
+        // ));
 
         // TODO: for all command handlers, register as owner
         // TODO: for all event handlers, register to receive
