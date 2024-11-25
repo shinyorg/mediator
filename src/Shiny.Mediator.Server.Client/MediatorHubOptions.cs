@@ -1,6 +1,8 @@
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Shiny.Mediator.Server.Client;
+
 
 public class MediatorHubOptions
 {
@@ -62,47 +64,36 @@ public class MediatorHubOptions
 
     public Uri? GetUriForContract(Type contractType)
     {
-        if (this.specificMaps.TryGetValue(contractType, out Uri? uri))
+        if (this.specificMaps.TryGetValue(contractType, out Uri uri))
             return uri;
         
-        // TODO: do wildcard searching on partial namespaces
         // https://stackoverflow.com/questions/42130564/string-comparison-with-wildcard-search-in-c-sharp
-
-        if (this.assemblies.TryGetValue(contractType.Assembly, out Uri? uri2))
+        if (this.TryGetUriForContract(contractType, out Uri uri2))
             return uri2;
+        
+        if (this.assemblies.TryGetValue(contractType.Assembly, out Uri uri3))
+            return uri3;
         
         return null;
     }
-    
-    
 
-    /*
-Often, wild cards operate with two type of jokers:
-       
-     ? - any character  (one and only one)
-     * - any characters (zero or more)
-   so you can easily convert these rules into appropriate regular expression:
-   
-   // If you want to implement both "*" and "?"
-   private static String WildCardToRegular(String value) {
-     return "^" + Regex.Escape(value).Replace("\\?", ".").Replace("\\*", ".*") + "$"; 
-   }
-   
-   // If you want to implement "*" only
-   private static String WildCardToRegular(String value) {
-     return "^" + Regex.Escape(value).Replace("\\*", ".*") + "$"; 
-   }
-   And then you can use Regex as usual:
-   
-     String test = "Some Data X";
-   
-     Boolean endsWithEx = Regex.IsMatch(test, WildCardToRegular("*X"));
-     Boolean startsWithS = Regex.IsMatch(test, WildCardToRegular("S*"));
-     Boolean containsD = Regex.IsMatch(test, WildCardToRegular("*D*"));
-   
-     // Starts with S, ends with X, contains "me" and "a" (in that order) 
-     Boolean complex = Regex.IsMatch(test, WildCardToRegular("S*me*a*X"));
- */
-    
-    //https://learn.microsoft.com/en-us/dotnet/api/microsoft.visualbasic.compilerservices.likeoperator.likestring?view=netcore-3.1#moniker-applies-to
+
+    bool TryGetUriForContract(Type contractType, out Uri uri)
+    {
+        uri = null;
+        var ns = contractType.Namespace!;
+        foreach (var map in this.namespaces)
+        {
+            var found = Regex.IsMatch(ns, WildCardToRegular(map.Key));
+            if (found)
+            {
+                uri = map.Value;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static string WildCardToRegular(string value) 
+        => "^" + Regex.Escape(value).Replace("\\*", ".*") + "$";
 }
