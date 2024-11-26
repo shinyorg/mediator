@@ -21,12 +21,12 @@ public class MediaHubOptionsTests
     {
         var options = new MediatorHubOptions();
         options.Map<CollectorTestEvent>(new Uri("http://type-specific"));
-        
+
         options.GetUriForContract(typeof(CollectorTestEvent)).Should().Be("http://type-specific");
         options.GetUriForContract(typeof(CollectorTestRequest)).Should().BeNull();
     }
 
-    
+
     [Theory]
     [InlineData(typeof(CollectorTestRequest), "Shiny.Mediator.*", true)]
     [InlineData(typeof(CollectorTestRequest), "Shiny.Mediator", false)]

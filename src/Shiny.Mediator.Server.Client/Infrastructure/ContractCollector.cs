@@ -22,8 +22,8 @@ public class ContractCollector(IServiceCollection services) : IContractCollector
             if (service.ImplementationType != null)
             {
                 // what about generic implementors - we also only want remote services here
-                var requestContract = service.ImplementationType.GetRequestContract();
-                var eventContract = service.ImplementationType.GetEventContract();
+                var requestContract = service.ImplementationType.GetServerRequestContract();
+                var eventContract = service.ImplementationType.GetServerEventContract();
                 
                 if (requestContract != null)
                     yield return requestContract;
