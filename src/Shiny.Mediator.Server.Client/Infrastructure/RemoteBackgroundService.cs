@@ -6,35 +6,17 @@ using Shiny.Mediator.Server.Infrastructure;
 namespace Shiny.Mediator.Server.Client.Infrastructure;
 
 
-public class RemoteBackgroundService(IServiceCollection services) : BackgroundService
+public class RemoteBackgroundService(IConnectionManager connectionManager) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // TODO: configuration
-        // TODO: connection per distinct URI
-        var conn = new HubConnectionBuilder()
-            .WithUrl("http://localhost:5000")
-            .WithServerTimeout(TimeSpan.FromSeconds(10))
-            .WithStatefulReconnect()
-            .WithKeepAliveInterval(TimeSpan.FromSeconds(10))
-            .WithAutomaticReconnect()
-            .Build();
-        
-        await conn.StartAsync(stoppingToken);
-        conn.On("Command", async () =>
-        {
+        await connectionManager.Start();
 
-        });
-        conn.On("Event", async () =>
-        {
-
-        });
-
-        
-        
+        // TODO: hook each hub
 
 
-        
+
+
         // await conn.SendAsync("Register", new ClusterRegistration(
         //     "TODO",
         //     handledRequests.ToArray(),

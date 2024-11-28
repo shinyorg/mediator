@@ -12,11 +12,27 @@ public class MediatorHubOptions
     
     // TODO: work as a white list, first found = good
     public bool TreatMissingMappingsAsErrors { get; set; } = true;
+
+
+    public IEnumerable<Uri> GetUniqueUris()
+    {
+        var list = new List<Uri>();
+        if (this.specificMaps.Count > 0)
+            list.AddRange(this.specificMaps.Values);
+
+        if (this.namespaces.Count > 0)
+            list.AddRange(this.namespaces.Values);
+        
+        if (this.assemblies.Count > 0)
+            list.AddRange(this.assemblies.Values);
+        
+        return list.Distinct();
+    }
     
     
     public MediatorHubOptions Map(Assembly assembly, Uri uri)
     {
-        if (this.assemblies.TryGetValue(assembly, out var existing))
+        if (this.assemblies.ContainsKey(assembly))
             throw new InvalidOperationException($"Assembly '{assembly.FullName}' already registered");
         
         this.assemblies.Add(assembly, uri);
@@ -34,7 +50,7 @@ public class MediatorHubOptions
     /// <exception cref="InvalidOperationException"></exception>
     public MediatorHubOptions Map(string partialOrFullNamespace, Uri uri)
     {
-        if (this.namespaces.TryGetValue(partialOrFullNamespace, out var existing))
+        if (this.namespaces.ContainsKey(partialOrFullNamespace))
             throw new InvalidOperationException($"Namespace '{partialOrFullNamespace}' already registered");
         
         this.namespaces.Add(partialOrFullNamespace, uri);

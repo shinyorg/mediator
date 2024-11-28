@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Server.Client.Infrastructure;
 
 namespace Shiny.Mediator;
@@ -9,6 +10,10 @@ public static class ServiceCollectionExtensions
     public static ShinyConfigurator AddRemoteBus(this ShinyConfigurator configurator)
     {
         configurator.Services.AddHostedService<RemoteBackgroundService>();
+        configurator.Services.TryAddSingleton<IConnectionManager, ConnectionManager>();
+        
+        // TODO: what about events?
+        configurator.Services.AddSingleton(typeof(IRequestHandler<,>), typeof(RemoteRequestHandler<,>));
         configurator.Services.AddSingleton(configurator.Services);
         
         

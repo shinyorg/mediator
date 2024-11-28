@@ -21,6 +21,8 @@ public class ContractCollector(IServiceCollection services) : IContractCollector
         {
             if (service.ImplementationType != null)
             {
+                // TODO: must exclude all shiny internal handlers (obviously & especially RemoteRequestHandler)
+                // TODO: must match to APP specific handler in scope
                 // what about generic implementors - we also only want remote services here
                 var requestContract = service.ImplementationType.GetServerRequestContract();
                 var eventContract = service.ImplementationType.GetServerEventContract();

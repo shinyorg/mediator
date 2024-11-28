@@ -12,10 +12,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Server.Client\Shiny.Mediator.Server.Client.csproj" />
         <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.AspNet\Shiny.Mediator.AspNet.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\Sample.Server.Contracts\Sample.Server.Contracts.csproj" />
     </ItemGroup>
 </Project>
