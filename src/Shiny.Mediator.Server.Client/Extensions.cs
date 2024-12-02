@@ -41,16 +41,31 @@ static class Extensions
         return null;
     }
 
+    
+    public static bool IsRequest(this Type type) => type
+        .GetInterfaces()
+        .Any(x => 
+            x.IsGenericType && 
+            x.GetGenericTypeDefinition() == typeof(IServerRequest<>)
+        );
 
-    public static bool IsContractType(this Type type)
-    {
-        // TODO: cannot be multiple contract types for server
-        if (type.IsAssignableTo(typeof(IServerEvent)))
-            return true;
 
-        if (type.IsAssignableTo(typeof(IServerRequest<>)))
-            return true;
+    public static bool IsEvent(this Type type) => type
+        .GetInterfaces()
+        .Any(x => 
+            x.IsGenericType && 
+            x.GetGenericTypeDefinition() == typeof(IServerEvent)
+        );
 
-        return false;
-    }
+    // public static bool IsContractType(this Type type)
+    // {
+    //     // TODO: cannot be multiple contract types for server
+    //     if (type.IsAssignableTo(typeof(IServerEvent)))
+    //         return true;
+    //
+    //     if (type.IsAssignableTo(typeof(IServerRequest<>)))
+    //         return true;
+    //
+    //     return false;
+    // }
 }

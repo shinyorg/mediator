@@ -6,68 +6,59 @@ namespace Shiny.Mediator.Server.Client.Infrastructure;
 
 public interface IConnectionManager
 {
-    Task Start();
+    IReadOnlyList<HubConnection> Connections { get; }
     Task<ServerResult> Send(Type contractType, ServerMessage message, CancellationToken token = default);
 }
 
 
-public class ConnectionManager(
-    MediatorHubOptions options,
-    ILogger<IConnectionManager> logger
-) : IConnectionManager
+public class ConnectionManager : IConnectionManager
 {
     readonly Dictionary<Uri, HubConnection> connections = new();
-    public async Task Start()
+    readonly MediatorServerConfig options;
+    readonly ILogger logger;
+
+    public ConnectionManager(    
+        MediatorServerConfig options,
+        ILogger<IConnectionManager> logger
+    )
     {
-        var tasks = options
-            .GetUniqueUris()
-            .Select(this.CreateHubConn)
-            .ToList();
+        this.options = options;
+        this.logger = logger;
         
-        await Task.WhenAll(tasks);
-        logger.LogInformation("Connection Manager Started - " + tasks.Count);
+        options
+            .GetUniqueUris()
+            .ToList()
+            .ForEach(this.CreateHubConn);
+
+        this.Connections = this.connections.Values.ToList();
     }
 
 
-    async Task CreateHubConn(Uri uri)
+    void CreateHubConn(Uri uri)
     {
-        try
-        {
-            var conn = new HubConnectionBuilder()
-                .WithUrl(uri.ToString())
-                .WithServerTimeout(TimeSpan.FromSeconds(10))
-                .WithStatefulReconnect()
-                .WithKeepAliveInterval(TimeSpan.FromSeconds(10))
-                .WithAutomaticReconnect()
-                .Build();
+        var conn = new HubConnectionBuilder()
+            .WithUrl(uri.ToString())
+            .WithServerTimeout(TimeSpan.FromSeconds(10))
+            .WithStatefulReconnect()
+            .WithKeepAliveInterval(TimeSpan.FromSeconds(10))
+            .WithAutomaticReconnect()
+            .Build();
 
-            logger.LogInformation("Starting Connection: " + uri);
-            await conn.StartAsync(); // TODO: even if this errors, add it and try starting again later
-            
-            // TODO: get events & requests for uri
-            // TODO: register & hooks
-            this.connections.Add(uri, conn);
-        }
-        catch (Exception ex)
-        {
-            // TODO: do we try again later or fail out right away?
-            logger.LogError(ex, "Failed to connect to hub");
-        }
+        this.connections.Add(uri, conn);
     }
 
-    
+
+    public IReadOnlyList<HubConnection> Connections { get; }
+
     public Task<ServerResult> Send(Type contractType, ServerMessage message, CancellationToken token = default)
     {
-        var uri = options.GetUriForContract(contractType);
+        var uri = this.options.GetUriForContract(contractType);
         if (uri == null)
-            throw new InvalidOperationException("");
+            throw new InvalidOperationException("No connection for " + uri);
 
         if (!this.connections.TryGetValue(uri, out HubConnection conn))
-            throw new InvalidOperationException("");
+            throw new InvalidOperationException("No connection for " + uri);
 
         return conn.InvokeAsync<ServerResult>("Send", message, token);
     }
-    
-    
-    
 }

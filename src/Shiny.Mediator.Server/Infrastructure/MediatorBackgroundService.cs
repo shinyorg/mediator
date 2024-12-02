@@ -18,6 +18,7 @@ public class MediatorBackgroundService(
         try
         {
             this.timer.Stop();
+            logger.LogInformation("Clearing expired messages");
             using (var scope = services.CreateScope())
             {
                 var store = scope.ServiceProvider.GetRequiredService<IDataStore>();
@@ -29,7 +30,7 @@ public class MediatorBackgroundService(
         }
         catch (Exception ex)
         {
-
+            logger.LogError(ex, "Error writing expired messages");
         }
         finally
         {
@@ -40,6 +41,7 @@ public class MediatorBackgroundService(
     
     public Task StartAsync(CancellationToken cancellationToken)
     {
+        this.timer.Interval = TimeSpan.FromMinutes(1).TotalMilliseconds;
         this.timer.Elapsed += this.TimerOnElapsed;
         this.timer.Start();
         return Task.CompletedTask;

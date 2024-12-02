@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
-        <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0"/>
+        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj" />
+        <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
     </ItemGroup>
 
 </Project>

@@ -1,18 +1,53 @@
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Shiny.Mediator.Server.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Server.Client.Infrastructure;
 
 
-public class RemoteBackgroundService(IConnectionManager connectionManager) : BackgroundService
+public class RemoteBackgroundService(
+    ILogger<RemoteBackgroundService> logger,
+    MediatorServerConfig config,
+    IConnectionManager connectionManager,
+    IContractCollector collector
+) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await connectionManager.Start();
+        // await connectionManager.Start();
 
+        var types = collector.Collect();
+
+        // TODO: should I register each type individually since connection is a stream
+        foreach (var type in types)
+        {
+            var contractUri = config.GetUriForContract(type);
+            if (type.IsEvent())
+            {
+                
+            }
+            else if (type.IsRequest())
+            {
+                
+            }
+        }
+
+        foreach (var conn in connectionManager.Connections)
+        {
+            // TODO: keep trying to reconnect
+            // conn.On("Request", async _ =>)
+            // conn.On("Event")
+            // await conn.StartAsync(stoppingToken);
+            // await conn.SendAsync("Register", null, stoppingToken);
+        }
+        
         // TODO: hook each hub
+            // TODO: command so we know how to respond
+            // TODO: event
+                // TODO: should we just always respond? 
+                // TODO: likely yes so errors can be tracked
+        // TODO: register
+        
 
 
 

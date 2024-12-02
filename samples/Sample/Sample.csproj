@@ -138,5 +138,5 @@
                       Visible="false" />
     </ItemGroup>
     
-    <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"/>
+    <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets" />
 </Project>

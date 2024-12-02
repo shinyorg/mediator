@@ -2,6 +2,7 @@ using Shiny.Mediator.Server.Models;
 
 namespace Shiny.Mediator.Server.Infrastructure;
 
+
 public class MemoryDataStore : IDataStore
 {
     readonly List<Message> inbox = new();
@@ -20,6 +21,7 @@ public class MemoryDataStore : IDataStore
         return Task.CompletedTask;
     }
 
+    
     public Task FailExpiredMessages(CancellationToken cancellationToken)
     {
         lock (this.inbox)
@@ -53,6 +55,7 @@ public class MemoryDataStore : IDataStore
         }
     }
 
+    
     public Task MarkProcessed(Guid messageId, CancellationToken cancellationToken)
     {
         lock (this.inbox)

@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 namespace Shiny.Mediator.Server.Client;
 
 
-public class MediatorHubOptions
+public class MediatorServerConfig
 {
     readonly Dictionary<Type, Uri> specificMaps = new();
     readonly Dictionary<string, Uri> namespaces = new();
@@ -14,6 +14,10 @@ public class MediatorHubOptions
     public bool TreatMissingMappingsAsErrors { get; set; } = true;
 
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public IEnumerable<Uri> GetUniqueUris()
     {
         var list = new List<Uri>();
@@ -30,7 +34,14 @@ public class MediatorHubOptions
     }
     
     
-    public MediatorHubOptions Map(Assembly assembly, Uri uri)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="assembly"></param>
+    /// <param name="uri"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public MediatorServerConfig Map(Assembly assembly, Uri uri)
     {
         if (this.assemblies.ContainsKey(assembly))
             throw new InvalidOperationException($"Assembly '{assembly.FullName}' already registered");
@@ -48,7 +59,7 @@ public class MediatorHubOptions
     /// <param name="uri"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public MediatorHubOptions Map(string partialOrFullNamespace, Uri uri)
+    public MediatorServerConfig Map(string partialOrFullNamespace, Uri uri)
     {
         if (this.namespaces.ContainsKey(partialOrFullNamespace))
             throw new InvalidOperationException($"Namespace '{partialOrFullNamespace}' already registered");
@@ -65,12 +76,12 @@ public class MediatorHubOptions
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public MediatorHubOptions Map<T>(Uri uri)
+    public MediatorServerConfig Map<T>(Uri uri)
     {
-        if (!typeof(T).IsContractType())
-            throw new InvalidOperationException($"Type '{typeof(T).FullName}' is not a Mediator IEvent or IRequest");
+        // if (!typeof(T).IsContractType())
+        //     throw new InvalidOperationException($"Type '{typeof(T).FullName}' is not a Mediator IEvent or IRequest");
         
-        if (this.specificMaps.TryGetValue(typeof(T), out var requestType))
+        if (this.specificMaps.ContainsKey(typeof(T)))
             throw new InvalidOperationException($"Type '{typeof(T).FullName}' already registered");
         
         this.specificMaps.Add(typeof(T), uri);
@@ -78,6 +89,11 @@ public class MediatorHubOptions
     }
     
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="contractType"></param>
+    /// <returns></returns>
     public Uri? GetUriForContract(Type contractType)
     {
         if (this.specificMaps.TryGetValue(contractType, out Uri uri))
@@ -110,6 +126,7 @@ public class MediatorHubOptions
         return false;
     }
 
+    
     static string WildCardToRegular(string value) 
         => "^" + Regex.Escape(value).Replace("\\*", ".*") + "$";
 }

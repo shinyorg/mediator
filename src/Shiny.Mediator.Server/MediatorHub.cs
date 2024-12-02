@@ -1,10 +1,12 @@
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Server.Infrastructure;
 
 namespace Shiny.Mediator.Server;
 
 
-public class MediatorHub(IDataStore store) : Hub
+public class MediatorHub(ILogger<MediatorHub> logger, IDataStore store) : Hub
 {
     // TODO: return response
     public async Task Push(ServerMessage message)
@@ -22,6 +24,9 @@ public class MediatorHub(IDataStore store) : Hub
     
     public async Task Register(ClusterRegistration register)
     {
+        var ipAddress = this.Context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString();
+        
+        logger.LogInformation("Registering Client from IP: " + ipAddress);
         // TODO: data store - clear out all event registrations
         // TODO: reregister for events incoming
         // TODO: add event types to group for perf push

@@ -8,7 +8,7 @@ public class MediaHubOptionsTests
     [Fact]
     public void TypeFoundInAssembly()
     {
-        var options = new MediatorHubOptions();
+        var options = new MediatorServerConfig();
         options.Map(typeof(CollectorTestEvent).Assembly, new Uri("http://assembly"));
 
         options.GetUriForContract(typeof(CollectorTestEvent)).Should().Be("http://assembly");
@@ -19,7 +19,7 @@ public class MediaHubOptionsTests
     [Fact]
     public void SpecificTypeFound()
     {
-        var options = new MediatorHubOptions();
+        var options = new MediatorServerConfig();
         options.Map<CollectorTestEvent>(new Uri("http://type-specific"));
 
         options.GetUriForContract(typeof(CollectorTestEvent)).Should().Be("http://type-specific");
@@ -34,7 +34,7 @@ public class MediaHubOptionsTests
     [InlineData(typeof(CollectorTestRequest), "*", true)]
     public void NamespaceSearchFound(Type contractType, string namespaceValue, bool expectedFind)
     {
-        var options = new MediatorHubOptions();
+        var options = new MediatorServerConfig();
         options.Map(namespaceValue, new Uri("http://namespace"));
 
         var type = options.GetUriForContract(contractType);
