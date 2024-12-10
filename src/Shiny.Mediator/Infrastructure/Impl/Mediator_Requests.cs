@@ -1,4 +1,3 @@
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -7,14 +6,7 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 
 public partial class Mediator
 {
-    public async Task<TResult> Request<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default)
-    {
-        var context = await this.RequestWithContext(request, cancellationToken).ConfigureAwait(false);
-        return context.Result;
-    }
-
-
-    public async Task<ExecutionResult<TResult>> RequestWithContext<TResult>(
+    public virtual async Task<ExecutionResult<TResult>> RequestWithContext<TResult>(
         IRequest<TResult> request,
         CancellationToken cancellationToken = default
     )

@@ -8,7 +8,7 @@ public partial class Mediator
 {
     readonly SubscriptionEventCollector subscriptions = new();
 
-    public async Task<EventAggregatedExecutionContext<TEvent>> Publish<TEvent>(
+    public virtual async Task<EventAggregatedExecutionContext<TEvent>> Publish<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default,
         bool executeInParallel = true

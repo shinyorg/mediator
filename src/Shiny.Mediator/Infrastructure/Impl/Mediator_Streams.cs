@@ -6,14 +6,7 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 
 public partial class Mediator
 {
-    public IAsyncEnumerable<TResult> Request<TResult>(IStreamRequest<TResult> request, CancellationToken cancellationToken = default)
-    {
-        var context = this.RequestWithContext(request, cancellationToken);
-        return context.Result;
-    }
-
-
-    public ExecutionResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
+    public virtual ExecutionResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default
     )

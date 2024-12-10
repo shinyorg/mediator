@@ -11,7 +11,7 @@ Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
         var hubUri = new Uri("http://localhost:1999/mediator");
-        services.AddShinyMediator(cfg => cfg.AddRemoteBus(y => y
+        services.AddShinyMediator(cfg => cfg.AddRemote(y => y
             .Map<ChatEvent>(hubUri)
             .Map<TwoRequest>(hubUri)
         ));

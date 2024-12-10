@@ -4,18 +4,6 @@
 public interface IMediator
 {
     /// <summary>
-    /// Request data from a message
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
-    Task<TResult> Request<TResult>(
-        IRequest<TResult> request,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
     /// This will send a request and return the context of the request with the result
     /// </summary>
     /// <param name="request"></param>
@@ -38,18 +26,6 @@ public interface IMediator
         CancellationToken cancellationToken = default
     ) where TRequest : IRequest;
   
-    /// <summary>
-    /// Requests a stream of data from a message
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
-    IAsyncEnumerable<TResult> Request<TResult>(
-        IStreamRequest<TResult> request,
-        CancellationToken cancellationToken = default
-    );
-    
     /// <summary>
     /// Requests a stream of data from a message
     /// </summary>
