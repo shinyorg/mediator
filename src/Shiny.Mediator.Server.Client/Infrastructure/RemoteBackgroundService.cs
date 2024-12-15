@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Server.Infrastructure;
@@ -10,27 +11,29 @@ public class RemoteBackgroundService(
     ILogger<RemoteBackgroundService> logger,
     IMediator mediator,
     MediatorServerConfig config,
-    IConnectionManager connectionManager,
-    IContractCollector collector
+    IServiceCollection services,
+    IConnectionManager connectionManager
 ) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // await connectionManager.Start();
 
-        var types = collector.Collect();
-
-        // TODO: should I register each type individually since connection is a stream
-        foreach (var type in types)
+        foreach (var service in services)
         {
-            var contractUri = config.GetUriForContract(type);
-            if (type.IsEvent())
+            if (service.ImplementationType != null)
             {
+                // TODO: must exclude all shiny internal handlers (obviously & especially RemoteRequestHandler)
+                // TODO: must match to APP specific handler in scope
+                // what about generic implementors - we also only want remote services here
+                var requestContract = service.ImplementationType.GetServerRequestContract();
+                var eventContract = service.ImplementationType.GetServerEventContract();
                 
-            }
-            else if (type.IsRequest())
-            {
-                
+                // if (requestContract != null)
+                //     yield return requestContract;
+                //
+                // if (eventContract != null)
+                //     yield return eventContract;
             }
         }
 
