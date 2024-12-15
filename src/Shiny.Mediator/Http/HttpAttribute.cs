@@ -5,6 +5,7 @@ public class HttpAttribute(HttpVerb httpVerb, string route) : Attribute
 {
     public HttpVerb Verb => httpVerb;
     public string Route => route;
+    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(10);
 }
 
 

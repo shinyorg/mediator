@@ -31,7 +31,11 @@ public class HttpRequestHandler<TRequest, TResult>(
         var httpRequest = this.ContractToHttpRequest(request, http, baseUri);
         await this.Decorate(request, httpRequest).ConfigureAwait(false);
 
-        var result = await this.Send(httpRequest, cancellationToken).ConfigureAwait(false);
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(http.Timeout);
+
+        await using var _ = cancellationToken.Register(() => cts.Cancel());
+        var result = await this.Send(httpRequest, cts.Token).ConfigureAwait(false);
         return result;
     }
     
