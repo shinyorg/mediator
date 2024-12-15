@@ -42,6 +42,7 @@ public class HttpRequestHandler<TRequest, TResult>(
         cts.CancelAfter(timeout);
         await using var _ = cancellationToken.Register(() => cts.Cancel());
 
+        TResult finalResult = default!;
         try
         {
             var response = await this.httpClient
@@ -49,7 +50,7 @@ public class HttpRequestHandler<TRequest, TResult>(
                 .ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
-            TResult finalResult = default!;
+            
             if (typeof(TResult) != typeof(Unit))
             {
                 var stringResult = await response
@@ -60,14 +61,13 @@ public class HttpRequestHandler<TRequest, TResult>(
                 logger.LogDebug("Raw Result: " + stringResult);
                 finalResult = serializer.Deserialize<TResult>(stringResult)!;
             }
-
-            return finalResult!;
         }
         catch (TaskCanceledException ex)
         {
             if (!cancellationToken.IsCancellationRequested)
                 throw new TimeoutException("HTTP Request timed out", ex);
         }
+        return finalResult;
     }
     
 
