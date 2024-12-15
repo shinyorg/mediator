@@ -31,42 +31,43 @@ public class HttpRequestHandler<TRequest, TResult>(
         var httpRequest = this.ContractToHttpRequest(request, http, baseUri);
         await this.Decorate(request, httpRequest).ConfigureAwait(false);
 
-        using var cts = new CancellationTokenSource();
-        cts.CancelAfter(http.Timeout);
+        var result = await this.Send(httpRequest, http.Timeout, cancellationToken).ConfigureAwait(false);
+        return result;
+    }
+    
 
+    protected virtual async Task<TResult> Send(HttpRequestMessage httpRequest, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(timeout);
         await using var _ = cancellationToken.Register(() => cts.Cancel());
+
         try
         {
-            var result = await this.Send(httpRequest, cts.Token).ConfigureAwait(false);
-            return result;
+            var response = await this.httpClient
+                .SendAsync(httpRequest, cancellationToken)
+                .ConfigureAwait(false);
+
+            response.EnsureSuccessStatusCode();
+            TResult finalResult = default!;
+            if (typeof(TResult) != typeof(Unit))
+            {
+                var stringResult = await response
+                    .Content
+                    .ReadAsStringAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                logger.LogDebug("Raw Result: " + stringResult);
+                finalResult = serializer.Deserialize<TResult>(stringResult)!;
+            }
+
+            return finalResult!;
         }
         catch (TaskCanceledException ex)
         {
             if (!cancellationToken.IsCancellationRequested)
                 throw new TimeoutException("HTTP Request timed out", ex);
         }
-    }
-    
-
-    protected virtual async Task<TResult> Send(HttpRequestMessage httpRequest, CancellationToken cancellationToken)
-    {
-        var response = await this.httpClient
-            .SendAsync(httpRequest, cancellationToken)
-            .ConfigureAwait(false);
-        
-        response.EnsureSuccessStatusCode();
-        TResult finalResult = default!;
-        if (typeof(TResult) != typeof(Unit))
-        {
-            var stringResult = await response
-                .Content
-                .ReadAsStringAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            logger.LogDebug("Raw Result: " + stringResult);
-            finalResult = serializer.Deserialize<TResult>(stringResult)!;
-        }
-        return finalResult!;
     }
     
 
