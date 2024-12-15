@@ -59,19 +59,37 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
     )
     {
         var store = await offline.Get<TResult>(request);
-        if (store != null)
+        if (store != null) // TODO: I need context here to ship out date
             yield return store.Value;
 
         if (!internet.IsAvailable)
             await internet.WaitForAvailable(ct).ConfigureAwait(false);
         
-        var nxt = next().GetAsyncEnumerator(ct);
-        while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
+        var nxt = this.TryNext(next, ct);
+        if (nxt != null)
         {
-            // TODO: if current is null, remove?
-            await offline.Set(request, nxt.Current!);
-            
-            yield return nxt.Current;
+            while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
+            {
+                await offline.Set(request, nxt.Current!);
+
+                yield return nxt.Current;
+            }
+        }
+    }
+
+    IAsyncEnumerator<TResult>? TryNext(
+        StreamRequestHandlerDelegate<TResult> next, 
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            return next().GetAsyncEnumerator(cancellationToken);
+        }
+        catch (TimeoutException ex)
+        {
+            logger.LogWarning(ex, "ReplayStream Timeout");
+            return null;
         }
     }
 }
