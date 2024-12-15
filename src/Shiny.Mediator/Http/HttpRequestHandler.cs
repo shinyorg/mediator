@@ -3,12 +3,14 @@ using System.Text;
 using System.Text.Json;
 using System.Web;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Http;
 
 
 public class HttpRequestHandler<TRequest, TResult>(
+    ILogger<HttpRequestHandler<TRequest, TResult>> logger,
     IConfiguration configuration,
     ISerializerService serializer,
     IEnumerable<IHttpRequestDecorator<TRequest, TResult>> decorators
@@ -24,6 +26,8 @@ public class HttpRequestHandler<TRequest, TResult>(
             throw new InvalidOperationException("HttpAttribute not specified on request");
         
         var baseUri = this.GetBaseUri(request);
+        logger.LogDebug("Base URI: " + baseUri);
+        
         var httpRequest = this.ContractToHttpRequest(request, http, baseUri);
         await this.Decorate(request, httpRequest).ConfigureAwait(false);
 
@@ -47,6 +51,7 @@ public class HttpRequestHandler<TRequest, TResult>(
                 .ReadAsStringAsync(cancellationToken)
                 .ConfigureAwait(false);
 
+            logger.LogDebug("Raw Result: " + stringResult);
             finalResult = serializer.Deserialize<TResult>(stringResult)!;
         }
         return finalResult!;
@@ -57,6 +62,7 @@ public class HttpRequestHandler<TRequest, TResult>(
     {
         foreach (var decorator in decorators)
         {
+            logger.LogDebug("Decorating " + decorator.GetType().Name);
             await decorator
                 .Decorate(httpRequest, request)
                 .ConfigureAwait(false);
@@ -78,8 +84,9 @@ public class HttpRequestHandler<TRequest, TResult>(
     protected virtual HttpRequestMessage ContractToHttpRequest(TRequest request, HttpAttribute attribute, string baseUri)
     {
         var httpMethod = ToMethod(attribute.Verb);
-        var httpRequest = new HttpRequestMessage(httpMethod, baseUri);
+        logger.LogDebug("HTTP Method: " + httpMethod);
         
+        var httpRequest = new HttpRequestMessage(httpMethod, baseUri);
         var properties = request
             .GetType()
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -111,12 +118,14 @@ public class HttpRequestHandler<TRequest, TResult>(
                             uri += uri.Contains('?') ? "&" : "?";
                             uri += $"{parameterName}={eq}";
                         }
-
                         break;
                 
                     case HttpParameterType.Header:
                         if (propertyValue != null)
+                        {
+                            logger.LogDebug($"Header: {parameterName} - Value: {propertyValue}");
                             httpRequest.Headers.Add(parameterName, propertyValue);
+                        }
                         break;
                 
                     case HttpParameterType.Body:
@@ -126,6 +135,7 @@ public class HttpRequestHandler<TRequest, TResult>(
                         
                         var json = JsonSerializer.Serialize(propertyValue);
                         httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                        logger.LogDebug("HTTP Body: " + json);
                         break;
                 }
             }
@@ -134,6 +144,7 @@ public class HttpRequestHandler<TRequest, TResult>(
         if (uri.Contains("{") && uri.Contains("}"))
             throw new InvalidOperationException("Not all route parameters satisfied");
         
+        logger.LogDebug($"URI: {uri}");
         httpRequest.RequestUri = new Uri(uri);
         return httpRequest;
     }
@@ -148,6 +159,7 @@ public class HttpRequestHandler<TRequest, TResult>(
         if (String.IsNullOrWhiteSpace(cfg.Value))
             throw new InvalidOperationException("Base URI empty for: " + request.GetType().FullName);
         
+        logger.LogDebug("Base URI: " + cfg.Value);
         return cfg.Value;
     }
 }
