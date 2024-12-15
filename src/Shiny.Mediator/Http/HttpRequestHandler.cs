@@ -35,8 +35,16 @@ public class HttpRequestHandler<TRequest, TResult>(
         cts.CancelAfter(http.Timeout);
 
         await using var _ = cancellationToken.Register(() => cts.Cancel());
-        var result = await this.Send(httpRequest, cts.Token).ConfigureAwait(false);
-        return result;
+        try
+        {
+            var result = await this.Send(httpRequest, cts.Token).ConfigureAwait(false);
+            return result;
+        }
+        catch (TaskCanceledException ex)
+        {
+            if (!cancellationToken.IsCancellationRequested)
+                throw new TimeoutException("HTTP Request timed out", ex);
+        }
     }
     
 

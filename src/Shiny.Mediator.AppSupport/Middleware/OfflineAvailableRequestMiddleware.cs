@@ -26,30 +26,45 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         var result = default(TResult);
         if (connectivity.IsAvailable)
         {
-            result = await next().ConfigureAwait(false);
-            var requestKey = await offline.Set(context.Request!, result!);
-            logger.LogDebug("Offline: {Request} - Key: {RequestKey}", context.Request, requestKey);
+            try
+            {
+                result = await next().ConfigureAwait(false);
+                var requestKey = await offline.Set(context.Request!, result!);
+                logger.LogDebug("Offline: {Request} - Key: {RequestKey}", context.Request, requestKey);
+            }
+            catch (TimeoutException)
+            {
+                result = await this.GetOffline(context);
+            }
         }
         else
         {
-            var offlineResult = await offline.Get<TResult>(context.Request!);
-            
-            // TODO: offline miss to context
-            if (offlineResult != null)
-            {
-                context.Offline(new OfflineAvailableContext(offlineResult.RequestKey, offlineResult.Timestamp));
-                result = offlineResult.Value;
-                logger.LogDebug(
-                    "Offline Hit: {Request} - Timestamp: {Timestamp} - Key: {RequestKey}", 
-                    context.Request, 
-                    offlineResult.Timestamp,
-                    offlineResult.RequestKey
-                );
-            }
+            result = await this.GetOffline(context);
         }
         return result;
     }
 
+
+    async Task<TResult> GetOffline(ExecutionContext<TRequest> context)
+    {
+        TResult result = default;
+        var offlineResult = await offline.Get<TResult>(context.Request!);
+            
+        if (offlineResult != null)
+        {
+            context.Offline(new OfflineAvailableContext(offlineResult.RequestKey, offlineResult.Timestamp));
+            result = offlineResult.Value;
+            
+            logger.LogDebug(
+                "Offline Hit: {Request} - Timestamp: {Timestamp} - Key: {RequestKey}", 
+                context.Request, 
+                offlineResult.Timestamp,
+                offlineResult.RequestKey
+            );
+        }
+
+        return result;
+    }
 
     bool IsEnabled(IRequestHandler requestHandler, TRequest request)
     {
