@@ -52,6 +52,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
     }
 
     
+    // TODO: add cache
     protected virtual async IAsyncEnumerable<TResult> Iterate(
         TRequest request, 
         StreamRequestHandlerDelegate<TResult> next, 

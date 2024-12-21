@@ -2,41 +2,23 @@ using System.Collections;
 using System.Reflection;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
-using Shiny.Mediator.Caching.Infrastructure;
 
 namespace Shiny.Mediator;
 
 
-public static class CacheExtensions
+public static class MemoryCacheExtensions
 {
     static readonly FieldInfo CoherentStateField = typeof(MemoryCache).GetField("_coherentState", BindingFlags.Instance | BindingFlags.NonPublic)!;
     
+
     public static ShinyConfigurator AddMemoryCaching(this ShinyConfigurator cfg, Action<MemoryCacheOptions>? configureCache = null)
     {
         cfg.Services.AddMemoryCache(x => configureCache?.Invoke(x));
-        cfg.Services.AddSingletonAsImplementedInterfaces<FlushStoreEventHandlers>();
-        cfg.AddOpenRequestMiddleware(typeof(CachingRequestMiddleware<,>));
+        cfg.AddCaching<MemoryCacheService>();
         return cfg;
     }
-
-
-    public static CacheContext? Cache(this ExecutionContext context)
-        => context.TryGetValue<CacheContext>("Cache");
     
-    internal static void Cache(this ExecutionContext context, CacheContext cacheContext)
-        => context.Add("Cache", cacheContext);
     
-    public static string GetCacheKey(object request)
-    {
-        if (request is IRequestKey keyProvider)
-            return keyProvider.GetKey();
-        
-        var t = request.GetType();
-        var key = $"{t.Namespace}_{t.Name}";
-        return key;
-    }
-    
-
     public static void Clear(this IMemoryCache cache) 
         => (cache as MemoryCache)?.Clear();
 

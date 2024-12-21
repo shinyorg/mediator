@@ -1,4 +1,4 @@
-namespace Shiny.Mediator;
+namespace Shiny.Mediator.Caching;
 
 public record CacheContext(
     string RequestKey,

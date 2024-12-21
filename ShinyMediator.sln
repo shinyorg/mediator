@@ -28,7 +28,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Blazor", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Resilience", "src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj", "{1DDF878B-0EDF-4C32-813C-7995427D3387}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Caching", "src\Shiny.Mediator.Caching\Shiny.Mediator.Caching.csproj", "{0F0B73E3-165F-44E1-B0CF-917231D3C670}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Caching.MicrosoftMemoryCache", "src\Shiny.Mediator.Caching.MicrosoftMemoryCache\Shiny.Mediator.Caching.MicrosoftMemoryCache.csproj", "{0F0B73E3-165F-44E1-B0CF-917231D3C670}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Prism", "src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj", "{5534AE08-461A-4ADD-84C9-B745B6EDB8FF}"
 EndProject

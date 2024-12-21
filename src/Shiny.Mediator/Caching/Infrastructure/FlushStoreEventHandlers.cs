@@ -1,9 +1,7 @@
-using Microsoft.Extensions.Caching.Memory;
-
 namespace Shiny.Mediator.Caching.Infrastructure;
 
 
-public class FlushStoreEventHandlers(IMemoryCache cache) : 
+public class FlushStoreEventHandlers(ICacheService cache) : 
     IEventHandler<FlushAllStoresEvent>,
     IEventHandler<FlushStoreByRequestEvent>,
     IEventHandler<FlushStoreByTypeEvent>
@@ -25,7 +23,7 @@ public class FlushStoreEventHandlers(IMemoryCache cache) :
     {
         var t = @event.Type;
         var startsWith = $"{t.Namespace}.{t.Name}";
-        cache.RemoveByKeyStartsWith(startsWith);
+        cache.RemoveByPrefix(startsWith);
         return Task.CompletedTask;
     }
 }

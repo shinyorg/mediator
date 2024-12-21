@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Shiny.Mediator.Caching\Shiny.Mediator.Caching.csproj" />
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Caching.MicrosoftMemoryCache\Shiny.Mediator.Caching.MicrosoftMemoryCache.csproj" />
         <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj"/>
