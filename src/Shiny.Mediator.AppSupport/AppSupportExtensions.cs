@@ -9,6 +9,15 @@ namespace Shiny.Mediator;
 public static class AppSupportExtensions
 {
     /// <summary>
+    /// Adds a file based caching service - ideal for cache surviving across app sessions
+    /// </summary>
+    /// <param name="configurator"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator AddPersistentCache(this ShinyConfigurator configurator)
+        => configurator.AddCaching<StorageCacheService>();
+    
+    
+    /// <summary>
     /// Adds standard app support middleware - offline, replay stream, & user notification
     /// </summary>
     /// <param name="cfg"></param>

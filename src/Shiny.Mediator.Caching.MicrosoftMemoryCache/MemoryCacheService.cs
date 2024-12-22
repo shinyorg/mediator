@@ -6,27 +6,45 @@ namespace Shiny.Mediator;
 
 public class MemoryCacheService(IMemoryCache cache) : ICacheService
 {
-    public Task<CacheEntry<T>> GetOrCreate<T>(string key, Func<Task<T>> factory, CacheItemConfig? config = null)
+    public Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> factory, CacheItemConfig? config = null)
+        => cache.GetOrCreateAsync(
+            key, 
+            async e =>
+            {
+                var result = await factory().ConfigureAwait(false);
+                return new CacheEntry<T>(
+                    key,
+                    result,
+                    DateTimeOffset.UtcNow
+                );
+            }, 
+            new MemoryCacheEntryOptions
+            {
+                Priority = CacheItemPriority.Normal,
+                AbsoluteExpirationRelativeToNow = config?.AbsoluteExpiration,
+                SlidingExpiration = config?.SlidingExpiration
+            }
+        );
+    
+
+    public Task Set<T>(string key, T value, CacheItemConfig? config = null)
     {
-        throw new NotImplementedException();
+        var entry = cache.CreateEntry(key);
+        entry.Value = new CacheEntry<T>(key, value, DateTimeOffset.UtcNow);
+        entry.AbsoluteExpirationRelativeToNow = config?.AbsoluteExpiration;
+        entry.SlidingExpiration = config?.SlidingExpiration;
+        return Task.CompletedTask;
+    }
+
+    
+    public Task Remove(string key)
+    {
+        cache.Remove(key);
+        return Task.CompletedTask;
     }
     
 
-    public CacheEntry<T>? Get<T>(string key)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Set(string key, object value, CacheItemConfig? config = null)
-    {
-        var entry = cache.CreateEntry(key);
-        // entry.Value = new CacheEntry<>(value); // TODO: hmmmm
-        entry.AbsoluteExpirationRelativeToNow = config?.AbsoluteExpiration;
-        entry.SlidingExpiration = config?.SlidingExpiration;
-    }
-
-    public void Remove(string key) => cache.Remove(key);
-    public void RemoveByPrefix(string prefix)
+    public Task RemoveByPrefix(string prefix)
     {
         var entries = cache.GetEntries();
         foreach (var entry in entries)
@@ -34,6 +52,12 @@ public class MemoryCacheService(IMemoryCache cache) : ICacheService
             if (entry.Key is string key && key.StartsWith(prefix))
                 cache.Remove(key); // TODO: altering enumerable
         }
+        return Task.CompletedTask;
     }
-    public void Clear() => cache.Clear();
+
+    public Task Clear()
+    {
+        cache.Clear();
+        return Task.CompletedTask;
+    }
 }

@@ -22,7 +22,6 @@
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
         <ApplicationVersion>1</ApplicationVersion>
 
-        <ShinyVersion>3.3.3</ShinyVersion>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <!--slower build, faster runtime in DEBUG-->
         <!-- <_MauiForceXamlCForDebug Condition="'$(Configuration)' == 'Debug'">true</_MauiForceXamlCForDebug> -->

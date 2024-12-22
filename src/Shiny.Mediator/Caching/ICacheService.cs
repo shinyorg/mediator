@@ -8,8 +8,7 @@ public record CacheItemConfig(
 public record CacheEntry<T>(
     string Key,
     T Value,
-    DateTimeOffset CreatedAt,
-    DateTimeOffset ExpiresAt
+    DateTimeOffset CreatedAt
 );
 
 public interface ICacheService
@@ -22,19 +21,11 @@ public interface ICacheService
     /// <param name="config"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<CacheEntry<T>> GetOrCreate<T>(
+    Task<CacheEntry<T>?> GetOrCreate<T>(
         string key, 
         Func<Task<T>> factory,
         CacheItemConfig? config = null
     );
-    
-    /// <summary>
-    /// Get an item from cache if present - otherwise return null
-    /// </summary>
-    /// <param name="key"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    CacheEntry<T>? Get<T>(string key);
     
     /// <summary>
     /// Manually insert or overwrite an item in cache
@@ -42,9 +33,9 @@ public interface ICacheService
     /// <param name="key"></param>
     /// <param name="value"></param>
     /// <param name="config"></param>
-    void Set(
+    Task Set<T>(
         string key, 
-        object value, 
+        T value, 
         CacheItemConfig? config = null
     );
 
@@ -52,17 +43,16 @@ public interface ICacheService
     /// Removes a specific cache item
     /// </summary>
     /// <param name="key"></param>
-    void Remove(string key);
-    
+    Task Remove(string key);
     
     /// <summary>
     /// Clears cache keys starting with prefix
     /// </summary>
     /// <param name="prefix"></param>
-    void RemoveByPrefix(string prefix);
+    Task RemoveByPrefix(string prefix);
 
     /// <summary>
     /// Clears all cache
     /// </summary>
-    void Clear();
+    Task Clear();
 }
