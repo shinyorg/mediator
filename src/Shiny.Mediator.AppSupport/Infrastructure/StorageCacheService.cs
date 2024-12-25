@@ -46,7 +46,16 @@ public class StorageCacheService(IStorageService storage) : ICacheService
     public Task Set<T>(string key, T value, CacheItemConfig? config = null)
         => this.Store(key, value, config);
 
-    
+    public async Task<CacheEntry<T>?> Get<T>(string key)
+    {
+        var entry = await storage.Get<InternalCacheEntry<T>>(key).ConfigureAwait(false);
+        if (entry == null)
+            return null;
+        
+        return new CacheEntry<T>(key, entry.Value, entry.CreatedAt);
+    }
+
+
     public Task Remove(string key) => storage.Remove(key);
     public Task RemoveByPrefix(string prefix) 
     {

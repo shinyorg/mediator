@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Shiny.Mediator.Caching;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
@@ -14,8 +15,9 @@ namespace Shiny.Mediator.Middleware;
 public class ReplayStreamMiddleware<TRequest, TResult>(
     ILogger<ReplayStreamMiddleware<TRequest, TResult>> logger,
     IInternetService internet,
-    IOfflineService offline,
-    IConfiguration configuration
+    IConfiguration configuration,
+    IOfflineService? offline,
+    ICacheService? cache
 ) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
@@ -59,9 +61,21 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         [EnumeratorCancellation] CancellationToken ct
     )
     {
-        var store = await offline.Get<TResult>(request);
-        if (store != null) // TODO: I need context here to ship out date
-            yield return store.Value;
+        var requestKey = ContractUtils.GetObjectKey(request);
+        
+        if (cache != null)
+        {
+            var item = await cache.Get<TResult>(requestKey).ConfigureAwait(false);
+            if (item != null)
+                yield return item.Value;
+        }
+
+        if (offline != null)
+        {
+            var store = await offline.Get<TResult>(request);
+            if (store != null) // TODO: I need context here to ship out date
+                yield return store.Value;
+        }
 
         if (!internet.IsAvailable)
             await internet.WaitForAvailable(ct).ConfigureAwait(false);
@@ -71,7 +85,11 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         {
             while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
             {
-                await offline.Set(request, nxt.Current!);
+                if (cache != null)
+                    await cache.Set(requestKey, nxt).ConfigureAwait(false);
+                
+                if (offline != null)
+                    await offline.Set(request, nxt.Current!).ConfigureAwait(false);
 
                 yield return nxt.Current;
             }

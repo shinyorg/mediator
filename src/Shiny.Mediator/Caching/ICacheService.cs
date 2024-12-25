@@ -39,6 +39,15 @@ public interface ICacheService
         CacheItemConfig? config = null
     );
 
+
+    /// <summary>
+    /// Retrieves a cached value, null if not found
+    /// </summary>
+    /// <param name="key"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    Task<CacheEntry<T>?> Get<T>(string key);
+
     /// <summary>
     /// Removes a specific cache item
     /// </summary>

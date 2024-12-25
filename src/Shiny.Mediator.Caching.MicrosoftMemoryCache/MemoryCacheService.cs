@@ -29,14 +29,24 @@ public class MemoryCacheService(IMemoryCache cache) : ICacheService
 
     public Task Set<T>(string key, T value, CacheItemConfig? config = null)
     {
+        // TODO: what if entry already exists?
         var entry = cache.CreateEntry(key);
         entry.Value = new CacheEntry<T>(key, value, DateTimeOffset.UtcNow);
         entry.AbsoluteExpirationRelativeToNow = config?.AbsoluteExpiration;
         entry.SlidingExpiration = config?.SlidingExpiration;
+        
         return Task.CompletedTask;
     }
 
-    
+    public Task<CacheEntry<T>?> Get<T>(string key)
+    {
+        if (cache.TryGetValue(key, out var result) && result is CacheEntry<T> entry)
+            return Task.FromResult(entry)!;
+
+        return Task.FromResult<CacheEntry<T>?>(null);
+    }
+
+
     public Task Remove(string key)
     {
         cache.Remove(key);
