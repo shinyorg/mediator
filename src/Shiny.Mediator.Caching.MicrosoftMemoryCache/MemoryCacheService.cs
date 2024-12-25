@@ -9,7 +9,7 @@ public class MemoryCacheService(IMemoryCache cache) : ICacheService
     public Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> factory, CacheItemConfig? config = null)
         => cache.GetOrCreateAsync(
             key, 
-            async e =>
+            async _ =>
             {
                 var result = await factory().ConfigureAwait(false);
                 return new CacheEntry<T>(

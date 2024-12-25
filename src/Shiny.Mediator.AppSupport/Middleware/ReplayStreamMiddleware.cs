@@ -69,8 +69,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
             if (item != null)
                 yield return item.Value;
         }
-
-        if (offline != null)
+        else if (offline != null)
         {
             var store = await offline.Get<TResult>(request);
             if (store != null) // TODO: I need context here to ship out date
