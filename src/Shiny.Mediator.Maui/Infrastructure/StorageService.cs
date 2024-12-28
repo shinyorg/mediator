@@ -37,4 +37,18 @@ public class StorageService(IFileSystem fileSystem, ISerializerService serialize
 
         return Task.CompletedTask;
     }
+
+    public Task RemoveByPrefix(string prefix) => this.DeleteBy(prefix + "*.mediator");
+    public Task Clear() => this.DeleteBy("*.mediator");
+
+
+    Task DeleteBy(string pattern)
+    {
+        var dir = new DirectoryInfo(fileSystem.CacheDirectory);
+        var files = dir.GetFiles(pattern);
+        foreach (var file in files)
+            file.Delete();
+        
+        return Task.CompletedTask;
+    }
 }

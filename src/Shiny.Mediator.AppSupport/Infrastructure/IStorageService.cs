@@ -6,4 +6,6 @@ public interface IStorageService
     Task Set<T>(string key, T value);
     Task<T?> Get<T>(string key);
     Task Remove(string key);
+    Task RemoveByPrefix(string prefix);
+    Task Clear();
 }

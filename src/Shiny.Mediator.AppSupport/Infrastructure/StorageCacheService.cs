@@ -57,18 +57,8 @@ public class StorageCacheService(IStorageService storage) : ICacheService
 
 
     public Task Remove(string key) => storage.Remove(key);
-    public Task RemoveByPrefix(string prefix) 
-    {
-        // TODO: not available in storage service
-        throw new NotImplementedException();
-    }
-
-    public Task Clear()
-    {
-        // TODO: not available in storage service
-        throw new NotImplementedException();
-    }
-
+    public Task RemoveByPrefix(string prefix)  => storage.RemoveByPrefix(prefix);
+    public Task Clear() => storage.Clear();
 
     async Task<InternalCacheEntry<T>> Store<T>(string key, T result, CacheItemConfig? config)
     {

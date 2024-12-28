@@ -32,4 +32,18 @@ public class StorageService(IJSRuntime jsruntime, ISerializerService serializer)
         inproc.InvokeVoid("MediatorServices.removeStore", key);
         return Task.CompletedTask;
     }
+
+    public Task RemoveByPrefix(string prefix)
+    {
+        var inproc = (IJSInProcessRuntime)jsruntime;
+        inproc.InvokeVoid("MediatorServices.removeByPrefix", prefix);
+        return Task.CompletedTask;
+    }
+
+    public Task Clear()
+    {
+        var inproc = (IJSInProcessRuntime)jsruntime;
+        inproc.InvokeVoid("MediatorServices.clearStore");
+        return Task.CompletedTask;
+    }
 }

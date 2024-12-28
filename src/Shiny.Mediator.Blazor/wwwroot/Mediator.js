@@ -33,5 +33,16 @@ window.MediatorServices = {
     
     removeStore: function(key) {
         localStorage.removeItem(key);
+    },
+    
+    removeByPrefix: function(key) {
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith(key)) 
+                delete localStorage[key];
+        })
+    },
+    
+    clearStore: function() {
+        localStorage.clear();
     }
 };
