@@ -1,25 +1,18 @@
 using InterpolatedSql.Dapper;
-using InterpolatedSql.SqlBuilders;
 
-namespace Shiny.Mediator.DapperRequests;
+namespace Shiny.Mediator.DapperRequests.Handlers;
 
 
 public class DapperFirstQueryRequestHandler<TResult>(
     IConnectionProvider connectionProvider
 ) : IRequestHandler<DapperFirstQuery<TResult>, TResult>
 {
-    public async Task<TResult> Handle(DapperFirstQuery<TResult> request, CancellationToken cancellationToken)
-    {
-        var conn = connectionProvider.Create(request);
-        
-        var result = await conn
+    public Task<TResult> Handle(DapperFirstQuery<TResult> request, CancellationToken cancellationToken)
+        => connectionProvider
+            .Create(request)
             .QueryBuilder(request.Sql)
             .QueryFirstOrDefaultAsync<TResult>(
                 commandTimeout: request.CommandTimeout,
                 cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
-
-        return result;
-    }
+            );
 }

@@ -12,6 +12,7 @@
 
     <ItemGroup>
         <PackageReference Include="Dapper" Version="2.1.35"/>
+        <PackageReference Include="DryIoc.Microsoft.DependencyInjection" Version="6.2.0" />
         <PackageReference Include="InterpolatedSql.Dapper" Version="2.3.0"/>
     </ItemGroup>
 

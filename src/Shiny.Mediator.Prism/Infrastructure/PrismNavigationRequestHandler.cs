@@ -1,7 +1,9 @@
 namespace Shiny.Mediator.Prism.Infrastructure;
 
 
-public class PrismNavigationRequestHandler<TRequest>(IGlobalNavigationService navigator) : IRequestHandler<TRequest> where TRequest : IPrismNavigationRequest
+public class PrismNavigationRequestHandler<TRequest>(
+    IGlobalNavigationService navigator
+) : IRequestHandler<TRequest> where TRequest : IPrismNavigationRequest
 {
     public async Task Handle(TRequest request, CancellationToken cancellationToken)
     {

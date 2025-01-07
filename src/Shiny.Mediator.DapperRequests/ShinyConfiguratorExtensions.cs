@@ -1,6 +1,8 @@
 using System.Data;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Shiny.Mediator.DapperRequests;
+using Shiny.Mediator.DapperRequests.Handlers;
 
 namespace Shiny.Mediator;
 
@@ -25,9 +27,13 @@ public static class ShinyConfiguratorExtensions
 
     static ShinyConfigurator AddInfrastructure(this ShinyConfigurator cfg)
     {
+        // typeof(DapperFirstQueryRequestHandler<>)
+        //     .GetInterfaces()
+        //     .ToList()
+        //     .ForEach(x => cfg.Services.AddScoped(x, typeof(DapperFirstQueryRequestHandler<>)));
         cfg.Services.AddScoped(typeof(IRequestHandler<,>), typeof(DapperQueryRequestHandler<>));
         cfg.Services.AddScoped(typeof(IRequestHandler<,>), typeof(DapperFirstQueryRequestHandler<>));
-        cfg.Services.AddScoped(typeof(IRequestHandler<,>), typeof(DapperScalarQueryRequestHandler));
+        cfg.Services.AddScopedAsImplementedInterfaces<DapperScalarRequestHandler>();
         return cfg;
     }
 }
