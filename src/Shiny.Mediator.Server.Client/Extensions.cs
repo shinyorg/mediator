@@ -42,6 +42,23 @@ static class Extensions
     }
 
     
+    public static Type? GetServerCommandContract(this Type implType)
+    {
+        var interfaceType = implType
+            .GetInterfaces()
+            .FirstOrDefault(x => 
+                x.IsGenericType && 
+                x.GetGenericTypeDefinition() == typeof(IRequestHandler)
+            );
+
+        // Return the generic argument type, or null if not implemented
+        var type = interfaceType?.GetGenericArguments().FirstOrDefault();
+        if (type?.IsAssignableTo(typeof(IServerEvent)) ?? false)
+            return type;
+        
+        return null;
+    }
+    
     public static bool IsRequest(this Type type) => type
         .GetInterfaces()
         .Any(x => 

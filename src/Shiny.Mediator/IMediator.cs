@@ -21,10 +21,10 @@ public interface IMediator
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<ExecutionContext> Send<TRequest>(
-        TRequest request,
+    Task<ExecutionContext> Send<TCommand>(
+        TCommand request,
         CancellationToken cancellationToken = default
-    ) where TRequest : IRequest;
+    ) where TCommand : ICommand;
   
     /// <summary>
     /// Requests a stream of data from a message

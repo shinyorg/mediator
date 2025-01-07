@@ -1,4 +1,10 @@
-namespace Shiny.Mediator;
+﻿namespace Shiny.Mediator;
+
+
+public interface ICommand;
+public interface IEvent;
+public interface IStreamRequest<out TResult>; 
+public interface IRequest<out TResult>;
 
 /// <summary>
 /// This is viewed by replay, cache, and various other services where you can control an entry
