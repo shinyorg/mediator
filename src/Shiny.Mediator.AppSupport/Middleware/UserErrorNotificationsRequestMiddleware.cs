@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,10 @@ public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
         {
             logger.LogDebug("UserErrorNotifications Enabled - {Request}", context.Request);
             result = await next().ConfigureAwait(false);
+        }
+        catch (ValidationException)
+        {
+            throw; // this is a special case we let bubble through to prevent order of ops setup issues
         }
         catch (Exception ex)
         {
