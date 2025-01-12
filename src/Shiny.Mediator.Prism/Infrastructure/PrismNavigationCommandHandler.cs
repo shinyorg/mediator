@@ -1,25 +1,25 @@
 namespace Shiny.Mediator.Prism.Infrastructure;
 
 
-public class PrismNavigationRequestHandler<TRequest>(
+public class PrismNavigationCommandHandler<TCommand>(
     IGlobalNavigationService navigator
-) : IRequestHandler<TRequest> where TRequest : IPrismNavigationRequest
+) : ICommandHandler<TCommand> where TCommand : IPrismNavigationCommand
 {
-    public async Task Handle(TRequest request, CancellationToken cancellationToken)
+    public async Task Handle(TCommand command, CancellationToken cancellationToken)
     {
-        var pn = request.NavigationParameterName ?? request.GetType().Name;
-        var nav = request.Navigator ?? navigator;
+        var pn = command.NavigationParameterName ?? command.GetType().Name;
+        var nav = command.Navigator ?? navigator;
         var tcs = new TaskCompletionSource();
         
-        var navUri = request.PrependedNavigationUri + request.PageUri;
+        var navUri = command.PrependedNavigationUri + command.PageUri;
         var navParams = new NavigationParameters();
         
-        navParams.Add(pn, request);
+        navParams.Add(pn, command);
         
-        if (request.IsModal)
+        if (command.IsModal)
             navParams.Add(KnownNavigationParameters.UseModalNavigation, true);
         
-        if (request.IsAnimated ?? true)
+        if (command.IsAnimated ?? true)
             navParams.Add(KnownNavigationParameters.Animated, true);
         
         MainThread.BeginInvokeOnMainThread(async () =>

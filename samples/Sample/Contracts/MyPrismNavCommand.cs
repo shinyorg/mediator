@@ -1,6 +1,6 @@
 namespace Sample.Contracts;
 
-public record MyPrismNavRequest(string Arg) : IPrismNavigationRequest
+public record MyPrismNavCommand(string Arg) : IPrismNavigationCommand
 {
     public string? PrependedNavigationUri { get; }
     public string PageUri => "AnotherPage";

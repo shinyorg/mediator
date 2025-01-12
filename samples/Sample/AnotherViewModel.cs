@@ -6,7 +6,7 @@ namespace Sample;
 
 public partial class AnotherViewModel(AppSqliteConnection conn) : ObservableObject, INavigatedAware, IEventHandler<MyMessageEvent>
 {
-    const string Key = nameof(MyPrismNavRequest);
+    const string Key = nameof(MyPrismNavCommand);
 
     
     public void OnNavigatedFrom(INavigationParameters parameters) {}
@@ -14,7 +14,7 @@ public partial class AnotherViewModel(AppSqliteConnection conn) : ObservableObje
     {
         if (parameters.ContainsKey(Key))
         {
-            var p = parameters.GetValue<MyPrismNavRequest>(Key);
+            var p = parameters.GetValue<MyPrismNavCommand>(Key);
 
             this.ShowArg = true;
             this.Arg = p.Arg ?? "No Argument";

@@ -1,10 +1,10 @@
 namespace Shiny.Mediator.Tests;
 
 
-public class VoidRequestHandlerTests
+public class CommandHandlerTests
 {
     [Fact]
-    public async Task Missing_RequestHandler()
+    public async Task Missing_CommandHandler()
     {
         try
         {
@@ -12,7 +12,7 @@ public class VoidRequestHandlerTests
             services.AddShinyMediator(cfg => { });
             var sp = services.BuildServiceProvider();
             var mediator = sp.GetRequiredService<IMediator>();
-            await mediator.Send(new TestRequest());
+            await mediator.Send(new TestCommand());
             Assert.Fail("This should not have passed");
         }
         catch (InvalidOperationException ex)
@@ -23,16 +23,16 @@ public class VoidRequestHandlerTests
 }
 
 
-public class TestRequest : IRequest
+public class TestCommand : ICommand
 {
     public int Delay { get; set; }
 }
 
-public class Test1RequestHandler : IRequestHandler<TestRequest>
+public class Test1CommandHandler : ICommandHandler<TestCommand>
 {
-    public async Task Handle(TestRequest request, CancellationToken cancellationToken)
+    public async Task Handle(TestCommand command, CancellationToken cancellationToken)
     {
-        if (request.Delay > 0)
-            await Task.Delay(request.Delay);
+        if (command.Delay > 0)
+            await Task.Delay(command.Delay);
     }
 }

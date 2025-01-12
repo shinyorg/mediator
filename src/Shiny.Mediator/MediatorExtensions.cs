@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Infrastructure;
-using Shiny.Mediator.Infrastructure.Impl;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;

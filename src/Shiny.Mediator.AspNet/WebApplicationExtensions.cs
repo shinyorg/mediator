@@ -18,7 +18,7 @@ public static class WebApplicationExtensions
     {
         mapResultType = typeof(WebAppMap).GetMethod(nameof(WebAppMap.MapResultType), BindingFlags.Static | BindingFlags.Public)!;
         mapStreamType = typeof(WebAppMap).GetMethod(nameof(WebAppMap.MapStreamType), BindingFlags.Static | BindingFlags.Public)!;
-        mapVoidType = typeof(WebAppMap).GetMethod(nameof(WebAppMap.MapVoidType), BindingFlags.Static | BindingFlags.Public)!;
+        mapVoidType = typeof(WebAppMap).GetMethod(nameof(WebAppMap.MapCommandType), BindingFlags.Static | BindingFlags.Public)!;
     }
     
     
@@ -41,7 +41,7 @@ public static class WebApplicationExtensions
 
     static void TryMap(WebApplication app, Type type)
     {
-        if (IsVoidHandler(type))
+        if (IsCommandHandler(type))
         {
             var attribute = type.GetCustomAttribute<MediatorHttpAttribute>();
             if (attribute != null)
@@ -62,9 +62,9 @@ public static class WebApplicationExtensions
     }
 
     
-    static bool IsVoidHandler(Type type) => type
+    static bool IsCommandHandler(Type type) => type
         .GetInterfaces()
-        .Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IRequestHandler<>));
+        .Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICommandHandler<>));
     
     
     static bool IsResultHandler(Type type) => type
@@ -81,7 +81,7 @@ public static class WebApplicationExtensions
     {
         var requestType = handlerType
             .GetInterfaces()
-            .Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IRequestHandler<>))
+            .Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICommandHandler<>))
             .Select(x => x.GetGenericArguments().First())
             .First();
         
@@ -122,9 +122,9 @@ public static class WebApplicationExtensions
 
 public class WebAppMap
 {
-    public static void MapVoidType<TRequest>(WebApplication app, MediatorHttpAttribute attribute) where TRequest : IRequest
+    public static void MapCommandType<TCommand>(WebApplication app, MediatorHttpAttribute attribute) where TCommand : ICommand
     {
-        attribute.Tags ??= [$"{typeof(TRequest).Name}s"];
+        attribute.Tags ??= [$"{typeof(TCommand).Name}s"];
         RouteHandlerBuilder routerBuilder;
         
         if (attribute.Method == HttpMethod.Post)
@@ -133,12 +133,12 @@ public class WebAppMap
                 attribute.UriTemplate,
                 async (
                     [FromServices] IMediator mediator,
-                    [FromBody] TRequest request,
+                    [FromBody] TCommand command,
                     CancellationToken cancellationToken
                 ) =>
                 {
                     await mediator
-                        .Send(request, cancellationToken)
+                        .Send(command, cancellationToken)
                         .ConfigureAwait(false);
 
                     return Results.Ok();
@@ -151,12 +151,12 @@ public class WebAppMap
                 attribute.UriTemplate,
                 async (
                     [FromServices] IMediator mediator,
-                    [FromBody] TRequest request,
+                    [FromBody] TCommand command,
                     CancellationToken cancellationToken
                 ) =>
                 {
                     await mediator
-                        .Send(request, cancellationToken)
+                        .Send(command, cancellationToken)
                         .ConfigureAwait(false);
                     
                     return Results.Ok();
@@ -169,12 +169,12 @@ public class WebAppMap
                 attribute.UriTemplate,
                 async (
                     [FromServices] IMediator mediator,
-                    [AsParameters] TRequest request,
+                    [AsParameters] TCommand command,
                     CancellationToken cancellationToken
                 ) =>
                 {
                     await mediator
-                        .Send(request, cancellationToken)
+                        .Send(command, cancellationToken)
                         .ConfigureAwait(false);
                     
                     return Results.Ok();
@@ -187,12 +187,12 @@ public class WebAppMap
                 attribute.UriTemplate,
                 async (
                     [FromServices] IMediator mediator,
-                    [AsParameters] TRequest request,
+                    [AsParameters] TCommand command,
                     CancellationToken cancellationToken
                 ) =>
                 {
                     await mediator
-                        .Send(request, cancellationToken)
+                        .Send(command, cancellationToken)
                         .ConfigureAwait(false);
                     
                     return Results.Ok();
@@ -201,7 +201,7 @@ public class WebAppMap
         } 
         else
         {
-            throw new InvalidOperationException($"Invalid Mediator Endpoint on `{typeof(TRequest).FullName}` - Can only be PUT/POST");
+            throw new InvalidOperationException($"Invalid Mediator Endpoint on `{typeof(TCommand).FullName}` - Can only be PUT/POST");
         }
         Visit(routerBuilder, attribute);
     }

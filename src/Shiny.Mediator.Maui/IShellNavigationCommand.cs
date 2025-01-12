@@ -1,6 +1,6 @@
 namespace Shiny.Mediator;
 
-public interface IShellNavigationRequest : IRequest
+public interface IShellNavigationCommand : ICommand
 {
     string PageUri { get; }
     string? ParameterName { get; }

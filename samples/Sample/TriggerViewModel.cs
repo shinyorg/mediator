@@ -34,7 +34,7 @@ public partial class TriggerViewModel(
 
     [RelayCommand]
     Task PrismNav()
-        => mediator.Send(new MyPrismNavRequest(this.PrismNavArg!), CancellationToken.None);
+        => mediator.Send(new MyPrismNavCommand(this.PrismNavArg!), CancellationToken.None);
     
     [ObservableProperty] string prismNavArg;
 
@@ -52,7 +52,7 @@ public partial class TriggerViewModel(
 
     
     [RelayCommand]
-    Task ErrorTrap() => mediator.Send(new ErrorRequest());
+    Task ErrorTrap() => mediator.Send(new ErrorCommand());
 
 
     [RelayCommand]
@@ -123,7 +123,7 @@ public partial class TriggerViewModel(
     {
         try
         {
-            await mediator.Send(new NoHandlerRequest());
+            await mediator.Send(new NoHandlerCommand());
             await dialogs.DisplayAlertAsync("NO HANDLER", "You should not be here", "OK");
         }
         catch (Exception ex)
@@ -157,7 +157,7 @@ public partial class TriggerViewModel(
     {
         try
         {
-            await mediator.Send(new MyValidateRequest { Url = this.ValidateUrl });
+            await mediator.Send(new MyValidateCommand { Url = this.ValidateUrl });
             await dialogs.DisplayAlertAsync("All is good", "VALID", "Ok");
         }
         catch (ValidateException ex)

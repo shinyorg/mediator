@@ -85,7 +85,7 @@ public static class MauiExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddShellNavigation(this ShinyConfigurator cfg)
     {
-        cfg.Services.AddSingleton(typeof(IRequestHandler<>), typeof(ShellNavigationRequestHandler<>));
+        cfg.Services.AddSingleton(typeof(ICommandHandler<>), typeof(ShellNavigationCommandHandler<>));
         return cfg;
     }
 

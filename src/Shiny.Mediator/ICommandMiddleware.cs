@@ -1,7 +1,11 @@
 namespace Shiny.Mediator;
 
 
+public delegate Task CommandHandlerDelegate();
 public interface ICommandMiddleware<TCommand> where TCommand : ICommand
 {
-    Task Handle(TCommand command, CancellationToken cancellationToken);
+    Task Process(
+        TCommand command, 
+        CommandHandlerDelegate next
+    );
 }

@@ -15,9 +15,6 @@ public class CachingRequestMiddleware<TRequest, TResult>(
         RequestHandlerDelegate<TResult> next 
     )
     {
-        if (typeof(TResult) == typeof(Unit))
-            return await next().ConfigureAwait(false);
-
         CacheAttribute? attribute = null;
         var cacheKey = ContractUtils.GetObjectKey(context.Request!);
         var section = configuration.GetHandlerSection("Cache", context.Request!, context.RequestHandler);

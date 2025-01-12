@@ -8,7 +8,7 @@ static class Extensions
             .GetInterfaces()
             .FirstOrDefault(x => 
                 x.IsGenericType && (
-                    x.GetGenericTypeDefinition() == typeof(IRequestHandler<>) ||
+                    x.GetGenericTypeDefinition() == typeof(ICommandHandler<>) ||
                     x.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)
                 )
             );

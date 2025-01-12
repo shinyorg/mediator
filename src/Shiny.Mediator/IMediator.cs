@@ -21,7 +21,7 @@ public interface IMediator
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<ExecutionContext> Send<TCommand>(
+    Task Send<TCommand>(
         TCommand request,
         CancellationToken cancellationToken = default
     ) where TCommand : ICommand;

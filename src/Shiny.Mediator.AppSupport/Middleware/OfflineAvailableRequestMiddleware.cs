@@ -17,9 +17,6 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         RequestHandlerDelegate<TResult> next 
     )
     {
-        if (typeof(TResult) == typeof(Unit))
-            return await next().ConfigureAwait(false);
-        
         if (!this.IsEnabled(context.RequestHandler, context.Request))
             return await next().ConfigureAwait(false);
         

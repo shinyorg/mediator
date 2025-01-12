@@ -51,16 +51,13 @@ public class HttpRequestHandler<TRequest, TResult>(
 
             response.EnsureSuccessStatusCode();
             
-            if (typeof(TResult) != typeof(Unit))
-            {
-                var stringResult = await response
-                    .Content
-                    .ReadAsStringAsync(cancellationToken)
-                    .ConfigureAwait(false);
-
-                logger.LogDebug("Raw Result: " + stringResult);
-                finalResult = serializer.Deserialize<TResult>(stringResult)!;
-            }
+            var stringResult = await response
+                .Content
+                .ReadAsStringAsync(cancellationToken)
+                .ConfigureAwait(false);
+        
+            logger.LogDebug("Raw Result: " + stringResult);
+            finalResult = serializer.Deserialize<TResult>(stringResult)!;
         }
         catch (TaskCanceledException ex)
         {

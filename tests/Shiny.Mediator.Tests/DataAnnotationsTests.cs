@@ -12,7 +12,7 @@ public class DataAnnotationsTests
     {
         var services = new ServiceCollection();
         services.AddShinyMediator(cfg => cfg.AddDataAnnotations());
-        services.AddSingletonAsImplementedInterfaces<ValidationRequestNoResponseHandler>();
+        services.AddSingletonAsImplementedInterfaces<ValidationCommandHandler>();
         services.AddSingletonAsImplementedInterfaces<ValidationRequestHandler>();
         this.mediator = services.BuildServiceProvider().GetRequiredService<IMediator>();    
     }
@@ -31,7 +31,7 @@ public class DataAnnotationsTests
     {
         try
         {
-            await this.mediator.Send(new ValidationRequestNoResponse());
+            await this.mediator.Send(new ValidationCommand());
             Assert.Fail("Should have thrown");
         }
         catch (ValidateException ex)
@@ -51,7 +51,7 @@ public class DataAnnotationsTests
 
 
 [Validate]
-public class ValidationRequestNoResponse : IRequest
+public class ValidationCommand : ICommand
 {
     [Required] public string? Name { get; set; }
     [Required][Url] public string? Url { get; set; }
@@ -64,9 +64,9 @@ public class ValidationRequest : IRequest<ValidateResult>
     [Required][Url] public string? Url { get; set; }
 }
 
-public class ValidationRequestNoResponseHandler : IRequestHandler<ValidationRequestNoResponse>
+public class ValidationCommandHandler : ICommandHandler<ValidationCommand>
 {
-    public Task Handle(ValidationRequestNoResponse request, CancellationToken cancellationToken)
+    public Task Handle(ValidationCommand request, CancellationToken cancellationToken)
     {
         throw new InvalidOperationException("Never should have gotten here");
     }

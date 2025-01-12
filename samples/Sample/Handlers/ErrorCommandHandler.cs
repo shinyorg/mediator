@@ -4,9 +4,9 @@ namespace Sample.Handlers;
 
 
 [SingletonHandler]
-public class ErrorRequestHandler : IRequestHandler<ErrorRequest>
+public class ErrorCommandHandler : ICommandHandler<ErrorCommand>
 {
-    public Task Handle(ErrorRequest request, CancellationToken cancellationToken)
+    public Task Handle(ErrorCommand command, CancellationToken cancellationToken)
     {
         throw new InvalidOperationException("Why you call me?");
     }

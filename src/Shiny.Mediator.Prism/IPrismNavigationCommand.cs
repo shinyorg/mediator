@@ -1,7 +1,7 @@
 namespace Shiny.Mediator;
 
 // TODO: what about dialogs?
-public interface IPrismNavigationRequest : IRequest
+public interface IPrismNavigationCommand : ICommand
 {
     // contract can choose to open these up
     string? PrependedNavigationUri { get; }

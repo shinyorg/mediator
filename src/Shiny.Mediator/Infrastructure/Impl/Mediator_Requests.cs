@@ -21,48 +21,6 @@ public partial class Mediator
         
         return execution;
     }
-
-
-    public async Task<ExecutionContext> Send<TRequest>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : IRequest
-    {
-        using var scope = services.CreateScope();
-        var requestHandler = scope.ServiceProvider.GetService<IRequestHandler<TRequest>>();
-        if (requestHandler == null)
-            throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
-        
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<TRequest>>();
-        var handlerExec = new RequestHandlerDelegate<Unit>(async () =>
-        {
-            logger.LogDebug(
-                "Executing request handler {RequestHandlerType}", 
-                requestHandler.GetType().FullName 
-            );
-            await requestHandler.Handle(request, cancellationToken).ConfigureAwait(false);
-            return Unit.Value;
-        });
-    
-        var context = new ExecutionContext<TRequest>(request, requestHandler, cancellationToken);
-        var middlewares = scope.ServiceProvider.GetServices<IRequestMiddleware<TRequest, Unit>>();
-        await middlewares
-            .Reverse()
-            .Aggregate(
-                handlerExec, 
-                (next, middleware) => () =>
-                {
-                    logger.LogDebug(
-                        "Executing request middleware {MiddlewareType}",
-                        middleware.GetType().FullName
-                    );
-                    
-                    return middleware.Process(context, next);
-                }
-            )
-            .Invoke()
-            .ConfigureAwait(false);
-    
-        return context;
-    }
 }
 
 

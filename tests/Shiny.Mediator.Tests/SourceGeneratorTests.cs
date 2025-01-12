@@ -11,21 +11,21 @@ public class SourceGeneratorTests
         var sp = services.BuildServiceProvider();
 
         sp.GetService<IEventHandler<SourceGenEvent>>().Should().NotBeNull("Event Handler not found");
-        sp.GetService<IRequestHandler<SourceGenRequest>>().Should().NotBeNull("Request Handler not found");
+        sp.GetService<ICommandHandler<SourceGenCommand>>().Should().NotBeNull("Command Handler not found");
         sp.GetService<IRequestHandler<SourceGenResponseRequest, SourceGenResponse>>().Should().NotBeNull("Request/Response Handler not found");
     }
 }
 
-public record SourceGenRequest : IRequest;
+public record SourceGenCommand : ICommand;
 public record SourceGenResponseRequest : IRequest<SourceGenResponse>;
 public record SourceGenResponse;
 public record SourceGenEvent : IEvent;
 
 
 [SingletonHandler]
-public class SourceGenRequestHandler : IRequestHandler<SourceGenRequest>
+public class SourceGenCommandHandler : ICommandHandler<SourceGenCommand>
 {
-    public Task Handle(SourceGenRequest request, CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task Handle(SourceGenCommand command, CancellationToken cancellationToken) => Task.CompletedTask;
 }
 [SingletonHandler]
 public class SourceGenResponseRequestHandler : IRequestHandler<SourceGenResponseRequest, SourceGenResponse>
