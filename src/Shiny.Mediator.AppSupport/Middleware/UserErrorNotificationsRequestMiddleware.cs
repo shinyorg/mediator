@@ -27,6 +27,10 @@ public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
             logger.LogDebug("UserErrorNotifications Enabled - {Request}", context.Request);
             result = await next().ConfigureAwait(false);
         }
+        catch (ValidateException)
+        {
+            throw; // this is a special case we let bubble through to prevent order of ops setup issues
+        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error executing pipeline for {Error}", typeof(TRequest).FullName);
