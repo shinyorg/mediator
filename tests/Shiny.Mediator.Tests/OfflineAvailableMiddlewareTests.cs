@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Memory;
+using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Middleware;
 
@@ -26,7 +28,7 @@ public class OfflineAvailableRequestMiddlewareTests
             null,
             this.connectivity, 
             this.offline,
-            null
+            this.config
         );
     }
     

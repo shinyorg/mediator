@@ -2,6 +2,12 @@
 
 
 public interface ICommand;
+public interface IScheduledCommand : ICommand
+{
+    DateTimeOffset? DueAt { get; }
+}
+
+
 public interface IEvent;
 public interface IStreamRequest<out TResult>; 
 public interface IRequest<out TResult>;

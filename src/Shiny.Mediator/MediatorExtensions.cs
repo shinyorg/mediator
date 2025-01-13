@@ -1,9 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Shiny.Mediator.Infrastructure;
-using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;
 
@@ -35,92 +30,30 @@ public static class MediatorExtensions
         }, TaskContinuationOptions.OnlyOnFaulted);
     
     /// <summary>
-    /// Add Shiny Mediator to the service collection
+    /// Request data from a message
     /// </summary>
-    /// <param name="services"></param>
-    /// <param name="configurator"></param>
+    /// <param name="mediator"></param>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    public static IServiceCollection AddShinyMediator(this IServiceCollection services, Action<ShinyConfigurator>? configurator = null)
+    public static async Task<TResult> Request<TResult>(this IMediator mediator, IRequest<TResult> request, CancellationToken cancellationToken = default)
     {
-        var cfg = new ShinyConfigurator(services);
-        configurator?.Invoke(cfg);
-        if (!cfg.ExcludeDefaultMiddleware)
-        {
-            cfg.AddHttpClient();
-            cfg.AddOpenStreamMiddleware(typeof(TimerRefreshStreamRequestMiddleware<,>));
-            cfg.AddEventExceptionHandlingMiddleware();
-            cfg.AddPerformanceLoggingMiddleware();
-        }
-        
-        services.TryAddSingleton<ISerializerService, SerializerService>();
-        services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();
-        return services;
+        var context = await mediator.RequestWithContext(request, cancellationToken).ConfigureAwait(false);
+        return context.Result;
     }
     
-    
     /// <summary>
-    /// Performance logging middleware
+    /// Requests a stream of data from a message
     /// </summary>
-    /// <param name="cfg"></param>
+    /// <param name="mediator"></param>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    public static ShinyConfigurator AddPerformanceLoggingMiddleware(this ShinyConfigurator cfg)
-        => cfg.AddOpenRequestMiddleware(typeof(PerformanceLoggingRequestMiddleware<,>));
-
-
-    /// <summary>
-    ///  Event Exception Management
-    /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
-    public static ShinyConfigurator AddEventExceptionHandlingMiddleware(this ShinyConfigurator cfg)
-        => cfg.AddOpenEventMiddleware(typeof(ExceptionHandlerEventMiddleware<>));
-    
-    
-    /// <summary>
-    /// Adds data annotation validation to your contracts & request handlers
-    /// </summary>
-    /// <param name="configurator"></param>
-    /// <returns></returns>
-    public static ShinyConfigurator AddDataAnnotations(this ShinyConfigurator configurator)
-        => configurator.AddOpenRequestMiddleware(typeof(DataAnnotationsRequestMiddleware<,>));
-    
-    
-    public static IServiceCollection AddSingletonAsImplementedInterfaces<
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.Interfaces)] TImplementation
-    >(this IServiceCollection services) where TImplementation : class
+    public static IAsyncEnumerable<TResult> Request<TResult>(this IMediator mediator, IStreamRequest<TResult> request, CancellationToken cancellationToken = default)
     {
-        var interfaceTypes = typeof(TImplementation).GetInterfaces();
-        if (interfaceTypes.Length == 0)
-            throw new InvalidOperationException(services.GetType().FullName + " does not implement any interfaces");
-
-        services.AddSingleton<TImplementation>();
-        foreach (var interfaceType in interfaceTypes)
-            services.AddSingleton(interfaceType, sp => sp.GetRequiredService<TImplementation>());
-
-        return services;
+        var context = mediator.RequestWithContext(request, cancellationToken);
+        return context.Result;
     }
-    
-    
-    public static IServiceCollection AddScopedAsImplementedInterfaces<
-        [DynamicallyAccessedMembers(
-            DynamicallyAccessedMemberTypes.PublicConstructors | 
-            DynamicallyAccessedMemberTypes.NonPublicConstructors | 
-            DynamicallyAccessedMemberTypes.Interfaces
-        )] TImplementation
-    >(this IServiceCollection services) where TImplementation : class
-    {
-        var interfaceTypes = typeof(TImplementation).GetInterfaces();
-        if (interfaceTypes.Length == 0)
-            throw new InvalidOperationException(services.GetType().FullName + " does not implement any interfaces");
-
-        services.AddScoped<TImplementation>();
-        foreach (var interfaceType in interfaceTypes)
-            services.AddScoped(interfaceType, sp => sp.GetRequiredService<TImplementation>());
-
-        return services;
-    }
-
-    
-    public static ShinyConfigurator AddTimerRefreshStreamMiddleware(this ShinyConfigurator cfg)
-        => cfg.AddOpenStreamMiddleware(typeof(TimerRefreshStreamRequestMiddleware<,>));
 }

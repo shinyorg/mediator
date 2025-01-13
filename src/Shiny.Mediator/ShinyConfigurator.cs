@@ -9,27 +9,13 @@ public sealed class ShinyConfigurator(IServiceCollection services)
 {
     public IServiceCollection Services => services;
 
-    public bool ExcludeDefaultMiddleware { get; set; }
-    
-    
+
     public ShinyConfigurator SetSerializer<TSerializer>() where TSerializer : class, ISerializerService
     {
         this.Services.AddSingleton<ISerializerService, TSerializer>();
         return this;
     }
 
-    
-    public ShinyConfigurator AddHttpClient()
-    {
-        this.Services.Add(new ServiceDescriptor(
-            typeof(IRequestHandler<,>), 
-            null, 
-            typeof(HttpRequestHandler<,>), 
-            ServiceLifetime.Scoped
-        ));
-        return this;
-    }
-    
     
     public ShinyConfigurator AddRequestMiddleware<TRequest, TResult, TImpl>(
         ServiceLifetime lifetime = ServiceLifetime.Scoped)
@@ -53,11 +39,17 @@ public sealed class ShinyConfigurator(IServiceCollection services)
 
         return this;
     }
+
+
+    public ShinyConfigurator AddOpenCommandMiddleware(Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    {
+        services.Add(new ServiceDescriptor(typeof(ICommandMiddleware<>), null, implementationType, lifetime));
+        return this;
+    }
     
     
     public ShinyConfigurator AddOpenRequestMiddleware(Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped) 
     {
-        // TODO: validate open generic
         services.Add(new ServiceDescriptor(typeof(IRequestMiddleware<,>), null, implementationType, lifetime));
         return this;
     }
@@ -65,7 +57,6 @@ public sealed class ShinyConfigurator(IServiceCollection services)
     
     public ShinyConfigurator AddOpenStreamMiddleware(Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped) 
     {
-        // TODO: validate open generic
         services.Add(new ServiceDescriptor(typeof(IStreamRequestMiddleware<,>), null, implementationType, lifetime));
         return this;
     }
@@ -73,7 +64,6 @@ public sealed class ShinyConfigurator(IServiceCollection services)
 
     public ShinyConfigurator AddOpenEventMiddleware(Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
-        // TODO: validate open generic
         services.Add(new ServiceDescriptor(typeof(IEventMiddleware<>), null, implementationType, lifetime));
         return this;
     }

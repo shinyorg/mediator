@@ -11,6 +11,7 @@ public class DataAnnotationsTests
     public DataAnnotationsTests()
     {
         var services = new ServiceCollection();
+        services.AddLogging();
         services.AddShinyMediator(cfg => cfg.AddDataAnnotations());
         services.AddSingletonAsImplementedInterfaces<ValidationCommandHandler>();
         services.AddSingletonAsImplementedInterfaces<ValidationRequestHandler>();

@@ -44,10 +44,18 @@ public static class MauiProgram
         builder.Services.AddShinyMediator(x => x
             .UseMaui()
             .UseBlazor()
-            .AddMauiHttpDecorator()
+            
+            .AddOfflineAvailabilityMiddleware()
+            .AddPersistentCache()
+            .AddUserErrorNotificationsRequestMiddleware()
+            .AddPerformanceLoggingMiddleware()
             .AddTimerRefreshStreamMiddleware()
-            .AddPrismSupport()
+            .AddEventExceptionHandlingMiddleware()
             .AddDataAnnotations()
+            
+            .AddHttpClient()
+            .AddMauiHttpDecorator()
+            .AddPrismSupport()
             
             // .AddFluentValidation() // don't add both
             .AddResiliencyMiddleware(builder.Configuration)

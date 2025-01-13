@@ -6,6 +6,7 @@ public interface ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     Task Process(
         TCommand command, 
-        CommandHandlerDelegate next
+        CommandHandlerDelegate next,
+        CancellationToken cancellationToken
     );
 }

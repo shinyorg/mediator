@@ -18,6 +18,7 @@ public class MiddlewareTests
     {
         var services = new ServiceCollection();
         services.AddShinyMediator();
+        services.AddLogging();
         services.AddSingletonAsImplementedInterfaces<MiddlewareRequestResultHandler>();
         
         if (addConstrained)

@@ -7,6 +7,7 @@ public class RequestHandlerTests
     public async Task EndToEnd()
     {
         var services = new ServiceCollection();
+        services.AddLogging();
         services.AddShinyMediator();
         services.AddSingletonAsImplementedInterfaces<TestResultRequestHandler>();
         var sp = services.BuildServiceProvider();
