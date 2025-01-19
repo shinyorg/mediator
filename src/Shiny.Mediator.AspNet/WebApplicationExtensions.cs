@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Shiny.Mediator;
@@ -10,19 +11,25 @@ namespace Shiny.Mediator;
 // TODO: type implements multiple handlers - move attribute to Handle method?
 public static class WebApplicationExtensions
 {
-    static readonly MethodInfo mapVoidType;
-    static readonly MethodInfo mapResultType;
+    static readonly MethodInfo mapCommandType;
+    static readonly MethodInfo mapRequestType;
     static readonly MethodInfo mapStreamType;
     
     static WebApplicationExtensions()
     {
-        mapResultType = typeof(WebAppMap).GetMethod(nameof(WebAppMap.MapResultType), BindingFlags.Static | BindingFlags.Public)!;
+        mapRequestType = typeof(WebAppMap).GetMethod(nameof(WebAppMap.MapResultType), BindingFlags.Static | BindingFlags.Public)!;
         mapStreamType = typeof(WebAppMap).GetMethod(nameof(WebAppMap.MapStreamType), BindingFlags.Static | BindingFlags.Public)!;
-        mapVoidType = typeof(WebAppMap).GetMethod(nameof(WebAppMap.MapCommandType), BindingFlags.Static | BindingFlags.Public)!;
+        mapCommandType = typeof(WebAppMap).GetMethod(nameof(WebAppMap.MapCommandType), BindingFlags.Static | BindingFlags.Public)!;
     }
-    
-    
-    public static WebApplication UseShinyMediatorEndpointHandlers(this WebApplication app, IServiceCollection services)
+
+
+    /// <summary>
+    /// This will use reflection to scan all attributes against all handlers registered in your service collection 
+    /// </summary>
+    /// <param name="app"></param>
+    /// <param name="services"></param>
+    /// <returns></returns>
+    public static WebApplication MapShinyMediatorEndpointHandlers(this WebApplication app, IServiceCollection services)
     {
         foreach (var service in services)
         {
@@ -45,9 +52,9 @@ public static class WebApplicationExtensions
         {
             var attribute = type.GetCustomAttribute<MediatorHttpAttribute>();
             if (attribute != null)
-                MapVoid(app, type, attribute);
+                MapCommand(app, type, attribute);
         }
-        else if (IsResultHandler(type))
+        else if (IsRequestHandler(type))
         {
             var attribute = type.GetCustomAttribute<MediatorHttpAttribute>();
             if (attribute != null)
@@ -67,7 +74,7 @@ public static class WebApplicationExtensions
         .Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICommandHandler<>));
     
     
-    static bool IsResultHandler(Type type) => type
+    static bool IsRequestHandler(Type type) => type
         .GetInterfaces()
         .Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IRequestHandler<,>));
     
@@ -77,7 +84,7 @@ public static class WebApplicationExtensions
         .Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>));
     
     
-    static void MapVoid(WebApplication app, Type handlerType, MediatorHttpAttribute attribute)
+    static void MapCommand(WebApplication app, Type handlerType, MediatorHttpAttribute attribute)
     {
         var requestType = handlerType
             .GetInterfaces()
@@ -85,7 +92,7 @@ public static class WebApplicationExtensions
             .Select(x => x.GetGenericArguments().First())
             .First();
         
-        mapVoidType
+        mapCommandType
             .MakeGenericMethod(requestType)
             .Invoke(null, [app, attribute]);
     }
@@ -113,7 +120,7 @@ public static class WebApplicationExtensions
             .Select(x => x.GetGenericArguments())
             .First();
 
-        mapResultType
+        mapRequestType
             .MakeGenericMethod(requestType[0], requestType[1])
             .Invoke(null, [app, attribute]);
     }
@@ -129,75 +136,19 @@ public class WebAppMap
         
         if (attribute.Method == HttpMethod.Post)
         {
-            routerBuilder = app.MapPost(
-                attribute.UriTemplate,
-                async (
-                    [FromServices] IMediator mediator,
-                    [FromBody] TCommand command,
-                    CancellationToken cancellationToken
-                ) =>
-                {
-                    await mediator
-                        .Send(command, cancellationToken)
-                        .ConfigureAwait(false);
-
-                    return Results.Ok();
-                }
-            );
+            routerBuilder = app.MapMediatorPost<TCommand>(attribute.UriTemplate);
         }
         else if (attribute.Method == HttpMethod.Put)
         {
-            routerBuilder = app.MapPut(
-                attribute.UriTemplate,
-                async (
-                    [FromServices] IMediator mediator,
-                    [FromBody] TCommand command,
-                    CancellationToken cancellationToken
-                ) =>
-                {
-                    await mediator
-                        .Send(command, cancellationToken)
-                        .ConfigureAwait(false);
-                    
-                    return Results.Ok();
-                }
-            );
+            routerBuilder = app.MapMediatorPut<TCommand>(attribute.UriTemplate);
         }
         else if (attribute.Method == HttpMethod.Get)
         {
-            routerBuilder = app.MapGet(
-                attribute.UriTemplate,
-                async (
-                    [FromServices] IMediator mediator,
-                    [AsParameters] TCommand command,
-                    CancellationToken cancellationToken
-                ) =>
-                {
-                    await mediator
-                        .Send(command, cancellationToken)
-                        .ConfigureAwait(false);
-                    
-                    return Results.Ok();
-                }
-            );
+            routerBuilder = app.MapMediatorGet<TCommand>(attribute.UriTemplate);
         } 
         else if (attribute.Method == HttpMethod.Delete)
         {
-            routerBuilder = app.MapDelete(
-                attribute.UriTemplate,
-                async (
-                    [FromServices] IMediator mediator,
-                    [AsParameters] TCommand command,
-                    CancellationToken cancellationToken
-                ) =>
-                {
-                    await mediator
-                        .Send(command, cancellationToken)
-                        .ConfigureAwait(false);
-                    
-                    return Results.Ok();
-                }
-            );
+            routerBuilder = app.MapMediatorDelete<TCommand>(attribute.UriTemplate);
         } 
         else
         {
@@ -214,47 +165,19 @@ public class WebAppMap
         
         if (attribute.Method == HttpMethod.Post)
         {
-            routerBuilder = app.MapPost(
-                attribute.UriTemplate,
-                (
-                    [FromServices] IMediator mediator,
-                    [FromBody] TRequest request,
-                    CancellationToken cancellationToken
-                ) => mediator.Request(request, cancellationToken)
-            );
+            routerBuilder = app.MapMediatorStreamPost<TRequest, TResult>(attribute.UriTemplate);
         }
         else if (attribute.Method == HttpMethod.Put)
         {
-            routerBuilder = app.MapPut(
-                attribute.UriTemplate,
-                (
-                    [FromServices] IMediator mediator,
-                    [FromBody] TRequest request,
-                    CancellationToken cancellationToken
-                ) => mediator.Request(request, cancellationToken)
-            );
+            routerBuilder = app.MapMediatorStreamPut<TRequest, TResult>(attribute.UriTemplate);
         }
         else if (attribute.Method == HttpMethod.Get)
         {
-            routerBuilder = app.MapGet(
-                attribute.UriTemplate,
-                (
-                    [FromServices] IMediator mediator,
-                    [AsParameters] TRequest request,
-                    CancellationToken cancellationToken
-                ) => mediator.Request(request, cancellationToken)
-            );
+            routerBuilder = app.MapMediatorStreamGet<TRequest, TResult>(attribute.UriTemplate);
         }
         else if (attribute.Method == HttpMethod.Delete)
         {
-            routerBuilder = app.MapDelete(
-                attribute.UriTemplate,
-                (
-                    [FromServices] IMediator mediator,
-                    [AsParameters] TRequest request,
-                    CancellationToken cancellationToken
-                ) => mediator.Request(request, cancellationToken)
-            );
+            routerBuilder = app.MapMediatorStreamDelete<TRequest, TResult>(attribute.UriTemplate);
         }
         else
         {
@@ -272,47 +195,19 @@ public class WebAppMap
         
         if (attribute.Method == HttpMethod.Post)
         {
-            routerBuilder = app.MapPost(
-                attribute.UriTemplate,
-                (
-                    [FromServices] IMediator mediator,
-                    [FromBody] TRequest request,
-                    CancellationToken cancellationToken
-                ) => mediator.Request(request, cancellationToken)
-            );
+            routerBuilder = app.MapMediatorPost<TRequest, TResult>(attribute.UriTemplate);
         }
         else if (attribute.Method == HttpMethod.Put)
         {
-            routerBuilder = app.MapGet(
-                attribute.UriTemplate,
-                (
-                    [FromServices] IMediator mediator,
-                    [FromBody] TRequest request,
-                    CancellationToken cancellationToken
-                ) => mediator.Request(request, cancellationToken)
-            );
+            routerBuilder = app.MapMediatorPut<TRequest, TResult>(attribute.UriTemplate);
         }
         else if (attribute.Method == HttpMethod.Get)
         {
-            routerBuilder = app.MapGet(
-                attribute.UriTemplate,
-                (
-                    [FromServices] IMediator mediator,
-                    [AsParameters] TRequest request,
-                    CancellationToken cancellationToken
-                ) => mediator.Request(request, cancellationToken)
-            );
+            routerBuilder = app.MapMediatorGet<TRequest, TResult>(attribute.UriTemplate);
         }
         else if (attribute.Method == HttpMethod.Delete)
         {
-            routerBuilder = app.MapDelete(
-                attribute.UriTemplate,
-                (
-                    [FromServices] IMediator mediator,
-                    [AsParameters] TRequest request,
-                    CancellationToken cancellationToken
-                ) => mediator.Request(request, cancellationToken)
-            );
+            routerBuilder = app.MapMediatorDelete<TRequest, TResult>(attribute.UriTemplate);
         }
         else
         {
