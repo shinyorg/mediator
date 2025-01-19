@@ -1,4 +1,5 @@
 using Sample.Api;
+using Sample.Api.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
+app.MapMediatorGet<MappedRequest, string>("/mapped").WithOpenApi();
 app.UseHttpsRedirection();
-app.UseShinyMediatorEndpointHandlers(builder.Services);
+app.MapShinyMediatorEndpointHandlers(builder.Services);
 
 app.Run();

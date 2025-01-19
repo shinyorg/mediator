@@ -18,7 +18,7 @@ public static class EndpointRouteBuilderExtensions
         pattern, 
         async (
             [FromServices] IMediator mediator,
-            [FromBody] TRequest request,
+            [AsParameters] TRequest request,
             CancellationToken cancellationToken
         ) =>
         {
@@ -75,7 +75,7 @@ public static class EndpointRouteBuilderExtensions
         pattern, 
         async (
             [FromServices] IMediator mediator,
-            [FromBody] TRequest request,
+            [AsParameters] TRequest request,
             CancellationToken cancellationToken
         ) =>
         {
@@ -97,7 +97,7 @@ public static class EndpointRouteBuilderExtensions
         pattern, 
         async (
             [FromServices] IMediator mediator,
-            [FromBody] TCommand command,
+            [AsParameters] TCommand command,
             CancellationToken cancellationToken
         ) =>
         {
@@ -116,7 +116,7 @@ public static class EndpointRouteBuilderExtensions
         pattern, 
         async (
             [FromServices] IMediator mediator,
-            [FromBody] TCommand command,
+            [AsParameters] TCommand command,
             CancellationToken cancellationToken
         ) =>
         {
@@ -187,7 +187,7 @@ public static class EndpointRouteBuilderExtensions
             pattern, 
             (
                 [FromServices] IMediator mediator,
-                [FromBody] TRequest request,
+                [AsParameters] TRequest request,
                 CancellationToken cancellationToken
             ) => mediator.Request(request, cancellationToken)
         );
@@ -209,7 +209,7 @@ public static class EndpointRouteBuilderExtensions
             pattern, 
             (
                 [FromServices] IMediator mediator,
-                [FromBody] TRequest request,
+                [AsParameters] TRequest request,
                 CancellationToken cancellationToken
             ) => mediator.Request(request, cancellationToken)
         );
