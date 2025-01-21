@@ -17,12 +17,24 @@ public static class RegistrationExtensions
     /// </summary>
     /// <param name="services"></param>
     /// <param name="configurator"></param>
+    /// <param name="includeStandardMiddleware">By default, we will include </param>
     /// <returns></returns>
-    public static IServiceCollection AddShinyMediator(this IServiceCollection services, Action<ShinyConfigurator>? configurator = null)
+    public static IServiceCollection AddShinyMediator(
+        this IServiceCollection services, 
+        Action<ShinyConfigurator>? configurator = null,
+        bool includeStandardMiddleware = true
+    )
     {
         var cfg = new ShinyConfigurator(services);
         configurator?.Invoke(cfg);
-        
+
+        if (includeStandardMiddleware)
+        {
+            cfg.AddHttpClient();
+            cfg.AddEventExceptionHandlingMiddleware();
+            cfg.AddPerformanceLoggingMiddleware();
+            cfg.AddTimerRefreshStreamMiddleware();
+        }
         services.TryAddSingleton<ISerializerService, SerializerService>();
         services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();
         return services;
