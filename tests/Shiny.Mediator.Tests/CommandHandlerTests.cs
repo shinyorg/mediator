@@ -30,7 +30,7 @@ public class TestCommand : ICommand
 
 public class Test1CommandHandler : ICommandHandler<TestCommand>
 {
-    public async Task Handle(TestCommand command, CancellationToken cancellationToken)
+    public async Task Handle(TestCommand command, CommandContext context, CancellationToken cancellationToken)
     {
         if (command.Delay > 0)
             await Task.Delay(command.Delay);

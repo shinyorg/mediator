@@ -6,8 +6,10 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 
 public partial class Mediator
 {
-    public async Task<CommandContext> Send<TCommand>(TCommand command, CancellationToken cancellationToken = default)
-        where TCommand : ICommand
+    public async Task<CommandContext> Send<TCommand>(
+        TCommand command, 
+        CancellationToken cancellationToken = default
+    ) where TCommand : ICommand
     {
         using var scope = services.CreateScope();
         var commandHandler = scope.ServiceProvider.GetService<ICommandHandler<TCommand>>();
@@ -23,7 +25,7 @@ public partial class Mediator
                 commandHandler.GetType().FullName 
             );
             await commandHandler
-                .Handle(command, cancellationToken)
+                .Handle(command, context, cancellationToken)
                 .ConfigureAwait(false);
         });
 

@@ -25,7 +25,7 @@ public record SourceGenEvent : IEvent;
 [SingletonHandler]
 public class SourceGenCommandHandler : ICommandHandler<SourceGenCommand>
 {
-    public Task Handle(SourceGenCommand command, CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task Handle(SourceGenCommand command, CommandContext context, CancellationToken cancellationToken) => Task.CompletedTask;
 }
 [SingletonHandler]
 public class SourceGenResponseRequestHandler : IRequestHandler<SourceGenResponseRequest, SourceGenResponse>

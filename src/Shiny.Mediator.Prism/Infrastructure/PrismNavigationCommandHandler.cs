@@ -5,7 +5,7 @@ public class PrismNavigationCommandHandler<TCommand>(
     IGlobalNavigationService navigator
 ) : ICommandHandler<TCommand> where TCommand : IPrismNavigationCommand
 {
-    public async Task Handle(TCommand command, CancellationToken cancellationToken)
+    public async Task Handle(TCommand command, CommandContext context, CancellationToken cancellationToken)
     {
         var pn = command.NavigationParameterName ?? command.GetType().Name;
         var nav = command.Navigator ?? navigator;

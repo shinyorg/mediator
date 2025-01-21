@@ -67,7 +67,7 @@ public class ValidationRequest : IRequest<ValidateResult>
 
 public class ValidationCommandHandler : ICommandHandler<ValidationCommand>
 {
-    public Task Handle(ValidationCommand request, CancellationToken cancellationToken)
+    public Task Handle(ValidationCommand request, CommandContext context, CancellationToken cancellationToken)
     {
         throw new InvalidOperationException("Never should have gotten here");
     }
