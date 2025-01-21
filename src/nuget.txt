@@ -1,9 +1,9 @@
-﻿-----
-Shiny
------
+﻿--------------
+Shiny Mediator
+--------------
 
 GitHub: https://github.com/shinyorg/mediator
-Docs: https://shinylib.net
+Docs: https://shinylib.net/mediator
 Blog: https://shinylib.net/blog
 
 
