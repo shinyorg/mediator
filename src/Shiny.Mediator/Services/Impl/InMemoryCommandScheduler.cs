@@ -3,7 +3,7 @@ using System.Timers;
 using Microsoft.Extensions.Logging;
 using Timer = System.Timers.Timer;
 
-namespace Shiny.Mediator.Services;
+namespace Shiny.Mediator.Services.Impl;
 
 
 public class InMemoryCommandScheduler : ICommandScheduler

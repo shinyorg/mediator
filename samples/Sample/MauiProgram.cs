@@ -47,7 +47,7 @@ public static class MauiProgram
             
             .AddOfflineAvailabilityMiddleware()
             .AddPersistentCache()
-            .AddUserErrorNotificationsRequestMiddleware()
+            .AddUserErrorNotificationsMiddleware()
             .AddPerformanceLoggingMiddleware()
             .AddTimerRefreshStreamMiddleware()
             .AddEventExceptionHandlingMiddleware()

@@ -5,6 +5,7 @@ using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Middleware;
 using Shiny.Mediator.Services;
+using Shiny.Mediator.Services.Impl;
 
 namespace Shiny.Mediator;
 
@@ -16,12 +17,24 @@ public static class RegistrationExtensions
     /// </summary>
     /// <param name="services"></param>
     /// <param name="configurator"></param>
+    /// <param name="includeStandardMiddleware">By default, we will include </param>
     /// <returns></returns>
-    public static IServiceCollection AddShinyMediator(this IServiceCollection services, Action<ShinyConfigurator>? configurator = null)
+    public static IServiceCollection AddShinyMediator(
+        this IServiceCollection services, 
+        Action<ShinyConfigurator>? configurator = null,
+        bool includeStandardMiddleware = true
+    )
     {
         var cfg = new ShinyConfigurator(services);
         configurator?.Invoke(cfg);
-        
+
+        if (includeStandardMiddleware)
+        {
+            cfg.AddHttpClient();
+            cfg.AddEventExceptionHandlingMiddleware();
+            cfg.AddPerformanceLoggingMiddleware();
+            cfg.AddTimerRefreshStreamMiddleware();
+        }
         services.TryAddSingleton<ISerializerService, SerializerService>();
         services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();
         return services;
@@ -68,16 +81,20 @@ public static class RegistrationExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddInMemoryCommandScheduling(this ShinyConfigurator configurator)
         => configurator.AddCommandScheduling<InMemoryCommandScheduler>();
-    
-    
+
+
     /// <summary>
     /// Performance logging middleware
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
     public static ShinyConfigurator AddPerformanceLoggingMiddleware(this ShinyConfigurator cfg)
-        => cfg.AddOpenRequestMiddleware(typeof(PerformanceLoggingRequestMiddleware<,>));
-    // TODO: add commands
+    {
+        cfg.AddOpenRequestMiddleware(typeof(PerformanceLoggingRequestMiddleware<,>));
+        cfg.AddOpenCommandMiddleware(typeof(PerformanceLoggingCommandMiddleware<>));
+        return cfg;
+    }
+    
 
 
     /// <summary>
@@ -87,8 +104,8 @@ public static class RegistrationExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddEventExceptionHandlingMiddleware(this ShinyConfigurator cfg)
         => cfg.AddOpenEventMiddleware(typeof(ExceptionHandlerEventMiddleware<>));
-    // TODO: add commands
 
+    
     /// <summary>
     /// Adds data annotation validation to your contracts, request handlers, & command handlers
     /// </summary>

@@ -98,8 +98,8 @@ public static class MauiExtensions
     public static ShinyConfigurator AddMainThreadMiddleware(this ShinyConfigurator cfg)
     {
         cfg.AddOpenEventMiddleware(typeof(MainTheadEventMiddleware<>));
-        cfg.AddOpenRequestMiddleware(typeof(MainThreadRequestHandler<,>));
-        
+        cfg.AddOpenRequestMiddleware(typeof(MainThreadRequestMiddleware<,>));
+        cfg.AddOpenCommandMiddleware(typeof(MainThreadCommandMiddleware<>));
         return cfg;
     }
 }

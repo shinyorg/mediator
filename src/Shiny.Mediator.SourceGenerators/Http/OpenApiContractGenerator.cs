@@ -117,7 +117,8 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
 
     string GetResponseType(OpenApiOperation op)
     {
-        var responseType = "global::Shiny.Mediator.Unit";
+        
+        var responseType = "global::System.Net.Http.HttpResponseMessage";
         if (op.Responses.TryGetValue("200", out var response200))
         {
             var appJsonType = this.GetApplicationJsonResponse(response200.Content);

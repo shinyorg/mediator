@@ -6,20 +6,20 @@ using Polly.Registry;
 namespace Shiny.Mediator.Resilience.Handlers;
 
 
-public class ResilientRequestMiddleware<TRequest, TResult>(
-    ILogger<ResilientRequestMiddleware<TRequest, TResult>> logger,
+public class ResilientCommandMiddleware<TCommand>(
+    ILogger<ResilientCommandMiddleware<TCommand>> logger,
     IConfiguration configuration,
     ResiliencePipelineProvider<string> pipelineProvider
-) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
+) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
-    public async Task<TResult> Process(
-        RequestContext<TRequest> context,
-        RequestHandlerDelegate<TResult> next,
+    public async Task Process(
+        CommandContext<TCommand> context,
+        CommandHandlerDelegate next,
         CancellationToken cancellationToken
     )
     {
         ResiliencePipeline? pipeline = null;
-        var section = configuration.GetHandlerSection("Resilience", context.Request!, context.RequestHandler);
+        var section = configuration.GetHandlerSection("Resilience", context.Command, context.Handler);
         
         if (section != null)
         {
@@ -27,19 +27,21 @@ public class ResilientRequestMiddleware<TRequest, TResult>(
         }
         else
         {
-            var attribute = context.RequestHandler.GetHandlerHandleMethodAttribute<TRequest, ResilientAttribute>();
+            var attribute = context.Handler.GetHandlerHandleMethodAttribute<TCommand, ResilientAttribute>();
             if (attribute != null)
                 pipeline = pipelineProvider.GetPipeline(attribute.ConfigurationKey.ToLower());
         }
+
         if (pipeline == null)
-            return await next().ConfigureAwait(false);
+        {
+            await next().ConfigureAwait(false);
+            return;
+        }
 
         // it can't cancel properly here... may need to make next take a CancellationToken
-        logger.LogDebug("Resilience Enabled - {Request}", context.Request);
-        var result = await pipeline
+        logger.LogDebug("Resilience Enabled - {Request}", context.Command);
+        await pipeline
             .ExecuteAsync(async _ => await next(), cancellationToken)
             .ConfigureAwait(false);
-        
-        return result;
     }
 }

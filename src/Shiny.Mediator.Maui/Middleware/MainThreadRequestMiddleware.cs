@@ -1,11 +1,10 @@
 using Microsoft.Extensions.Logging;
-using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
 
 
-public class MainThreadRequestHandler<TRequest, TResult>(
-    ILogger<MainThreadRequestHandler<TRequest, TResult>> logger
+public class MainThreadRequestMiddleware<TRequest, TResult>(
+    ILogger<MainThreadRequestMiddleware<TRequest, TResult>> logger
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     public Task<TResult> Process(
