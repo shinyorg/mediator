@@ -6,7 +6,12 @@ public class ScheduledCommandMiddleware<TCommand>(
     ICommandScheduler scheduler
 ) : ICommandMiddleware<TCommand> where TCommand : IScheduledCommand
 {
-    public async Task Process(TCommand command, CommandHandlerDelegate next, CancellationToken cancellationToken)
+    public async Task Process(
+        TCommand command, 
+        CommandContext context, 
+        CommandHandlerDelegate next,
+        CancellationToken cancellationToken
+    )
     {
         if (command.DueAt == null)
         {
@@ -14,7 +19,9 @@ public class ScheduledCommandMiddleware<TCommand>(
         }
         else
         {
-            await scheduler.Schedule(command, cancellationToken).ConfigureAwait(false);
+            await scheduler
+                .Schedule(context, cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 }

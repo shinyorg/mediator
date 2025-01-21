@@ -8,7 +8,7 @@ namespace Sample.Handlers;
 public class MyRequestMiddleware(AppSqliteConnection conn) : IRequestMiddleware<MyMessageRequest, MyMessageResponse>
 {
     public async Task<MyMessageResponse> Process(
-        ExecutionContext<MyMessageRequest> context, 
+        RequestContext<MyMessageRequest> context, 
         RequestHandlerDelegate<MyMessageResponse> next 
     )
     {

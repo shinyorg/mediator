@@ -8,7 +8,7 @@ namespace Shiny.Mediator.Services;
 
 public class InMemoryCommandScheduler : ICommandScheduler
 {
-    readonly ConcurrentDictionary<Guid, IScheduledCommand> commands = new();
+    readonly ConcurrentDictionary<Guid, CommandContext> commands = new();
     readonly ILogger logger;
     readonly IMediator mediator;
     readonly Timer timer = new();
@@ -23,12 +23,15 @@ public class InMemoryCommandScheduler : ICommandScheduler
     }
     
     
-    public Task<bool> Schedule(IScheduledCommand command, CancellationToken cancellationToken)
+    public Task<bool> Schedule(CommandContext context, CancellationToken cancellationToken)
     {
+        if (context.Command is not IScheduledCommand command)
+            return Task.FromResult(false);
+        
         var scheduled = false;
         if (command.DueAt != null && command.DueAt < DateTimeOffset.UtcNow)
         {
-            this.commands.Add(command);
+            this.commands.TryAdd(context.CommandId, context);
             if (this.timer.Enabled)
                 this.timer.Start();
             scheduled = true;
@@ -44,15 +47,17 @@ public class InMemoryCommandScheduler : ICommandScheduler
         
         foreach (var item in items)
         {
-            if (item.DueAt >= DateTimeOffset.UtcNow)
+            var scheduled = (IScheduledCommand)item.Value.Command;
+            
+            if (scheduled.DueAt >= DateTimeOffset.UtcNow)
             {
                 try
                 {
                     // TODO: nullify due date so command can send
                     // item.DueAt = null;
-                    await this.mediator
-                        .Send(item)
-                        .ConfigureAwait(false);
+                    // await this.mediator
+                    //     .Send(item)
+                    //     .ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

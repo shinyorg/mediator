@@ -20,7 +20,7 @@ public static class CacheExtensions
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-    public static CacheContext? Cache(this ExecutionContext context)
+    public static CacheContext? Cache(this RequestContext context)
         => context.TryGetValue<CacheContext>("Cache");
     
     /// <summary>
@@ -28,6 +28,6 @@ public static class CacheExtensions
     /// </summary>
     /// <param name="context"></param>
     /// <param name="cacheContext"></param>
-    public static void Cache(this ExecutionContext context, CacheContext cacheContext)
+    public static void Cache(this RequestContext context, CacheContext cacheContext)
         => context.Add("Cache", cacheContext);
 }

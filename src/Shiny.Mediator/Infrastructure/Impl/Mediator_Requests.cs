@@ -6,7 +6,7 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 
 public partial class Mediator
 {
-    public virtual async Task<ExecutionResult<TResult>> RequestWithContext<TResult>(
+    public virtual async Task<RequestResult<TResult>> RequestWithContext<TResult>(
         IRequest<TResult> request,
         CancellationToken cancellationToken = default
     )
@@ -26,7 +26,7 @@ public partial class Mediator
 
 public interface IRequestResultWrapper<TResult>
 {
-    Task<ExecutionResult<TResult>> Handle();
+    Task<RequestResult<TResult>> Handle();
 }
 public class RequestResultWrapper<TRequest, TResult>(
     IServiceProvider scope, 
@@ -34,13 +34,13 @@ public class RequestResultWrapper<TRequest, TResult>(
     CancellationToken cancellationToken
 ) : IRequestResultWrapper<TResult> where TRequest : IRequest<TResult>
 {
-    public async Task<ExecutionResult<TResult>> Handle()
+    public async Task<RequestResult<TResult>> Handle()
     {
         var requestHandler = scope.GetService<IRequestHandler<TRequest, TResult>>();
         if (requestHandler == null)
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
         
-        var context = new ExecutionContext<TRequest>(request, requestHandler, cancellationToken);
+        var context = new RequestContext<TRequest>(request, requestHandler, cancellationToken);
         var middlewares = scope.GetServices<IRequestMiddleware<TRequest, TResult>>();
         var logger = scope.GetRequiredService<ILogger<TRequest>>();
         
@@ -70,6 +70,6 @@ public class RequestResultWrapper<TRequest, TResult>(
             .Invoke()
             .ConfigureAwait(false);
         
-        return new ExecutionResult<TResult>(context, result);
+        return new RequestResult<TResult>(context, result);
     }
 }

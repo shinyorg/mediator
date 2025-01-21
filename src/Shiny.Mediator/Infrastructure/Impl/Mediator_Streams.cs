@@ -6,7 +6,7 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 
 public partial class Mediator
 {
-    public virtual ExecutionResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
+    public virtual RequestResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default
     )
@@ -21,7 +21,7 @@ public partial class Mediator
 
 public interface IStreamRequestWrapper<TResult>
 {
-    ExecutionResult<IAsyncEnumerable<TResult>> Handle();
+    RequestResult<IAsyncEnumerable<TResult>> Handle();
 }
 
 public class StreamRequestWrapper<TRequest, TResult>(
@@ -30,7 +30,7 @@ public class StreamRequestWrapper<TRequest, TResult>(
     CancellationToken cancellationToken
 ) : IStreamRequestWrapper<TResult> where TRequest : IStreamRequest<TResult>
 {
-    public ExecutionResult<IAsyncEnumerable<TResult>> Handle()
+    public RequestResult<IAsyncEnumerable<TResult>> Handle()
     {
         var requestHandler = scope.GetService<IStreamRequestHandler<TRequest, TResult>>();
         if (requestHandler == null)
@@ -46,7 +46,7 @@ public class StreamRequestWrapper<TRequest, TResult>(
             return requestHandler.Handle(request, cancellationToken);
         });
 
-        var context = new ExecutionContext<TRequest>(request, requestHandler, cancellationToken);
+        var context = new RequestContext<TRequest>(request, requestHandler, cancellationToken);
         var middlewares = scope.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
         var enumerable = middlewares
             .Reverse()
@@ -67,6 +67,6 @@ public class StreamRequestWrapper<TRequest, TResult>(
             .Invoke();
         
         // TODO: scope can't die until the enumerable is done - how to handle this?
-        return new ExecutionResult<IAsyncEnumerable<TResult>>(context, enumerable);
+        return new RequestResult<IAsyncEnumerable<TResult>>(context, enumerable);
     }
 }

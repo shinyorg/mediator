@@ -13,7 +13,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
-        ExecutionContext<TRequest> context,
+        RequestContext<TRequest> context,
         RequestHandlerDelegate<TResult> next 
     )
     {
@@ -42,7 +42,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
     }
 
 
-    async Task<TResult> GetOffline(ExecutionContext<TRequest> context)
+    async Task<TResult> GetOffline(RequestContext<TRequest> context)
     {
         TResult result = default;
         var offlineResult = await offline.Get<TResult>(context.Request!);

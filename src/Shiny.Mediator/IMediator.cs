@@ -10,7 +10,7 @@ public interface IMediator
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    Task<ExecutionResult<TResult>> RequestWithContext<TResult>(
+    Task<RequestResult<TResult>> RequestWithContext<TResult>(
         IRequest<TResult> request,
         CancellationToken cancellationToken = default
     );
@@ -21,7 +21,7 @@ public interface IMediator
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task Send<TCommand>(
+    Task<CommandContext> Send<TCommand>(
         TCommand request,
         CancellationToken cancellationToken = default
     ) where TCommand : ICommand;
@@ -33,7 +33,7 @@ public interface IMediator
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    ExecutionResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
+    RequestResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default
     );

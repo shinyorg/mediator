@@ -9,7 +9,7 @@ public class MainThreadRequestHandler<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     public Task<TResult> Process(
-        ExecutionContext<TRequest> context, 
+        RequestContext<TRequest> context, 
         RequestHandlerDelegate<TResult> next 
     )
     {

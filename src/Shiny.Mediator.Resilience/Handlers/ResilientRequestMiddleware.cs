@@ -14,7 +14,7 @@ public class ResilientRequestHandlerMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     public async Task<TResult> Process(
-        ExecutionContext<TRequest> context,
+        RequestContext<TRequest> context,
         RequestHandlerDelegate<TResult> next 
     )
     {

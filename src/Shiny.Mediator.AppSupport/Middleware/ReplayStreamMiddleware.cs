@@ -21,7 +21,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
 ) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
-        ExecutionContext<TRequest> context,
+        RequestContext<TRequest> context,
         StreamRequestHandlerDelegate<TResult> next 
     )
     {
