@@ -8,11 +8,13 @@ public interface IMediator
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
+    /// <param name="headers"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
     Task<RequestResult<TResult>> RequestWithContext<TResult>(
         IRequest<TResult> request,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        params IEnumerable<(string Key, object Value)> headers
     );
 
     /// <summary>
@@ -20,10 +22,12 @@ public interface IMediator
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
+    /// <param name="headers"></param>
     /// <returns></returns>
     Task<CommandContext<TCommand>> Send<TCommand>(
         TCommand request,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        params IEnumerable<(string Key, object Value)> headers
     ) where TCommand : ICommand;
   
     /// <summary>
@@ -31,11 +35,13 @@ public interface IMediator
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
+    /// <param name="headers"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
     RequestResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
         IStreamRequest<TResult> request,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        params IEnumerable<(string Key, object Value)> headers
     );
     
     /// <summary>
@@ -44,12 +50,14 @@ public interface IMediator
     /// <param name="event"></param>
     /// <param name="executeInParallel"></param>
     /// <param name="cancellationToken"></param>
+    /// <param name="headers"></param>
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
     Task<EventAggregatedContext<TEvent>> Publish<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default,
-        bool executeInParallel = true
+        bool executeInParallel = true,
+        params IEnumerable<(string Key, object Value)> headers
     ) where TEvent : IEvent;
     
     /// <summary>
