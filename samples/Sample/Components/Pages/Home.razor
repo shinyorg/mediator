@@ -9,7 +9,7 @@ Welcome to your new app.
 
 @code {
     // TODO: should nav to another page to test that this disconnects
-    public async Task Handle(MyMessageEvent @event, CancellationToken cancellationToken)
+    public async Task Handle(MyMessageEvent @event, EventContext context, CancellationToken cancellationToken)
     {
         await conn.Log("BlazorPage-Home.razor", @event);
     }

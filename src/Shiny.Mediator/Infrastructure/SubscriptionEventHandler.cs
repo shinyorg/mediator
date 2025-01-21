@@ -13,14 +13,14 @@ public class SubscriptionEventHandler<TEvent> : IDisposable, IEventHandler<TEven
     }
     
     
-    public Func<TEvent, CancellationToken, Task>? OnHandle { get; set; }
+    public Func<TEvent, EventContext, CancellationToken, Task>? OnHandle { get; set; }
     
-    public Task Handle(TEvent @event, CancellationToken cancellationToken)
+    public Task Handle(TEvent @event, EventContext context, CancellationToken cancellationToken)
     {
         if (this.OnHandle == null)
             throw new InvalidOperationException("MediatorEventHandler.OnHandle is not set");
         
-        return this.OnHandle.Invoke(@event, cancellationToken);
+        return this.OnHandle.Invoke(@event, context, cancellationToken);
     }
 
 

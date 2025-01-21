@@ -59,6 +59,6 @@ public interface IMediator
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
     IDisposable Subscribe<TEvent>(
-        Func<TEvent, CancellationToken, Task> action
+        Func<TEvent, EventContext, CancellationToken, Task> action
     ) where TEvent : IEvent;
 }

@@ -6,7 +6,7 @@ namespace Shiny.Mediator.Middleware;
 public class ExceptionHandlerEventMiddleware<TEvent>(ILogger<TEvent> logger) : IEventMiddleware<TEvent> where TEvent : IEvent
 {
     public async Task Process(
-        EventExecutionContext<TEvent> context,
+        EventContext<TEvent> context,
         EventHandlerDelegate next
     )
     {

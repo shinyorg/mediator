@@ -27,7 +27,7 @@ public partial class Mediator
         foreach (var collector in collectors)
             AppendHandlersIf(handlers, collector);
 
-        var list = new List<EventExecutionContext<TEvent>>();
+        var list = new List<EventContext<TEvent>>();
         var context = new EventAggregatedExecutionContext<TEvent>(list);
            
         if (handlers.Count == 0)
@@ -67,7 +67,7 @@ public partial class Mediator
         return context;
     }
 
-    public IDisposable Subscribe<TEvent>(Func<TEvent, CancellationToken, Task> action) where TEvent : IEvent
+    public IDisposable Subscribe<TEvent>(Func<TEvent, EventContext, CancellationToken, Task> action) where TEvent : IEvent
     {
         var handler = new SubscriptionEventHandler<TEvent>(this.subscriptions);
         handler.OnHandle = action;
@@ -75,7 +75,7 @@ public partial class Mediator
     }
     
     
-    async Task<EventExecutionContext<TEvent>> PublishCore<TEvent>(
+    async Task<EventContext<TEvent>> PublishCore<TEvent>(
         TEvent @event,
         IEventHandler<TEvent> eventHandler, 
         ILogger logger,
@@ -83,7 +83,7 @@ public partial class Mediator
         CancellationToken cancellationToken
     ) where TEvent : IEvent
     {
-        var context = new EventExecutionContext<TEvent>(@event, eventHandler, cancellationToken);
+        var context = new EventContext<TEvent>(@event, eventHandler, cancellationToken);
            
         var handlerDelegate = new EventHandlerDelegate(() =>
         {
@@ -91,7 +91,7 @@ public partial class Mediator
                 "Executing Event Handler {HandlerType}", 
                 eventHandler.GetType().FullName
             );
-            return eventHandler.Handle(context.Event, context.CancellationToken);
+            return eventHandler.Handle(context.Event, context, cancellationToken);
         });
            
         await middlewares

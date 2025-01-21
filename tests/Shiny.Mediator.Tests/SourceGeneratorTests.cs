@@ -36,5 +36,5 @@ public class SourceGenResponseRequestHandler : IRequestHandler<SourceGenResponse
 [SingletonHandler]
 public class SourceGenEventHandler : IEventHandler<SourceGenEvent>
 {
-    public Task Handle(SourceGenEvent @event, CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task Handle(SourceGenEvent @event, EventContext context, CancellationToken cancellationToken) => Task.CompletedTask;
 }

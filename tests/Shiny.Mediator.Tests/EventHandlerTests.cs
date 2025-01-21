@@ -20,7 +20,7 @@ public class EventHandlerTests
         var mediator = sp.GetRequiredService<IMediator>();
 
         var tcs = new TaskCompletionSource();
-        mediator.Subscribe<TestEvent>((_, _) =>
+        mediator.Subscribe<TestEvent>((_, _, _) =>
         {
             tcs.SetResult();
             return Task.CompletedTask;
@@ -51,7 +51,7 @@ public class TestEvent : IEvent
 }
 public class Test1EventHandler : IEventHandler<TestEvent>
 {
-    public async Task Handle(TestEvent @event, CancellationToken cancellationToken)
+    public async Task Handle(TestEvent @event, EventContext context, CancellationToken cancellationToken)
     {
         if (@event.Delay > 0)
             await Task.Delay(@event.Delay);
@@ -59,7 +59,7 @@ public class Test1EventHandler : IEventHandler<TestEvent>
 }
 public class Test2EventHandler : IEventHandler<TestEvent>
 {
-    public async Task Handle(TestEvent @event, CancellationToken cancellationToken)
+    public async Task Handle(TestEvent @event, EventContext context, CancellationToken cancellationToken)
     {
         if (@event.Delay > 0)
             await Task.Delay(@event.Delay);
@@ -70,7 +70,7 @@ public class TestTestEvent : TestEvent;
 public class CatchAllEventHandler : IEventHandler<TestTestEvent>
 {
     public static bool Executed { get; set; }
-    public Task Handle(TestTestEvent @event, CancellationToken cancellationToken)
+    public Task Handle(TestTestEvent @event, EventContext context, CancellationToken cancellationToken)
     {
         Executed = true;
         return Task.CompletedTask;

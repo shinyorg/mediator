@@ -7,7 +7,7 @@ public class CollectorTestRequest : IServerRequest<string> {}
 
 public class CollectorEventHandler : IEventHandler<CollectorTestEvent>
 {
-    public Task Handle(CollectorTestEvent @event, CancellationToken cancellationToken)
+    public Task Handle(CollectorTestEvent @event, EventContext context, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }
