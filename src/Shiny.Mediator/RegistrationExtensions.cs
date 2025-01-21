@@ -68,16 +68,20 @@ public static class RegistrationExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddInMemoryCommandScheduling(this ShinyConfigurator configurator)
         => configurator.AddCommandScheduling<InMemoryCommandScheduler>();
-    
-    
+
+
     /// <summary>
     /// Performance logging middleware
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
     public static ShinyConfigurator AddPerformanceLoggingMiddleware(this ShinyConfigurator cfg)
-        => cfg.AddOpenRequestMiddleware(typeof(PerformanceLoggingRequestMiddleware<,>));
-    // TODO: add commands
+    {
+        cfg.AddOpenRequestMiddleware(typeof(PerformanceLoggingRequestMiddleware<,>));
+        cfg.AddOpenCommandMiddleware(typeof(PerformanceLoggingCommandMiddleware<>));
+        return cfg;
+    }
+    
 
 
     /// <summary>
@@ -87,8 +91,8 @@ public static class RegistrationExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddEventExceptionHandlingMiddleware(this ShinyConfigurator cfg)
         => cfg.AddOpenEventMiddleware(typeof(ExceptionHandlerEventMiddleware<>));
-    // TODO: add commands
 
+    
     /// <summary>
     /// Adds data annotation validation to your contracts, request handlers, & command handlers
     /// </summary>

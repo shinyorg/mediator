@@ -6,33 +6,36 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Middleware;
 
 
-public class PerformanceLoggingRequestMiddleware<TRequest, TResult>(
+public class PerformanceLoggingCommandMiddleware<TCommand>(
     IConfiguration configuration,
-    ILogger<TRequest> logger
-) : IRequestMiddleware<TRequest, TResult>
+    ILogger<TCommand> logger
+) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
-    public async Task<TResult> Process(
-        RequestContext<TRequest> context, 
-        RequestHandlerDelegate<TResult> next,
+    public async Task Process(
+        CommandContext<TCommand> context, 
+        CommandHandlerDelegate next,
         CancellationToken cancellationToken
     )
     {
-        var section = configuration.GetHandlerSection("PerformanceLogging", context.Request!, context.RequestHandler);
+        var section = configuration.GetHandlerSection("PerformanceLogging", context.Command!, context.Handler);
         if (section == null)
-            return await next().ConfigureAwait(false);
+        {
+            await next().ConfigureAwait(false);
+            return;
+        }
 
         var millis = section.GetValue("ErrorThresholdMilliseconds", 5000);
         var ts = TimeSpan.FromMilliseconds(millis);
         var sw = Stopwatch.StartNew();
-        var result = await next();
+        await next();
         sw.Stop();
 
         if (sw.Elapsed > ts)
         {
             context.SetPerformanceLoggingThresholdBreached(sw.Elapsed);
             logger.LogError(
-                "{RequestType} took longer than {Threshold} to execute - {Elapsed}", 
-                typeof(TRequest), 
+                "{CommandType} took longer than {Threshold} to execute - {Elapsed}", 
+                typeof(TCommand), 
                 ts,
                 sw.Elapsed
             );
@@ -40,13 +43,11 @@ public class PerformanceLoggingRequestMiddleware<TRequest, TResult>(
         else if (logger.IsEnabled(LogLevel.Debug))
         {
             logger.LogDebug(
-                "{RequestType} took {Elapsed} to execute", 
-                typeof(TRequest), 
+                "{CommandType} took {Elapsed} to execute",
+                typeof(TCommand),
                 sw.Elapsed
             );
         }
-
-        return result;
     }
 }
 

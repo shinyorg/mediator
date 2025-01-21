@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Middleware;
@@ -24,7 +23,7 @@ public static class AppSupportExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddStandardAppSupportMiddleware(this ShinyConfigurator cfg)
     {
-        cfg.AddUserErrorNotificationsRequestMiddleware();
+        cfg.AddUserErrorNotificationsMiddleware();
         cfg.AddOfflineAvailabilityMiddleware();
         cfg.AddReplayStreamMiddleware();
         return cfg;
@@ -37,9 +36,10 @@ public static class AppSupportExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddUserErrorNotificationsRequestMiddleware(this ShinyConfigurator cfg)
+    public static ShinyConfigurator AddUserErrorNotificationsMiddleware(this ShinyConfigurator cfg)
     {
         cfg.AddOpenRequestMiddleware(typeof(UserErrorNotificationsRequestMiddleware<,>));
+        cfg.AddOpenCommandMiddleware(typeof(UserErrorNotificationsCommandMiddleware<>));
         return cfg;
     }
     
