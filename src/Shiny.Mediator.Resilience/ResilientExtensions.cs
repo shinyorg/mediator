@@ -15,7 +15,8 @@ public static class ResilientExtensions
         foreach (var rbs in rbuilders)
             configurator.Services.AddResiliencePipeline(rbs.Key.ToLower(), builder => rbs.Builder.Invoke(builder));
 
-        configurator.AddOpenRequestMiddleware(typeof(ResilientRequestHandlerMiddleware<,>));
+        configurator.AddOpenRequestMiddleware(typeof(ResilientRequestMiddleware<,>));
+        configurator.AddOpenCommandMiddleware(typeof(ResilientCommandMiddleware<>));
         return configurator;
     }
 
