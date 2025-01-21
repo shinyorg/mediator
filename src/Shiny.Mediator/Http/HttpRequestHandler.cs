@@ -50,14 +50,21 @@ public class HttpRequestHandler<TRequest, TResult>(
                 .ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
-            
-            var stringResult = await response
-                .Content
-                .ReadAsStringAsync(cancellationToken)
-                .ConfigureAwait(false);
-        
-            logger.LogDebug("Raw Result: " + stringResult);
-            finalResult = serializer.Deserialize<TResult>(stringResult)!;
+
+            if (typeof(TResult) == typeof(HttpResponseMessage))
+            {
+                finalResult = (TResult)(object)response;
+            }
+            else
+            {
+                var stringResult = await response
+                    .Content
+                    .ReadAsStringAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                logger.LogDebug("Raw Result: " + stringResult);
+                finalResult = serializer.Deserialize<TResult>(stringResult)!;
+            }
         }
         catch (TaskCanceledException ex)
         {
