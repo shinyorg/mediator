@@ -4,7 +4,7 @@
 public interface ICommand;
 public interface IScheduledCommand : ICommand
 {
-    DateTimeOffset? DueAt { get; }
+    DateTimeOffset? DueAt { get; set; }
 }
 
 

@@ -53,11 +53,10 @@ public class InMemoryCommandScheduler : ICommandScheduler
             {
                 try
                 {
-                    // TODO: nullify due date so command can send
-                    // item.DueAt = null;
-                    // await this.mediator
-                    //     .Send(item)
-                    //     .ConfigureAwait(false);
+                    scheduled.DueAt = null;
+                    await this.mediator
+                        .Send(scheduled)
+                        .ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -65,7 +64,7 @@ public class InMemoryCommandScheduler : ICommandScheduler
                     // TODO: retries?
                     this.logger.LogError(ex, "Error running scheduled command");
                 }
-                // this.commands.Remove(item);
+                this.commands.TryRemove(item.Key, out _);
             }
         }
 
