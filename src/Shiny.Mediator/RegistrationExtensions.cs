@@ -5,6 +5,7 @@ using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Middleware;
 using Shiny.Mediator.Services;
+using Shiny.Mediator.Services.Impl;
 
 namespace Shiny.Mediator;
 
