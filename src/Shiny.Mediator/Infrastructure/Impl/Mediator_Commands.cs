@@ -8,7 +8,8 @@ public partial class Mediator
 {
     public async Task<CommandContext<TCommand>> Send<TCommand>(
         TCommand command, 
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        params IEnumerable<(string Key, object Value)> headers
     ) where TCommand : ICommand
     {
         using var scope = services.CreateScope();
@@ -17,6 +18,8 @@ public partial class Mediator
             throw new InvalidOperationException("No command handler found for " + command.GetType().FullName);
 
         var context = new CommandContext<TCommand>(commandHandler, command);
+        context.PopulateHeaders(headers);
+        
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<TCommand>>();
         var handlerExec = new CommandHandlerDelegate(async () =>
         {

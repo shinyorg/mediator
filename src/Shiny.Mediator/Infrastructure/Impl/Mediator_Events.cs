@@ -11,7 +11,8 @@ public partial class Mediator
     public virtual async Task<EventAggregatedContext<TEvent>> Publish<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default,
-        bool executeInParallel = true
+        bool executeInParallel = true,
+        params IEnumerable<(string Key, object Value)> headers
     ) where TEvent : IEvent
     {
         // allow registered services to be transient/scoped/singleton
@@ -84,7 +85,8 @@ public partial class Mediator
     ) where TEvent : IEvent
     {
         var context = new EventContext<TEvent>(@event, eventHandler, cancellationToken);
-           
+        // TODO: populate headers
+        
         var handlerDelegate = new EventHandlerDelegate(() =>
         {
             logger.LogDebug(

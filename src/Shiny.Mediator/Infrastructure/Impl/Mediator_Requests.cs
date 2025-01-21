@@ -8,12 +8,16 @@ public partial class Mediator
 {
     public virtual async Task<RequestResult<TResult>> RequestWithContext<TResult>(
         IRequest<TResult> request,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        params IEnumerable<(string Key, object Value)> headers
     )
     {
         using var scope = services.CreateScope();
         var wrapperType = typeof(RequestResultWrapper<,>).MakeGenericType([request.GetType(), typeof(TResult)]);
-        var wrapper = (IRequestResultWrapper<TResult>)Activator.CreateInstance(wrapperType, [scope.ServiceProvider, request, cancellationToken]);
+        var wrapper = (IRequestResultWrapper<TResult>)Activator.CreateInstance(
+            wrapperType, 
+            [scope.ServiceProvider, request, headers, cancellationToken]
+        );
         var execution = await wrapper.Handle().ConfigureAwait(false);
         
         if (execution.Result is IEvent @event)
@@ -31,6 +35,7 @@ public interface IRequestResultWrapper<TResult>
 public class RequestResultWrapper<TRequest, TResult>(
     IServiceProvider scope, 
     TRequest request,
+    IEnumerable<(string Key, object Value)> headers,
     CancellationToken cancellationToken
 ) : IRequestResultWrapper<TResult> where TRequest : IRequest<TResult>
 {
@@ -41,6 +46,8 @@ public class RequestResultWrapper<TRequest, TResult>(
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
         
         var context = new RequestContext<TRequest>(request, requestHandler);
+        context.PopulateHeaders(headers);
+        
         var middlewares = scope.GetServices<IRequestMiddleware<TRequest, TResult>>();
         var logger = scope.GetRequiredService<ILogger<TRequest>>();
         

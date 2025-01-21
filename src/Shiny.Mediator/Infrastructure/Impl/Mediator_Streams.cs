@@ -8,12 +8,16 @@ public partial class Mediator
 {
     public virtual RequestResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
         IStreamRequest<TResult> request,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        params IEnumerable<(string Key, object Value)> headers
     )
     {
         var scope = services.CreateScope();
         var wrapperType = typeof(StreamRequestWrapper<,>).MakeGenericType([request.GetType(), typeof(TResult)]);
-        var wrapper = (IStreamRequestWrapper<TResult>)Activator.CreateInstance(wrapperType, [scope.ServiceProvider, request, cancellationToken]);
+        var wrapper = (IStreamRequestWrapper<TResult>)Activator.CreateInstance(
+            wrapperType, 
+            [scope.ServiceProvider, request, headers, cancellationToken]
+        );
         var execution = wrapper.Handle();
         return execution;
     }
@@ -27,6 +31,7 @@ public interface IStreamRequestWrapper<TResult>
 public class StreamRequestWrapper<TRequest, TResult>(
     IServiceProvider scope,
     TRequest request,
+    IEnumerable<(string Key, object Value)> headers,
     CancellationToken cancellationToken
 ) : IStreamRequestWrapper<TResult> where TRequest : IStreamRequest<TResult>
 {
@@ -37,6 +42,9 @@ public class StreamRequestWrapper<TRequest, TResult>(
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
 
         var logger = scope.GetRequiredService<ILogger<TRequest>>();
+        var context = new RequestContext<TRequest>(request, requestHandler);
+        context.PopulateHeaders(headers);
+        
         var handlerExec = new StreamRequestHandlerDelegate<TResult>(() =>
         {
             logger.LogDebug(
@@ -45,8 +53,7 @@ public class StreamRequestWrapper<TRequest, TResult>(
             );
             return requestHandler.Handle(request, cancellationToken);
         });
-
-        var context = new RequestContext<TRequest>(request, requestHandler);
+        
         var middlewares = scope.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
         var enumerable = middlewares
             .Reverse()

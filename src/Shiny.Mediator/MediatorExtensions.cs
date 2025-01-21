@@ -35,11 +35,20 @@ public static class MediatorExtensions
     /// <param name="mediator"></param>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
+    /// <param name="headers"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    public static async Task<TResult> Request<TResult>(this IMediator mediator, IRequest<TResult> request, CancellationToken cancellationToken = default)
+    public static async Task<TResult> Request<TResult>(
+        this IMediator mediator, 
+        IRequest<TResult> request, 
+        CancellationToken cancellationToken = default,
+        params IEnumerable<(string Key, object Value)> headers
+    )
     {
-        var context = await mediator.RequestWithContext(request, cancellationToken).ConfigureAwait(false);
+        var context = await mediator
+            .RequestWithContext(request, cancellationToken, headers)
+            .ConfigureAwait(false);
+        
         return context.Result;
     }
     
@@ -49,11 +58,17 @@ public static class MediatorExtensions
     /// <param name="mediator"></param>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
+    /// <param name="headers"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    public static IAsyncEnumerable<TResult> Request<TResult>(this IMediator mediator, IStreamRequest<TResult> request, CancellationToken cancellationToken = default)
+    public static IAsyncEnumerable<TResult> Request<TResult>(
+        this IMediator mediator, 
+        IStreamRequest<TResult> request, 
+        CancellationToken cancellationToken = default,
+        params IEnumerable<(string Key, object Value)> headers
+    )
     {
-        var context = mediator.RequestWithContext(request, cancellationToken);
+        var context = mediator.RequestWithContext(request, cancellationToken, headers);
         return context.Result;
     }
 }

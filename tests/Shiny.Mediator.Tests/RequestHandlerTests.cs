@@ -8,7 +8,7 @@ public class RequestHandlerTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddShinyMediator();
+        services.AddShinyMediator(includeStandardMiddleware: false);
         services.AddSingletonAsImplementedInterfaces<TestResultRequestHandler>();
         var sp = services.BuildServiceProvider();
         var result = await sp.GetRequiredService<IMediator>().Request(new TestResultRequest("HELLO"));

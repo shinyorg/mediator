@@ -12,7 +12,7 @@ public class DataAnnotationsTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddShinyMediator(cfg => cfg.AddDataAnnotations());
+        services.AddShinyMediator(cfg => cfg.AddDataAnnotations(), false);
         services.AddSingletonAsImplementedInterfaces<ValidationCommandHandler>();
         services.AddSingletonAsImplementedInterfaces<ValidationRequestHandler>();
         this.mediator = services.BuildServiceProvider().GetRequiredService<IMediator>();    
