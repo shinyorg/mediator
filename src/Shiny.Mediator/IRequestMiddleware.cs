@@ -5,6 +5,7 @@ public interface IRequestMiddleware<TRequest, TResult>
 {
     Task<TResult> Process(
         RequestContext<TRequest> context, 
-        RequestHandlerDelegate<TResult> next
+        RequestHandlerDelegate<TResult> next,
+        CancellationToken cancellationToken
     );
 }

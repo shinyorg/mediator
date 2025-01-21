@@ -11,7 +11,8 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
 {
     public IAsyncEnumerable<TResult> Process(
         RequestContext<TRequest> context, 
-        StreamRequestHandlerDelegate<TResult> next 
+        StreamRequestHandlerDelegate<TResult> next,
+        CancellationToken cancellationToken
     )
     {
         var interval = 0;
@@ -30,7 +31,7 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
         if (interval <= 0)
             return next();
         
-        return this.Iterate(interval, next, context.CancellationToken);
+        return this.Iterate(interval, next, cancellationToken);
     }
 
 

@@ -46,7 +46,7 @@ public class StreamRequestWrapper<TRequest, TResult>(
             return requestHandler.Handle(request, cancellationToken);
         });
 
-        var context = new RequestContext<TRequest>(request, requestHandler, cancellationToken);
+        var context = new RequestContext<TRequest>(request, requestHandler);
         var middlewares = scope.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
         var enumerable = middlewares
             .Reverse()
@@ -60,7 +60,8 @@ public class StreamRequestWrapper<TRequest, TResult>(
                     );
                     return middleware.Process(
                         context,
-                        next
+                        next,
+                        cancellationToken
                     );
                 }
             )

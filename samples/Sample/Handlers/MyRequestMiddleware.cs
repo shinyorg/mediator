@@ -9,7 +9,8 @@ public class MyRequestMiddleware(AppSqliteConnection conn) : IRequestMiddleware<
 {
     public async Task<MyMessageResponse> Process(
         RequestContext<MyMessageRequest> context, 
-        RequestHandlerDelegate<MyMessageResponse> next 
+        RequestHandlerDelegate<MyMessageResponse> next,
+        CancellationToken cancellationToken
     )
     {
         var sw = Stopwatch.StartNew();

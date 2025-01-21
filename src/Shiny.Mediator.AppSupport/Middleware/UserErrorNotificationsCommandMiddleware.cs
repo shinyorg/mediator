@@ -6,27 +6,25 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Middleware;
 
 
-public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
-    ILogger<UserErrorNotificationsRequestMiddleware<TRequest, TResult>> logger,
+public class UserErrorNotificationsCommandMiddleware<TCommand>(
+    ILogger<UserErrorNotificationsCommandMiddleware<TCommand>> logger,
     IAlertDialogService alerts,
     IConfiguration configuration
-) : IRequestMiddleware<TRequest, TResult>
+) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
-    public async Task<TResult> Process(
-        RequestContext<TRequest> context,
-        RequestHandlerDelegate<TResult> next,
-        CancellationToken cancellationToken
-    )
+    public async Task Process(CommandContext<TCommand> context, CommandHandlerDelegate next, CancellationToken cancellationToken)
     {
-        var section = configuration.GetHandlerSection("UserErrorNotifications", context.Request!, context.RequestHandler);
+        var section = configuration.GetHandlerSection("UserErrorNotifications", context.Command!, context.Handler);
         if (section == null)
-            return await next().ConfigureAwait(false);
-        
-        var result = default(TResult);
+        {
+            await next().ConfigureAwait(false);
+            return;
+        }
+
         try
         {
-            logger.LogDebug("UserErrorNotifications Enabled - {Request}", context.Request);
-            result = await next().ConfigureAwait(false);
+            logger.LogDebug("UserErrorNotifications Enabled - {Command}", context.Command);
+            await next().ConfigureAwait(false);
         }
         catch (ValidateException)
         {
@@ -34,7 +32,7 @@ public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error executing pipeline for {Error}", typeof(TRequest).FullName);
+            logger.LogError(ex, "Error executing pipeline for {Error}", typeof(TCommand).FullName);
 
             var title = String.Empty;
             var msg = String.Empty;
@@ -45,7 +43,7 @@ public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
             {
                 locale = section.GetSection("*");
                 if (!locale.Exists())
-                    logger.LogError("No locale found for {RequestType}", typeof(TRequest).FullName);
+                    logger.LogError("No locale found for {RequestType}", typeof(TCommand).FullName);
             }            
             
             if (locale.Exists())
@@ -57,7 +55,5 @@ public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
 
             context.UserErrorNotification(new UserErrorNotificationContext(ex, title!, msg!));
         }
-
-        return result!;
     }
 }

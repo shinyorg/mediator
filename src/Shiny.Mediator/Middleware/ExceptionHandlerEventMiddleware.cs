@@ -7,7 +7,8 @@ public class ExceptionHandlerEventMiddleware<TEvent>(ILogger<TEvent> logger) : I
 {
     public async Task Process(
         EventContext<TEvent> context,
-        EventHandlerDelegate next
+        EventHandlerDelegate next,
+        CancellationToken cancellationToken
     )
     {
         try
@@ -17,7 +18,6 @@ public class ExceptionHandlerEventMiddleware<TEvent>(ILogger<TEvent> logger) : I
         catch (Exception ex)
         {
             logger.LogError(ex, "Error in event {EventType}", context.Event.GetType().FullName);
-            
         }
     }
 }

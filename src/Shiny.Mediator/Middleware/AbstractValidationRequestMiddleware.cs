@@ -7,14 +7,15 @@ public abstract class AbstractValidationRequestMiddleware<TRequest, TResult> : I
 {
     public async Task<TResult> Process(
         RequestContext<TRequest> context,
-        RequestHandlerDelegate<TResult> next
+        RequestHandlerDelegate<TResult> next,
+        CancellationToken cancellationToken
     )
     {
         if (context.Request!.GetType().GetCustomAttribute<ValidateAttribute>() == null)
             return await next();
 
         var values = new Dictionary<string, List<string>>();
-        await this.Validate(context.Request, values, context.CancellationToken).ConfigureAwait(false);
+        await this.Validate(context.Request, values, cancellationToken).ConfigureAwait(false);
         
         if (values.Count == 0)
         {

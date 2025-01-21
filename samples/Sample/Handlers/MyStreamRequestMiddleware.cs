@@ -5,7 +5,8 @@ public class MyStreamRequestMiddleware<TRequest, TResult>(ILogger<MyStreamReques
 {
     public IAsyncEnumerable<TResult> Process(
         RequestContext<TRequest> context, 
-        StreamRequestHandlerDelegate<TResult> next 
+        StreamRequestHandlerDelegate<TResult> next,
+        CancellationToken cancellationToken
     )
     {
         logger.LogInformation($"MyStreamRequestMiddleware called for {typeof(TRequest).FullName}");

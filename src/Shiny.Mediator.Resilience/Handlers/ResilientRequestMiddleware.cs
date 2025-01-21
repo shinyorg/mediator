@@ -2,11 +2,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Registry;
-using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Resilience.Handlers;
 
 
+// TODO: command handler
 public class ResilientRequestHandlerMiddleware<TRequest, TResult>(
     ILogger<ResilientRequestHandlerMiddleware<TRequest, TResult>> logger,
     IConfiguration configuration,
@@ -15,7 +15,8 @@ public class ResilientRequestHandlerMiddleware<TRequest, TResult>(
 {
     public async Task<TResult> Process(
         RequestContext<TRequest> context,
-        RequestHandlerDelegate<TResult> next 
+        RequestHandlerDelegate<TResult> next,
+        CancellationToken cancellationToken
     )
     {
         ResiliencePipeline? pipeline = null;
@@ -37,7 +38,7 @@ public class ResilientRequestHandlerMiddleware<TRequest, TResult>(
         // it can't cancel properly here... may need to make next take a CancellationToken
         logger.LogDebug("Resilience Enabled - {Request}", context.Request);
         var result = await pipeline
-            .ExecuteAsync(async _ => await next(), context.CancellationToken)
+            .ExecuteAsync(async _ => await next(), cancellationToken)
             .ConfigureAwait(false);
         
         return result;

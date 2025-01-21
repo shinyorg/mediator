@@ -12,7 +12,8 @@ public class CachingRequestMiddleware<TRequest, TResult>(
 {
     public async Task<TResult> Process(
         RequestContext<TRequest> context,
-        RequestHandlerDelegate<TResult> next 
+        RequestHandlerDelegate<TResult> next,
+        CancellationToken cancellationToken
     )
     {
         CacheAttribute? attribute = null;

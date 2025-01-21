@@ -40,11 +40,12 @@ public class OfflineAvailableRequestMiddlewareTests
         this.connectivity.IsAvailable = true;
         
         var request = new OfflineRequest();
-        var context = new RequestContext<OfflineRequest>(request, this.handler, CancellationToken.None);
+        var context = new RequestContext<OfflineRequest>(request, this.handler);
         
         var func = () => this.middleware.Process(
             context,
-            () => this.handler.Handle(context.Request, context, CancellationToken.None)
+            () => this.handler.Handle(context.Request, context, CancellationToken.None),
+            CancellationToken.None
         );
 
         var result = await func();

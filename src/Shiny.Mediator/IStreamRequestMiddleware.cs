@@ -6,6 +6,7 @@ public interface IStreamRequestMiddleware<TRequest, TResult> where TRequest : IS
 {
     IAsyncEnumerable<TResult> Process(
         RequestContext<TRequest> context, 
-        StreamRequestHandlerDelegate<TResult> next
+        StreamRequestHandlerDelegate<TResult> next,
+        CancellationToken cancellationToken
     );
 }

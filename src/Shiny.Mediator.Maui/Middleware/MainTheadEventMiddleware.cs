@@ -5,7 +5,8 @@ public class MainTheadEventMiddleware<TEvent> : IEventMiddleware<TEvent> where T
 {
     public async Task Process(
         EventContext<TEvent> context, 
-        EventHandlerDelegate next
+        EventHandlerDelegate next,
+        CancellationToken cancellationToken
     )
     {
         var attr = context.EventHandler.GetHandlerHandleMethodAttribute<TEvent, MainThreadAttribute>();

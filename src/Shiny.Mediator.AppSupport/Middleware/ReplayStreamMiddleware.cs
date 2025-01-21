@@ -22,7 +22,8 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
 {
     public IAsyncEnumerable<TResult> Process(
         RequestContext<TRequest> context,
-        StreamRequestHandlerDelegate<TResult> next 
+        StreamRequestHandlerDelegate<TResult> next,
+        CancellationToken cancellationToken
     )
     {
         if (!this.IsEnabled(context.Request, context.RequestHandler))
@@ -32,7 +33,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         return this.Iterate(
             context.Request, 
             next, 
-            context.CancellationToken
+            cancellationToken
         );
     }
 

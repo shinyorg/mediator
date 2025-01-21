@@ -6,6 +6,7 @@ public interface IEventMiddleware<TEvent> where TEvent : IEvent
 {
     Task Process(
         EventContext<TEvent> context, 
-        EventHandlerDelegate next
+        EventHandlerDelegate next,
+        CancellationToken cancellationToken
     );
 }

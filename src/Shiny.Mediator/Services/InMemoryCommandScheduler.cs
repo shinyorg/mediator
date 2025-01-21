@@ -31,7 +31,7 @@ public class InMemoryCommandScheduler : ICommandScheduler
         var scheduled = false;
         if (command.DueAt != null && command.DueAt < DateTimeOffset.UtcNow)
         {
-            this.commands.TryAdd(context.CommandId, context);
+            this.commands.TryAdd(context.Id, context);
             if (this.timer.Enabled)
                 this.timer.Start();
             scheduled = true;

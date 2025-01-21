@@ -13,7 +13,8 @@ public class PerformanceLoggingRequestMiddleware<TRequest, TResult>(
 {
     public async Task<TResult> Process(
         RequestContext<TRequest> context, 
-        RequestHandlerDelegate<TResult> next 
+        RequestHandlerDelegate<TResult> next,
+        CancellationToken cancellationToken
     )
     {
         var section = configuration.GetHandlerSection("PerformanceLogging", context.Request!, context.RequestHandler);

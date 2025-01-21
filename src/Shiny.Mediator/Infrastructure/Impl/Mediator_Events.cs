@@ -105,7 +105,7 @@ public partial class Mediator
                         middleware.GetType().FullName
                     );
                        
-                    return middleware.Process(context, next);
+                    return middleware.Process(context, next, cancellationToken);
                 }
             )
             .Invoke()

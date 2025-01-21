@@ -14,7 +14,8 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
 {
     public async Task<TResult> Process(
         RequestContext<TRequest> context,
-        RequestHandlerDelegate<TResult> next 
+        RequestHandlerDelegate<TResult> next,
+        CancellationToken cancellationToken
     )
     {
         if (!this.IsEnabled(context.RequestHandler, context.Request))

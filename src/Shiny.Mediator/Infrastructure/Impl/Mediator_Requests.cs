@@ -40,7 +40,7 @@ public class RequestResultWrapper<TRequest, TResult>(
         if (requestHandler == null)
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
         
-        var context = new RequestContext<TRequest>(request, requestHandler, cancellationToken);
+        var context = new RequestContext<TRequest>(request, requestHandler);
         var middlewares = scope.GetServices<IRequestMiddleware<TRequest, TResult>>();
         var logger = scope.GetRequiredService<ILogger<TRequest>>();
         
@@ -50,7 +50,7 @@ public class RequestResultWrapper<TRequest, TResult>(
                 "Executing request handler {RequestHandlerType}", 
                 requestHandler.GetType().FullName 
             );
-            return requestHandler.Handle(context.Request, context, context.CancellationToken);
+            return requestHandler.Handle(context.Request, context, cancellationToken);
         });
         
         var result = await middlewares
@@ -64,7 +64,7 @@ public class RequestResultWrapper<TRequest, TResult>(
                         middleware.GetType().FullName
                     );
                     
-                    return middleware.Process(context, next);
+                    return middleware.Process(context, next, cancellationToken);
                 }
             )
             .Invoke()

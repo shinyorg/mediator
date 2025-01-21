@@ -3,7 +3,7 @@ namespace Shiny.Mediator;
 
 public static class AppSupportExecutionContextExtensions
 {
-    public static UserErrorNotificationContext? UserErrorNotification(this RequestContext context)
+    public static UserErrorNotificationContext? UserErrorNotification(this IMediatorContext context)
     {
         if (context.Values.TryGetValue(nameof(UserErrorNotification), out var value))
             return (UserErrorNotificationContext)value;
@@ -11,11 +11,10 @@ public static class AppSupportExecutionContextExtensions
         return null;
     }
 
-    internal static void UserErrorNotification(this RequestContext context, UserErrorNotificationContext info)
+    internal static void UserErrorNotification(this IMediatorContext context, UserErrorNotificationContext info)
         => context.Add(nameof(UserErrorNotification), info);
     
-    
-    public static OfflineAvailableContext? Offline(this RequestContext context)
+    public static OfflineAvailableContext? Offline(this IMediatorContext context)
         => context.TryGetValue<OfflineAvailableContext>("Offline");
     
     internal static void Offline(this RequestContext context, OfflineAvailableContext offlineContext)
