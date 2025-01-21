@@ -1,13 +1,16 @@
-
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests;
 
 
 public class EventHandlerTests
 {
-    public EventHandlerTests()
+    readonly ITestOutputHelper helper;
+    public EventHandlerTests(ITestOutputHelper helper)
     {
         CatchAllEventHandler.Executed = false;
+        this.helper = helper;
     }
    
 
@@ -15,7 +18,8 @@ public class EventHandlerTests
     public async Task SubscriptionFired()
     {
         var services = new ServiceCollection();
-        services.AddShinyMediator(cfg => {});
+        services.AddLogging(x => x.AddXUnit(this.helper));
+        services.AddShinyMediator();
         var sp = services.BuildServiceProvider();
         var mediator = sp.GetRequiredService<IMediator>();
 
@@ -35,7 +39,9 @@ public class EventHandlerTests
     public async Task VariantHandler()
     {
         var services = new ServiceCollection();
+        services.AddLogging(x => x.AddXUnit(this.helper));
         services.AddShinyMediator();
+        services.AddLogging();
         services.AddSingletonAsImplementedInterfaces<CatchAllEventHandler>();
         var sp = services.BuildServiceProvider();
         var mediator = sp.GetRequiredService<IMediator>();

@@ -26,6 +26,7 @@ public static class RegistrationExtensions
         services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();
         return services;
     }
+    
 
     /// <summary>
     /// Add HTTP Client to mediator
@@ -34,6 +35,7 @@ public static class RegistrationExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddHttpClient(this ShinyConfigurator configurator)
     {
+        // TODO: command handlers
         configurator.Services.Add(new ServiceDescriptor(
             typeof(IRequestHandler<,>), 
             null, 
@@ -75,6 +77,7 @@ public static class RegistrationExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddPerformanceLoggingMiddleware(this ShinyConfigurator cfg)
         => cfg.AddOpenRequestMiddleware(typeof(PerformanceLoggingRequestMiddleware<,>));
+    // TODO: add commands
 
 
     /// <summary>
@@ -84,17 +87,21 @@ public static class RegistrationExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddEventExceptionHandlingMiddleware(this ShinyConfigurator cfg)
         => cfg.AddOpenEventMiddleware(typeof(ExceptionHandlerEventMiddleware<>));
-    
-    
+    // TODO: add commands
+
     /// <summary>
-    /// Adds data annotation validation to your contracts & request handlers
+    /// Adds data annotation validation to your contracts, request handlers, & command handlers
     /// </summary>
     /// <param name="configurator"></param>
     /// <returns></returns>
     public static ShinyConfigurator AddDataAnnotations(this ShinyConfigurator configurator)
-        => configurator.AddOpenRequestMiddleware(typeof(DataAnnotationsRequestMiddleware<,>));
-    
-    
+    {
+        configurator.AddOpenRequestMiddleware(typeof(DataAnnotationsRequestMiddleware<,>));
+        configurator.AddOpenCommandMiddleware(typeof(DataAnnotationsCommandMiddleware<>));
+        return configurator;
+    }
+
+
     /// <summary>
     /// Adds timer calling for async enumerables
     /// </summary>

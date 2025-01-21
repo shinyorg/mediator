@@ -46,6 +46,19 @@ public static class Utils
         return result;
     }
 
+    public static TAttribute? GetHandlerHandleMethodAttribute<TCommand, TAttribute>(this ICommandHandler handler) where TAttribute : Attribute where TCommand : ICommand
+        => handler
+            .GetType()
+            .GetMethod(
+                "Handle", 
+                BindingFlags.Public | BindingFlags.Instance, 
+                null,
+                CallingConventions.Any,
+                [ typeof(TCommand), typeof(CommandContext<TCommand>), typeof(CancellationToken) ],
+                null
+            )!
+            .GetCustomAttribute<TAttribute>();
+    
     
     public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TAttribute>(this IRequestHandler handler) where TAttribute : Attribute
         => handler
@@ -55,7 +68,7 @@ public static class Utils
                 BindingFlags.Public | BindingFlags.Instance, 
                 null,
                 CallingConventions.Any,
-                [ typeof(TRequest), typeof(CancellationToken) ],
+                [ typeof(TRequest), typeof(RequestContext<TRequest>), typeof(CancellationToken) ],
                 null
             )!
             .GetCustomAttribute<TAttribute>();
@@ -71,7 +84,7 @@ public static class Utils
                 BindingFlags.Public | BindingFlags.Instance, 
                 null,
                 CallingConventions.Any,
-                [ typeof(TEvent), typeof(CancellationToken) ],
+                [ typeof(TEvent), typeof(EventContext<TEvent>), typeof(CancellationToken) ],
                 null
             )!
             .GetCustomAttribute<TAttribute>();

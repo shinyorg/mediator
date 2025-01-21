@@ -11,5 +11,9 @@ public static class FluentValidationExtensions
     /// <param name="cfg"></param>
     /// <returns></returns>
     public static ShinyConfigurator AddFluentValidation(this ShinyConfigurator cfg)
-        => cfg.AddOpenRequestMiddleware(typeof(FluentValidationRequestMiddleware<,>));
+    {
+        cfg.AddOpenRequestMiddleware(typeof(FluentValidationRequestMiddleware<,>));
+        cfg.AddOpenCommandMiddleware(typeof(FluentValidationCommandMiddleware<>));
+        return cfg;
+    }
 }
