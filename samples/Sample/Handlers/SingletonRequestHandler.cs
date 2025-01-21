@@ -8,7 +8,7 @@ public class SingletonRequestHandler(IMediator mediator, AppSqliteConnection dat
 {
     // [Cache(Storage = StoreType.File, MaxAgeSeconds = 30, OnlyForOffline = true)]
     [OfflineAvailable]
-    public async Task<MyMessageResponse> Handle(MyMessageRequest request, CancellationToken cancellationToken)
+    public async Task<MyMessageResponse> Handle(MyMessageRequest request, RequestContext<MyMessageRequest> context, CancellationToken cancellationToken)
     {
         var e = new MyMessageEvent(
             request.Arg,

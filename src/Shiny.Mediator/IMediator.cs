@@ -21,7 +21,7 @@ public interface IMediator
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<CommandContext> Send<TCommand>(
+    Task<CommandContext<TCommand>> Send<TCommand>(
         TCommand request,
         CancellationToken cancellationToken = default
     ) where TCommand : ICommand;
@@ -46,7 +46,7 @@ public interface IMediator
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
-    Task<EventAggregatedExecutionContext<TEvent>> Publish<TEvent>(
+    Task<EventAggregatedContext<TEvent>> Publish<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default,
         bool executeInParallel = true
@@ -59,6 +59,6 @@ public interface IMediator
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
     IDisposable Subscribe<TEvent>(
-        Func<TEvent, EventContext, CancellationToken, Task> action
+        Func<TEvent, EventContext<TEvent>, CancellationToken, Task> action
     ) where TEvent : IEvent;
 }

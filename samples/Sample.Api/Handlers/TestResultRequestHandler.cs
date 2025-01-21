@@ -8,8 +8,6 @@ public record TestResult;
 [MediatorHttpPost("TestResult", "/testresult")]
 public class TestResultRequestHandler : IRequestHandler<TestResultRequest, TestResult>
 {
-    public Task<TestResult> Handle(TestResultRequest request, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new TestResult());
-    }
+    public Task<TestResult> Handle(TestResultRequest request, RequestContext<TestResultRequest> context, CancellationToken cancellationToken)
+        => Task.FromResult(new TestResult());
 }

@@ -75,7 +75,7 @@ public class ValidationCommandHandler : ICommandHandler<ValidationCommand>
 
 public class ValidationRequestHandler : IRequestHandler<ValidationRequest, ValidateResult>
 {
-    public Task<ValidateResult> Handle(ValidationRequest request, CancellationToken cancellationToken)
+    public Task<ValidateResult> Handle(ValidationRequest request, RequestContext<ValidationRequest> context, CancellationToken cancellationToken)
     {
         return Task.FromResult(ValidateResult.Success);
     }

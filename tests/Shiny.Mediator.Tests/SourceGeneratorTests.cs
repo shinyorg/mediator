@@ -30,11 +30,11 @@ public class SourceGenCommandHandler : ICommandHandler<SourceGenCommand>
 [SingletonHandler]
 public class SourceGenResponseRequestHandler : IRequestHandler<SourceGenResponseRequest, SourceGenResponse>
 {
-    public Task<SourceGenResponse> Handle(SourceGenResponseRequest request, CancellationToken cancellationToken)
+    public Task<SourceGenResponse> Handle(SourceGenResponseRequest request, RequestContext<SourceGenResponseRequest> context, CancellationToken cancellationToken)
         => Task.FromResult(new SourceGenResponse());
 }
 [SingletonHandler]
 public class SourceGenEventHandler : IEventHandler<SourceGenEvent>
 {
-    public Task Handle(SourceGenEvent @event, EventContext context, CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task Handle(SourceGenEvent @event, EventContext<SourceGenEvent> context, CancellationToken cancellationToken) => Task.CompletedTask;
 }

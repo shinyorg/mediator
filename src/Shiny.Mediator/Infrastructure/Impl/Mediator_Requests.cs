@@ -50,7 +50,7 @@ public class RequestResultWrapper<TRequest, TResult>(
                 "Executing request handler {RequestHandlerType}", 
                 requestHandler.GetType().FullName 
             );
-            return requestHandler.Handle(context.Request, context.CancellationToken);
+            return requestHandler.Handle(context.Request, context, context.CancellationToken);
         });
         
         var result = await middlewares

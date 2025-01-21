@@ -8,7 +8,7 @@ public partial class Mediator
 {
     readonly SubscriptionEventCollector subscriptions = new();
 
-    public virtual async Task<EventAggregatedExecutionContext<TEvent>> Publish<TEvent>(
+    public virtual async Task<EventAggregatedContext<TEvent>> Publish<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default,
         bool executeInParallel = true
@@ -28,7 +28,7 @@ public partial class Mediator
             AppendHandlersIf(handlers, collector);
 
         var list = new List<EventContext<TEvent>>();
-        var context = new EventAggregatedExecutionContext<TEvent>(list);
+        var context = new EventAggregatedContext<TEvent>(list);
            
         if (handlers.Count == 0)
             return context;
@@ -67,7 +67,7 @@ public partial class Mediator
         return context;
     }
 
-    public IDisposable Subscribe<TEvent>(Func<TEvent, EventContext, CancellationToken, Task> action) where TEvent : IEvent
+    public IDisposable Subscribe<TEvent>(Func<TEvent, EventContext<TEvent>, CancellationToken, Task> action) where TEvent : IEvent
     {
         var handler = new SubscriptionEventHandler<TEvent>(this.subscriptions);
         handler.OnHandle = action;

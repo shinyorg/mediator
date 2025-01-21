@@ -4,10 +4,8 @@ namespace Sample.Api.Handlers;
 [MediatorHttpGet("GetThing", "/getthing/{parameter}")]
 public class GetResultRequestHandler : IRequestHandler<GetThingRequest, string>
 {
-    public Task<string> Handle(GetThingRequest request, CancellationToken cancellationToken)
-    {
-        return Task.FromResult($"Route: {request.Parameter} - Query: {request.Query}");
-    }
+    public Task<string> Handle(GetThingRequest request, RequestContext<GetThingRequest> context, CancellationToken cancellationToken)
+        => Task.FromResult($"Route: {request.Parameter} - Query: {request.Query}");
 }
 
 public class GetThingRequest : IRequest<string>

@@ -6,7 +6,7 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 
 public partial class Mediator
 {
-    public async Task<CommandContext> Send<TCommand>(
+    public async Task<CommandContext<TCommand>> Send<TCommand>(
         TCommand command, 
         CancellationToken cancellationToken = default
     ) where TCommand : ICommand
@@ -16,7 +16,7 @@ public partial class Mediator
         if (commandHandler == null)
             throw new InvalidOperationException("No command handler found for " + command.GetType().FullName);
 
-        var context = new CommandContext(commandHandler, command);
+        var context = new CommandContext<TCommand>(commandHandler, command);
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<TCommand>>();
         var handlerExec = new CommandHandlerDelegate(async () =>
         {
@@ -42,7 +42,6 @@ public partial class Mediator
                     );
                     
                     return middleware.Process(
-                        command, 
                         context, 
                         next, 
                         cancellationToken

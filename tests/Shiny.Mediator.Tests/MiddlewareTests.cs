@@ -49,7 +49,7 @@ public class MiddlewareResultRequest : IRequest<int>;
 
 public class MiddlewareRequestResultHandler : IRequestHandler<MiddlewareResultRequest, int>
 {
-    public Task<int> Handle(MiddlewareResultRequest request, CancellationToken cancellationToken)
+    public Task<int> Handle(MiddlewareResultRequest request, RequestContext<MiddlewareResultRequest> context, CancellationToken cancellationToken)
         => Task.FromResult(1);
 }
 

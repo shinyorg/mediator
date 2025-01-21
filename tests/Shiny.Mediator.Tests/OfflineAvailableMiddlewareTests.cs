@@ -44,7 +44,7 @@ public class OfflineAvailableRequestMiddlewareTests
         
         var func = () => this.middleware.Process(
             context,
-            () => this.handler.Handle(context.Request, CancellationToken.None)
+            () => this.handler.Handle(context.Request, context, CancellationToken.None)
         );
 
         var result = await func();
@@ -70,7 +70,7 @@ public class OfflineRequestHandler : IRequestHandler<OfflineRequest, long>
     public long ReturnValue { get; set; }
     
     [OfflineAvailable]
-    public Task<long> Handle(OfflineRequest request, CancellationToken cancellationToken)
+    public Task<long> Handle(OfflineRequest request, RequestContext<OfflineRequest> context, CancellationToken cancellationToken)
     {
         this.WasHit = true;
         return Task.FromResult(this.ReturnValue);

@@ -19,7 +19,7 @@ public class HttpRequestHandler<TRequest, TResult>(
     readonly HttpClient httpClient = new();
     
     
-    public async Task<TResult> Handle(TRequest request, CancellationToken cancellationToken)
+    public async Task<TResult> Handle(TRequest request, RequestContext<TRequest> context, CancellationToken cancellationToken)
     {
         var http = request.GetType().GetCustomAttribute<HttpAttribute>();
         if (http == null)

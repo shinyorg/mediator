@@ -7,13 +7,12 @@ public class ScheduledCommandMiddleware<TCommand>(
 ) : ICommandMiddleware<TCommand> where TCommand : IScheduledCommand
 {
     public async Task Process(
-        TCommand command, 
-        CommandContext context, 
+        CommandContext<TCommand> context, 
         CommandHandlerDelegate next,
         CancellationToken cancellationToken
     )
     {
-        if (command.DueAt == null)
+        if (context.Command.DueAt == null)
         {
             await next().ConfigureAwait(false);
         }

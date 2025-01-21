@@ -58,7 +58,7 @@ Welcome to your new app.
         this.text = null;
     }
 
-    public Task Handle(TheThing @event, EventContext context, CancellationToken cancellationToken)
+    public Task Handle(TheThing @event, EventContext<TheThing> context, CancellationToken cancellationToken)
     {
         Console.WriteLine("Received TheThing");
         this.eventText = @event.Text;
