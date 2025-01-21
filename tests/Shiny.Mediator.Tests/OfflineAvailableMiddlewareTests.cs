@@ -40,7 +40,7 @@ public class OfflineAvailableRequestMiddlewareTests
         this.connectivity.IsAvailable = true;
         
         var request = new OfflineRequest();
-        var context = new ExecutionContext<OfflineRequest>(request, this.handler, CancellationToken.None);
+        var context = new RequestContext<OfflineRequest>(request, this.handler, CancellationToken.None);
         
         var func = () => this.middleware.Process(
             context,
@@ -48,16 +48,16 @@ public class OfflineAvailableRequestMiddlewareTests
         );
 
         var result = await func();
-        result.Should().Be(99L, "Gate 1");
-        this.handler.WasHit.Should().Be(true, "Gate 1");
+        result.ShouldBe(99L, "Gate 1");
+        this.handler.WasHit.ShouldBe(true, "Gate 1");
 
         this.handler.WasHit = false;
         this.handler.ReturnValue = 88L;
         this.connectivity.IsAvailable = false;
         result = await func();
         
-        this.handler.WasHit.Should().Be(false, "Gate 2");
-        result.Should().Be(99L, "Gate 2");
+        this.handler.WasHit.ShouldBe(false, "Gate 2");
+        result.ShouldBe(99L, "Gate 2");
     }
 }
 

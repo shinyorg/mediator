@@ -17,7 +17,7 @@ public class CommandHandlerTests
         }
         catch (InvalidOperationException ex)
         {
-            ex.Message.Should().Be("No command handler found for Shiny.Mediator.Tests.TestCommand");
+            ex.Message.ShouldBe("No command handler found for Shiny.Mediator.Tests.TestCommand");
         }
     }
 }

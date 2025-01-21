@@ -27,7 +27,7 @@ public class EventHandlerTests
         });
 
         await mediator.Publish(new TestEvent());
-        tcs.Task.IsCompletedSuccessfully.Should().BeTrue();
+        tcs.Task.IsCompletedSuccessfully.ShouldBeTrue();
     }
 
 
@@ -41,7 +41,7 @@ public class EventHandlerTests
         var mediator = sp.GetRequiredService<IMediator>();
         
         await mediator.Publish(new TestTestEvent());
-        CatchAllEventHandler.Executed.Should().BeTrue();
+        CatchAllEventHandler.Executed.ShouldBeTrue();
     }    
 }
 

@@ -12,7 +12,7 @@ public class RequestHandlerTests
         services.AddSingletonAsImplementedInterfaces<TestResultRequestHandler>();
         var sp = services.BuildServiceProvider();
         var result = await sp.GetRequiredService<IMediator>().Request(new TestResultRequest("HELLO"));
-        result.Should().Be("RESPONSE-HELLO");
+        result.ShouldBe("RESPONSE-HELLO");
     }
 }
 

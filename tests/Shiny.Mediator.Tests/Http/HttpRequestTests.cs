@@ -22,7 +22,7 @@ public class HttpRequestTests(ITestOutputHelper output)
         var logger = Logging.CreateLogger<HttpRequestHandler<MyHttpResultRequest, HttpResult>>(output);
         var handler = new TestHttpRequestHandler<MyHttpResultRequest, HttpResult>(logger, null, serializer, null!);
         var message = handler.GetMessage(request, "https://test.com");
-        message.RequestUri.Should().Be(expectedUri);
+        message.RequestUri!.ToString().ShouldBe(expectedUri);
     }
 }
 

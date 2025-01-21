@@ -15,14 +15,13 @@
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.11.0" PrivateAssets="all"/>
-        <PackageReference Include="FluentAssertions" Version="7.0.0" />
-        <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-        <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.5.1" />
-        <PackageReference Include="Npgsql" Version="9.0.2" />
-        <PackageReference Include="Scrutor" Version="5.1.1" />
-        <PackageReference Include="xunit" Version="2.9.2" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0"/>
+        <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.5.1"/>
+        <PackageReference Include="Npgsql" Version="9.0.2"/>
+        <PackageReference Include="Shouldly" Version="4.2.1"/>
+        <PackageReference Include="xunit" Version="2.9.2"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="3.0.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -30,11 +29,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj" />
-        <ProjectReference Include="..\..\src\Shiny.Mediator.DapperRequests\Shiny.Mediator.DapperRequests.csproj" />
-        <ProjectReference Include="..\..\src\Shiny.Mediator.Server.Client\Shiny.Mediator.Server.Client.csproj" />
-        <ProjectReference Include="..\..\src\Shiny.Mediator.Server.Core\Shiny.Mediator.Server.Core.csproj" />
-        <ProjectReference Include="..\..\src\Shiny.Mediator.Server\Shiny.Mediator.Server.csproj" />
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.DapperRequests\Shiny.Mediator.DapperRequests.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Server.Client\Shiny.Mediator.Server.Client.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Server.Core\Shiny.Mediator.Server.Core.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Server\Shiny.Mediator.Server.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
                           OutputItemType="Analyzer"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
@@ -43,7 +42,7 @@
 
     <ItemGroup>
         <None Remove="Http\*.json"/>
-        <Content Include="Http\*.json" CopyToOutputDirectory="Always" />
+        <Content Include="Http\*.json" CopyToOutputDirectory="Always"/>
     </ItemGroup>
 
     <!--

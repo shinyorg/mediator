@@ -31,8 +31,8 @@ public class MiddlewareTests
         
         var mediator = sp.GetRequiredService<IMediator>();
         var result = await mediator.Request(new MiddlewareResultRequest());
-        Executed.Constrained.Should().Be(addConstrained);
-        Executed.Variant.Should().Be(addOpen);
+        Executed.Constrained.ShouldBe(addConstrained);
+        Executed.Variant.ShouldBe(addOpen);
     }
 }
 
@@ -61,7 +61,7 @@ public static class Executed
 }
 public class ConstrainedMiddleware : IRequestMiddleware<MiddlewareResultRequest, int>
 {
-    public Task<int> Process(ExecutionContext<MiddlewareResultRequest> context, RequestHandlerDelegate<int> next)
+    public Task<int> Process(RequestContext<MiddlewareResultRequest> context, RequestHandlerDelegate<int> next)
     {
         Executed.Constrained = true;
         return next();
@@ -71,7 +71,7 @@ public class ConstrainedMiddleware : IRequestMiddleware<MiddlewareResultRequest,
 public class VariantRequestMiddleware<TRequest, TResult> : IRequestMiddleware<TRequest, TResult>
     where TRequest : IRequest<TResult>
 {
-    public Task<TResult> Process(ExecutionContext<TRequest> context, RequestHandlerDelegate<TResult> next)
+    public Task<TResult> Process(RequestContext<TRequest> context, RequestHandlerDelegate<TResult> next)
     {
         Executed.Variant = true;
         return next();

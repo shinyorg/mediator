@@ -23,7 +23,7 @@ public class DataAnnotationsTests
     public async Task WithValidateResult()
     {
         var result = await this.mediator.Request(new ValidationRequest());
-        result.Errors.Count.Should().Be(2);
+        result.Errors.Count.ShouldBe(2);
     }
     
     
@@ -37,7 +37,7 @@ public class DataAnnotationsTests
         }
         catch (ValidateException ex)
         {
-            ex.Result.Errors.Count.Should().Be(2);
+            ex.Result.Errors.Count.ShouldBe(2);
         }
     }
     
@@ -46,7 +46,7 @@ public class DataAnnotationsTests
     public async Task Success()
     {
         var result = await this.mediator.Request(new ValidationRequest { Name = "Allan", Url = "https://test.com" });
-        result.IsValid.Should().BeTrue();
+        result.IsValid.ShouldBeTrue();
     }
 }
 

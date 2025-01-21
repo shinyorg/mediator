@@ -11,8 +11,8 @@ public class MediaHubOptionsTests
         var options = new MediatorServerConfig();
         options.Map(typeof(CollectorTestEvent).Assembly, new Uri("http://assembly"));
 
-        options.GetUriForContract(typeof(CollectorTestEvent)).Should().Be("http://assembly");
-        options.GetUriForContract(typeof(CollectorTestRequest)).Should().Be("http://assembly");
+        options.GetUriForContract(typeof(CollectorTestEvent))!.ToString().ShouldBe("http://assembly");
+        options.GetUriForContract(typeof(CollectorTestRequest))!.ToString().ShouldBe("http://assembly");
     }
 
 
@@ -22,8 +22,8 @@ public class MediaHubOptionsTests
         var options = new MediatorServerConfig();
         options.Map<CollectorTestEvent>(new Uri("http://type-specific"));
 
-        options.GetUriForContract(typeof(CollectorTestEvent)).Should().Be("http://type-specific");
-        options.GetUriForContract(typeof(CollectorTestRequest)).Should().BeNull();
+        options.GetUriForContract(typeof(CollectorTestEvent))!.ToString().ShouldBe("http://type-specific");
+        options.GetUriForContract(typeof(CollectorTestRequest)).ShouldBeNull();
     }
 
 
@@ -39,8 +39,8 @@ public class MediaHubOptionsTests
 
         var type = options.GetUriForContract(contractType);
         if (expectedFind)
-            type.Should().Be(new Uri("http://namespace"));
+            type.ShouldBe(new Uri("http://namespace"));
         else
-            type.Should().BeNull();
+            type.ShouldBeNull();
     }
 }

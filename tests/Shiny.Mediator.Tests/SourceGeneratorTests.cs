@@ -10,9 +10,9 @@ public class SourceGeneratorTests
         services.AddDiscoveredMediatorHandlersFromUnitTests(); // assembly name changed to get around assembly name (Shiny.Mediator) detection
         var sp = services.BuildServiceProvider();
 
-        sp.GetService<IEventHandler<SourceGenEvent>>().Should().NotBeNull("Event Handler not found");
-        sp.GetService<ICommandHandler<SourceGenCommand>>().Should().NotBeNull("Command Handler not found");
-        sp.GetService<IRequestHandler<SourceGenResponseRequest, SourceGenResponse>>().Should().NotBeNull("Request/Response Handler not found");
+        sp.GetService<IEventHandler<SourceGenEvent>>().ShouldNotBeNull("Event Handler not found");
+        sp.GetService<ICommandHandler<SourceGenCommand>>().ShouldNotBeNull("Command Handler not found");
+        sp.GetService<IRequestHandler<SourceGenResponseRequest, SourceGenResponse>>().ShouldNotBeNull("Request/Response Handler not found");
     }
 }
 
