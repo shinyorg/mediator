@@ -1,7 +1,7 @@
 # Shiny Mediator
 
 <a href="https://www.nuget.org/packages/Shiny.Mediator" target="_blank">
-  <img src="https://buildstats.info/nuget/Shiny.Mediator?includePreReleases=true" />
+  <img src="https://img.shields.io/nuget/v/Shiny.Mediator?style=for-the-badge" />
 </a>
 
 Mediator is a behavioral design pattern that lets you reduce chaotic dependencies between objects. The pattern restricts direct communications between the objects and forces them to collaborate only via a mediator object.

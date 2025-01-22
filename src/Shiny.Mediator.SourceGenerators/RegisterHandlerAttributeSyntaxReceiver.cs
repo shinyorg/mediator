@@ -22,13 +22,13 @@ public class RegisterHandlerAttributeSyntaxReceiver : SyntaxReceiver
         if (hasAttribute)
             return true;
         
-        hasAttribute = classSymbol.HasAttribute("SingletonMiddlewareAttribute");
-        if (hasAttribute)
-            return true;
-
-        hasAttribute = classSymbol.HasAttribute("ScopedMiddlewareAttribute");
-        if (hasAttribute)
-            return true;
+        // hasAttribute = classSymbol.HasAttribute("SingletonMiddlewareAttribute");
+        // if (hasAttribute)
+        //     return true;
+        //
+        // hasAttribute = classSymbol.HasAttribute("ScopedMiddlewareAttribute");
+        // if (hasAttribute)
+        //     return true;
         
         return false;
     }
