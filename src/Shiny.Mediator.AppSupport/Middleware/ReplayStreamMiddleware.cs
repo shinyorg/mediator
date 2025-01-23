@@ -68,11 +68,14 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         if (cache != null)
         {
             var item = await cache.Get<TResult>(requestKey).ConfigureAwait(false);
-            if (item != null)
+            if (item == null)
             {
-                // TODO: need cache date
+                logger.LogDebug("ReplayStream Cache Miss - {Request}", context.Request);
+            }
+            else
+            {
                 logger.LogDebug("ReplayStream Cache Hit - {Request}", context.Request);
-                context.Cache(new CacheContext(requestKey, true, DateTimeOffset.UtcNow));
+                context.Cache(new CacheContext(item.Key, true, item.CreatedAt));
                 yield return item.Value;
             }
         }
@@ -81,6 +84,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
             var store = await offline.Get<TResult>(request);
             if (store != null)
             {
+                logger.LogDebug("ReplayStream Offline Hit - {Request}", context.Request);
                 context.Offline(new OfflineAvailableContext(requestKey, store.Timestamp));
                 yield return store.Value;
             }
