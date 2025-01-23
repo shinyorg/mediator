@@ -12,14 +12,6 @@
  
  None
 
-### Platforms Affected ### 
-<!-- Please list all platforms affected by these changes -->
-
-- All
-- iOS
-- Android
-- UWP
-
 ### Behavioral Changes ###
 <!-- Describe any changes that may change how a user's app behaves or appears when upgrading to this version of the codebase. -->
 

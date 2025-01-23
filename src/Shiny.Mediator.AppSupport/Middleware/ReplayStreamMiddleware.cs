@@ -31,7 +31,8 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
 
         logger.LogDebug("ReplayStream Enabled - {Request}", context.Request);
         return this.Iterate(
-            context.Request, 
+            context.Request,
+            context,
             next, 
             cancellationToken
         );
@@ -55,9 +56,9 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
     }
 
     
-    // TODO: add cache
     protected virtual async IAsyncEnumerable<TResult> Iterate(
         TRequest request, 
+        RequestContext<TRequest> context,
         StreamRequestHandlerDelegate<TResult> next, 
         [EnumeratorCancellation] CancellationToken ct
     )
@@ -68,13 +69,21 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         {
             var item = await cache.Get<TResult>(requestKey).ConfigureAwait(false);
             if (item != null)
+            {
+                // TODO: need cache date
+                logger.LogDebug("ReplayStream Cache Hit - {Request}", context.Request);
+                context.Cache(new CacheContext(requestKey, true, DateTimeOffset.UtcNow));
                 yield return item.Value;
+            }
         }
         else if (offline != null)
         {
             var store = await offline.Get<TResult>(request);
-            if (store != null) // TODO: I need context here to ship out date
+            if (store != null)
+            {
+                context.Offline(new OfflineAvailableContext(requestKey, store.Timestamp));
                 yield return store.Value;
+            }
         }
 
         if (!internet.IsAvailable)

@@ -5,7 +5,7 @@
         <TargetFrameworks>$(TargetFrameworks);net9.0-maccatalyst</TargetFrameworks>
         <IosSimulatorBuild Condition="'$(Configuration)' == 'Debug'">False</IosSimulatorBuild>
 
-        <MauiVersion>9.0.21</MauiVersion>
+        <MauiVersion>9.0.30</MauiVersion>
         <OutputType>Exe</OutputType>
         <RootNamespace>Sample</RootNamespace>
         <SingleProject>true</SingleProject>

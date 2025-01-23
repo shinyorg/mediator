@@ -7,7 +7,11 @@ namespace Sample.Handlers;
 public class AutoRefreshStreamRequestHandler : IStreamRequestHandler<AutoRefreshRequest, string>
 {
     [TimerRefresh(3000)]
-    public async IAsyncEnumerable<string> Handle(AutoRefreshRequest request, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<string> Handle(
+        AutoRefreshRequest request,
+        RequestContext<AutoRefreshRequest> context,
+        [EnumeratorCancellation] CancellationToken cancellationToken
+    )
     {
         yield return DateTimeOffset.Now.ToString("h:mm:ss tt");
     }

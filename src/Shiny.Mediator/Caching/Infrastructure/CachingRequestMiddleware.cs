@@ -46,7 +46,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
             logger.LogDebug("Cache Forced Refresh - {Request}", context.Request);
             result = await next().ConfigureAwait(false);
             if (result != null)
-                cacheService.Set(cacheKey, result, config);
+                await cacheService.Set(cacheKey, result, config).ConfigureAwait(false);
         }
         else
         {

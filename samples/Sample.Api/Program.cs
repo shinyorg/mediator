@@ -17,9 +17,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
 
 app.MapMediatorGet<MappedRequest, string>("/mapped").WithOpenApi();
-app.UseHttpsRedirection();
 app.MapShinyMediatorEndpointHandlers(builder.Services);
 
 app.Run();

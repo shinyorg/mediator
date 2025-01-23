@@ -34,20 +34,19 @@ public class MediatorSourceGenerator : ISourceGenerator
                 internal sealed class ScopedHandlerAttribute : global::System.Attribute
                 {
                 }
-                
-                [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class SingletonMiddlewareAttribute : global::System.Attribute
-                {
-                }
-                
-                [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class ScopedMiddlewareAttribute : global::System.Attribute
-                {
-                }
                 """,
                 Encoding.UTF8
             )
         ));
+    //     [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
+    // internal sealed class SingletonMiddlewareAttribute : global::System.Attribute
+    // {
+    // }
+    //             
+    // [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
+    // internal sealed class ScopedMiddlewareAttribute : global::System.Attribute
+    // {
+    // }
         context.RegisterForSyntaxNotifications(() => syntaxReceiver);
     }
 

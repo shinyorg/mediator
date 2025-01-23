@@ -51,7 +51,7 @@ public class StreamRequestWrapper<TRequest, TResult>(
                 "Executing streaming request handler {RequestHandlerType}",
                 requestHandler.GetType().FullName
             );
-            return requestHandler.Handle(request, cancellationToken);
+            return requestHandler.Handle(request, context, cancellationToken);
         });
         
         var middlewares = scope.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
