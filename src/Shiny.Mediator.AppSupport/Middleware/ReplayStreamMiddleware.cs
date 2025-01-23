@@ -29,7 +29,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         if (!this.IsEnabled(context.Request, context.RequestHandler))
             return next();
 
-        logger.LogDebug("ReplayStream Enabled - {Request}", context.Request);
+        logger.LogDebug("Enabled - {Request}", context.Request);
         return this.Iterate(
             context.Request,
             context,
@@ -70,11 +70,11 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
             var item = await cache.Get<TResult>(requestKey).ConfigureAwait(false);
             if (item == null)
             {
-                logger.LogDebug("ReplayStream Cache Miss - {Request}", context.Request);
+                logger.LogDebug("Cache Miss - {Request}", context.Request);
             }
             else
             {
-                logger.LogDebug("ReplayStream Cache Hit - {Request}", context.Request);
+                logger.LogDebug("Cache Hit - {Request}", context.Request);
                 context.Cache(new CacheContext(item.Key, true, item.CreatedAt));
                 yield return item.Value;
             }
@@ -82,28 +82,44 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         else if (offline != null)
         {
             var store = await offline.Get<TResult>(request);
-            if (store != null)
+            if (store == null)
             {
-                logger.LogDebug("ReplayStream Offline Hit - {Request}", context.Request);
+                logger.LogDebug("Offline Miss - {Request}", context.Request);
+            }
+            else
+            {
+                logger.LogDebug("Offline Hit - {Request}", context.Request);
                 context.Offline(new OfflineAvailableContext(requestKey, store.Timestamp));
                 yield return store.Value;
             }
         }
 
         if (!internet.IsAvailable)
+        {
+            logger.LogDebug("Waiting for internet connection- {Request}", context.Request);
             await internet.WaitForAvailable(ct).ConfigureAwait(false);
-        
+        }
+
+        logger.LogDebug("Internet Detected - Running Handler - {Request}", context.Request);
         var nxt = this.TryNext(next, ct);
         if (nxt != null)
         {
             while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
             {
                 if (cache != null)
+                {
+                    logger.LogDebug("Updating Cache - {Request}", context.Request);
                     await cache.Set(requestKey, nxt).ConfigureAwait(false);
-                
-                if (offline != null)
-                    await offline.Set(request, nxt.Current!).ConfigureAwait(false);
+                }
 
+
+                if (offline != null)
+                {
+                    logger.LogDebug("Updating Offline Store - {Request}", context.Request);
+                    await offline.Set(request, nxt.Current!).ConfigureAwait(false);
+                }
+
+                logger.LogDebug("Yielding Final Result - {Request}", context.Request);
                 yield return nxt.Current;
             }
         }
@@ -120,7 +136,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         }
         catch (TimeoutException ex)
         {
-            logger.LogWarning(ex, "ReplayStream Timeout");
+            logger.LogWarning(ex, "Handler Timeout");
             return null;
         }
     }
