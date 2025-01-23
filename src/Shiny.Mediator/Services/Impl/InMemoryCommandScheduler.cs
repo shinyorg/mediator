@@ -5,11 +5,9 @@ using Timer = System.Timers.Timer;
 namespace Shiny.Mediator.Services.Impl;
 
 
-record RunStore(IScheduledCommand Command, string RunCallbackHeader);
-
 public class InMemoryCommandScheduler : ICommandScheduler
 {
-    readonly List<RunStore> commands = new();
+    readonly List<CommandContext> commands = new();
     readonly ILogger logger;
     readonly IMediator mediator;
     readonly Timer timer = new();
@@ -24,13 +22,16 @@ public class InMemoryCommandScheduler : ICommandScheduler
     }
     
     
-    public Task<bool> Schedule(string sendCallbackHeader, IScheduledCommand command, CancellationToken cancellationToken)
+    public Task<bool> Schedule(CommandContext command, CancellationToken cancellationToken)
     {
         var scheduled = false;
-        if (command.DueAt != null && command.DueAt < DateTimeOffset.UtcNow)
+        if (command.Command is not IScheduledCommand scheduledCommand)
+            throw new InvalidCastException($"Command {command.Command} is not of IScheduledCommand");
+            
+        if (scheduledCommand.DueAt < DateTimeOffset.UtcNow)
         {
             lock (this.commands)
-                this.commands.Add(new(command, sendCallbackHeader));
+                this.commands.Add(command);
             
             if (!this.timer.Enabled)
                 this.timer.Start();
@@ -44,18 +45,24 @@ public class InMemoryCommandScheduler : ICommandScheduler
     protected virtual async void OnTimerElapsed(object? sender, ElapsedEventArgs e)
     {
         this.timer.Stop();
-        List<RunStore> items = null!;
+        List<CommandContext> items = null!;
         lock (this.commands)
             items = this.commands.ToList();
         
         foreach (var item in items)
         {
-            if (item.Command.DueAt >= DateTimeOffset.UtcNow)
+            var command = (IScheduledCommand)item.Command;
+            if (command.DueAt >= DateTimeOffset.UtcNow)
             {
+                var headers = item
+                    .Values
+                    .Select(x => (Key: x.Key, Value: x.Value))
+                    .ToList();
+                
                 try
                 {
                     await this.mediator
-                        .Send(item.Command, CancellationToken.None, (item.RunCallbackHeader, true))
+                        .Send(command, CancellationToken.None, headers)
                         .ConfigureAwait(false);
                     
                 }
