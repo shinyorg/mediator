@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 using Polly;
+using Sample.Handlers;
 
 namespace Sample;
 
@@ -39,21 +40,17 @@ public static class MauiProgram
         builder.Logging.AddDebug();
         builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
-        builder.Configuration.AddJsonStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("Sample.appsettings.json")!);
+        builder.Configuration.AddJsonStream(
+            Assembly
+                .GetExecutingAssembly()
+                .GetManifestResourceStream("Sample.appsettings.json")!
+        );
         
         builder.Services.AddShinyMediator(x => x
             .UseMaui()
             .UseBlazor()
-            
-            .AddOfflineAvailabilityMiddleware()
             .AddPersistentCache()
-            .AddUserErrorNotificationsMiddleware()
-            .AddPerformanceLoggingMiddleware()
-            .AddTimerRefreshStreamMiddleware()
-            .AddEventExceptionHandlingMiddleware()
             .AddDataAnnotations()
-            
-            .AddHttpClient()
             .AddMauiHttpDecorator()
             .AddPrismSupport()
             
@@ -64,6 +61,7 @@ public static class MauiProgram
                 y.ExpirationScanFrequency = TimeSpan.FromSeconds(5);
             })
         );
+        builder.Services.AddSingletonAsImplementedInterfaces<MyRequestMiddleware>();
         builder.Services.AddDiscoveredMediatorHandlersFromSample();
         
         builder.Services.AddSingleton<AppSqliteConnection>();

@@ -9,7 +9,11 @@ public record TestStreamRequest(int SecondsBetween) : IStreamRequest<string>;
 [MediatorHttpPost("GetStream", "/stream")]
 public class TheStreamHandler(ILogger<TheStreamHandler> logger) : IStreamRequestHandler<TestStreamRequest, string>
 {
-    public async IAsyncEnumerable<string> Handle(TestStreamRequest request, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<string> Handle(
+        TestStreamRequest request, 
+        RequestContext<TestStreamRequest> context, 
+        [EnumeratorCancellation] CancellationToken cancellationToken
+    )
     {
         while (!cancellationToken.IsCancellationRequested)
         {
