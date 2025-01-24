@@ -1,5 +1,6 @@
 using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
+using Shiny.Mediator.Infrastructure.Impl;
 using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests;
@@ -18,7 +19,7 @@ public class HttpRequestTests(ITestOutputHelper output)
             TheValue = path,
             QueryValue = query
         };
-        var serializer = new SerializerService();
+        var serializer = new SysTextJsonSerializerService();
         var logger = Logging.CreateLogger<HttpRequestHandler<MyHttpResultRequest, HttpResult>>(output);
         var handler = new TestHttpRequestHandler<MyHttpResultRequest, HttpResult>(logger, null, serializer, null!);
         var message = handler.GetMessage(request, "https://test.com");

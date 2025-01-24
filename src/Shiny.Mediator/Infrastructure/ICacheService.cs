@@ -1,4 +1,4 @@
-namespace Shiny.Mediator.Caching;
+namespace Shiny.Mediator.Infrastructure;
 
 public record CacheItemConfig(
     TimeSpan? AbsoluteExpiration = null, 

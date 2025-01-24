@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Caching.Memory;
-using Shiny.Mediator.Caching;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator;
 

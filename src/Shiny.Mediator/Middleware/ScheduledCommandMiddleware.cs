@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using Shiny.Mediator.Services;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
 
