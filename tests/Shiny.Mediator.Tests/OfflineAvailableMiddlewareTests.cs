@@ -1,8 +1,7 @@
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Memory;
-using Microsoft.Extensions.Logging;
-using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Middleware;
+using Shiny.Mediator.Tests.Mocks;
+using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests;
 
@@ -15,7 +14,7 @@ public class OfflineAvailableRequestMiddlewareTests
     readonly OfflineRequestHandler handler;
     readonly ConfigurationManager config;
     
-    public OfflineAvailableRequestMiddlewareTests()
+    public OfflineAvailableRequestMiddlewareTests(ITestOutputHelper output)
     {
         this.handler = new();
         this.connectivity = new();
@@ -25,7 +24,7 @@ public class OfflineAvailableRequestMiddlewareTests
         // this.config.AddConfiguration(new MemoryConfigurationProvider(new MemoryConfigurationSource().InitialData))
         
         this.middleware = new OfflineAvailableRequestMiddleware<OfflineRequest, long>(
-            null,
+            Logging.CreateLogger<OfflineAvailableRequestMiddleware<OfflineRequest, long>>(output),
             this.connectivity, 
             this.offline,
             this.config
@@ -78,39 +77,3 @@ public class OfflineRequestHandler : IRequestHandler<OfflineRequest, long>
     }
 }
 
-public class MockOfflineService : IOfflineService
-{
-    public Task<string> Set(object request, object result)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<OfflineResult<TResult>?> Get<TResult>(object request)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task ClearByType(Type requestType)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task ClearByRequest(object request)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task Clear()
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public class MockInternetService : IInternetService
-{
-    public bool IsAvailable { get; set; }
-    public Task WaitForAvailable(CancellationToken cancelToken = default)
-    {
-        throw new NotImplementedException();
-    }
-}

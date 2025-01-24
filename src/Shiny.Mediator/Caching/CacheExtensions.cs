@@ -1,5 +1,6 @@
 using Shiny.Mediator.Caching;
 using Shiny.Mediator.Caching.Infrastructure;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator;
 

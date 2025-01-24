@@ -47,7 +47,7 @@ were aimed more at server scenarios, while also adding some features we feel ben
   - Exception Handling logging
   - [Performance Time Logging](https://shinylib.net/mediator/middleware/performancelogging)
   - [Main Thread Dispatching](https://shinylib.net/mediator/middleware/mainthread)
-  - [Replayable Streams](https://shinylib.net/mediator/middleware/replayablestreams)
+  - [Replayable Streams](https://shinylib.net/mediator/middleware/replay)
   - [Refresh Timer Streams](https://shinylib.net/mediator/middleware/refresh)
   - [Command Scheduling](https://shinylib.net/mediator/middleware/scheduling)
 

@@ -4,8 +4,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Middleware;
-using Shiny.Mediator.Services;
-using Shiny.Mediator.Services.Impl;
 
 namespace Shiny.Mediator;
 
@@ -35,7 +33,7 @@ public static class RegistrationExtensions
             cfg.AddPerformanceLoggingMiddleware();
             cfg.AddTimerRefreshStreamMiddleware();
         }
-        services.TryAddSingleton<ISerializerService, SerializerService>();
+        services.TryAddSingleton<ISerializerService, Infrastructure.Impl.SysTextJsonSerializerService>();
         services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();
         return services;
     }
@@ -70,6 +68,7 @@ public static class RegistrationExtensions
     {
         configurator.Services.AddSingleton<ICommandScheduler, TScheduler>();
         configurator.AddOpenCommandMiddleware(typeof(ScheduledCommandMiddleware<>));
+        configurator.Services.TryAddSingleton(TimeProvider.System);
         return configurator;
     }
 
@@ -80,7 +79,7 @@ public static class RegistrationExtensions
     /// <param name="configurator"></param>
     /// <returns></returns>
     public static ShinyConfigurator AddInMemoryCommandScheduling(this ShinyConfigurator configurator)
-        => configurator.AddCommandScheduling<InMemoryCommandScheduler>();
+        => configurator.AddCommandScheduling<Infrastructure.Impl.InMemoryCommandScheduler>();
 
 
     /// <summary>

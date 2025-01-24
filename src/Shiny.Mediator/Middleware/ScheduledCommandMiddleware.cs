@@ -1,11 +1,12 @@
 using Microsoft.Extensions.Logging;
-using Shiny.Mediator.Services;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
 
 
 public class ScheduledCommandMiddleware<TCommand>(
     ILogger<ScheduledCommandMiddleware<TCommand>> logger,
+    TimeProvider timeProvider,
     ICommandScheduler scheduler
 ) : ICommandMiddleware<TCommand> where TCommand : IScheduledCommand
 {
@@ -15,7 +16,8 @@ public class ScheduledCommandMiddleware<TCommand>(
         CancellationToken cancellationToken
     )
     {
-        if (context.Command.DueAt < DateTimeOffset.UtcNow)
+        var now = timeProvider.GetUtcNow();
+        if (context.Command.DueAt < now)
         {
             logger.LogWarning($"Executing Scheduled Command '{context.Command}' that was due at {context.Command.DueAt}");
             await next().ConfigureAwait(false);

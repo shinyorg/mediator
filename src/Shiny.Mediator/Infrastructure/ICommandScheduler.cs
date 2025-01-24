@@ -1,4 +1,4 @@
-namespace Shiny.Mediator.Services;
+namespace Shiny.Mediator.Infrastructure;
 
 
 public interface ICommandScheduler

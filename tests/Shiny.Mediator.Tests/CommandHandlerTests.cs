@@ -9,7 +9,7 @@ public class CommandHandlerTests
         try
         {
             var services = new ServiceCollection();
-            services.AddShinyMediator(cfg => { });
+            services.AddShinyMediator();
             var sp = services.BuildServiceProvider();
             var mediator = sp.GetRequiredService<IMediator>();
             await mediator.Send(new TestCommand());
