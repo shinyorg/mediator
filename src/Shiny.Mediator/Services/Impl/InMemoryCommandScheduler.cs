@@ -8,15 +8,25 @@ namespace Shiny.Mediator.Services.Impl;
 public class InMemoryCommandScheduler : ICommandScheduler
 {
     readonly List<CommandContext> commands = new();
+    readonly TimeProvider timeProvider;
     readonly ILogger logger;
     readonly IMediator mediator;
     readonly Timer timer = new();
     
 
-    public InMemoryCommandScheduler(IMediator mediator, ILogger<ICommandScheduler> logger)
+    public InMemoryCommandScheduler(
+        IMediator mediator, 
+        ILogger<ICommandScheduler> logger,
+        TimeProvider timeProvider
+    )
     {
         this.mediator = mediator;
         this.logger = logger;
+        
+        // TODO: timeprovider
+        this.timeProvider = timeProvider;
+
+        // var tt = this.timeProvider.CreateTimer(null, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
         this.timer.Interval = TimeSpan.FromSeconds(15).TotalMilliseconds;
         this.timer.Elapsed += this.OnTimerElapsed;
     }
@@ -52,7 +62,7 @@ public class InMemoryCommandScheduler : ICommandScheduler
         foreach (var item in items)
         {
             var command = (IScheduledCommand)item.Command;
-            if (command.DueAt >= DateTimeOffset.UtcNow)
+            if (command.DueAt < this.timeProvider.GetUtcNow())
             {
                 var headers = item
                     .Values
@@ -64,7 +74,6 @@ public class InMemoryCommandScheduler : ICommandScheduler
                     await this.mediator
                         .Send(command, CancellationToken.None, headers)
                         .ConfigureAwait(false);
-                    
                 }
                 catch (Exception ex)
                 {

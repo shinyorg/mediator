@@ -45,6 +45,7 @@ public static class Utils
         }
         return result;
     }
+    
 
     public static TAttribute? GetHandlerHandleMethodAttribute<TCommand, TAttribute>(this ICommandHandler handler) where TAttribute : Attribute where TCommand : ICommand
         => handler

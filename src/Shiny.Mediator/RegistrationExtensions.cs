@@ -70,6 +70,7 @@ public static class RegistrationExtensions
     {
         configurator.Services.AddSingleton<ICommandScheduler, TScheduler>();
         configurator.AddOpenCommandMiddleware(typeof(ScheduledCommandMiddleware<>));
+        configurator.Services.TryAddSingleton(TimeProvider.System);
         return configurator;
     }
 
