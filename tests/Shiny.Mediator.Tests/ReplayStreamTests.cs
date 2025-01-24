@@ -1,28 +1,52 @@
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Shiny.Mediator.Tests.Mocks;
+using Xunit.Abstractions;
+
 namespace Shiny.Mediator.Tests;
 
-public class ReplayStreamTests
+public class ReplayStreamTests(ITestOutputHelper output)
 {
     [Fact]
     public async Task ContextUpdatingBetweenAwaits()
     {
         var services = new ServiceCollection();
+        services.AddLogging(x => x.AddXUnit(output));
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
         services.AddShinyMediator();
-        // TODO: add cache & offline
+
+        services.AddSingletonAsImplementedInterfaces<MockOfflineService>();
+        services.AddSingletonAsImplementedInterfaces<MockInternetService>();
         services.AddSingletonAsImplementedInterfaces<ReplayStreamRequestHandler>();
         var sp = services.BuildServiceProvider();
         var mediator = sp.GetRequiredService<IMediator>();
+
+        var internet = sp.GetRequiredService<MockInternetService>();
+        internet.IsAvailable = false;
         
         var context = mediator.RequestWithContext(new ReplayStreamRequest());
 
+        var i = 0;
         await foreach (var item in context.Result)
         {
-            // TODO: these should clear after the "first" pump?
             var cache = context.Context.Cache();
-
-            var offline = context.Context.Offline();
+            cache.ShouldBeNull("Cache should be null");
+            context.Context.Values.ContainsKey("FromHandler").ShouldBeTrue();
             
-            // context.Context.Values.ContainsKey("FromHandler")
+            var offline = context.Context.Offline();
+            switch (i)
+            {
+                case 0:
+                    offline.ShouldBeNull("Offline should be null");
+                    internet.IsAvailable = true;
+                    break;
+                
+                case 1:
+                    offline.ShouldNotBeNull("Offline should be null");
+                    break;
+            }
+            i++;
         }
     }
 }

@@ -116,7 +116,7 @@ public class OfflineService(IStorageService storage, ISerializerService serializ
     string GetTypeKey(Type type) => $"{type.Namespace}.{type.Name}";
 }
 
-record OfflineStore(
+public record OfflineStore(
     string TypeName,
     string RequestKey,
     DateTimeOffset Timestamp,

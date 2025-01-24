@@ -6,9 +6,29 @@ namespace Shiny.Mediator.Tests.Mocks;
 
 public class MockInternetService : IInternetService
 {
-    public bool IsAvailable { get; set; }
-    public Task WaitForAvailable(CancellationToken cancelToken = default)
+    TaskCompletionSource? completion;
+    
+    public bool IsAvailable
     {
-        throw new NotImplementedException();
+        get;
+        set
+        {
+            field = value;
+            if (value)
+                this.completion?.SetResult();
+        }
+    }
+    
+    
+    public async Task WaitForAvailable(CancellationToken cancelToken = default)
+    {
+        if (this.IsAvailable)
+            return;
+
+        this.completion = new();
+        await using (cancelToken.Register(() => this.completion.TrySetCanceled()));
+        
+        await this.completion.Task;
+        this.completion = null;
     }
 }

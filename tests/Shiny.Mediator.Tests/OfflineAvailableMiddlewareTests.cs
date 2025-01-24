@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Shiny.Mediator.Middleware;
 using Shiny.Mediator.Tests.Mocks;
+using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests;
 
@@ -13,7 +14,7 @@ public class OfflineAvailableRequestMiddlewareTests
     readonly OfflineRequestHandler handler;
     readonly ConfigurationManager config;
     
-    public OfflineAvailableRequestMiddlewareTests()
+    public OfflineAvailableRequestMiddlewareTests(ITestOutputHelper output)
     {
         this.handler = new();
         this.connectivity = new();
@@ -23,7 +24,7 @@ public class OfflineAvailableRequestMiddlewareTests
         // this.config.AddConfiguration(new MemoryConfigurationProvider(new MemoryConfigurationSource().InitialData))
         
         this.middleware = new OfflineAvailableRequestMiddleware<OfflineRequest, long>(
-            null,
+            Logging.CreateLogger<OfflineAvailableRequestMiddleware<OfflineRequest, long>>(output),
             this.connectivity, 
             this.offline,
             this.config
