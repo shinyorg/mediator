@@ -11,7 +11,6 @@ public class InMemoryCommandScheduler(
 {
     readonly List<CommandContext> commands = new();
     ITimer? timer;
-        
     
     
     public Task<bool> Schedule(CommandContext command, CancellationToken cancellationToken)
@@ -19,8 +18,9 @@ public class InMemoryCommandScheduler(
         var scheduled = false;
         if (command.Command is not IScheduledCommand scheduledCommand)
             throw new InvalidCastException($"Command {command.Command} is not of IScheduledCommand");
-            
-        if (scheduledCommand.DueAt < DateTimeOffset.UtcNow)
+
+        var now = timeProvider.GetUtcNow();
+        if (scheduledCommand.DueAt > now)
         {
             lock (this.commands)
                 this.commands.Add(command);
@@ -43,7 +43,8 @@ public class InMemoryCommandScheduler(
         foreach (var item in items)
         {
             var command = (IScheduledCommand)item.Command;
-            if (command.DueAt < timeProvider.GetUtcNow())
+            var time = timeProvider.GetUtcNow();
+            if (command.DueAt < time)
             {
                 var headers = item
                     .Values
@@ -67,6 +68,7 @@ public class InMemoryCommandScheduler(
             }
         }
 
+        // start again, but defer 1 min
         this.timer!.Change(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
     }
 }
