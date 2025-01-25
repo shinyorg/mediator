@@ -46,6 +46,20 @@ public class DapperTests(ITestOutputHelper output)
     }
 
 
+    [Fact]
+    public void RequestKeyTest()
+    {
+        var email = "allan%";
+        var query = new DapperFirstQuery<User>(
+            $"select * from \"Users\" where \"Email\" like {email}"
+        );
+
+        var requestKey = query.GetKey();
+        output.WriteLine(requestKey);
+        requestKey.ShouldBe("Shiny.Mediator.Tests.User_select * from \"Users\" where \"Email\" like allan%");
+    }
+
+
     static async Task RunDbHits(IServiceProvider sp)
     {
         var mediator = sp.GetRequiredService<IMediator>();
