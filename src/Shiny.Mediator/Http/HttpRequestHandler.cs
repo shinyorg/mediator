@@ -100,7 +100,6 @@ public class HttpRequestHandler<TRequest, TResult>(
     
     protected virtual HttpRequestMessage ContractToHttpRequest(
         TRequest request, 
-        RequestContext context, 
         HttpAttribute attribute,
         string baseUri
     )
