@@ -9,5 +9,10 @@ public class DapperScalarRequestHandler(IConnectionProvider connectionProvider) 
         => connectionProvider
             .Create(request)
             .QueryBuilder(request.Sql)
-            .ExecuteScalarAsync(null, request.CommandTimeout, cancellationToken: cancellationToken);
+            .ExecuteScalarAsync(
+                request.Transaction, 
+                request.CommandTimeout, 
+                request.CommandType,
+                cancellationToken
+            );
 }
