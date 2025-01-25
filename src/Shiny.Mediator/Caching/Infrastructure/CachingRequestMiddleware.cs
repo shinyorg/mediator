@@ -42,7 +42,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
             return await next().ConfigureAwait(false);
 
         TResult result = default!;
-        if (context.Request is ICacheControl { ForceRefresh: true })
+        if (context.Request is ICacheControl { ForceRefresh: true } || context.HasForceCacheRefresh())
         {
             logger.LogDebug("Cache Forced Refresh - {Request}", context.Request);
             result = await next().ConfigureAwait(false);
