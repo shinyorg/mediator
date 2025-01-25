@@ -98,7 +98,12 @@ public class HttpRequestHandler<TRequest, TResult>(
     };
     
     
-    protected virtual HttpRequestMessage ContractToHttpRequest(TRequest request, HttpAttribute attribute, string baseUri)
+    protected virtual HttpRequestMessage ContractToHttpRequest(
+        TRequest request, 
+        RequestContext context, 
+        HttpAttribute attribute,
+        string baseUri
+    )
     {
         var httpMethod = ToMethod(attribute.Verb);
         logger.LogDebug("HTTP Method: " + httpMethod);
@@ -109,6 +114,15 @@ public class HttpRequestHandler<TRequest, TResult>(
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .ToList();
 
+        // TODO: headers to http headers - think on this one
+        // foreach (var header in context.Values)
+        // {
+        //     if (header.Value is string)
+        //     {
+        //         
+        //     }
+        // }
+        
         var uri = baseUri + attribute.Route;
         foreach (var property in properties)
         {
