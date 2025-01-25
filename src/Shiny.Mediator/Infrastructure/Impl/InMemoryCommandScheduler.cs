@@ -9,21 +9,19 @@ public class InMemoryCommandScheduler(
     TimeProvider timeProvider
 ) : ICommandScheduler
 {
-    readonly List<CommandContext> commands = new();
+    readonly List<(DateTimeOffset DueAt, CommandContext Context)> commands = new();
     ITimer? timer;
     
     
-    public Task<bool> Schedule(CommandContext command, CancellationToken cancellationToken)
+    public Task<bool> Schedule(CommandContext command, DateTimeOffset dueAt, CancellationToken cancellationToken)
     {
         var scheduled = false;
-        if (command.Command is not IScheduledCommand scheduledCommand)
-            throw new InvalidCastException($"Command {command.Command} is not of IScheduledCommand");
-
         var now = timeProvider.GetUtcNow();
-        if (scheduledCommand.DueAt > now)
+        
+        if (dueAt > now)
         {
             lock (this.commands)
-                this.commands.Add(command);
+                this.commands.Add((dueAt, command));
 
             scheduled = true;
             this.timer ??= timeProvider.CreateTimer(_ => this.OnTimerElapsed(), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
@@ -36,17 +34,17 @@ public class InMemoryCommandScheduler(
     {
         this.timer!.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan); // stop
         
-        List<CommandContext> items = null!;
+        List<(DateTimeOffset DueAt, CommandContext Context)> items = null!;
         lock (this.commands)
             items = this.commands.ToList();
         
         foreach (var item in items)
         {
-            var command = (IScheduledCommand)item.Command;
             var time = timeProvider.GetUtcNow();
-            if (command.DueAt < time)
+            if (item.DueAt < time)
             {
                 var headers = item
+                    .Context
                     .Values
                     .Select(x => (Key: x.Key, Value: x.Value))
                     .ToList();
@@ -54,7 +52,7 @@ public class InMemoryCommandScheduler(
                 try
                 {
                     await mediator
-                        .Send(command, CancellationToken.None, headers)
+                        .Send(item.Context.Command, CancellationToken.None, headers)
                         .ConfigureAwait(false);
                 }
                 catch (Exception ex)

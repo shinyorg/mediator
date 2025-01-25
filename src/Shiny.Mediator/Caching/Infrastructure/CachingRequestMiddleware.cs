@@ -37,7 +37,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
             };
         }
 
-        var config = this.GetItemConfig(attribute, context.Request);
+        var config = this.GetItemConfig(context, attribute, context.Request);
         if (config == null)
             return await next().ConfigureAwait(false);
 
@@ -71,8 +71,12 @@ public class CachingRequestMiddleware<TRequest, TResult>(
     }
 
 
-    protected virtual CacheItemConfig? GetItemConfig(CacheAttribute? attribute, TRequest request)
+    protected virtual CacheItemConfig? GetItemConfig(RequestContext context, CacheAttribute? attribute, TRequest request)
     {
+        var cache = context.TryGetCacheConfig();
+        if (cache != null)
+            return cache;
+        
         if (request is ICacheControl control)
         {
             return new CacheItemConfig(
