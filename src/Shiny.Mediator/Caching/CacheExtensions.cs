@@ -7,6 +7,11 @@ namespace Shiny.Mediator;
 
 public static class CacheExtensions
 {
+    public static readonly (string Key, bool Value) ForceCacheRefreshHeader = ("ForceCacheRefresh", true);
+
+    public static bool HasForceCacheRefresh(this RequestContext context)
+        => context.Values.ContainsKey(ForceCacheRefreshHeader.Key);
+    
     public static ShinyConfigurator AddCaching<TCache>(this ShinyConfigurator cfg) where TCache : class, ICacheService
     {
         cfg.Services.AddSingletonAsImplementedInterfaces<TCache>();
