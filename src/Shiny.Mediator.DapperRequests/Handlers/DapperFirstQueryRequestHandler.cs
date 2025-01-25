@@ -15,7 +15,9 @@ public class DapperFirstQueryRequestHandler<TResult>(
         .Create(request)
         .QueryBuilder(request.Sql)
         .QueryFirstOrDefaultAsync<TResult>(
-            commandTimeout: request.CommandTimeout,
-            cancellationToken: cancellationToken
+            request.Transaction,
+            request.CommandTimeout,
+            request.CommandType,
+            cancellationToken
         );
 }
