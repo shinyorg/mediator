@@ -8,10 +8,10 @@
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
         <Description>Shiny Mediator - A mediator pattern for all .NET Apps</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageProjectUrl>https://shinylib.net/client/mediator</PackageProjectUrl>
+        <PackageProjectUrl>https://shinylib.net/mediator</PackageProjectUrl>
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
-        <PackageReleaseNotes>https://shinylib.net/release-notes/mediator/v10/</PackageReleaseNotes>
+        <PackageReleaseNotes>https://shinylib.net/release-notes/mediator</PackageReleaseNotes>
         <PackageTags>mediator shiny aspnet maui blazor prism</PackageTags>
         <RepositoryUrl>https://github.com/shinyorg/mediator</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
