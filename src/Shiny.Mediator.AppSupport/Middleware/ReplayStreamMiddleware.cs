@@ -67,6 +67,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         
         if (cache != null)
         {
+            // TODO: force refresh?
             var item = await cache.Get<TResult>(requestKey).ConfigureAwait(false);
             if (item == null)
             {
