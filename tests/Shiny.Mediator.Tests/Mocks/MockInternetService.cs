@@ -6,7 +6,9 @@ namespace Shiny.Mediator.Tests.Mocks;
 
 public class MockInternetService : IInternetService
 {
+    public event EventHandler<bool>? StateChanged;
     TaskCompletionSource? completion;
+
     
     public bool IsAvailable
     {
@@ -14,6 +16,7 @@ public class MockInternetService : IInternetService
         set
         {
             field = value;
+            this.StateChanged?.Invoke(this, value);
             if (value)
                 this.completion?.SetResult();
         }
