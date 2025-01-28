@@ -6,31 +6,42 @@ public class MauiEventCollector : IEventCollector
     public IReadOnlyList<IEventHandler<TEvent>> GetHandlers<TEvent>() where TEvent : IEvent
     {
         // I need to make this crawl the tree, but really I don't need a ton of use-cases here
-        var list = new List<IEventHandler<TEvent>>();
-        var mainPage = Application.Current?.MainPage;
-        // Application.Current.Windows
-        if (mainPage == null)
-            return list;
+        if (Application.Current == null)
+            return Array.Empty<IEventHandler<TEvent>>();
         
-        if (mainPage is TabbedPage tabs)
+        if (Application.Current.Windows.Count == 0)
+            return Array.Empty<IEventHandler<TEvent>>();
+        
+        var list = new List<IEventHandler<TEvent>>();
+        foreach (var window in Application.Current.Windows)
+        {
+            if (window.Page != null)
+                VisitPage(window.Page, list);
+        }
+        return list;
+    }
+
+
+    static void VisitPage<TEvent>(Page page, List<IEventHandler<TEvent>> list) where TEvent : IEvent
+    {
+        if (page is TabbedPage tabs)
         {
             foreach (var tab in tabs.Children)
             {
                 TryNavPage(tab, list);
             }
         }
-        else if (mainPage is FlyoutPage flyout)
+        else if (page is FlyoutPage flyout)
         {
             TryNavPage(flyout.Flyout, list);
             TryNavPage(flyout.Detail, list); // could be a tabs page
         }
         else
         {
-            TryNavPage(mainPage, list);
+            TryNavPage(page, list);
         }
-        return list;
     }
-
+    
 
     static void TryNavPage<TEvent>(Page page, List<IEventHandler<TEvent>> list) where TEvent : IEvent
     {
@@ -69,6 +80,7 @@ public class MauiEventCollector : IEventCollector
             }
         }        
     }
+    
 
     static void TryAppendEvents<TEvent>(Shell shell, List<IEventHandler<TEvent>> list) where TEvent : IEvent
     {
