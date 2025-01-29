@@ -4,5 +4,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Shiny.Mediator</RootNamespace>
+
+        <!--<PublishAot>true</PublishAot>-->
     </PropertyGroup>
 </Project>
