@@ -59,11 +59,11 @@ public static class MauiProgram
             
             .AddResiliencyMiddleware(builder.Configuration)
             // Cache - you can only have one
-            // .AddPersistentCache()
-            .AddMemoryCaching(y =>
-            {
-                y.ExpirationScanFrequency = TimeSpan.FromSeconds(5);
-            })
+            .AddMauiPersistentCache()
+            // .AddMemoryCaching(y =>
+            // {
+            //     y.ExpirationScanFrequency = TimeSpan.FromSeconds(5);
+            // })
         );
         builder.Services.AddSingletonAsImplementedInterfaces<MyRequestMiddleware>();
         builder.Services.AddDiscoveredMediatorHandlersFromSample();
@@ -75,7 +75,8 @@ public static class MauiProgram
         builder.Services.RegisterForNavigation<EventPage, EventViewModel>();
         builder.Services.RegisterForNavigation<BlazorPage, BlazorViewModel>();
         builder.Services.RegisterForNavigation<AnotherPage, AnotherViewModel>();
-        
-        return builder.Build();
+
+        var app = builder.Build();
+        return app;
     }
 }
