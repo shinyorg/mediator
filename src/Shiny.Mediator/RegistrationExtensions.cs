@@ -29,7 +29,8 @@ public static class RegistrationExtensions
         if (includeStandardMiddleware)
         {
             cfg.AddHttpClient();
-            cfg.AddEventExceptionHandlingMiddleware();
+            cfg.AddGlobalExceptionHandling();
+            cfg.PreventEventExceptions();
             cfg.AddPerformanceLoggingMiddleware();
             cfg.AddTimerRefreshStreamMiddleware();
         }
@@ -46,13 +47,7 @@ public static class RegistrationExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddHttpClient(this ShinyConfigurator configurator)
     {
-        // TODO: command handlers
-        configurator.Services.Add(new ServiceDescriptor(
-            typeof(IRequestHandler<,>), 
-            null, 
-            typeof(HttpRequestHandler<,>), 
-            ServiceLifetime.Scoped
-        ));
+        configurator.Services.AddScoped(typeof(IRequestHandler<,>), typeof(HttpRequestHandler<,>));
         return configurator;
     }
     
@@ -93,17 +88,56 @@ public static class RegistrationExtensions
         cfg.AddOpenCommandMiddleware(typeof(PerformanceLoggingCommandMiddleware<>));
         return cfg;
     }
-    
 
 
     /// <summary>
-    /// Event Exception Management
+    /// Add global exception handler
     /// </summary>
-    /// <param name="cfg"></param>
+    /// <param name="configurator"></param>
+    /// <param name="lifetime"></param>
+    /// <typeparam name="THandler"></typeparam>
     /// <returns></returns>
-    public static ShinyConfigurator AddEventExceptionHandlingMiddleware(this ShinyConfigurator cfg)
-        => cfg.AddOpenEventMiddleware(typeof(ExceptionHandlerEventMiddleware<>));
+    public static ShinyConfigurator AddExceptionHandler<THandler>(
+        this ShinyConfigurator configurator,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    ) where THandler : class, IExceptionHandler
+    {
+        configurator.AddGlobalExceptionHandling();
+        if (lifetime == ServiceLifetime.Singleton)
+            configurator.Services.AddSingleton<IExceptionHandler, THandler>();
+        else
+            configurator.Services.AddScoped<IExceptionHandler, THandler>();
 
+        return configurator;
+    }
+
+    
+    /// <summary>
+    /// Adds global exception handling this logs errors in an event handler without allowing it to crash out your app
+    /// </summary>
+    /// <param name="configurator"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator PreventEventExceptions(this ShinyConfigurator configurator)
+        => configurator.AddExceptionHandler<EventExceptionHandler>(ServiceLifetime.Singleton);
+    
+    
+    /// <summary>
+    /// Add global exception handling
+    /// </summary>
+    /// <param name="configurator"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator AddGlobalExceptionHandling(this ShinyConfigurator configurator)
+    {
+        if (!configurator.Services.Any(x => x.ImplementationType == typeof(GlobalExceptionHandler)))
+        {
+            configurator.Services.AddScoped<GlobalExceptionHandler>();
+            configurator.AddOpenCommandMiddleware(typeof(ExceptionHandlingCommandMiddleware<>));
+            configurator.AddOpenEventMiddleware(typeof(ExceptionHandlingEventMiddleware<>));
+            configurator.AddOpenRequestMiddleware(typeof(ExceptionHandlingRequestMiddleware<,>));
+        }
+        return configurator;
+    }
+    
     
     /// <summary>
     /// Adds data annotation validation to your contracts, request handlers, & command handlers

@@ -49,6 +49,7 @@ public static class MauiProgram
         builder.Services.AddShinyMediator(x => x
             .UseMaui()
             .UseBlazor()
+            .PreventEventExceptions()
             
             // Validation - you can only have both, but don't
             .AddDataAnnotations()

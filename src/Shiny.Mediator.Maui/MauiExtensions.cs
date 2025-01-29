@@ -43,6 +43,20 @@ public static class MauiExtensions
         return configurator;
     }
 
+    
+    /// <summary>
+    /// Adds connectivity broadcaster
+    /// </summary>
+    /// <param name="configurator"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator AddConnectivityBroadcaster(this ShinyConfigurator configurator)
+    {
+        configurator.AddMauiInfrastructure();
+        configurator.Services.AddSingleton<IMauiInitializeService, ConnectivityBroadcaster>();
+        return configurator;
+    }
+    
+
     /// <summary>
     /// Adds Maui Event Collector to mediator
     /// </summary>
