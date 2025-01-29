@@ -30,6 +30,7 @@ public static class RegistrationExtensions
         {
             cfg.AddHttpClient();
             cfg.AddGlobalExceptionHandling();
+            cfg.PreventEventExceptions();
             cfg.AddPerformanceLoggingMiddleware();
             cfg.AddTimerRefreshStreamMiddleware();
         }
@@ -90,16 +91,34 @@ public static class RegistrationExtensions
 
 
     /// <summary>
-    /// 
+    /// Add global exception handler
+    /// </summary>
+    /// <param name="configurator"></param>
+    /// <param name="lifetime"></param>
+    /// <typeparam name="THandler"></typeparam>
+    /// <returns></returns>
+    public static ShinyConfigurator AddExceptionHandler<THandler>(
+        this ShinyConfigurator configurator,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    ) where THandler : class, IExceptionHandler
+    {
+        configurator.AddGlobalExceptionHandling();
+        if (lifetime == ServiceLifetime.Singleton)
+            configurator.Services.AddSingleton<IExceptionHandler, THandler>();
+        else
+            configurator.Services.AddScoped<IExceptionHandler, THandler>();
+
+        return configurator;
+    }
+
+    
+    /// <summary>
+    /// Adds global exception handling this logs errors in an event handler without allowing it to crash out your app
     /// </summary>
     /// <param name="configurator"></param>
     /// <returns></returns>
     public static ShinyConfigurator PreventEventExceptions(this ShinyConfigurator configurator)
-    {
-        configurator.AddGlobalExceptionHandling();
-        configurator.Services.AddSingleton<IExceptionHandler, EventExceptionHandler>();
-        return configurator;
-    }
+        => configurator.AddExceptionHandler<EventExceptionHandler>(ServiceLifetime.Singleton);
     
     
     /// <summary>
@@ -109,10 +128,14 @@ public static class RegistrationExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddGlobalExceptionHandling(this ShinyConfigurator configurator)
     {
-        // TODO: prevent duplication
-        configurator.AddOpenCommandMiddleware(typeof(ExceptionHandlingCommandMiddleware<>));
-        configurator.AddOpenEventMiddleware(typeof(ExceptionHandlingEventMiddleware<>));
-        configurator.AddOpenRequestMiddleware(typeof(ExceptionHandlingRequestMiddleware<,>));
+        if (!configurator.Services.Any(x => 
+            x.ImplementationType == typeof(ExceptionHandlingCommandMiddleware<>))
+        )
+        {
+            configurator.AddOpenCommandMiddleware(typeof(ExceptionHandlingCommandMiddleware<>));
+            configurator.AddOpenEventMiddleware(typeof(ExceptionHandlingEventMiddleware<>));
+            configurator.AddOpenRequestMiddleware(typeof(ExceptionHandlingRequestMiddleware<,>));
+        }
         return configurator;
     }
     
