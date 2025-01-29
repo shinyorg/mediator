@@ -43,7 +43,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
     }
 
 
-    async Task<TResult> GetOffline(RequestContext<TRequest> context)
+    async Task<TResult?> GetOffline(RequestContext<TRequest> context)
     {
         TResult result = default;
         var offlineResult = await offline.Get<TResult>(context.Request!);
