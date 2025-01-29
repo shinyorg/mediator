@@ -5,8 +5,7 @@ public class EventContext : AbstractMediatorContext;
 
 public class EventContext<TEvent>(
     TEvent @event,
-    IEventHandler<TEvent> eventHandler,
-    CancellationToken cancellationToken
+    IEventHandler<TEvent> eventHandler
 ) : EventContext where TEvent : IEvent
 {
     public TEvent Event => @event;
