@@ -1,7 +1,10 @@
+using Shiny.Mediator.Infrastructure;
+
 namespace Shiny.Mediator.Middleware;
 
+
 public class ExceptionHandlingRequestMiddleware<TRequest, TResult>(
-    IEnumerable<IExceptionHandler> handlers
+    GlobalExceptionHandler handler
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
@@ -21,20 +24,7 @@ public class ExceptionHandlingRequestMiddleware<TRequest, TResult>(
         }
         catch (Exception ex)
         {
-            var handled = false;
-            foreach (var handler in handlers)
-            {
-                handled = await handler
-                    .Handle(
-                        context.Request!, 
-                        context.Handler, 
-                        ex
-                    )
-                    .ConfigureAwait(false);
-                if (handled)
-                    break;
-            }
-
+            var handled = await handler.Manage(context.Request!, context.Handler, ex).ConfigureAwait(false);
             if (!handled)
                 throw;
         }
@@ -43,7 +33,7 @@ public class ExceptionHandlingRequestMiddleware<TRequest, TResult>(
 }
 
 public class ExceptionHandlingCommandMiddleware<TCommand>(
-    IEnumerable<IExceptionHandler> handlers
+    GlobalExceptionHandler handler
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     public async Task Process(CommandContext<TCommand> context, CommandHandlerDelegate next, CancellationToken cancellationToken)
@@ -58,21 +48,7 @@ public class ExceptionHandlingCommandMiddleware<TCommand>(
         }
         catch (Exception ex)
         {
-            var handled = false;
-            foreach (var handler in handlers)
-            {
-                 handled = await handler
-                     .Handle(
-                         context.Command,
-                         context.Handler,
-                         ex
-                     )
-                     .ConfigureAwait(false);
-                 
-                 if (handled)
-                     break;
-            }
-
+            var handled = await handler.Manage(context.Command!, context.Handler, ex).ConfigureAwait(false);
             if (!handled)
                 throw;
         }
@@ -80,7 +56,7 @@ public class ExceptionHandlingCommandMiddleware<TCommand>(
 }
 
 public class ExceptionHandlingEventMiddleware<TEvent>(
-    IEnumerable<IExceptionHandler> handlers
+    GlobalExceptionHandler handler
 ) : IEventMiddleware<TEvent> where TEvent : IEvent
 {
     public async Task Process(EventContext<TEvent> context, EventHandlerDelegate next, CancellationToken cancellationToken)
@@ -91,22 +67,35 @@ public class ExceptionHandlingEventMiddleware<TEvent>(
         }
         catch (Exception ex)
         {
-            var handled = false;
-            foreach (var handler in handlers)
-            {
-                handled = await handler
-                    .Handle(
-                        context.Event,
-                        context.Handler,
-                        ex
-                    )
-                    .ConfigureAwait(false);
-                
-                if (handled)
-                    break;
-            }
+            var handled = await handler.Manage(context.Event!, context.Handler, ex).ConfigureAwait(false);
             if (!handled)
                 throw;
         }
     }
 }
+
+// public class ExceptionHandlingStreamRequestMiddleware<TRequest, TResult>(
+//     GlobalExceptionHandler handler
+// ) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
+// {
+//     public async IAsyncEnumerable<TResult> Process(
+//         RequestContext<TRequest> context, 
+//         StreamRequestHandlerDelegate<TResult> next,
+//         CancellationToken cancellationToken
+//     )
+//     {
+//         var handled = false;
+//         IAsyncEnumerable<TResult> result = null!;
+//         try
+//         {
+//             result = next();
+//         }
+//         catch (Exception ex)
+//         {
+//             handled = await handler.Manage(context.Request!, context.Handler, ex).ConfigureAwait(false);
+//             if (!handled)
+//                 throw;
+//         }
+//         return result;
+//     }
+// }

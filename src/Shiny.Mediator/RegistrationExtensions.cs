@@ -128,10 +128,9 @@ public static class RegistrationExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddGlobalExceptionHandling(this ShinyConfigurator configurator)
     {
-        if (!configurator.Services.Any(x => 
-            x.ImplementationType == typeof(ExceptionHandlingCommandMiddleware<>))
-        )
+        if (!configurator.Services.Any(x => x.ImplementationType == typeof(GlobalExceptionHandler)))
         {
+            configurator.Services.AddScoped<GlobalExceptionHandler>();
             configurator.AddOpenCommandMiddleware(typeof(ExceptionHandlingCommandMiddleware<>));
             configurator.AddOpenEventMiddleware(typeof(ExceptionHandlingEventMiddleware<>));
             configurator.AddOpenRequestMiddleware(typeof(ExceptionHandlingRequestMiddleware<,>));
