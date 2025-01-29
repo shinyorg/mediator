@@ -30,6 +30,7 @@ public static class MauiExtensions
         return builder;
     }
     
+    
     /// <summary>
     /// Adds Maui Event Collector to mediator
     /// </summary>
@@ -39,14 +40,10 @@ public static class MauiExtensions
     public static ShinyConfigurator UseMaui(this ShinyConfigurator cfg, bool includeStandardMiddleware = true)
     {
         cfg.AddEventCollector<MauiEventCollector>();
-        cfg.Services.TryAddSingleton<IStorageService, StorageService>();
-        cfg.Services.TryAddSingleton<IInternetService, InternetService>();
-        cfg.Services.TryAddSingleton<IAlertDialogService, AlertDialogService>();
-        cfg.Services.TryAddSingleton(FileSystem.Current);
-        cfg.Services.TryAddSingleton(Connectivity.Current);
         
         if (includeStandardMiddleware)
         {
+            cfg.AddMauiInfrastructure();
             cfg.AddMainThreadMiddleware();
             cfg.AddStandardAppSupportMiddleware();
         }
@@ -55,24 +52,34 @@ public static class MauiExtensions
 
 
     /// <summary>
+    /// Ensures all necessary MAUI services are installed for middleware
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator AddMauiInfrastructure(this ShinyConfigurator cfg)
+    {
+        cfg.Services.TryAddSingleton<IStorageService, StorageService>();
+        cfg.Services.TryAddSingleton<IInternetService, InternetService>();
+        cfg.Services.TryAddSingleton<IAlertDialogService, AlertDialogService>();
+        cfg.Services.TryAddSingleton(FileSystem.Current);
+        cfg.Services.TryAddSingleton(AppInfo.Current);
+        cfg.Services.TryAddSingleton(DeviceDisplay.Current);
+        cfg.Services.TryAddSingleton(DeviceInfo.Current);
+        cfg.Services.TryAddSingleton(Geolocation.Default);
+        cfg.Services.TryAddSingleton(Connectivity.Current);
+        return cfg;
+    }
+
+    
+    /// <summary>
     /// This appends app version, device info, and culture to the HTTP request handling framework
     /// </summary>
     /// <param name="configurator"></param>
-    /// <param name="appendGpsHeader"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddMauiHttpDecorator(this ShinyConfigurator configurator, bool appendGpsHeader = false)
+    public static ShinyConfigurator AddMauiHttpDecorator(this ShinyConfigurator configurator)
     {
-        configurator.Services.TryAddSingleton(AppInfo.Current);
-        configurator.Services.TryAddSingleton(DeviceDisplay.Current);
-        configurator.Services.TryAddSingleton(DeviceInfo.Current);
-        configurator.Services.TryAddSingleton(Geolocation.Default);
-        
-        configurator.Services.Add(new ServiceDescriptor(
-            typeof(IHttpRequestDecorator<,>), 
-            null,
-            typeof(MauiHttpRequestDecorator<,>),
-            ServiceLifetime.Singleton
-        ));
+        configurator.AddMauiInfrastructure();
+        configurator.Services.AddSingleton(typeof(IHttpRequestDecorator<,>), typeof(MauiHttpRequestDecorator<,>));
         return configurator;
     }
 
