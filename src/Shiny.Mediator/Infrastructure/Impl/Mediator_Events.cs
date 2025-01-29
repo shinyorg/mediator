@@ -15,15 +15,9 @@ public partial class Mediator
         params IEnumerable<(string Key, object Value)> headers
     ) where TEvent : IEvent
     {
-        // allow registered services to be transient/scoped/singleton
         using var scope = services.CreateScope();
         var handlers = scope.ServiceProvider.GetServices<IEventHandler<TEvent>>().ToList();
-           
-        // "covariance" event publishing chain
-        // typeof(TEvent).BaseType == typeof(object) // loop on basetype until object
-        //typeof(TEvent).BaseType.GetInterfaces().Any(x => x == typeof(IEvent)); // must be implementing IEvent although it wouldn't have been able to compile anyhow
-        //var globalHandlers = scope.ServiceProvider.GetServices<IEventHandler<IEvent>>().ToList(); // global handlers
-           
+        
         AppendHandlersIf(handlers, this.subscriptions);
         foreach (var collector in collectors)
             AppendHandlersIf(handlers, collector);
@@ -43,6 +37,7 @@ public partial class Mediator
                     .PublishCore(
                         @event, 
                         handler, 
+                        headers,
                         logger, 
                         middlewares,
                         cancellationToken
@@ -79,13 +74,14 @@ public partial class Mediator
     async Task<EventContext<TEvent>> PublishCore<TEvent>(
         TEvent @event,
         IEventHandler<TEvent> eventHandler, 
+        IEnumerable<(string Key, object Value)> headers,
         ILogger logger,
         IEnumerable<IEventMiddleware<TEvent>> middlewares,
         CancellationToken cancellationToken
     ) where TEvent : IEvent
     {
-        var context = new EventContext<TEvent>(@event, eventHandler, cancellationToken);
-        // TODO: populate headers
+        var context = new EventContext<TEvent>(@event, eventHandler);
+        context.PopulateHeaders(headers);
         
         var handlerDelegate = new EventHandlerDelegate(() =>
         {
