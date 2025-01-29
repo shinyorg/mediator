@@ -49,13 +49,17 @@ public static class MauiProgram
         builder.Services.AddShinyMediator(x => x
             .UseMaui()
             .UseBlazor()
-            .AddPersistentCache()
+            
+            // Validation - you can only have both, but don't
             .AddDataAnnotations()
+            // .AddFluentValidation() 
+            
             .AddMauiHttpDecorator()
             .AddPrismSupport()
             
-            // .AddFluentValidation() // don't add both
             .AddResiliencyMiddleware(builder.Configuration)
+            // Cache - you can only have one
+            // .AddPersistentCache()
             .AddMemoryCaching(y =>
             {
                 y.ExpirationScanFrequency = TimeSpan.FromSeconds(5);
