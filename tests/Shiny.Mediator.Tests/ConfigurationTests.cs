@@ -1,11 +1,9 @@
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Memory;
-using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests;
 
 
-public class ConfigurationTests(ITestOutputHelper output)
+public class ConfigurationTests
 {
     [Fact]
     public void AddConfiguration()
