@@ -9,7 +9,7 @@ public class MainTheadEventMiddleware<TEvent> : IEventMiddleware<TEvent> where T
         CancellationToken cancellationToken
     )
     {
-        var attr = context.EventHandler.GetHandlerHandleMethodAttribute<TEvent, MainThreadAttribute>();
+        var attr = context.Handler.GetHandlerHandleMethodAttribute<TEvent, MainThreadAttribute>();
 
         if (attr == null)
         {
