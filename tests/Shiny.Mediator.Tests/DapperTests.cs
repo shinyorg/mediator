@@ -1,10 +1,8 @@
-using System.ComponentModel;
 using Dapper;
 using DryIoc.Microsoft.DependencyInjection;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests;
