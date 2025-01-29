@@ -29,8 +29,20 @@ public static class MauiExtensions
         });
         return builder;
     }
-    
-    
+
+
+    /// <summary>
+    /// Adds a file based caching service - ideal for cache surviving across app sessions
+    /// </summary>
+    /// <param name="configurator"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator AddMauiPersistentCache(this ShinyConfigurator configurator)
+    {
+        configurator.AddMauiInfrastructure();
+        configurator.AddCaching<StorageCacheService>();
+        return configurator;
+    }
+
     /// <summary>
     /// Adds Maui Event Collector to mediator
     /// </summary>
