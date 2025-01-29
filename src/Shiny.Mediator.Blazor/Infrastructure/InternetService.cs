@@ -6,7 +6,7 @@ namespace Shiny.Mediator.Blazor.Infrastructure;
 
 public class InternetService(IJSRuntime jsruntime) : IInternetService, IDisposable
 {
-    public event EventHandler<bool> StateChanged;
+    public event EventHandler<bool>? StateChanged;
     public bool IsAvailable => ((IJSInProcessRuntime)jsruntime).Invoke<bool>("MediatorServices.isOnline");
 
 

@@ -13,9 +13,7 @@ public class MainThreadRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        var attr = context.RequestHandler.GetHandlerHandleMethodAttribute<TRequest, MainThreadAttribute>();
-        TResult result = default!;
-
+        var attr = context.Handler.GetHandlerHandleMethodAttribute<TRequest, MainThreadAttribute>();
         if (attr == null)
             return next();
 
