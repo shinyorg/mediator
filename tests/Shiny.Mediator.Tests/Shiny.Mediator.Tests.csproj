@@ -17,6 +17,7 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.11.0" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0"/>
         <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.1.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0"/>
@@ -33,9 +34,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.DapperRequests\Shiny.Mediator.DapperRequests.csproj"/>
-        <ProjectReference Include="..\..\src\Shiny.Mediator.Server.Client\Shiny.Mediator.Server.Client.csproj"/>
-        <ProjectReference Include="..\..\src\Shiny.Mediator.Server.Core\Shiny.Mediator.Server.Core.csproj"/>
-        <ProjectReference Include="..\..\src\Shiny.Mediator.Server\Shiny.Mediator.Server.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
                           OutputItemType="Analyzer"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>

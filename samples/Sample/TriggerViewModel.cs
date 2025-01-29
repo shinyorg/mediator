@@ -9,7 +9,6 @@ namespace Sample;
 
 public partial class TriggerViewModel(
     IMediator mediator,
-    IMemoryCache cache,
     AppSqliteConnection data,
     IPageDialogService dialogs
 ) : ObservableObject, IEventHandler<MyMessageEvent>
@@ -111,7 +110,7 @@ public partial class TriggerViewModel(
     [RelayCommand]
     async Task CacheClear()
     {
-        cache.Clear();
+        await mediator.Publish(new FlushAllStoresEvent());
         await dialogs.DisplayAlertAsync("Cache Cleared", "DONE", "Ok");
     }
     [ObservableProperty] string cacheValue;

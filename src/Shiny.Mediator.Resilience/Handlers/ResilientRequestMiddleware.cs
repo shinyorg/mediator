@@ -19,7 +19,7 @@ public class ResilientRequestMiddleware<TRequest, TResult>(
     )
     {
         ResiliencePipeline? pipeline = null;
-        var section = configuration.GetHandlerSection("Resilience", context.Request!, context.RequestHandler);
+        var section = configuration.GetHandlerSection("Resilience", context.Request!, context.Handler);
         
         if (section != null)
         {
@@ -27,7 +27,7 @@ public class ResilientRequestMiddleware<TRequest, TResult>(
         }
         else
         {
-            var attribute = context.RequestHandler.GetHandlerHandleMethodAttribute<TRequest, ResilientAttribute>();
+            var attribute = context.Handler.GetHandlerHandleMethodAttribute<TRequest, ResilientAttribute>();
             if (attribute != null)
                 pipeline = pipelineProvider.GetPipeline(attribute.ConfigurationKey.ToLower());
         }

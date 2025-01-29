@@ -24,14 +24,14 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
         }
         else
         {
-            var section = configuration.GetHandlerSection("TimerRefresh", context.Request, context.RequestHandler);
+            var section = configuration.GetHandlerSection("TimerRefresh", context.Request, context.Handler);
             if (section != null)
             {
                 interval = section.GetValue("IntervalSeconds", 0);
             }
             else
             {
-                var attribute = context.RequestHandler.GetHandlerHandleMethodAttribute<TRequest, TimerRefreshAttribute>();
+                var attribute = context.Handler.GetHandlerHandleMethodAttribute<TRequest, TimerRefreshAttribute>();
                 if (attribute != null)
                     interval = attribute.IntervalSeconds;
             }

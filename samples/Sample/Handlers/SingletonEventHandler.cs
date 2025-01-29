@@ -4,7 +4,7 @@ namespace Sample.Handlers;
 
 
 [SingletonHandler]
-public class SingletonEventHandler(IMediator mediator, AppSqliteConnection data) : IEventHandler<MyMessageEvent>
+public class SingletonEventHandler(AppSqliteConnection data) : IEventHandler<MyMessageEvent>
 {
     public async Task Handle(MyMessageEvent @event, EventContext<MyMessageEvent> context, CancellationToken cancellationToken)
     {

@@ -39,7 +39,7 @@ public class BlazorEventCollector : IEventCollector, IComponentActivator
     
     public IComponent CreateInstance(Type componentType)
     {
-        var component = (IComponent)Activator.CreateInstance(componentType);
+        var component = (IComponent)Activator.CreateInstance(componentType)!;
         var isHandler = componentType
             .GetInterfaces()
             .Any(x => 

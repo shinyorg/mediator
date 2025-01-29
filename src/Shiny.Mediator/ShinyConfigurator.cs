@@ -71,7 +71,9 @@ public sealed class ShinyConfigurator(IServiceCollection services)
 
     public ShinyConfigurator AddEventCollector<TImpl>() where TImpl : class, IEventCollector
     {
-        services.AddSingleton<IEventCollector, TImpl>();
+        if (!services.Any(x => x.ServiceType == typeof(TImpl)))
+            services.AddSingleton<IEventCollector, TImpl>();
+        
         return this;
     }
 }

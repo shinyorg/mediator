@@ -5,6 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Description>The main Shiny Mediator library where all the infrastructure lives</Description>
+
+        <!--<PublishAot>true</PublishAot>-->
     </PropertyGroup>
 
     <ItemGroup>

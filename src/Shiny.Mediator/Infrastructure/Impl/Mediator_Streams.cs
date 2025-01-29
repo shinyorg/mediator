@@ -14,8 +14,10 @@ public partial class Mediator
     {
         var scope = services.CreateScope();
         var wrapperType = typeof(StreamRequestWrapper<,>).MakeGenericType([request.GetType(), typeof(TResult)]);
-        var wrapper = (IStreamRequestWrapper<TResult>)Activator.CreateInstance(
-            wrapperType, 
+
+        var wrapper = (IStreamRequestWrapper<TResult>)ActivatorUtilities.CreateInstance(
+            scope.ServiceProvider,
+            wrapperType,
             [scope.ServiceProvider, request, headers, cancellationToken]
         );
         var execution = wrapper.Handle();

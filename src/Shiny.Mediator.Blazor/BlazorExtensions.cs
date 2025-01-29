@@ -43,13 +43,33 @@ public static class BlazorExtensions
         cfg.Services.AddSingletonAsImplementedInterfaces<BlazorEventCollector>();
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")))
         {
-            cfg.Services.TryAddSingleton<IStorageService, StorageService>();
-            cfg.Services.TryAddSingleton<IInternetService, InternetService>();
-            cfg.Services.TryAddSingleton<IAlertDialogService, AlertDialogService>();
-
+            cfg.AddBlazorInfrastructure();
             if (includeStandardMiddleware)
                 cfg.AddStandardAppSupportMiddleware();
         }
         return cfg;
+    }
+
+
+    public static ShinyConfigurator AddBlazorInfrastructure(this ShinyConfigurator cfg)
+    {
+        cfg.Services.TryAddSingleton<IStorageService, StorageService>();
+        cfg.Services.TryAddSingleton<IInternetService, InternetService>();
+        cfg.Services.TryAddSingleton<IAlertDialogService, AlertDialogService>();
+        
+        return cfg;
+    }
+    
+    
+    /// <summary>
+    /// Adds a file based caching service - ideal for cache surviving across app sessions
+    /// </summary>
+    /// <param name="configurator"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator AddBlazorPersistentCache(this ShinyConfigurator configurator)
+    {
+        configurator.AddBlazorInfrastructure();
+        configurator.AddCaching<StorageCacheService>();
+        return configurator;
     }
 }

@@ -9,6 +9,9 @@ public static class CacheExtensions
 {
     public static ShinyConfigurator AddCaching<TCache>(this ShinyConfigurator cfg) where TCache : class, ICacheService
     {
+        if (cfg.Services.Any(x => x.ServiceType == typeof(ICacheService)))
+            throw new InvalidOperationException("You can only have one mediator cache service registered");
+        
         cfg.Services.AddSingletonAsImplementedInterfaces<TCache>();
         cfg.Services.AddSingletonAsImplementedInterfaces<FlushStoreEventHandlers>();
         cfg.AddOpenRequestMiddleware(typeof(CachingRequestMiddleware<,>));

@@ -13,7 +13,7 @@ public class StorageService(IFileSystem fileSystem, ISerializerService serialize
     }
     
 
-    public Task<T> Get<T>(string key)
+    public Task<T?> Get<T>(string key)
     {
         T? returnValue = default;
         var path = this.GetFilePath(key);

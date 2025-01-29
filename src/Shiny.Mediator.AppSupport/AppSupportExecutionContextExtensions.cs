@@ -14,7 +14,7 @@ public static class AppSupportExecutionContextExtensions
     internal static void UserErrorNotification(this IMediatorContext context, UserErrorNotificationContext info)
         => context.Add(nameof(UserErrorNotification), info);
     
-    public static OfflineAvailableContext? Offline(this IMediatorContext context)
+    public static OfflineAvailableContext? Offline(this RequestContext context)
         => context.TryGetValue<OfflineAvailableContext>("Offline");
     
     internal static void Offline(this RequestContext context, OfflineAvailableContext offlineContext)

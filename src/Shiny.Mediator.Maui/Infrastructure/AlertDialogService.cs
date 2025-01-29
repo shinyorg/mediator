@@ -1,8 +1,22 @@
+using Microsoft.Extensions.Logging;
+
 namespace Shiny.Mediator.Infrastructure;
 
 
-public class AlertDialogService : IAlertDialogService
+public class AlertDialogService(ILogger<AlertDialogService> logger) : IAlertDialogService
 {
     public void Display(string title, string message)
-        => Application.Current.MainPage.DisplayAlert(title, message, "OK");
+    {
+        var app = Application.Current;
+        if (app == null)
+            return;
+
+        var window = app.Windows.FirstOrDefault();
+        if (window?.Page == null)
+            return;
+
+        window.Page
+            .DisplayAlert(title, message, "OK")
+            .RunInBackground(logger);
+    }
 }
