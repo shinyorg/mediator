@@ -2,7 +2,7 @@ namespace Shiny.Mediator;
 
 public class RequestContext(IRequestHandler handler) : AbstractMediatorContext
 {
-    public IRequestHandler RequestHandler => handler;
+    public IRequestHandler Handler => handler;
 }
 
 public class RequestContext<TRequest>(
