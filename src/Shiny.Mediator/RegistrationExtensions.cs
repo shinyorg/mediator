@@ -29,7 +29,7 @@ public static class RegistrationExtensions
         if (includeStandardMiddleware)
         {
             cfg.AddHttpClient();
-            cfg.AddEventExceptionHandlingMiddleware();
+            cfg.AddGlobalExceptionHandling();
             cfg.AddPerformanceLoggingMiddleware();
             cfg.AddTimerRefreshStreamMiddleware();
         }
@@ -46,13 +46,7 @@ public static class RegistrationExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddHttpClient(this ShinyConfigurator configurator)
     {
-        // TODO: command handlers
-        configurator.Services.Add(new ServiceDescriptor(
-            typeof(IRequestHandler<,>), 
-            null, 
-            typeof(HttpRequestHandler<,>), 
-            ServiceLifetime.Scoped
-        ));
+        configurator.Services.AddScoped(typeof(IRequestHandler<,>), typeof(HttpRequestHandler<,>));
         return configurator;
     }
     
@@ -93,17 +87,35 @@ public static class RegistrationExtensions
         cfg.AddOpenCommandMiddleware(typeof(PerformanceLoggingCommandMiddleware<>));
         return cfg;
     }
-    
 
 
     /// <summary>
-    /// Event Exception Management
+    /// 
     /// </summary>
-    /// <param name="cfg"></param>
+    /// <param name="configurator"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddEventExceptionHandlingMiddleware(this ShinyConfigurator cfg)
-        => cfg.AddOpenEventMiddleware(typeof(ExceptionHandlerEventMiddleware<>));
-
+    public static ShinyConfigurator PreventEventExceptions(this ShinyConfigurator configurator)
+    {
+        configurator.AddGlobalExceptionHandling();
+        configurator.Services.AddSingleton<IExceptionHandler, EventExceptionHandler>();
+        return configurator;
+    }
+    
+    
+    /// <summary>
+    /// Add global exception handling
+    /// </summary>
+    /// <param name="configurator"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator AddGlobalExceptionHandling(this ShinyConfigurator configurator)
+    {
+        // TODO: prevent duplication
+        configurator.AddOpenCommandMiddleware(typeof(ExceptionHandlingCommandMiddleware<>));
+        configurator.AddOpenEventMiddleware(typeof(ExceptionHandlingEventMiddleware<>));
+        configurator.AddOpenRequestMiddleware(typeof(ExceptionHandlingRequestMiddleware<,>));
+        return configurator;
+    }
+    
     
     /// <summary>
     /// Adds data annotation validation to your contracts, request handlers, & command handlers
