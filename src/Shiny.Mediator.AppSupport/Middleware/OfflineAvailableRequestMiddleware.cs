@@ -18,7 +18,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        if (!this.IsEnabled(context.RequestHandler, context.Request))
+        if (!this.IsEnabled(context.Handler, context.Request))
             return await next().ConfigureAwait(false);
         
         var result = default(TResult);

@@ -18,7 +18,7 @@ public class UserErrorNotificationsRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        var section = configuration.GetHandlerSection("UserErrorNotifications", context.Request!, context.RequestHandler);
+        var section = configuration.GetHandlerSection("UserErrorNotifications", context.Request!, context.Handler);
         if (section == null)
             return await next().ConfigureAwait(false);
         

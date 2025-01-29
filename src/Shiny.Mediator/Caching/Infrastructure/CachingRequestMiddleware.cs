@@ -19,11 +19,11 @@ public class CachingRequestMiddleware<TRequest, TResult>(
     {
         CacheAttribute? attribute = null;
         var cacheKey = ContractUtils.GetObjectKey(context.Request!);
-        var section = configuration.GetHandlerSection("Cache", context.Request!, context.RequestHandler);
+        var section = configuration.GetHandlerSection("Cache", context.Request!, context.Handler);
 
         if (section == null)
         {
-            attribute = context.RequestHandler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
+            attribute = context.Handler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
         }
         else
         {
@@ -65,7 +65,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
                 .ConfigureAwait(false)!;
 
             logger.LogDebug("Cache Hit: {Hit} - {Request} - Key: {RequestKey}", hit, context.Request, cacheKey);
-            context.Cache(new CacheContext(cacheKey, hit, entry.CreatedAt));
+            context.Cache(new CacheContext(cacheKey, hit, entry!.CreatedAt));
         }
         return result!;
     }

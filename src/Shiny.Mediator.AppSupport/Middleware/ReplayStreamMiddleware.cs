@@ -26,7 +26,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        if (!this.IsEnabled(context.Request, context.RequestHandler))
+        if (!this.IsEnabled(context.Request, context.Handler))
             return next();
 
         logger.LogDebug("Enabled - {Request}", context.Request);

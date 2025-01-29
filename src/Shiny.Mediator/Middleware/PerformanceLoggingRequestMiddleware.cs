@@ -17,7 +17,7 @@ public class PerformanceLoggingRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        var section = configuration.GetHandlerSection("PerformanceLogging", context.Request!, context.RequestHandler);
+        var section = configuration.GetHandlerSection("PerformanceLogging", context.Request!, context.Handler);
         if (section == null)
             return await next().ConfigureAwait(false);
 
