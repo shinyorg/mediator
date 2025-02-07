@@ -1,0 +1,14 @@
+<Project Sdk="Uno.Sdk/5.6.22">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <UnoSingleProject>true</UnoSingleProject>
+        <OutputType>Library</OutputType>
+        <Nullable>enable</Nullable>
+
+        <UnoFeatures>Hosting;Storage</UnoFeatures>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj"/>
+    </ItemGroup>
+</Project>

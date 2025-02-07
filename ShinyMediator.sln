@@ -50,6 +50,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Api", "samples\Sampl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.DapperRequests", "src\Shiny.Mediator.DapperRequests\Shiny.Mediator.DapperRequests.csproj", "{C49D80C1-68E1-4730-8AAE-A4890ECF89C4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Mediator.Uno", "src\Shiny.Mediator.Uno\Shiny.Mediator.Uno.csproj", "{24DB79F2-629D-45C2-A63A-1780D6A6C921}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -120,6 +122,10 @@ Global
 		{C49D80C1-68E1-4730-8AAE-A4890ECF89C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C49D80C1-68E1-4730-8AAE-A4890ECF89C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C49D80C1-68E1-4730-8AAE-A4890ECF89C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24DB79F2-629D-45C2-A63A-1780D6A6C921}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24DB79F2-629D-45C2-A63A-1780D6A6C921}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24DB79F2-629D-45C2-A63A-1780D6A6C921}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24DB79F2-629D-45C2-A63A-1780D6A6C921}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0075777D-C7AF-4075-ACEA-88D1E1BE205A} = {967E9F7E-D082-4E7F-934B-D3BD05D1C22F}
