@@ -10,7 +10,7 @@ public static class Headers
     public static bool BypassMiddlewareEnabled(this IMediatorContext context)
         => context.Values.ContainsKey(BypassMiddleware.Key);
     
-    public static bool BypassErrorTrapsEnabled(this IMediatorContext context)
+    public static bool BypassExceptionHandlingEnabled(this IMediatorContext context)
         => context.Values.ContainsKey(BypassExceptionHandling.Key);
     
     const string TimerRefreshHeader = nameof(TimerRefreshHeader);
