@@ -29,7 +29,10 @@ public partial class Mediator
             return context;
 
         var logger = services.GetRequiredService<ILogger<TEvent>>();
-        var middlewares = scope.ServiceProvider.GetServices<IEventMiddleware<TEvent>>().ToList();
+
+        var bypass = headers.Any(x => x.Key.Equals(Headers.BypassMiddleware.Key));
+        var middlewares = bypass ? [] : scope.ServiceProvider.GetServices<IEventMiddleware<TEvent>>();
+        
         var tasks = handlers
             .Select(async handler =>
             {

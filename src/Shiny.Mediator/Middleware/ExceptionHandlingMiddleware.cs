@@ -13,6 +13,9 @@ public class ExceptionHandlingRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
+        if (context.BypassErrorTrapsEnabled())
+            await next().ConfigureAwait(false);
+
         TResult result = default;
         try
         {
@@ -38,6 +41,9 @@ public class ExceptionHandlingCommandMiddleware<TCommand>(
 {
     public async Task Process(CommandContext<TCommand> context, CommandHandlerDelegate next, CancellationToken cancellationToken)
     {
+        if (context.BypassErrorTrapsEnabled())
+            await next().ConfigureAwait(false);
+
         try
         {
             await next().ConfigureAwait(false);
@@ -61,6 +67,9 @@ public class ExceptionHandlingEventMiddleware<TEvent>(
 {
     public async Task Process(EventContext<TEvent> context, EventHandlerDelegate next, CancellationToken cancellationToken)
     {
+        if (context.BypassErrorTrapsEnabled())
+            await next().ConfigureAwait(false);
+        
         try
         {
             await next().ConfigureAwait(false);

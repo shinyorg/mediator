@@ -48,8 +48,8 @@ public class RequestResultWrapper<TRequest, TResult>(
         
         var context = new RequestContext<TRequest>(request, requestHandler);
         context.PopulateHeaders(headers);
-        
-        var middlewares = scope.GetServices<IRequestMiddleware<TRequest, TResult>>();
+
+        var middlewares = context.BypassMiddlewareEnabled() ? [] : scope.GetServices<IRequestMiddleware<TRequest, TResult>>();
         var logger = scope.GetRequiredService<ILogger<TRequest>>();
         
         var handlerExec = new RequestHandlerDelegate<TResult>(() =>

@@ -4,6 +4,15 @@ namespace Shiny.Mediator;
 
 public static class Headers
 {
+    public static readonly (string Key, bool Value) BypassMiddleware = (nameof(BypassMiddleware), true);
+    public static readonly (string Key, bool Value) BypassErrorTraps = (nameof(BypassErrorTraps), true);
+    
+    public static bool BypassMiddlewareEnabled(this IMediatorContext context)
+        => context.Values.ContainsKey(BypassMiddleware.Key);
+    
+    public static bool BypassErrorTrapsEnabled(this IMediatorContext context)
+        => context.Values.ContainsKey(BypassErrorTraps.Key);
+    
     const string TimerRefreshHeader = nameof(TimerRefreshHeader);
     public static (string Key, int Value) TimerRefresh(int timerRefreshSeconds) 
         => (TimerRefreshHeader, timerRefreshSeconds);
