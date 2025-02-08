@@ -16,7 +16,11 @@ public static class UnoExtensions
     /// <param name="configure"></param>
     /// <param name="includeStandardMiddleware"></param>
     /// <returns></returns>
-    public static IHostBuilder AddShinyMediator(this IHostBuilder builder, Action<ShinyConfigurator> configure, bool includeStandardMiddleware = true)
+    public static IHostBuilder AddShinyMediator(
+        this IHostBuilder builder, 
+        Action<ShinyConfigurator> configure, 
+        bool includeStandardMiddleware = true
+    )
     {
         // TODO: Uno Event Collector... How?
         builder.ConfigureServices(x => x.AddShinyMediator(

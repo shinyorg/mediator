@@ -1,57 +1,58 @@
-using Uno.Extensions.Storage;
+using Windows.Storage;
 
 namespace Shiny.Mediator.Infrastructure;
 
 
-public class StorageService(IStorage storage, ISerializerService serializer) : IStorageService
+public class StorageService(ISerializerService serializer) : IStorageService
 {
-    public Task Set<T>(string key, T value)
+    static readonly StorageFolder local = ApplicationData.Current.LocalFolder;
+    
+    public async Task Set<T>(string key, T value)
     {
-        // var path = this.GetFilePath(key);
-        // var json = serializer.Serialize(value);
-        // File.WriteAllText(path, json); 
-     
-        return Task.CompletedTask;
+        var json = serializer.Serialize(value);
+        var file = await local.CreateFileAsync(key, CreationCollisionOption.ReplaceExisting);
+        await FileIO.WriteTextAsync(file, json);
     }
     
 
-    public Task<T?> Get<T>(string key)
+    public async Task<T?> Get<T>(string key)
     {
-        // T? returnValue = default;
-        // var path = this.GetFilePath(key);
-        // if (File.Exists(path))
-        // {
-        //     var json = File.ReadAllText(path);
-        //     returnValue = serializer.Deserialize<T>(json)!;
-        // }
+        var file = await local.GetFileAsync(key);
+        if (file == null)
+            return default;
+
+        var json = await FileIO.ReadTextAsync(file);
+        if (String.IsNullOrWhiteSpace(json))
+            return default;
         
-        //return Task.FromResult(returnValue);
-        return Task.FromResult((T?)default);
+        var returnValue = serializer.Deserialize<T>(json);
+        return returnValue;
     }
-
 
     
-    public Task Remove(string key)
+    public  async Task Remove(string key)
     {
-        // var fn = this.GetFilePath(key);
-        // if (File.Exists(fn))
-        //     File.Delete(fn);
-        //
-        // return Task.CompletedTask;
-        return null;
+        var file = await local.GetFileAsync(key);
+        if (file != null)
+            await file.DeleteAsync();
     }
 
-    public Task RemoveByPrefix(string prefix) => this.DeleteBy(prefix + "*.mediator");
-    public Task Clear() => this.DeleteBy("*.mediator");
+    public Task RemoveByPrefix(string prefix) => this.DeleteBy(prefix);
+    public Task Clear() => this.DeleteBy(null);
 
 
-    Task DeleteBy(string pattern)
+    async Task DeleteBy(string? startsWith)
     {
-        // var dir = new DirectoryInfo(fileSystem.CacheDirectory);
-        // var files = dir.GetFiles(pattern);
-        // foreach (var file in files)
-        //     file.Delete();
-        //
-        return Task.CompletedTask;
+        var files = await local.GetFilesAsync();
+        foreach (var file in files)
+        {
+            var ext = System.IO.Path.GetExtension(file.Name);
+            if (ext.Equals(startsWith, StringComparison.OrdinalIgnoreCase))
+            {
+                if (startsWith == null || file.Name.StartsWith(startsWith))
+                    await file.DeleteAsync();
+            }
+            await file.DeleteAsync();
+        }
     }
 }

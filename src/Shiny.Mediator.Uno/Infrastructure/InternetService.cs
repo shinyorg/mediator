@@ -3,8 +3,6 @@ using Windows.Networking.Connectivity;
 namespace Shiny.Mediator.Infrastructure;
 
 
-// https://platform.uno/docs/articles/features/windows-networking.html
-
 public class InternetService : IInternetService
 {
     EventHandler<bool>? handler;
@@ -14,15 +12,22 @@ public class InternetService : IInternetService
         {
             if (this.handler == null)
             {
-                //NetworkInformation.NetworkStatusChanged += handler;
+                NetworkInformation.NetworkStatusChanged += this.OnNetowrkStatusChanged;
             }
             this.handler += value;
         }
         remove
         {
-            //NetworkInformation.NetworkStatusChanged -= handler;
+            this.handler -= value;
+            if (this.handler == null)
+            {
+                NetworkInformation.NetworkStatusChanged -= this.OnNetowrkStatusChanged;
+            }
         }
     }
+
+    void OnNetowrkStatusChanged(object sender) => this.handler?.Invoke(sender, this.IsAvailable);
+
 
     public bool IsAvailable
     {
