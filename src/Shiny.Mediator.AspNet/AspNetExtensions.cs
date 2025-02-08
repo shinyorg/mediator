@@ -19,13 +19,4 @@ public static class AspNetExtensions
 
         return ip;
     }
-
-
-    /// <summary>
-    /// Adds an ASPNET exception handler
-    /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
-    public static ShinyConfigurator AddAspNetExceptionHandler(this ShinyConfigurator cfg)
-        => cfg.AddExceptionHandler<AspNetExceptionHandler>();
 }
