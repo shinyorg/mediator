@@ -10,6 +10,18 @@ namespace Shiny.Mediator;
 public static class UnoExtensions
 {
     /// <summary>
+    /// Add Default Uno Support to Mediator
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator UseUno(this ShinyConfigurator cfg)
+    {                    
+        cfg.AddStandardAppSupportMiddleware();
+        cfg.AddUnoInfrastructure();
+        return cfg;
+    }
+    
+    /// <summary>
     /// Add shiny mediator to Uno
     /// </summary>
     /// <param name="builder"></param>
@@ -18,7 +30,7 @@ public static class UnoExtensions
     /// <returns></returns>
     public static IHostBuilder AddShinyMediator(
         this IHostBuilder builder, 
-        Action<ShinyConfigurator> configure, 
+        Action<ShinyConfigurator>? configure = null, 
         bool includeStandardMiddleware = true
     )
     {
@@ -26,11 +38,9 @@ public static class UnoExtensions
         builder.ConfigureServices(x => x.AddShinyMediator(
             cfg =>
             {
+                configure?.Invoke(cfg);
                 if (includeStandardMiddleware)
-                {
-                    cfg.AddStandardAppSupportMiddleware();
-                    cfg.AddUnoInfrastructure();
-                }
+                    cfg.UseUno();
             }, 
             includeStandardMiddleware
         ));
@@ -63,5 +73,16 @@ public static class UnoExtensions
         configurator.Services.AddSingleton<IServiceInitialize, ConnectivityBroadcaster>();
         return configurator;
     }
+    
+    // /// <summary>
+    // /// Adds a file based caching service - ideal for cache surviving across app sessions
+    // /// </summary>
+    // /// <param name="configurator"></param>
+    // /// <returns></returns>
+    // public static ShinyConfigurator AddPersistentCache(this ShinyConfigurator configurator)
+    // {
+    //     configurator.AddUnoInfrastructure();
+    //     configurator.AddCaching<StorageCacheService>();
+    //     return configurator;
+    // }
 }
-

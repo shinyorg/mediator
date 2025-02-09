@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Windows.System.Profile;
 using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Http;
@@ -16,10 +17,7 @@ public class UnoHttpRequestDecorator<TRequest, TResult>(
 
         httpMessage.Headers.Add("AppId", pkg.Id.FullName);
         httpMessage.Headers.Add("AppVersion", pkg.Id.Version.ToString() ?? "1.0.0");
-        // httpMessage.Headers.Add("DeviceManufacturer", deviceInfo.Manufacturer);
-        // httpMessage.Headers.Add("DeviceModel", deviceInfo.Model);
-        // httpMessage.Headers.Add("DevicePlatform", deviceInfo.Platform.ToString());
-        // httpMessage.Headers.Add("DeviceVersion", deviceInfo.Version.ToString());
+        httpMessage.Headers.Add("DevicePlatform", AnalyticsInfo.VersionInfo.DeviceFamily);
         httpMessage.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentCulture.Name));
 
         // try

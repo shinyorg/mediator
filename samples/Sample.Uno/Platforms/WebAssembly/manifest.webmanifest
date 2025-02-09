@@ -1,0 +1,10 @@
+{
+  "background_color": "#ffffff",
+  "description": "Sample.Uno",
+  "display": "standalone",
+  "name": "Sample.Uno",
+  "short_name": "Sample.Uno",
+  "start_url": "/index.html",
+  "theme_color": "#ffffff",
+  "scope": "/"
+}
