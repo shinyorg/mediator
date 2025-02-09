@@ -1,31 +1,25 @@
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Uno.Extensions.Navigation;
+using Sample.Handlers;
+using Shiny.Mediator;
 
 namespace Sample.Uno.Presentation;
 
-public partial class MainViewModel : ObservableObject
+
+public partial class MainViewModel(IMediator mediator) : ObservableObject
 {
-    private INavigator _navigator;
+    [ObservableProperty] string? offlineResultText;
+    [ObservableProperty] string? offlineDate;
 
-    [ObservableProperty] private string? name;
-
-    public MainViewModel(
-        IOptions<AppConfig> appInfo,
-        INavigator navigator)
+    [RelayCommand]
+    async Task Offline()
     {
-        _navigator = navigator;
-        Title = "Main";
-        Title += $" - {appInfo?.Value?.Environment}";
-        GoToSecond = new AsyncRelayCommand(GoToSecondView);
+        var context = await mediator.RequestWithContext(new OfflineRequest());
+        var offline = context.Context.Offline();
+
+        this.OfflineResultText = context.Result;
+        this.OfflineDate = offline?.Timestamp.ToString() ?? "Not Offline Data";
     }
 
-    public string? Title { get; }
 
-    public ICommand GoToSecond { get; }
-
-    private async Task GoToSecondView()
-    {
-        await _navigator.NavigateViewModelAsync<SecondViewModel>(this, data: new Entity(Name!));
-    }
+    [RelayCommand]
+    Task ErrorTrap() => mediator.Send(new ErrorCommand());
 }

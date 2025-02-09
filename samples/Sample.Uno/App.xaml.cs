@@ -1,12 +1,5 @@
-using Microsoft.UI.Xaml;
 using Shiny.Mediator;
-using Uno.Extensions;
-using Uno.Extensions.Configuration;
-using Uno.Extensions.Hosting;
-using Uno.Extensions.Navigation;
 using Uno.Resizetizer;
-using Uno.UI;
-using Window = ABI.Microsoft.UI.Xaml.Window;
 
 namespace Sample.Uno;
 
@@ -88,18 +81,7 @@ public partial class App : Application
     {
         views.Register(
             new ViewMap(ViewModel: typeof(ShellViewModel)),
-            new ViewMap<MainPage, MainViewModel>(),
-            new DataViewMap<SecondPage, SecondViewModel, Entity>()
-        );
-
-        routes.Register(
-            new RouteMap("", View: views.FindByViewModel<ShellViewModel>(),
-                Nested:
-                [
-                    new("Main", View: views.FindByViewModel<MainViewModel>(), IsDefault: true),
-                    new("Second", View: views.FindByViewModel<SecondViewModel>()),
-                ]
-            )
+            new ViewMap<MainPage, MainViewModel>()
         );
     }
 }
