@@ -22,7 +22,7 @@ public static class UnoExtensions
     }
     
     /// <summary>
-    /// Add shiny mediator to Uno
+    /// Add Shiny Mediator to Uno
     /// </summary>
     /// <param name="builder"></param>
     /// <param name="configure"></param>
@@ -34,7 +34,6 @@ public static class UnoExtensions
         bool includeStandardMiddleware = true
     )
     {
-        // TODO: Uno Event Collector... How?
         builder.ConfigureServices(x => x.AddShinyMediator(
             cfg =>
             {
@@ -55,6 +54,8 @@ public static class UnoExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddUnoInfrastructure(this ShinyConfigurator cfg)
     {
+        cfg.Services.AddSingletonAsImplementedInterfaces<UnoEventCollector>();
+        
         cfg.Services.TryAddSingleton<IInternetService, InternetService>();
         cfg.Services.TryAddSingleton<IAlertDialogService, AlertDialogService>();
         cfg.Services.TryAddSingleton<IStorageService, StorageService>();

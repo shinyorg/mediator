@@ -27,7 +27,7 @@
 
         <None Include="build/Package.targets"
               Pack="True"
-              PackagePath="buildTransitive/Shiny.Mediator.targets" />    
+              PackagePath="buildTransitive/Shiny.Mediator.targets" />
     </ItemGroup>
     
     <PropertyGroup>

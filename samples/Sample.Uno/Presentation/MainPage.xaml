@@ -6,14 +6,14 @@
       Background="{ThemeResource BackgroundBrush}">
     
     <ScrollViewer>
-        <Grid utu:SafeArea.Insets="VisibleBounds">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <utu:NavigationBar Content="Shiny Mediator" />
+        <!-- <Grid utu:SafeArea.Insets="VisibleBounds"> -->
+        <!--     <Grid.RowDefinitions> -->
+        <!--         <RowDefinition Height="Auto" /> -->
+        <!--         <RowDefinition /> -->
+        <!--     </Grid.RowDefinitions> -->
+            <!-- <utu:NavigationBar Content="Shiny Mediator" /> -->
 
-            <StackPanel Grid.Row="1"
+            <StackPanel Orientation="Vertical"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Spacing="16">
@@ -25,6 +25,6 @@
                 <Button Content="Test Exception Handler"
                         Command="{Binding ErrorTrapCommand}" />
             </StackPanel>
-        </Grid>
+        <!-- </Grid> -->
     </ScrollViewer>
 </Page>

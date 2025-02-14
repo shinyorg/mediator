@@ -6,9 +6,14 @@
         <Nullable>enable</Nullable>
 
         <UnoFeatures>Hosting</UnoFeatures>
+        <RootNamespace>Shiny.Mediator</RootNamespace>
     </PropertyGroup>
-    
+
     <ItemGroup>
         <ProjectReference Include="..\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Uno.Extensions.Navigation.WinUI" Version="5.2.7"/>
     </ItemGroup>
 </Project>

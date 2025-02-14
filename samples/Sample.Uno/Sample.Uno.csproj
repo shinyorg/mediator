@@ -50,6 +50,13 @@
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false"/>
     </ItemGroup>
+    
+    <ItemGroup>
+      <Compile Update="Presentation\SecondPage.xaml.cs">
+        <DependentUpon>SecondPage.xaml</DependentUpon>
+        <IsDefaultItem>true</IsDefaultItem>
+      </Compile>
+    </ItemGroup>
 
     <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets" />
 </Project>

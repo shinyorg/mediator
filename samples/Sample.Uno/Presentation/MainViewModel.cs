@@ -4,7 +4,7 @@ using Shiny.Mediator;
 namespace Sample.Uno.Presentation;
 
 
-public partial class MainViewModel(IMediator mediator) : ObservableObject
+public partial class MainViewModel(IMediator mediator, INavigator navigator) : ObservableObject
 {
     [ObservableProperty] string? offlineResultText;
     [ObservableProperty] string? offlineDate;
