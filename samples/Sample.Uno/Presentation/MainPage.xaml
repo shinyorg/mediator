@@ -6,25 +6,30 @@
       Background="{ThemeResource BackgroundBrush}">
     
     <ScrollViewer>
-        <!-- <Grid utu:SafeArea.Insets="VisibleBounds"> -->
-        <!--     <Grid.RowDefinitions> -->
-        <!--         <RowDefinition Height="Auto" /> -->
-        <!--         <RowDefinition /> -->
-        <!--     </Grid.RowDefinitions> -->
-            <!-- <utu:NavigationBar Content="Shiny Mediator" /> -->
+        <Grid utu:SafeArea.Insets="VisibleBounds">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <utu:NavigationBar Content="Shiny Mediator" />
 
-            <StackPanel Orientation="Vertical"
+            <StackPanel Grid.Row="1" 
+                        Orientation="Vertical"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Spacing="16">
                 <TextBlock Text="{Binding OfflineResultText}" />
                 <TextBlock Text="{Binding OfflineDate}" />
+                
                 <Button Content="Run Offline" 
                         Command="{Binding OfflineCommand}"/>
                 
                 <Button Content="Test Exception Handler"
                         Command="{Binding ErrorTrapCommand}" />
+                
+                <Button Content="Publish Event"
+                        Command="{Binding PublishEventCommand}" />
             </StackPanel>
-        <!-- </Grid> -->
+        </Grid>
     </ScrollViewer>
 </Page>

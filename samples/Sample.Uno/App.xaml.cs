@@ -61,7 +61,9 @@ public partial class App : Application
                 )
                 .UseNavigation(RegisterRoutes)
                 .AddShinyMediator()
+                .ConfigureServices(s => s.AddDiscoveredMediatorHandlersFromSample_Uno())
             );
+        
         MainWindow = builder.Window;
 
 #if DEBUG
@@ -72,12 +74,22 @@ public partial class App : Application
         Host = await builder.NavigateAsync<Shell>();
     }
 
-    private static void RegisterRoutes(IViewRegistry views, IRouteRegistry routes)
+    static void RegisterRoutes(IViewRegistry views, IRouteRegistry routes)
     {
         views.Register(
             new ViewMap(ViewModel: typeof(ShellViewModel)),
             new ViewMap<MainPage, MainViewModel>(),
             new ViewMap<SecondPage, SecondViewModel>()
+        );
+        
+        routes.Register(
+            new RouteMap("", View: views.FindByViewModel<ShellViewModel>(),
+                Nested:
+                [
+                    new("Main", View: views.FindByViewModel<MainViewModel>(), IsDefault: true),
+                    new("Second", View: views.FindByViewModel<SecondViewModel>()),
+                ]
+            )
         );
     }
 }

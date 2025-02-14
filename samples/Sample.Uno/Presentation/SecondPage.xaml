@@ -4,13 +4,12 @@
       xmlns:utu="using:Uno.Toolkit.UI"
       NavigationCacheMode="Required"
       Background="{ThemeResource BackgroundBrush}">
-    <StackPanel 
-                Orientation="Vertical"
+    <StackPanel Orientation="Vertical"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Spacing="16">
-            <utu:NavigationBar Content="Shiny Mediator" />
+        <utu:NavigationBar Content="Shiny Mediator" />
 
-            <TextBlock Text="Hello From Second Page" />
-        </StackPanel>
+        <TextBlock Text="Hello From Second Page" />
+    </StackPanel>
 </Page>
