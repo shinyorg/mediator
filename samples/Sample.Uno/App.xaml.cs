@@ -60,7 +60,9 @@ public partial class App : Application
                         .Section<AppConfig>()
                 )
                 .UseNavigation(RegisterRoutes)
-                .AddShinyMediator()
+                .AddShinyMediator(x => x
+                    .AddUnoPersistentCache()
+                )
                 .ConfigureServices(s => s.AddDiscoveredMediatorHandlersFromSample_Uno())
             );
         

@@ -6,4 +6,6 @@ public sealed partial class MainPage : Page
     {
         this.InitializeComponent();
     }
+    
+    public MainViewModel? ViewModel => DataContext as MainViewModel;
 }

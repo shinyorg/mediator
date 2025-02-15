@@ -11,6 +11,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
             </Grid.RowDefinitions>
+            
             <utu:NavigationBar Content="Shiny Mediator" />
 
             <StackPanel Grid.Row="1" 
@@ -18,17 +19,24 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Spacing="16">
-                <TextBlock Text="{Binding OfflineResultText}" />
-                <TextBlock Text="{Binding OfflineDate}" />
+                
+                <TextBlock Text="{x:Bind ViewModel.OfflineResultText}" 
+                           TintColor="Black" />
+                
+                <TextBlock Text="{x:Bind ViewModel.OfflineDate}" 
+                           TintColor="Black" />
                 
                 <Button Content="Run Offline" 
-                        Command="{Binding OfflineCommand}"/>
+                        Command="{x:Bind ViewModel.OfflineCommand}"/>
                 
                 <Button Content="Test Exception Handler"
-                        Command="{Binding ErrorTrapCommand}" />
+                        Command="{x:Bind ViewModel.ErrorTrapCommand}" />
                 
                 <Button Content="Publish Event"
-                        Command="{Binding PublishEventCommand}" />
+                        Command="{x:Bind ViewModel.PublishEventCommand}" />
+                
+                <Button Content="Go To Second Page"
+                        Command="{x:Bind ViewModel.GoToSecondPageCommand}" />
             </StackPanel>
         </Grid>
     </ScrollViewer>

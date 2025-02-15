@@ -23,10 +23,17 @@ public partial class MainViewModel(
     }
 
     [RelayCommand]
-    Task PublishEvent() => mediator.Publish(new AppEvent("Hello from SecondViewModel"));
+    async Task PublishEvent()
+    {
+        await mediator.Publish(new AppEvent("Hello from SecondViewModel"));
+        await navigator.ShowMessageDialogAsync(this, title: "Done", content: "Publish message sent successfully");
+    }
 
     [RelayCommand]
     Task ErrorTrap() => mediator.Send(new ErrorCommand());
+    
+    [RelayCommand]
+    Task GoToSecondPage() => navigator.NavigateViewModelAsync<SecondViewModel>(this);
 
     public async Task Handle(AppEvent @event, EventContext<AppEvent> context, CancellationToken cancellationToken)
     {

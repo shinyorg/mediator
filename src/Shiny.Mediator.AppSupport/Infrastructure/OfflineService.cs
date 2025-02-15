@@ -21,16 +21,19 @@ public class OfflineService(IStorageService storage, ISerializerService serializ
     public async Task<string> Set(object request, object result)
     {
         var requestKey = Utils.GetRequestKey(request);
-        await this.DoTransaction(dict =>
-        {
-            dict[requestKey] = new OfflineStore(
-                this.GetTypeKey(request.GetType()),
-                requestKey,
-                DateTimeOffset.UtcNow,
-                serializer.Serialize(result)
-            );
-            return true;
-        });
+        await this
+            .DoTransaction(dict =>
+            {
+                dict[requestKey] = new OfflineStore(
+                    this.GetTypeKey(request.GetType()),
+                    requestKey,
+                    DateTimeOffset.UtcNow,
+                    serializer.Serialize(result)
+                );
+                return true;
+            })
+            .ConfigureAwait(false);
+        
         return requestKey;
     }
 
@@ -92,23 +95,30 @@ public class OfflineService(IStorageService storage, ISerializerService serializ
     });
 
 
-    SemaphoreSlim semaphore = new(1, 1);
-    Dictionary<string, OfflineStore> cache = null!;
+    readonly SemaphoreSlim semaphore = new(1, 1);
+    Dictionary<string, OfflineStore>? cache = null!;
+    
     Task DoTransaction(Func<IDictionary<string, OfflineStore>, bool> action) => Task.Run(async () =>
     {
         await this.semaphore.WaitAsync();
         if (this.cache == null)
         {
             var dict = await storage
-                .Get<Dictionary<string, OfflineStore>>(nameof(IStorageService))
+                .Get<Dictionary<string, OfflineStore>>(nameof(OfflineService))
                 .ConfigureAwait(false);
 
             this.cache = dict ?? new();
         }
         var result = action(this.cache);
         if (result)
-            await storage.Set(nameof(IStorageService), this.cache).ConfigureAwait(false);
-
+        {
+            await storage
+                .Set(
+                    nameof(OfflineService),
+                    this.cache
+                )
+                .ConfigureAwait(false);
+        }
         this.semaphore.Release();
     });
     

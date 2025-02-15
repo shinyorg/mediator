@@ -1,3 +1,4 @@
+using System.IO;
 using Windows.Storage;
 
 namespace Shiny.Mediator.Infrastructure;
@@ -5,10 +6,9 @@ namespace Shiny.Mediator.Infrastructure;
 
 public class StorageService(ISerializerService serializer) : IStorageService
 {
-    static readonly StorageFolder local = ApplicationData.Current.LocalFolder;
-    
     public async Task Set<T>(string key, T value)
     {
+        var local = ApplicationData.Current.LocalFolder;
         var json = serializer.Serialize(value);
         var file = await local.CreateFileAsync(key, CreationCollisionOption.ReplaceExisting);
         await FileIO.WriteTextAsync(file, json);
@@ -17,10 +17,12 @@ public class StorageService(ISerializerService serializer) : IStorageService
 
     public async Task<T?> Get<T>(string key)
     {
-        var file = await local.GetFileAsync(key);
-        if (file == null)
+        var local = ApplicationData.Current.LocalFolder;
+        var fn = Path.Combine(local.Path, key);
+        if (!File.Exists(fn))
             return default;
-
+        
+        var file = await local.GetFileAsync(key);
         var json = await FileIO.ReadTextAsync(file);
         if (String.IsNullOrWhiteSpace(json))
             return default;
@@ -32,6 +34,7 @@ public class StorageService(ISerializerService serializer) : IStorageService
     
     public  async Task Remove(string key)
     {
+        var local = ApplicationData.Current.LocalFolder;
         var file = await local.GetFileAsync(key);
         if (file != null)
             await file.DeleteAsync();
@@ -43,6 +46,7 @@ public class StorageService(ISerializerService serializer) : IStorageService
 
     async Task DeleteBy(string? startsWith)
     {
+        var local = ApplicationData.Current.LocalFolder;
         var files = await local.GetFilesAsync();
         foreach (var file in files)
         {

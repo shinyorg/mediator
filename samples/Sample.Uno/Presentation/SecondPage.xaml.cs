@@ -6,4 +6,6 @@ public sealed partial class SecondPage : Page
     {
         this.InitializeComponent();
     }
+    
+    public SecondViewModel? ViewModel => DataContext as SecondViewModel;
 }

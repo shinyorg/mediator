@@ -1,5 +1,3 @@
-using Shiny.Mediator.Caching;
-
 namespace Shiny.Mediator.Infrastructure;
 
 
@@ -17,7 +15,10 @@ public class StorageCacheService(IStorageService storage) : ICacheService
     // TODO: check expiry or clear it out?
     public async Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> factory, CacheItemConfig? config = null)
     {
-        var e = await storage.Get<InternalCacheEntry<T>>(key).ConfigureAwait(false);
+        var e = await storage
+            .Get<InternalCacheEntry<T>>(key)
+            .ConfigureAwait(false);
+        
         if (e != null)
         {
             if (e.ExpiresAt != null && e.ExpiresAt > DateTimeOffset.UtcNow)

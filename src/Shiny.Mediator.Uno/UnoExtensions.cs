@@ -20,6 +20,20 @@ public static class UnoExtensions
         cfg.AddUnoInfrastructure();
         return cfg;
     }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
+    public static ShinyConfigurator AddUnoPersistentCache(this ShinyConfigurator cfg)
+    {
+        cfg.AddUnoInfrastructure();
+        cfg.AddCaching<StorageCacheService>();
+        return cfg;
+    }
+    
     
     /// <summary>
     /// Add Shiny Mediator to Uno

@@ -1,24 +1,24 @@
-using Microsoft.Extensions.Logging;
-using Microsoft.UI.Xaml.Controls;
+using Uno.Extensions.Navigation;
 
 namespace Shiny.Mediator.Infrastructure;
 
 
-public class AlertDialogService(ILogger<AlertDialogService> logger) : IAlertDialogService
+public class AlertDialogService(INavigator navigator) : IAlertDialogService
 {
-    public void Display(string title, string message)
+    public async void Display(string title, string message)
     {
-        // TODO: could use acr userdialogs
-        // ContentDialog deleteFileDialog = new ContentDialog
-        // {
-        //     Title = "Delete file permanently?",
-        //     Content = "If you delete this file, you won't be able to recover it. Do you want to delete it?",
-        //     PrimaryButtonText = "Delete",
-        //     CloseButtonText = "Cancel"
-        // };
-        //
-        // deleteFileDialog.XamlRoot = anyLoadedControl.XamlRoot;
-        //
-        // ContentDialogResult result = await deleteFileDialog.ShowAsync();
+        try
+        {
+            await navigator.ShowMessageDialogAsync(
+                this,
+                title: title, 
+                content: message
+            );
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
     }
 }
