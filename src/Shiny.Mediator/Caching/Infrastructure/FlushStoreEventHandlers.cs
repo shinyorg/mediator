@@ -9,23 +9,14 @@ public class FlushStoreEventHandlers(ICacheService cache) :
     IEventHandler<FlushStoreByTypeEvent>
 {
     public Task Handle(FlushAllStoresEvent @event, EventContext<FlushAllStoresEvent> context, CancellationToken cancellationToken)
-    {
-        cache.Clear();
-        return Task.CompletedTask;
-    }
+        => cache.Remove();
 
     public Task Handle(FlushStoreByRequestEvent @event, EventContext<FlushStoreByRequestEvent> context, CancellationToken cancellationToken)
     {
         var requestkey = Utils.GetRequestKey(@event.Request);
-        cache.Remove(requestkey);
-        return Task.CompletedTask;
+        return cache.RemoveByKey(requestkey);
     }
 
     public Task Handle(FlushStoreByTypeEvent @event, EventContext<FlushStoreByTypeEvent> context, CancellationToken cancellationToken)
-    {
-        var t = @event.Type;
-        var startsWith = $"{t.Namespace}.{t.Name}";
-        cache.RemoveByPrefix(startsWith);
-        return Task.CompletedTask;
-    }
+        => cache.Remove(@event.Type);
 }

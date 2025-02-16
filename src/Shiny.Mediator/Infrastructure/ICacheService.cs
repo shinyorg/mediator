@@ -52,16 +52,12 @@ public interface ICacheService
     /// Removes a specific cache item
     /// </summary>
     /// <param name="key"></param>
-    Task Remove(string key);
+    Task RemoveByKey(string key);
     
     /// <summary>
     /// Clears cache keys starting with prefix
     /// </summary>
-    /// <param name="prefix"></param>
-    Task RemoveByPrefix(string prefix);
-
-    /// <summary>
-    /// Clears all cache
-    /// </summary>
-    Task Clear();
+    /// <param name="type"></param>
+    /// <param name="keyPrefix"></param>
+    Task Remove(Type? type = null, string? keyPrefix = null);
 }

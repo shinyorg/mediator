@@ -34,28 +34,38 @@ public class MockOfflineService : IOfflineService
         return Task.FromResult(new OfflineResult<TResult>(key, store.Timestamp, obj));
     }
 
-    public Task ClearByType(Type requestType)
+    public Task RemoveByKey(string key)
     {
-        var tn = requestType.GetType().FullName;
-        foreach (var key in this.data.Keys)
-        {
-            var store = (OfflineStore)this.data[key];
-            if (store.TypeName == tn) 
-                this.data.Remove(key);
-        }
-        return Task.CompletedTask;
+        throw new NotImplementedException();
     }
 
-    public Task ClearByRequest(object request)
+    public Task Remove(Type? type = null, string? keyPrefix = null)
     {
-        var key = ContractUtils.GetObjectKey(request);
-        this.data.Remove(key);
-        return Task.CompletedTask;
+        throw new NotImplementedException();
     }
 
-    public Task Clear()
-    {
-        this.data.Clear();
-        return Task.CompletedTask;   
-    }
+    // public Task ClearByType(Type requestType)
+    // {
+    //     var tn = requestType.GetType().FullName;
+    //     foreach (var key in this.data.Keys)
+    //     {
+    //         var store = (OfflineStore)this.data[key];
+    //         if (store.TypeName == tn) 
+    //             this.data.Remove(key);
+    //     }
+    //     return Task.CompletedTask;
+    // }
+    //
+    // public Task ClearByRequest(object request)
+    // {
+    //     var key = ContractUtils.GetObjectKey(request);
+    //     this.data.Remove(key);
+    //     return Task.CompletedTask;
+    // }
+    //
+    // public Task Clear()
+    // {
+    //     this.data.Clear();
+    //     return Task.CompletedTask;   
+    // }
 }

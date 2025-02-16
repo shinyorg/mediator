@@ -12,11 +12,13 @@ record InternalCacheEntry<T>(
 
 public class StorageCacheService(IStorageService storage) : ICacheService
 {
+    public const string Category = "Cache";
+    
     // TODO: check expiry or clear it out?
     public async Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> factory, CacheItemConfig? config = null)
     {
         var e = await storage
-            .Get<InternalCacheEntry<T>>(key)
+            .Get<InternalCacheEntry<T>>(Category, key)
             .ConfigureAwait(false);
         
         if (e != null)
@@ -30,7 +32,7 @@ public class StorageCacheService(IStorageService storage) : ICacheService
             {
                 var expiresAt = DateTimeOffset.UtcNow.Add(e.Config.SlidingExpiration.Value);
                 e = e with { ExpiresAt = expiresAt };
-                await storage.Set(key, e).ConfigureAwait(false);
+                await storage.Set(Category, key, e).ConfigureAwait(false);
             }
         }
         
@@ -47,19 +49,28 @@ public class StorageCacheService(IStorageService storage) : ICacheService
     public Task Set<T>(string key, T value, CacheItemConfig? config = null)
         => this.Store(key, value, config);
 
+    
     public async Task<CacheEntry<T>?> Get<T>(string key)
     {
-        var entry = await storage.Get<InternalCacheEntry<T>>(key).ConfigureAwait(false);
+        var entry = await storage.Get<InternalCacheEntry<T>>(Category, key).ConfigureAwait(false);
         if (entry == null)
             return null;
         
         return new CacheEntry<T>(key, entry.Value, entry.CreatedAt);
     }
 
+    public Task RemoveByKey(string key)
+    {
+        // TODO
+        throw new NotImplementedException();
+    }
 
-    public Task Remove(string key) => storage.Remove(key);
-    public Task RemoveByPrefix(string prefix)  => storage.RemoveByPrefix(prefix);
-    public Task Clear() => storage.Clear();
+    public Task Remove(Type? type = null, string? keyPrefix = null)
+    {
+        // TODO
+        throw new NotImplementedException();
+    }
+
 
     async Task<InternalCacheEntry<T>> Store<T>(string key, T result, CacheItemConfig? config)
     {
@@ -83,7 +94,7 @@ public class StorageCacheService(IStorageService storage) : ICacheService
             expiresAt,
             config
         );
-        await storage.Set(key, e).ConfigureAwait(false);
+        await storage.Set(Category, key, e).ConfigureAwait(false);
         
         return e;
     }

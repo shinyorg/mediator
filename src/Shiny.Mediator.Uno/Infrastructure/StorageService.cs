@@ -4,58 +4,36 @@ using Windows.Storage;
 namespace Shiny.Mediator.Infrastructure;
 
 
-public class StorageService(ISerializerService serializer) : IStorageService
+public class StorageService(ISerializerService serializer) : AbstractFileStorageService(serializer)
 {
-    public async Task Set<T>(string key, T value)
+    protected override async Task WriteFile(string fileName, string content)
     {
         var local = ApplicationData.Current.LocalFolder;
-        var json = serializer.Serialize(value);
-        var file = await local.CreateFileAsync(key, CreationCollisionOption.ReplaceExisting);
-        await FileIO.WriteTextAsync(file, json);
+        var file = await local.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
+        await FileIO.WriteTextAsync(file, content);
     }
-    
 
-    public async Task<T?> Get<T>(string key)
+    
+    protected override async Task<string?> ReadFile(string fileName)
     {
         var local = ApplicationData.Current.LocalFolder;
-        var fn = Path.Combine(local.Path, key);
+        var fn = Path.Combine(local.Path, fileName);
         if (!File.Exists(fn))
-            return default;
-        
-        var file = await local.GetFileAsync(key);
-        var json = await FileIO.ReadTextAsync(file);
-        if (String.IsNullOrWhiteSpace(json))
-            return default;
-        
-        var returnValue = serializer.Deserialize<T>(json);
-        return returnValue;
-    }
+            return null;
 
+        var file = await local.GetFileAsync(fn);
+        var content = await FileIO.ReadTextAsync(file);
+        return content;
+    }
     
-    public  async Task Remove(string key)
+
+    protected override async Task DeleteFile(string fileName)
     {
         var local = ApplicationData.Current.LocalFolder;
-        var file = await local.GetFileAsync(key);
-        if (file != null)
-            await file.DeleteAsync();
-    }
-
-    public Task RemoveByPrefix(string prefix) => this.DeleteBy(prefix);
-    public Task Clear() => this.DeleteBy(null);
-
-
-    async Task DeleteBy(string? startsWith)
-    {
-        var local = ApplicationData.Current.LocalFolder;
-        var files = await local.GetFilesAsync();
-        foreach (var file in files)
+        var fn = Path.Combine(local.Path, fileName);
+        if (File.Exists(fn))
         {
-            var ext = System.IO.Path.GetExtension(file.Name);
-            if (ext.Equals(startsWith, StringComparison.OrdinalIgnoreCase))
-            {
-                if (startsWith == null || file.Name.StartsWith(startsWith))
-                    await file.DeleteAsync();
-            }
+            var file = await local.GetFileAsync(fileName);
             await file.DeleteAsync();
         }
     }
