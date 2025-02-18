@@ -36,6 +36,8 @@ public static class RegistrationExtensions
         }
         services.TryAddSingleton<ISerializerService, Infrastructure.Impl.SysTextJsonSerializerService>();
         services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();
+        services.TryAddSingleton(TimeProvider.System);
+        
         return services;
     }
     

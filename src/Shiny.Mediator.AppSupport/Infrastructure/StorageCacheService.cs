@@ -10,11 +10,14 @@ record InternalCacheEntry<T>(
 );
 
 
-public class StorageCacheService(IStorageService storage) : ICacheService
+public class StorageCacheService(
+    IStorageService storage,
+    TimeProvider timeProvider
+) : ICacheService
 {
     public const string Category = "Cache";
     
-    // TODO: check expiry or clear it out?
+    
     public async Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> factory, CacheItemConfig? config = null)
     {
         var e = await storage
@@ -59,17 +62,10 @@ public class StorageCacheService(IStorageService storage) : ICacheService
         return new CacheEntry<T>(key, entry.Value, entry.CreatedAt);
     }
 
-    public Task RemoveByKey(string key)
-    {
-        // TODO
-        throw new NotImplementedException();
-    }
+    public Task RemoveByKey(string key) => storage.RemoveByKey(Category, key);
 
     public Task Remove(Type? type = null, string? keyPrefix = null)
-    {
-        // TODO
-        throw new NotImplementedException();
-    }
+        => storage.Remove(Category, type, keyPrefix);
 
 
     async Task<InternalCacheEntry<T>> Store<T>(string key, T result, CacheItemConfig? config)
@@ -80,17 +76,17 @@ public class StorageCacheService(IStorageService storage) : ICacheService
         {
             if (config.AbsoluteExpiration != null)
             {
-                expiresAt = DateTimeOffset.UtcNow.Add(config.AbsoluteExpiration.Value);
+                expiresAt = timeProvider.GetUtcNow().Add(config.AbsoluteExpiration.Value);
             }   
             else if (config.SlidingExpiration != null)
             {
-                expiresAt = DateTimeOffset.UtcNow.Add(config.SlidingExpiration.Value);
+                expiresAt = timeProvider.GetUtcNow().Add(config.SlidingExpiration.Value);
             }
         }
         var e = new InternalCacheEntry<T>(
             key,
             result,
-            DateTimeOffset.UtcNow,
+            timeProvider.GetUtcNow(),
             expiresAt,
             config
         );
