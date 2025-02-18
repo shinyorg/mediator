@@ -1,9 +1,13 @@
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Infrastructure;
 
 
-public abstract class AbstractFileStorageService(ISerializerService serializer) : IStorageService
+public abstract class AbstractFileStorageService(
+    ISerializerService serializer,
+    ILogger logger
+) : IStorageService
 {
     protected abstract Task WriteFile(string fileName, string content);
     protected abstract Task<string?> ReadFile(string fileName);
@@ -13,6 +17,7 @@ public abstract class AbstractFileStorageService(ISerializerService serializer) 
     public async Task Set<T>(string category, string key, T value)
     {
         var fileName = await this.GetFileIndexer(category, key).ConfigureAwait(false);
+        logger.LogInformation("Setting {Category}-{key} to {File}", category, key, fileName);
         await this.WriteObject(fileName, value).ConfigureAwait(false);
     }
 
@@ -31,18 +36,49 @@ public abstract class AbstractFileStorageService(ISerializerService serializer) 
         
         if (indexes.TryGetValue(key, out var fileName))
         {
-            await this.DeleteFile(fileName).ConfigureAwait(false);
-            indexes.TryRemove(key, out _);
-            await this.WriteState().ConfigureAwait(false);
+            await this.DoRemove(indexes, category, key, fileName).ConfigureAwait(false);
         }
     }
+    
 
-    public Task Remove(string category, Type? type = null, string? prefix = null)
+    public async Task Remove(string category, Type? type = null, string? prefix = null)
     {
-        // TODO: I need to write type somehow if I want to delete it!?
-        throw new NotImplementedException();
+        var indexes = await this.GetIndexCategory(category).ConfigureAwait(false);
+        var copy = indexes.ToList();
+        var changed = false;
+
+        foreach (var (key, value) in copy)
+        {
+            if (!String.IsNullOrWhiteSpace(key) && key.StartsWith(prefix))
+            {
+                changed = true;
+                await this
+                    .DoRemove(indexes, category, key, value, false)
+                    .ConfigureAwait(false);
+            }
+            // else if {}
+            // TODO: I need to write type somehow if I want to delete it!?
+        }
+
+        if (changed)
+            await this.WriteState().ConfigureAwait(false);
     }
 
+
+    async Task DoRemove(
+        ConcurrentDictionary<string, string> indexes, 
+        string category, 
+        string requestKey, 
+        string fileName, 
+        bool writeState = true
+    )
+    {
+        logger.LogInformation("Evicting {RequestKey} in {Category}", requestKey, category);
+        indexes.TryRemove(requestKey, out _);
+        await this.DeleteFile(fileName).ConfigureAwait(false);
+        if (writeState)
+            await this.WriteState().ConfigureAwait(false);
+    }
 
     // public async Task RemoveByPrefix(string prefix)
     // {

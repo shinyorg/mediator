@@ -1,7 +1,13 @@
+using Microsoft.Extensions.Logging;
+
 namespace Shiny.Mediator.Infrastructure;
 
 
-public class StorageService(IFileSystem fileSystem, ISerializerService serializer) : AbstractFileStorageService(serializer)
+public class StorageService(
+    IFileSystem fileSystem, 
+    ISerializerService serializer,
+    ILogger<StorageService> logger
+) : AbstractFileStorageService(serializer, logger)
 {
     protected override Task WriteFile(string fileName, string content)
     {

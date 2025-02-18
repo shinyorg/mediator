@@ -6,7 +6,7 @@ namespace Shiny.Mediator.Middleware;
 public class OfflineFlushEventHandlers(IOfflineService offline) : 
     IEventHandler<FlushAllStoresEvent>,
     IEventHandler<FlushStoreByRequestEvent>,
-    IEventHandler<FlushStoreByTypeEvent>
+    IEventHandler<FlushStoresEvent>
 {
     public Task Handle(
         FlushAllStoresEvent @event, 
@@ -22,8 +22,8 @@ public class OfflineFlushEventHandlers(IOfflineService offline) :
     ) => Task.CompletedTask; // offline.ClearByRequest(@event.Request);
 
     public Task Handle(
-        FlushStoreByTypeEvent @event, 
-        EventContext<FlushStoreByTypeEvent> context,
+        FlushStoresEvent @event, 
+        EventContext<FlushStoresEvent> context,
         CancellationToken cancellationToken
     ) => Task.CompletedTask;
     //=> offline.ClearByType(@event.Type);

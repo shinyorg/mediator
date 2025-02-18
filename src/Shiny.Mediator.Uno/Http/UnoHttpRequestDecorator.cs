@@ -8,7 +8,6 @@ namespace Shiny.Mediator.Http;
 
 
 public class UnoHttpRequestDecorator<TRequest, TResult>(
-    ILogger<UnoHttpRequestDecorator<TRequest, TResult>> logger
 ) : IHttpRequestDecorator<TRequest, TResult> where TRequest : IHttpRequest<TResult>
 {
     public async Task Decorate(HttpRequestMessage httpMessage, TRequest request)
