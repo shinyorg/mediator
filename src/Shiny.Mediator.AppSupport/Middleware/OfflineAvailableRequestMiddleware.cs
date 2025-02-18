@@ -32,12 +32,12 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
             }
             catch (TimeoutException)
             {
-                result = await this.GetOffline(context);
+                result = await this.GetOffline(context).ConfigureAwait(false);
             }
         }
         else
         {
-            result = await this.GetOffline(context);
+            result = await this.GetOffline(context).ConfigureAwait(false);
         }
         return result;
     }
@@ -46,7 +46,9 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
     async Task<TResult?> GetOffline(RequestContext<TRequest> context)
     {
         TResult result = default;
-        var offlineResult = await offline.Get<TResult>(context.Request!);
+        var offlineResult = await offline
+            .Get<TResult>(context.Request!)
+            .ConfigureAwait(false);
             
         if (offlineResult != null)
         {

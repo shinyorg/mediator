@@ -39,6 +39,7 @@ public abstract class AbstractFileStorageService(ISerializerService serializer) 
 
     public Task Remove(string category, Type? type = null, string? prefix = null)
     {
+        // TODO: I need to write type somehow if I want to delete it!?
         throw new NotImplementedException();
     }
 
@@ -78,14 +79,14 @@ public abstract class AbstractFileStorageService(ISerializerService serializer) 
     // }
 
     
-    protected async Task WriteObject<T>(string fileName, T value)
+    protected virtual async Task WriteObject<T>(string fileName, T value)
     {
         var content = serializer.Serialize(value);
         await this.WriteFile(fileName, content).ConfigureAwait(false);
     }
     
     
-    protected async Task<T?> GetObject<T>(string fileName)
+    protected virtual async Task<T?> GetObject<T>(string fileName)
     {
         var content = await this.ReadFile(fileName).ConfigureAwait(false);
         if (String.IsNullOrWhiteSpace(content))
