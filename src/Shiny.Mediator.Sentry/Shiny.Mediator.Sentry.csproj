@@ -11,4 +11,8 @@
         <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Sentry" Version="5.1.1" />
+    </ItemGroup>
+
 </Project>
