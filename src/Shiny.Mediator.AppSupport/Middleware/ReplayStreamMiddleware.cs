@@ -63,7 +63,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         [EnumeratorCancellation] CancellationToken ct
     )
     {
-        var requestKey = ContractUtils.GetObjectKey(request);
+        var requestKey = ContractUtils.GetRequestKey(request);
         
         if (cache != null)
         {

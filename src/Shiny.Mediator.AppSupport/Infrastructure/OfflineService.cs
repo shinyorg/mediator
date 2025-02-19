@@ -5,8 +5,8 @@ public interface IOfflineService
 {
     Task<string> Set(object request, object result);
     Task<OfflineResult<TResult>?> Get<TResult>(object request);
-    Task RemoveByKey(string key);
-    Task Remove(Type? type = null, string? keyPrefix = null);
+    Task Remove(string requestKey, bool partialMatch);
+    Task Clear();
 }
 
 public record OfflineResult<TResult>(
@@ -25,7 +25,7 @@ public class OfflineService(
     
     public async Task<string> Set(object request, object result)
     {
-        var requestKey = Utils.GetRequestKey(request);
+        var requestKey = ContractUtils.GetRequestKey(request);
         await storage
             .Set(
                 Category,
@@ -44,7 +44,7 @@ public class OfflineService(
 
     public async Task<OfflineResult<TResult>?> Get<TResult>(object request)
     {
-        var requestKey = Utils.GetRequestKey(request);
+        var requestKey = ContractUtils.GetRequestKey(request);
         var store = await storage
             .Get<OfflineStore>(Category, requestKey)
             .ConfigureAwait(false);
@@ -56,13 +56,10 @@ public class OfflineService(
         return new OfflineResult<TResult>(store.RequestKey, store.Timestamp, obj);
     }
 
-    public Task RemoveByKey(string key)
-        => storage.RemoveByKey(Category, key);
+    public Task Remove(string requestKey, bool partialMatch = false)
+        => storage.Remove(Category, requestKey, partialMatch);
 
-    public Task Remove(Type? type = null, string? keyPrefix = null)
-        => storage.Remove(Category, type, keyPrefix);
-
-    public Task Clear() => storage.Remove(Category, null, null);
+    public Task Clear() => storage.Clear(Category);
 
     string GetTypeKey(Type type) => $"{type.Namespace}.{type.Name}";
 }

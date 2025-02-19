@@ -27,17 +27,6 @@ public interface IStorageService
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     Task<T?> Get<T>(string category, string key);
-    
-    /// <summary>
-    /// Removes a store by category & key
-    /// </summary>
-    /// <param name="category">
-    /// Offline, Cache, Other
-    /// This allows modules to stay disconnected since Request Keys can be the same
-    /// </param>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    Task RemoveByKey(string category, string key);
 
     /// <summary>
     /// Performs various checks - pass null for type & prefix to clear all
@@ -46,8 +35,15 @@ public interface IStorageService
     /// Offline, Cache, Other
     /// This allows modules to stay disconnected since Request Keys can be the same
     /// </param>
-    /// <param name="type"></param>
-    /// <param name="prefix"></param>
+    /// <param name="requestKey"></param>
+    /// <param name="partialMatchKey">Performs a "startsWith" if true, otherwise, performs equal match</param>
     /// <returns></returns>
-    Task Remove(string category, Type? type = null, string? prefix = null);
+    Task Remove(string category, string requestKey, bool partialMatchKey = false);
+
+    /// <summary>
+    /// Removes all stores for a category
+    /// </summary>
+    /// <param name="category"></param>
+    /// <returns></returns>
+    Task Clear(string category);
 }

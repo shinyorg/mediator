@@ -19,6 +19,7 @@ public abstract class AbstractFileStorageService(
         var fileName = await this.GetFileIndexer(category, key).ConfigureAwait(false);
         logger.LogInformation("Setting {Category}-{key} to {File}", category, key, fileName);
         await this.WriteObject(fileName, value).ConfigureAwait(false);
+        await this.WriteState().ConfigureAwait(false);
     }
 
 
@@ -28,43 +29,54 @@ public abstract class AbstractFileStorageService(
         var obj = await this.GetObject<T>(fileName);
         return obj;
     }
-
-
-    public async Task RemoveByKey(string category, string key)
-    {
-        var indexes = await this.GetIndexCategory(category).ConfigureAwait(false);
-        
-        if (indexes.TryGetValue(key, out var fileName))
-        {
-            await this.DoRemove(indexes, category, key, fileName).ConfigureAwait(false);
-        }
-    }
     
 
-    public async Task Remove(string category, Type? type = null, string? prefix = null)
+    public async Task Remove(string category, string requestKey, bool partialMatch = false)
     {
         var indexes = await this.GetIndexCategory(category).ConfigureAwait(false);
-        var copy = indexes.ToList();
-        var changed = false;
 
-        foreach (var (key, value) in copy)
+        if (!partialMatch)
         {
-            if (!String.IsNullOrWhiteSpace(key) && key.StartsWith(prefix))
-            {
-                changed = true;
-                await this
-                    .DoRemove(indexes, category, key, value, false)
-                    .ConfigureAwait(false);
-            }
-            // else if {}
-            // TODO: I need to write type somehow if I want to delete it!?
+            if (indexes.TryGetValue(requestKey, out var fileName))
+                await this.DoRemove(indexes, category, requestKey, fileName, true).ConfigureAwait(false);
         }
+        else
+        {
+            var copy = indexes.ToList();
+            var changed = false;
 
-        if (changed)
-            await this.WriteState().ConfigureAwait(false);
+            foreach (var (key, value) in copy)
+            {
+                if (!String.IsNullOrWhiteSpace(key) && key.StartsWith(requestKey))
+                {
+                    changed = true;
+                    await this
+                        .DoRemove(indexes, category, key, value, false)
+                        .ConfigureAwait(false);
+                }
+            }
+
+            if (changed)
+                await this.WriteState().ConfigureAwait(false);
+        }
     }
 
 
+    public async Task Clear(string category)
+    {
+        var indexes = await this.GetIndexCategory(category).ConfigureAwait(false);
+        if (indexes.Count > 0)
+        {
+            var copy = indexes.ToList();
+            foreach (var (key, fn) in copy)
+                await this.DoRemove(indexes, category, key, fn, false).ConfigureAwait(false);
+
+            indexes.Clear();
+            await this.WriteState().ConfigureAwait(false);
+        }
+    }
+
+    
     async Task DoRemove(
         ConcurrentDictionary<string, string> indexes, 
         string category, 

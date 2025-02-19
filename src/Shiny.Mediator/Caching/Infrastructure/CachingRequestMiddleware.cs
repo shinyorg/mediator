@@ -18,7 +18,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
     )
     {
         CacheAttribute? attribute = null;
-        var cacheKey = ContractUtils.GetObjectKey(context.Request!);
+        var cacheKey = ContractUtils.GetRequestKey(context.Request!);
         var section = configuration.GetHandlerSection("Cache", context.Request!, context.Handler);
 
         if (section == null)

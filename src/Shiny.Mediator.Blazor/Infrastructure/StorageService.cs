@@ -33,25 +33,18 @@ public class StorageService(
         return obj;
     }
 
-    
-    public Task RemoveByKey(string category, string key)
+    public async Task Remove(string category, string requestKey, bool partialMatchKey = false)
     {
-        logger.LogInformation("Evicting {Category}-{key}", category, key);
-        jsruntime.InvokeVoidAsync("MediatorServices.removeStore", this.GetKey(category, key));
-        throw new NotImplementedException();
+        logger.LogInformation("Evicting {Category}-{key}", category, requestKey);
+        await jsruntime.InvokeVoidAsync("MediatorServices.removeStore", this.GetKey(category, requestKey));
     }
 
     
-    public Task Remove(string category, Type? type = null, string? prefix = null)
+    public Task Clear(string category)
     {
-        // TODO
-        //     var inproc = (IJSInProcessRuntime)jsruntime;
-        //     inproc.InvokeVoid("MediatorServices.removeByPrefix", prefix);
-
-        //     var inproc = (IJSInProcessRuntime)jsruntime;
-        //     inproc.InvokeVoid("MediatorServices.clearStore");
         throw new NotImplementedException();
     }
+    
     
     protected virtual string GetKey(string category, string key) => $"{category}_{key}";
 }

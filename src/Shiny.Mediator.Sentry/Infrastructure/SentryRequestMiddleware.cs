@@ -13,7 +13,7 @@ public class SentryRequestMiddleware<TRequest, TResult> : IRequestMiddleware<TRe
         var transaction = SentrySdk.StartTransaction("mediator", "request");
         var span = transaction.StartChild(context.Handler.GetType().FullName!);
         
-        var requestKey = Utils.GetRequestKey(context.Request!);
+        var requestKey = ContractUtils.GetRequestKey(context.Request!);
         span.SetData("RequestKey", requestKey);
 
         var result = await next().ConfigureAwait(false);

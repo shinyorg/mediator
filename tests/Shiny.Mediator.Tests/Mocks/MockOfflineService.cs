@@ -10,7 +10,7 @@ public class MockOfflineService : IOfflineService
     
     public Task<string> Set(object request, object result)
     {
-        var key = ContractUtils.GetObjectKey(request);
+        var key = ContractUtils.GetRequestKey(request);
         var json = JsonSerializer.Serialize(result);
         
         this.data[key] = new OfflineStore(
@@ -24,7 +24,7 @@ public class MockOfflineService : IOfflineService
 
     public Task<OfflineResult<TResult>?> Get<TResult>(object request)
     {
-        var key = ContractUtils.GetObjectKey(request);
+        var key = ContractUtils.GetRequestKey(request);
         if (!this.data.ContainsKey(key))
             return null;
 
@@ -34,12 +34,12 @@ public class MockOfflineService : IOfflineService
         return Task.FromResult(new OfflineResult<TResult>(key, store.Timestamp, obj));
     }
 
-    public Task RemoveByKey(string key)
+    public Task Remove(string requestKey, bool partialMatch)
     {
         throw new NotImplementedException();
     }
 
-    public Task Remove(Type? type = null, string? keyPrefix = null)
+    public Task Clear()
     {
         throw new NotImplementedException();
     }

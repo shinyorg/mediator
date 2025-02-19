@@ -13,7 +13,7 @@ public class SentryStreamRequestMiddleware<TRequest, TResult> : IStreamRequestMi
         var span = transaction.StartChild(context.Handler.GetType().FullName!);
         var nxt = next().GetAsyncEnumerator(cancellationToken);
         
-        var requestKey = Utils.GetRequestKey(context.Request!);
+        var requestKey = ContractUtils.GetRequestKey(context.Request!);
         span.SetData("RequestKey", requestKey);
         
         var moveSpan = span.StartChild("initial_movenext");

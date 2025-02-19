@@ -28,7 +28,7 @@ public class StorageCacheService(
         {
             if (e.ExpiresAt != null && e.ExpiresAt > DateTimeOffset.UtcNow)
             {
-                await storage.Remove(key).ConfigureAwait(false);
+                await storage.Remove(Category, key).ConfigureAwait(false);
                 e = null;
             }
             else if (e.Config?.SlidingExpiration != null)
@@ -62,11 +62,12 @@ public class StorageCacheService(
         return new CacheEntry<T>(key, entry.Value, entry.CreatedAt);
     }
 
-    public Task RemoveByKey(string key) => storage.RemoveByKey(Category, key);
 
-    public Task Remove(Type? type = null, string? keyPrefix = null)
-        => storage.Remove(Category, type, keyPrefix);
+    public Task Remove(string requestKey, bool partialMatch = false)
+        => storage.Remove(Category, requestKey, partialMatch);
 
+    
+    public Task Clear() => storage.Clear(Category);
 
     async Task<InternalCacheEntry<T>> Store<T>(string key, T result, CacheItemConfig? config)
     {
