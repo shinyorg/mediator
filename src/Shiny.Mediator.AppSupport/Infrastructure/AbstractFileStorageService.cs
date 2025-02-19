@@ -126,8 +126,11 @@ public abstract class AbstractFileStorageService(
     {
         var content = await this.ReadFile(fileName).ConfigureAwait(false);
         if (String.IsNullOrWhiteSpace(content))
+        {
+            logger.LogInformation("No content found for {FileName}", fileName);
             return default;
-        
+        }
+
         var obj = serializer.Deserialize<T>(content);
         return obj;
     }
@@ -139,7 +142,10 @@ public abstract class AbstractFileStorageService(
         {
             await this.semaphore.WaitAsync().ConfigureAwait(false);
             if (this._indexes != null)
+            {
+                logger.LogInformation("Writing File Index");
                 await this.WriteObject(IndexFile, this._indexes).ConfigureAwait(false);
+            }
         }
         finally
         {
