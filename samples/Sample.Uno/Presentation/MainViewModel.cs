@@ -9,13 +9,15 @@ public partial class MainViewModel(
     INavigator navigator
 ) : ObservableObject, IEventHandler<AppEvent>
 {
-    [ObservableProperty] string? offlineResultText;
-    [ObservableProperty] string? offlineDate;
+    [ObservableProperty] string offlineResultText = "No Result";
+    [ObservableProperty] string offlineDate = "Not Offline";
 
     [RelayCommand]
     async Task Offline()
     {
-        var context = await mediator.RequestWithContext(new OfflineRequest());
+        var context = await mediator
+            .RequestWithContext(new OfflineRequest())
+            .ConfigureAwait(true);
         var offline = context.Context.Offline();
 
         this.OfflineResultText = context.Result;

@@ -20,9 +20,9 @@
                         VerticalAlignment="Center"
                         Spacing="16">
                 
-                <TextBlock Text="{x:Bind ViewModel.OfflineResultText}" />
+                <TextBlock Text="{x:Bind ViewModel.OfflineResultText, Mode=OneWay}" />
                 
-                <TextBlock Text="{x:Bind ViewModel.OfflineDate}" />
+                <TextBlock Text="{x:Bind ViewModel.OfflineDate, Mode=OneWay}" />
                 
                 <Button Content="Run Offline" 
                         Command="{x:Bind ViewModel.OfflineCommand}"/>
