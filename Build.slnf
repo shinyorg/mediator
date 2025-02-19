@@ -1,20 +1,21 @@
 {
-  "solution": {
-    "path": "ShinyMediator.sln",
-    "projects": [
-      "src\\Shiny.Mediator\\Shiny.Mediator.csproj",
-      "src\\Shiny.Mediator.AppSupport\\Shiny.Mediator.AppSupport.csproj",
-      "src\\Shiny.Mediator.AspNet\\Shiny.Mediator.AspNet.csproj",
-      "src\\Shiny.Mediator.Blazor\\Shiny.Mediator.Blazor.csproj",
-      "src\\Shiny.Mediator.Caching.MicrosoftMemoryCache\\Shiny.Mediator.Caching.MicrosoftMemoryCache.csproj",
-      "src\\Shiny.Mediator.Contracts\\Shiny.Mediator.Contracts.csproj",
-      "src\\Shiny.Mediator.DapperRequests\\Shiny.Mediator.DapperRequests.csproj",
-      "src\\Shiny.Mediator.FluentValidation\\Shiny.Mediator.FluentValidation.csproj",
-      "src\\Shiny.Mediator.Maui\\Shiny.Mediator.Maui.csproj",
-      "src\\Shiny.Mediator.Prism\\Shiny.Mediator.Prism.csproj",
-      "src\\Shiny.Mediator.Resilience\\Shiny.Mediator.Resilience.csproj",
-      "src\\Shiny.Mediator.SourceGenerators\\Shiny.Mediator.SourceGenerators.csproj",
-      "src\\Shiny.Mediator.Uno\\Shiny.Mediator.Uno.csproj"
-    ]
-  }
+    "solution": {
+        "path": "ShinyMediator.sln",
+        "projects": [
+            "src\\Shiny.Mediator\\Shiny.Mediator.csproj",
+            "src\\Shiny.Mediator.AppSupport\\Shiny.Mediator.AppSupport.csproj",
+            "src\\Shiny.Mediator.AspNet\\Shiny.Mediator.AspNet.csproj",
+            "src\\Shiny.Mediator.Blazor\\Shiny.Mediator.Blazor.csproj",
+            "src\\Shiny.Mediator.Caching.MicrosoftMemoryCache\\Shiny.Mediator.Caching.MicrosoftMemoryCache.csproj",
+            "src\\Shiny.Mediator.Contracts\\Shiny.Mediator.Contracts.csproj",
+            "src\\Shiny.Mediator.DapperRequests\\Shiny.Mediator.DapperRequests.csproj",
+            "src\\Shiny.Mediator.FluentValidation\\Shiny.Mediator.FluentValidation.csproj",
+            "src\\Shiny.Mediator.Maui\\Shiny.Mediator.Maui.csproj",
+            "src\\Shiny.Mediator.Prism\\Shiny.Mediator.Prism.csproj",
+            "src\\Shiny.Mediator.Resilience\\Shiny.Mediator.Resilience.csproj",
+            "src\\Shiny.Mediator.SourceGenerators\\Shiny.Mediator.SourceGenerators.csproj",
+            "src\\Shiny.Mediator.Uno\\Shiny.Mediator.Uno.csproj",
+            "src\\Shiny.Mediator.Sentry\\Shiny.Mediator.Sentry.csproj"
+        ]
+    }
 }
