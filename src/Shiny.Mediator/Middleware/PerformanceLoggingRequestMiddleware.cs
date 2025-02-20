@@ -23,18 +23,18 @@ public class PerformanceLoggingRequestMiddleware<TRequest, TResult>(
 
         var millis = section.GetValue("ErrorThresholdMilliseconds", 5000);
         var ts = TimeSpan.FromMilliseconds(millis);
-        var sw = Stopwatch.StartNew();
+        var startTime = Stopwatch.GetTimestamp();
         var result = await next();
-        sw.Stop();
+        var delta = Stopwatch.GetElapsedTime(startTime);
 
-        if (sw.Elapsed > ts)
+        if (delta > ts)
         {
-            context.SetPerformanceLoggingThresholdBreached(sw.Elapsed);
+            context.SetPerformanceLoggingThresholdBreached(delta);
             logger.LogError(
                 "{RequestType} took longer than {Threshold} to execute - {Elapsed}", 
                 typeof(TRequest), 
                 ts,
-                sw.Elapsed
+                delta
             );
         }
         else if (logger.IsEnabled(LogLevel.Debug))
@@ -42,7 +42,7 @@ public class PerformanceLoggingRequestMiddleware<TRequest, TResult>(
             logger.LogDebug(
                 "{RequestType} took {Elapsed} to execute", 
                 typeof(TRequest), 
-                sw.Elapsed
+                delta
             );
         }
 

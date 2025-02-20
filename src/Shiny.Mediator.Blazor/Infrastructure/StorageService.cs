@@ -1,49 +1,50 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Blazor.Infrastructure;
 
 
-public class StorageService(IJSRuntime jsruntime, ISerializerService serializer) : IStorageService
+public class StorageService(
+    ILogger<StorageService> logger, 
+    IJSRuntime jsruntime, 
+    ISerializerService serializer
+) : IStorageService
 {
-    public Task Set<T>(string key, T value)
+    public async Task Set<T>(string category, string key, T value)
     {
-        var json = serializer.Serialize(value);
-        ((IJSInProcessRuntime)jsruntime).Invoke<string?>("MediatorServices.setStore", key, json);
-
-        return Task.FromResult(key);
+        logger.LogInformation("Storing {Category}-{key}", category, key);
+        var content = serializer.Serialize(value);
+        var requestKey = $"{category}_{key}";
+        await jsruntime.InvokeVoidAsync("MediatorServices.setStore", requestKey, content);
     }
 
     
-    public Task<T?> Get<T>(string key)
+    public async Task<T?> Get<T>(string category, string key)
     {
-        var stringValue = ((IJSInProcessRuntime)jsruntime).Invoke<string?>("MediatorServices.getStore", key);
-        if (String.IsNullOrWhiteSpace(stringValue))
-            return Task.FromResult<T?>(default);
+        var content = await jsruntime.InvokeAsync<string?>(
+            "MediatorServices.getStore", 
+            this.GetKey(category, key)
+        );
+        if (String.IsNullOrWhiteSpace(content))
+            return default;
 
-        var final = serializer.Deserialize<T>(stringValue);
-        return Task.FromResult<T?>(final);
+        var obj = serializer.Deserialize<T>(content);
+        return obj;
+    }
+
+    public async Task Remove(string category, string requestKey, bool partialMatchKey = false)
+    {
+        logger.LogInformation("Evicting {Category}-{key}", category, requestKey);
+        await jsruntime.InvokeVoidAsync("MediatorServices.removeStore", this.GetKey(category, requestKey));
     }
 
     
-    public Task Remove(string key)
+    public Task Clear(string category)
     {
-        var inproc = (IJSInProcessRuntime)jsruntime;
-        inproc.InvokeVoid("MediatorServices.removeStore", key);
-        return Task.CompletedTask;
+        throw new NotImplementedException();
     }
-
-    public Task RemoveByPrefix(string prefix)
-    {
-        var inproc = (IJSInProcessRuntime)jsruntime;
-        inproc.InvokeVoid("MediatorServices.removeByPrefix", prefix);
-        return Task.CompletedTask;
-    }
-
-    public Task Clear()
-    {
-        var inproc = (IJSInProcessRuntime)jsruntime;
-        inproc.InvokeVoid("MediatorServices.clearStore");
-        return Task.CompletedTask;
-    }
+    
+    
+    protected virtual string GetKey(string category, string key) => $"{category}_{key}";
 }

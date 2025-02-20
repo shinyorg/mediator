@@ -89,16 +89,4 @@ public static class Utils
                 null
             )!
             .GetCustomAttribute<TAttribute>();
-
-
-    public static string GetRequestKey(object request)
-    {
-        if (request is IRequestKey keyProvider)
-            return keyProvider.GetKey();
-        
-        var t = request.GetType();
-        var key = $"{t.Namespace}_{t.Name}";
-
-        return key;
-    }
 }

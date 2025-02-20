@@ -47,21 +47,22 @@ public class MemoryCacheService(IMemoryCache cache) : ICacheService
     }
 
 
-    public Task Remove(string key)
+    public Task Remove(string requestKey, bool partialMatch = false)
     {
-        cache.Remove(key);
-        return Task.CompletedTask;
-    }
-    
-
-    public Task RemoveByPrefix(string prefix)
-    {
-        var entries = cache.GetEntries();
-        foreach (var entry in entries)
+        if (!partialMatch)
         {
-            if (entry.Key is string key && key.StartsWith(prefix))
-                cache.Remove(key); // TODO: altering enumerable
+            cache.Remove(requestKey);
         }
+        else
+        {
+            var entries = cache.GetEntries();
+            foreach (var entry in entries)
+            {
+                if (entry.Key is string key && key.StartsWith(requestKey))
+                    cache.Remove(key); // TODO: altering enumerable
+            }
+        }
+
         return Task.CompletedTask;
     }
 

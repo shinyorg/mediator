@@ -48,20 +48,17 @@ public interface ICacheService
     /// <returns></returns>
     Task<CacheEntry<T>?> Get<T>(string key);
 
-    /// <summary>
-    /// Removes a specific cache item
-    /// </summary>
-    /// <param name="key"></param>
-    Task Remove(string key);
     
     /// <summary>
     /// Clears cache keys starting with prefix
     /// </summary>
-    /// <param name="prefix"></param>
-    Task RemoveByPrefix(string prefix);
+    /// <param name="requestKey"></param>
+    /// <param name="partialMatch">If true, uses StartsWith on requestKey, otherwise looks for exact match</param>
+    Task Remove(string requestKey, bool partialMatch = false);
 
     /// <summary>
-    /// Clears all cache
+    /// Clears the cache
     /// </summary>
+    /// <returns></returns>
     Task Clear();
 }

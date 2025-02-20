@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Shiny.Mediator</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Sentry" Version="5.1.1" />
+    </ItemGroup>
+
+</Project>

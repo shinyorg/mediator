@@ -56,7 +56,7 @@ public class StreamRequestWrapper<TRequest, TResult>(
             return requestHandler.Handle(request, context, cancellationToken);
         });
         
-        var middlewares = scope.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
+        var middlewares = context.BypassMiddlewareEnabled() ? [] : scope.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
         var enumerable = middlewares
             .Reverse()
             .Aggregate(

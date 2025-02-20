@@ -5,8 +5,7 @@ public interface IOfflineService
 {
     Task<string> Set(object request, object result);
     Task<OfflineResult<TResult>?> Get<TResult>(object request);
-    Task ClearByType(Type requestType);
-    Task ClearByRequest(object request);
+    Task Remove(string requestKey, bool partialMatch);
     Task Clear();
 }
 
@@ -16,102 +15,51 @@ public record OfflineResult<TResult>(
     TResult Value
 );
 
-public class OfflineService(IStorageService storage, ISerializerService serializer) : IOfflineService
+public class OfflineService(
+    IStorageService storage, 
+    ISerializerService serializer,
+    TimeProvider timeProvider
+) : IOfflineService
 {
+    public const string Category = "Offline";
+    
     public async Task<string> Set(object request, object result)
     {
-        var requestKey = Utils.GetRequestKey(request);
-        await this.DoTransaction(dict =>
-        {
-            dict[requestKey] = new OfflineStore(
-                this.GetTypeKey(request.GetType()),
-                requestKey,
-                DateTimeOffset.UtcNow,
-                serializer.Serialize(result)
-            );
-            return true;
-        });
+        var requestKey = ContractUtils.GetRequestKey(request);
+        await storage
+            .Set(
+                Category,
+                requestKey, 
+                new OfflineStore(
+                    this.GetTypeKey(request.GetType()),
+                    requestKey,
+                    timeProvider.GetUtcNow(),
+                    serializer.Serialize(result)
+                )
+            )
+            .ConfigureAwait(false);
+        
         return requestKey;
     }
 
-
     public async Task<OfflineResult<TResult>?> Get<TResult>(object request)
     {
-        OfflineResult<TResult>? result = null;
-        await this
-            .DoTransaction(dict =>
-            {
-                var requestKey = Utils.GetRequestKey(request);
-                if (dict.TryGetValue(requestKey, out var store))
-                {
-                    var jsonObj = serializer.Deserialize<TResult>(store.Json);
-                    result = new OfflineResult<TResult>(store.RequestKey, store.Timestamp, jsonObj);
-                }
-                return false;
-            })
+        var requestKey = ContractUtils.GetRequestKey(request);
+        var store = await storage
+            .Get<OfflineStore>(Category, requestKey)
             .ConfigureAwait(false);
+        
+        if (store == null)
+            return null;
 
-        return result;
+        var obj = serializer.Deserialize<TResult>(store.Json);
+        return new OfflineResult<TResult>(store.RequestKey, store.Timestamp, obj);
     }
 
+    public Task Remove(string requestKey, bool partialMatch = false)
+        => storage.Remove(Category, requestKey, partialMatch);
 
-    public Task ClearByType(Type requestType) => this.DoTransaction(dict =>
-    {
-        var typeKey = this.GetTypeKey(requestType);
-        var keys = dict
-            .Where(x => x.Value.TypeName == typeKey)
-            .Select(x => x.Key)
-            .ToList();
-
-        if (keys.Count == 0)
-            return false;
-
-        foreach (var key in keys)
-            dict.Remove(key);
-        
-        return false;
-    });
-
-    
-    public Task ClearByRequest(object request) => this.DoTransaction(dict =>
-    {
-        var requestKey = Utils.GetRequestKey(request);
-        if (dict.ContainsKey(requestKey))
-        {
-            dict.Remove(requestKey);
-            return true;
-        }
-        return false;
-    });
-
-
-    public Task Clear() => this.DoTransaction(dict =>
-    {
-        dict.Clear();
-        return true;
-    });
-
-
-    SemaphoreSlim semaphore = new(1, 1);
-    Dictionary<string, OfflineStore> cache = null!;
-    Task DoTransaction(Func<IDictionary<string, OfflineStore>, bool> action) => Task.Run(async () =>
-    {
-        await this.semaphore.WaitAsync();
-        if (this.cache == null)
-        {
-            var dict = await storage
-                .Get<Dictionary<string, OfflineStore>>(nameof(IStorageService))
-                .ConfigureAwait(false);
-
-            this.cache = dict ?? new();
-        }
-        var result = action(this.cache);
-        if (result)
-            await storage.Set(nameof(IStorageService), this.cache).ConfigureAwait(false);
-
-        this.semaphore.Release();
-    });
-    
+    public Task Clear() => storage.Clear(Category);
 
     string GetTypeKey(Type type) => $"{type.Namespace}.{type.Name}";
 }

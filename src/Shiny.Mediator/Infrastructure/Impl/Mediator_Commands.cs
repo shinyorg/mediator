@@ -32,7 +32,7 @@ public partial class Mediator
                 .ConfigureAwait(false);
         });
 
-        var middlewares = scope.ServiceProvider.GetServices<ICommandMiddleware<TCommand>>();
+        var middlewares = context.BypassMiddlewareEnabled() ? [] : scope.ServiceProvider.GetServices<ICommandMiddleware<TCommand>>();
         await middlewares
             .Reverse()
             .Aggregate(

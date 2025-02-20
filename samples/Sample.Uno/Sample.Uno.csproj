@@ -1,0 +1,62 @@
+<Project Sdk="Uno.Sdk/5.6.22">
+    <PropertyGroup>
+        <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst;net9.0-windows10.0.26100;net9.0-browserwasm;net9.0-desktop;net9.0</TargetFrameworks>
+
+        <OutputType>Exe</OutputType>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UnoSingleProject>true</UnoSingleProject>
+
+        <ApplicationTitle>Shiny Mediator Uno</ApplicationTitle>
+        <ApplicationId>org.shiny.mediatoruno</ApplicationId>
+
+        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+        <ApplicationVersion>1</ApplicationVersion>
+
+        <ApplicationPublisher>O=Sample.Uno</ApplicationPublisher>
+        <Description>Sample.Uno powered by Uno Platform.</Description>
+        <!--
+          If you encounter this error message:
+
+            error NETSDK1148: A referenced assembly was compiled using a newer version of Microsoft.Windows.SDK.NET.dll.
+            Please update to a newer .NET SDK in order to reference this assembly.
+
+          This means that the two packages below must be aligned with the "build" version number of
+          the "Microsoft.Windows.SDK.BuildTools" package above, and the "revision" version number
+          must be the highest found in https://www.nuget.org/packages/Microsoft.Windows.SDK.NET.Ref.
+        -->
+        <!-- <WindowsSdkPackageVersion>10.0.22621.28</WindowsSdkPackageVersion> -->
+
+        <!--
+          UnoFeatures let's you quickly add and manage implicit package references based on the features you want to use.
+          https://aka.platform.uno/singleproject-features
+        -->
+        <UnoFeatures>
+            Material;
+            Dsp;
+            Hosting;
+            Toolkit;
+            Logging;
+            Mvvm;
+            Configuration;
+            Navigation;
+            ThemeService;
+        </UnoFeatures>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Uno\Shiny.Mediator.Uno.csproj" />
+        <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Compile Update="Presentation\SecondPage.xaml.cs">
+        <DependentUpon>SecondPage.xaml</DependentUpon>
+        <IsDefaultItem>true</IsDefaultItem>
+      </Compile>
+    </ItemGroup>
+
+    <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets" />
+</Project>

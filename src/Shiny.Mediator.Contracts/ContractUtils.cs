@@ -11,7 +11,7 @@ public static class ContractUtils
     /// <param name="obj"></param>
     /// <param name="tryKeyReflect">If your object is not IRequestKey, this will use reflection to build a key from public get/set values in your object otherwise it will fallback to namespace_typename</param>
     /// <returns></returns>
-    public static string GetObjectKey(object obj, bool tryKeyReflect = false)
+    public static string GetRequestKey(object obj, bool tryKeyReflect = false)
     {
         if (obj is IRequestKey key)
             return key.GetKey();

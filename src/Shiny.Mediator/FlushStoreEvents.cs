@@ -1,8 +1,7 @@
 namespace Shiny.Mediator;
 
 public record FlushAllStoresEvent : IEvent;
-public record FlushStoreByRequestEvent(object Request) : IEvent;
-public record FlushStoreByTypeEvent(Type Type) : IEvent;
+public record FlushStoresEvent(string RequestKey, bool PartialMatch) : IEvent;
 
 public static class FlushStoreExtensions
 {
@@ -12,28 +11,18 @@ public static class FlushStoreExtensions
     /// <param name="mediator"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task FlushAllStores(this IMediator mediator, CancellationToken cancellationToken = default) 
+    public static Task FlushAllStores(this IMediator mediator, CancellationToken cancellationToken = default)
         => mediator.Publish(new FlushAllStoresEvent(), cancellationToken);
     
     
     /// <summary>
-    /// All middleware within Shiny will respond to this event
+    /// Flushes store by type and/or keys starting with prefix
     /// </summary>
     /// <param name="mediator"></param>
-    /// <param name="request"></param>
+    /// <param name="requestKey"></param>
+    /// <param name="partialMatch"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task FlushStoreByRequest(this IMediator mediator, object request, CancellationToken cancellationToken = default)
-        => mediator.Publish(new FlushStoreByRequestEvent(request), cancellationToken);
-    
-    
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="mediator"></param>
-    /// <param name="type"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public static Task FlushStoreByType(this IMediator mediator, Type type, CancellationToken cancellationToken = default)
-        => mediator.Publish(new FlushStoreByTypeEvent(type), cancellationToken);
+    public static Task FlushStores(this IMediator mediator, string requestKey, bool partialMatch = false, CancellationToken cancellationToken = default)
+        => mediator.Publish(new FlushStoresEvent(requestKey, partialMatch), cancellationToken);
 }
