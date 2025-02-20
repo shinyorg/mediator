@@ -25,11 +25,13 @@ public class MediatorSourceGenerator : ISourceGenerator
                 // </auto-generated>
                 #nullable disable
                 
+                [global::System.CodeDom.Compiler.GeneratedCode("Shiny.Mediator", "3.0.0")]
                 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
                 internal sealed class SingletonHandlerAttribute : global::System.Attribute
                 {
                 }
                 
+                [global::System.CodeDom.Compiler.GeneratedCode("Shiny.Mediator", "3.0.0")]
                 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
                 internal sealed class ScopedHandlerAttribute : global::System.Attribute
                 {
@@ -78,6 +80,7 @@ public class MediatorSourceGenerator : ISourceGenerator
             .AppendLine()
             .AppendLine($"namespace {nameSpace};")
             .AppendLine()
+            .AppendLine("[global::System.CodeDom.Compiler.GeneratedCode(\"Shiny.Mediator\", \"3.3.0\")]")
             .AppendLine("public static class __ShinyMediatorSourceGenExtensions {")
             .AppendLine($"\tpublic static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFrom{assName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)")
             .AppendLine("\t{");

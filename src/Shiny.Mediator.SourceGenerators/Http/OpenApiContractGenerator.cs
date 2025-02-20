@@ -79,9 +79,11 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                 var contractName = $"{itemConfig.ContractPrefix}{op.Value.OperationId.Pascalize()}{itemConfig.ContractPostfix}";
                 var httpMethod = op.Key.ToString();
                 
-                this.contractBuilder.AppendLine($"[global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.{httpMethod}, \"{path.Key}\")]");
-                this.contractBuilder.AppendLine($"public partial class {contractName} : global::Shiny.Mediator.Http.IHttpRequest<{responseType}>");
-                this.contractBuilder.AppendLine("{");
+                this.contractBuilder
+                    .AppendLine("[global::System.CodeDom.Compiler.GeneratedCode(\"Shiny.Mediator\", \"3.3.0\")]")
+                    .AppendLine($"[global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.{httpMethod}, \"{path.Key}\")]")
+                    .AppendLine($"public partial class {contractName} : global::Shiny.Mediator.Http.IHttpRequest<{responseType}>")
+                    .AppendLine("{");
                 
                 foreach (var parameter in op.Value.Parameters)
                 {
@@ -261,8 +263,10 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         output("ENUM COMPONENT GENERATING - " + enumName, DiagnosticSeverity.Info);
 
         var sb = new StringBuilder();
-        sb.AppendLine($"public enum {enumName}");
-        sb.AppendLine("{");
+        sb
+            .AppendLine("[global::System.CodeDom.Compiler.GeneratedCode(\"Shiny.Mediator\", \"3.3.0\")]")
+            .AppendLine($"public enum {enumName}")
+            .AppendLine("{");
         
         foreach (var ev in schema.Enum.OfType<OpenApiString>())
         {
@@ -281,7 +285,9 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
     {
         output("===GENERATING CLASS COMPONENT: " + className, DiagnosticSeverity.Info);
         var sb = new StringBuilder();
-        sb.Append("public partial class " + className);
+        sb
+            .AppendLine("[global::System.CodeDom.Compiler.GeneratedCode(\"Shiny.Mediator\", \"3.3.0\")]")
+            .Append("public partial class " + className);
 
         // TODO: this will be 2 when discriminators are present
         //if (schema.Value.AllOf.Count > 1)
