@@ -129,7 +129,7 @@ public class HttpRequestHandler<TRequest, TResult>(
             if (parameter != null)
             {
                 var parameterName = parameter.ParameterName ?? property.Name;
-                var propertyValue = property.GetValue(request)?.ToString();
+                var propertyValue = property.GetValue(request);
                 
                 switch (parameter.Type)
                 {
@@ -137,14 +137,14 @@ public class HttpRequestHandler<TRequest, TResult>(
                         if (propertyValue == null)
                             throw new InvalidOperationException($"Path parameters cannot be null - '{parameterName}'");
                            
-                        var epath = HttpUtility.UrlEncode(propertyValue);
+                        var epath = HttpUtility.UrlEncode(propertyValue.ToString());
                         uri = uri.Replace("{" + parameterName + "}", epath);
                         break;
                     
                     case HttpParameterType.Query:
                         if (propertyValue != null)
                         {
-                            var eq = HttpUtility.UrlEncode(propertyValue);
+                            var eq = HttpUtility.UrlEncode(propertyValue.ToString());
                             uri += uri.Contains('?') ? "&" : "?";
                             uri += $"{parameterName}={eq}";
                         }
@@ -153,8 +153,9 @@ public class HttpRequestHandler<TRequest, TResult>(
                     case HttpParameterType.Header:
                         if (propertyValue != null)
                         {
-                            logger.LogDebug($"Header: {parameterName} - Value: {propertyValue}");
-                            httpRequest.Headers.Add(parameterName, propertyValue);
+                            var headerValue = propertyValue.ToString();
+                            logger.LogDebug($"Header: {parameterName} - Value: {headerValue}");
+                            httpRequest.Headers.Add(parameterName, headerValue);
                         }
                         break;
                 
@@ -162,7 +163,7 @@ public class HttpRequestHandler<TRequest, TResult>(
                         // TODO: file upload or form post?
                         if (httpRequest.Content != null)
                             throw new InvalidOperationException("Multiple body parameters not supported");
-                        
+
                         var json = JsonSerializer.Serialize(propertyValue);
                         httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
                         logger.LogDebug("HTTP Body: " + json);
