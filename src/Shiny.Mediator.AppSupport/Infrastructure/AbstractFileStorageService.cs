@@ -91,41 +91,6 @@ public abstract class AbstractFileStorageService(
         if (writeState)
             await this.WriteState().ConfigureAwait(false);
     }
-
-    // public async Task RemoveByPrefix(string prefix)
-    // {
-    //     var changed = false;
-    //     var indexes = await this.GetFileIndexes().ConfigureAwait(false);
-    //     var indexCopy = indexes.ToList();
-    //     
-    //     foreach (var (key, value) in indexCopy)
-    //     {
-    //         if (key.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
-    //         {
-    //             await this.DeleteFile(key);
-    //             indexes.TryRemove(key, out _);
-    //             changed = true;
-    //         }
-    //     }
-    //
-    //     if (changed)
-    //         await this.WriteState().ConfigureAwait(false);
-    // }
-
-    // public async Task Clear()
-    // {
-    //     var indexes = await this.GetFileIndexes().ConfigureAwait(false);
-    //     
-    //     foreach (var value in indexes.Values)
-    //     {
-    //         await this
-    //             .DeleteFile(value)
-    //             .ConfigureAwait(false);
-    //     }
-    //     indexes.Clear();
-    //     await this.WriteState().ConfigureAwait(false);
-    // }
-
     
     protected virtual async Task WriteObject<T>(string fileName, T value)
     {
