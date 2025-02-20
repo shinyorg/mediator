@@ -68,11 +68,11 @@ public static class UnoExtensions
     /// <returns></returns>
     public static ShinyConfigurator AddUnoInfrastructure(this ShinyConfigurator cfg)
     {
-        if (cfg.Services.Any(x => x.ImplementationType == typeof(UnoEventCollector)))
-            return cfg;
+        // if (cfg.Services.Any(x => x.ImplementationType == typeof(UnoEventCollector)))
+        //     return cfg;
         
-        cfg.Services.AddSingletonAsImplementedInterfaces<UnoEventCollector>();
-        cfg.Services.AddSingletonAsImplementedInterfaces<AlertDialogService>();
+        // cfg.Services.AddSingletonAsImplementedInterfaces<UnoEventCollector>();
+        cfg.Services.TryAddSingleton<IAlertDialogService, AlertDialogService>();
         cfg.Services.TryAddSingleton<IInternetService, InternetService>();
         cfg.Services.TryAddSingleton<IStorageService, StorageService>();
         return cfg;
