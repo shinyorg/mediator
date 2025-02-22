@@ -7,6 +7,14 @@
              Title="Trigger">
     <TableView>
         <TableRoot>
+            <TableSection Title="Connectivity Broadcaster">
+                <SwitchCell Text="Internet Connected" 
+                            On="{Binding Connected}" 
+                            IsEnabled="False" />
+                <TextCell Text="Last Changed"
+                          Detail="{Binding ConnectivityChangeTime}"/>
+            </TableSection>
+            
             <TableSection Title="REQUESTS - Standard">
                 <EntryCell Label="Argument" 
                            Text="{Binding Arg}" />

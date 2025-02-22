@@ -50,6 +50,7 @@ public static class MauiProgram
             .UseMaui()
             .UseBlazor()
             .PreventEventExceptions()
+            .AddConnectivityBroadcaster()
             
             // Validation - you can only have both, but don't
             .AddDataAnnotations()

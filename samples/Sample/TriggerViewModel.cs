@@ -11,7 +11,7 @@ public partial class TriggerViewModel(
     IMediator mediator,
     AppSqliteConnection data,
     IPageDialogService dialogs
-) : ObservableObject, IEventHandler<MyMessageEvent>
+) : ObservableObject, IEventHandler<MyMessageEvent>, IEventHandler<ConnectivityChanged>
 {
     readonly IDisposable sub;
     CancellationTokenSource cancelSource = new();
@@ -197,4 +197,15 @@ public partial class TriggerViewModel(
     [ObservableProperty] int streamRepeat = 5;
     [ObservableProperty] int streamMultiplier = 2;
     [ObservableProperty] string? streamLastResponse;
+    [ObservableProperty] bool connected;
+    [ObservableProperty] string? connectivityChangeTime;
+    
+    
+    [MainThread]
+    public Task Handle(ConnectivityChanged @event, EventContext<ConnectivityChanged> context, CancellationToken cancellationToken)
+    {
+        this.Connected = @event.Connected;
+        this.ConnectivityChangeTime = DateTimeOffset.Now.ToString("h:mm:ss tt");
+        return Task.CompletedTask;
+    }
 }

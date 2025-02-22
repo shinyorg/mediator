@@ -10,15 +10,22 @@ public class InternetService(IConnectivity connectivity) : IInternetService
         {
             if (this.handler == null)
             {
-                // connectivity.ConnectivityChanged += handler;
+                connectivity.ConnectivityChanged += this.OnConnectivityChanged;
             }
             this.handler += value;
         }
         remove
         {
-            // connectivity.ConnectivityChanged -= handler;
+            this.handler -= value;
+            if (this.handler == null)
+            {
+                connectivity.ConnectivityChanged -= this.OnConnectivityChanged;
+            }
         }
     }
+    
+    
+    
     public bool IsAvailable => connectivity.NetworkAccess == NetworkAccess.Internet;
     public async Task WaitForAvailable(CancellationToken cancelToken = default)
     {
@@ -41,5 +48,12 @@ public class InternetService(IConnectivity connectivity) : IInternetService
         {
             connectivity.ConnectivityChanged -= handler;    
         }
+    }
+
+
+    void OnConnectivityChanged(object? sender, ConnectivityChangedEventArgs args)
+    {
+        var connected = args.NetworkAccess == NetworkAccess.Internet;
+        this.handler?.Invoke(null, connected);
     }
 }
