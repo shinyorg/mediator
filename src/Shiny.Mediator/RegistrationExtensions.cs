@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
+using Shiny.Mediator.Infrastructure.Impl;
 using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;
@@ -34,7 +35,11 @@ public static class RegistrationExtensions
             cfg.AddPerformanceLoggingMiddleware();
             cfg.AddTimerRefreshStreamMiddleware();
         }
-        services.TryAddSingleton<ISerializerService, Infrastructure.Impl.SysTextJsonSerializerService>();
+        
+        services.TryAddSingleton<ISerializerService, SysTextJsonSerializerService>();
+        services.TryAddSingleton<IRequestExecutor, RequestExecutor>();
+        services.TryAddSingleton<ICommandExecutor, CommandExecutor>();
+        services.TryAddSingleton<IEventExecutor, EventExecutor>();
         services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();
         services.TryAddSingleton(TimeProvider.System);
         

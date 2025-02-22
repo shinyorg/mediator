@@ -4,7 +4,10 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-public partial class Mediator
+public class EventExecutor(
+    IServiceProvider services, 
+    IEnumerable<IEventCollector> collectors
+) : IEventExecutor
 {
     readonly SubscriptionEventCollector subscriptions = new();
 
