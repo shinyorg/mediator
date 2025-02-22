@@ -8,4 +8,7 @@ public interface IEventCollector
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
     IReadOnlyList<IEventHandler<TEvent>> GetHandlers<TEvent>() where TEvent : IEvent;
+
+
+    // IDisposable OnHandlerDiscovered<TEvent>(Action<IEventHandler<TEvent>> onHandler) where TEvent : IEvent;
 }
