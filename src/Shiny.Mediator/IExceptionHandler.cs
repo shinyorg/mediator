@@ -12,6 +12,7 @@ public interface IExceptionHandler
     Task<bool> Handle(
         object message,
         object handler,
-        Exception exception
+        Exception exception,
+        IMediatorContext context
     );
 }

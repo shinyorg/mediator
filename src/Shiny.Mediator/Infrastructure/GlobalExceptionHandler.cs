@@ -2,7 +2,7 @@ namespace Shiny.Mediator.Infrastructure;
 
 public class GlobalExceptionHandler(IEnumerable<IExceptionHandler> handlers)
 {
-    public async Task<bool> Manage(object message, object handler, Exception exception)
+    public async Task<bool> Manage(object message, object handler, Exception exception, IMediatorContext context)
     {
         var handled = false;
         foreach (var eh in handlers)
@@ -11,7 +11,8 @@ public class GlobalExceptionHandler(IEnumerable<IExceptionHandler> handlers)
                 .Handle(
                     message,
                     handler,
-                    exception
+                    exception,
+                    context
                 )
                 .ConfigureAwait(false);
                 

@@ -1,10 +1,9 @@
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
 public class Mediator(
     IRequestExecutor requestExecutor, 
+    IStreamRequestExecutor streamRequestExecutor,
     ICommandExecutor commandExecutor, 
     IEventExecutor eventExecutor
 ) : IMediator
@@ -34,7 +33,7 @@ public class Mediator(
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default,
         params IEnumerable<(string Key, object Value)> headers
-    ) => requestExecutor.RequestWithContext(request, cancellationToken, headers);
+    ) => streamRequestExecutor.RequestWithContext(request, cancellationToken, headers);
 
     
     public Task<CommandContext<TCommand>> Send<TCommand>(

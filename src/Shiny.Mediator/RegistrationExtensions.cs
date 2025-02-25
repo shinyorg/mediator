@@ -38,6 +38,7 @@ public static class RegistrationExtensions
         
         services.TryAddSingleton<ISerializerService, SysTextJsonSerializerService>();
         services.TryAddSingleton<IRequestExecutor, RequestExecutor>();
+        services.TryAddSingleton<IStreamRequestExecutor, StreamRequestExecutor>();
         services.TryAddSingleton<ICommandExecutor, CommandExecutor>();
         services.TryAddSingleton<IEventExecutor, EventExecutor>();
         services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();

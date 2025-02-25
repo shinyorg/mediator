@@ -27,7 +27,10 @@ public class ExceptionHandlingRequestMiddleware<TRequest, TResult>(
         }
         catch (Exception ex)
         {
-            var handled = await handler.Manage(context.Request!, context.Handler, ex).ConfigureAwait(false);
+            var handled = await handler
+                .Manage(context.Request!, context.Handler, ex, context)
+                .ConfigureAwait(false);
+            
             if (!handled)
                 throw;
         }
@@ -54,7 +57,10 @@ public class ExceptionHandlingCommandMiddleware<TCommand>(
         }
         catch (Exception ex)
         {
-            var handled = await handler.Manage(context.Command!, context.Handler, ex).ConfigureAwait(false);
+            var handled = await handler
+                .Manage(context.Command!, context.Handler, ex, context)
+                .ConfigureAwait(false);
+            
             if (!handled)
                 throw;
         }
@@ -76,7 +82,10 @@ public class ExceptionHandlingEventMiddleware<TEvent>(
         }
         catch (Exception ex)
         {
-            var handled = await handler.Manage(context.Event!, context.Handler, ex).ConfigureAwait(false);
+            var handled = await handler
+                .Manage(context.Event!, context.Handler, ex, context)
+                .ConfigureAwait(false);
+            
             if (!handled)
                 throw;
         }

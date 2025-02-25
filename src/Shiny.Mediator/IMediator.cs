@@ -3,6 +3,6 @@
 namespace Shiny.Mediator;
 
 
-public interface IMediator : IRequestExecutor, ICommandExecutor, IEventExecutor
+public interface IMediator : IRequestExecutor, IStreamRequestExecutor, ICommandExecutor, IEventExecutor
 {
 }
