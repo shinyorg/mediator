@@ -11,7 +11,7 @@ public partial class TriggerViewModel(
     IMediator mediator,
     AppSqliteConnection data,
     IPageDialogService dialogs
-) : ObservableObject, IEventHandler<MyMessageEvent>, IEventHandler<ConnectivityChanged>
+) : ObservableObject, IEventHandler<MyMessageEvent>, IConnectivityEventHandler
 {
     readonly IDisposable sub;
     CancellationTokenSource cancelSource = new();

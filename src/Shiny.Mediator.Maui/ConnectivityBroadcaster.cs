@@ -34,16 +34,17 @@ public class ConnectivityBroadcaster(
 
         var app = await this.WaitForApp().ConfigureAwait(false);
         if (app != null)
-        {
-            app.PageAppearing += async (_, page) =>
-            {
-                if (page is IEventHandler<ConnectivityChanged> handler1)
-                    await this.TryBinding(handler1).ConfigureAwait(false);
+            app.PageAppearing += async (_, page) => await this.TryPageBinding(page);
+    }
+
+
+    async Task TryPageBinding(Page page)
+    {
+        if (page is IEventHandler<ConnectivityChanged> handler1)
+            await this.TryBinding(handler1).ConfigureAwait(false);
                 
-                if (page.BindingContext is IEventHandler<ConnectivityChanged> handler2)
-                    await this.TryBinding(handler2).ConfigureAwait(false);
-            };
-        }
+        if (page.BindingContext is IEventHandler<ConnectivityChanged> handler2)
+            await this.TryBinding(handler2).ConfigureAwait(false);
     }
 
 
@@ -89,3 +90,4 @@ public class ConnectivityBroadcaster(
 }
 
 public record ConnectivityChanged(bool Connected) : IEvent;
+public interface IConnectivityEventHandler : IEventHandler<ConnectivityChanged>;
