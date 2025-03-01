@@ -8,10 +8,10 @@ public static class Headers
     public static readonly (string Key, bool Value) BypassExceptionHandling = (nameof(BypassExceptionHandling), true);
     
     public static bool BypassMiddlewareEnabled(this MediatorContext context)
-        => context.Values.ContainsKey(BypassMiddleware.Key);
+        => context.Headers.ContainsKey(BypassMiddleware.Key);
     
     public static bool BypassExceptionHandlingEnabled(this MediatorContext context)
-        => context.Values.ContainsKey(BypassExceptionHandling.Key);
+        => context.Headers.ContainsKey(BypassExceptionHandling.Key);
     
     const string TimerRefreshHeader = nameof(TimerRefreshHeader);
     public static (string Key, int Value) TimerRefresh(int timerRefreshSeconds) 
@@ -42,7 +42,7 @@ public static class Headers
     public static (string Key, bool Value) ForceCacheRefresh { get; } = (ForceCacheRefreshHeader, true);
 
     public static bool HasForceCacheRefresh(this MediatorContext context)
-        => context.Values.ContainsKey(ForceCacheRefreshHeader);
+        => context.Headers.ContainsKey(ForceCacheRefreshHeader);
     
     #endregion
 }

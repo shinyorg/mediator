@@ -19,7 +19,7 @@ public class SentryRequestMiddleware<TRequest, TResult> : IRequestMiddleware<TRe
         var result = await next().ConfigureAwait(false);
 
         // tap headers on to span AFTER request - do we care if this changed before vs after? can I denote this in sentry?
-        foreach (var header in context.Values)
+        foreach (var header in context.Headers)
             span.SetData(header.Key, header.Value);
 
         span.Finish();

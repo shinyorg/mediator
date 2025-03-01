@@ -32,7 +32,7 @@ public class ReplayStreamTests(ITestOutputHelper output)
         {
             var cache = context.Context.Cache();
             cache.ShouldBeNull("Cache should be null");
-            context.Context.Values.ContainsKey("FromHandler").ShouldBeTrue();
+            context.Context.Headers.ContainsKey("FromHandler").ShouldBeTrue();
             
             var offline = context.Context.Offline();
             switch (i)

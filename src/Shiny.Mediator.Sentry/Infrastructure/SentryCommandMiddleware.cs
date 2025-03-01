@@ -8,7 +8,7 @@ public class SentryCommandMiddleware<TCommand> : ICommandMiddleware<TCommand> wh
         var transaction = SentrySdk.StartTransaction("mediator", "event");
         var span = transaction.StartChild(context.MessageHandler.GetType().FullName!);
         await next().ConfigureAwait(false);
-        foreach (var header in context.Values)
+        foreach (var header in context.Headers)
             span.SetData(header.Key, header.Value);
         
         span.Finish();

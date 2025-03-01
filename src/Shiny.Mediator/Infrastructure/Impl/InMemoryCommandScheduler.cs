@@ -45,7 +45,7 @@ public class InMemoryCommandScheduler(
             {
                 var headers = item
                     .Context
-                    .Values
+                    .Headers
                     .Select(x => (Key: x.Key, Value: x.Value))
                     .ToList();
                 
