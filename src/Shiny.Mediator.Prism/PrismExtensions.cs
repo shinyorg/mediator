@@ -6,7 +6,7 @@ namespace Shiny.Mediator;
 
 public static class PrismExtensions
 {
-    public static ShinyConfigurator AddPrismSupport(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddPrismSupport(this ShinyMediatorBuilder cfg)
     {
         // cfg.Services.AddSingletonAsImplementedInterfaces<PrismNavigationRequestHandler>();
         cfg.Services.AddSingleton(typeof(ICommandHandler<>), typeof(PrismNavigationCommandHandler<>));

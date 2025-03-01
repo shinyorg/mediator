@@ -10,7 +10,7 @@ public static class FluentValidationExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddFluentValidation(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddFluentValidation(this ShinyMediatorBuilder cfg)
     {
         cfg.AddOpenRequestMiddleware(typeof(FluentValidationRequestMiddleware<,>));
         cfg.AddOpenCommandMiddleware(typeof(FluentValidationCommandMiddleware<>));

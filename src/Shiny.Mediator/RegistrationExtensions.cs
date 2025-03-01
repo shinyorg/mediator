@@ -20,17 +20,16 @@ public static class RegistrationExtensions
     /// <returns></returns>
     public static IServiceCollection AddShinyMediator(
         this IServiceCollection services, 
-        Action<ShinyConfigurator>? configurator = null,
+        Action<ShinyMediatorBuilder>? configurator = null,
         bool includeStandardMiddleware = true
     )
     {
-        var cfg = new ShinyConfigurator(services);
+        var cfg = new ShinyMediatorBuilder(services);
         configurator?.Invoke(cfg);
 
         if (includeStandardMiddleware)
         {
             cfg.AddHttpClient();
-            cfg.AddGlobalExceptionHandling();
             cfg.PreventEventExceptions();
             cfg.AddPerformanceLoggingMiddleware();
             cfg.AddTimerRefreshStreamMiddleware();
@@ -51,38 +50,38 @@ public static class RegistrationExtensions
     /// <summary>
     /// Add HTTP Client to mediator
     /// </summary>
-    /// <param name="configurator"></param>
+    /// <param name="mediatorBuilder"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddHttpClient(this ShinyConfigurator configurator)
+    public static ShinyMediatorBuilder AddHttpClient(this ShinyMediatorBuilder mediatorBuilder)
     {
-        configurator.Services.AddScoped(typeof(IRequestHandler<,>), typeof(HttpRequestHandler<,>));
-        return configurator;
+        mediatorBuilder.Services.AddScoped(typeof(IRequestHandler<,>), typeof(HttpRequestHandler<,>));
+        return mediatorBuilder;
     }
     
 
     /// <summary>
     /// Adds command scheduling
     /// </summary>
-    /// <param name="configurator"></param>
+    /// <param name="mediatorBuilder"></param>
     /// <typeparam name="TScheduler">The scheduler/execution type for deferred/scheduled commands</typeparam>
     /// <returns></returns>
-    public static ShinyConfigurator AddCommandScheduling<TScheduler>(this ShinyConfigurator configurator)
+    public static ShinyMediatorBuilder AddCommandScheduling<TScheduler>(this ShinyMediatorBuilder mediatorBuilder)
         where TScheduler : class, ICommandScheduler
     {
-        configurator.Services.AddSingleton<ICommandScheduler, TScheduler>();
-        configurator.AddOpenCommandMiddleware(typeof(ScheduledCommandMiddleware<>));
-        configurator.Services.TryAddSingleton(TimeProvider.System);
-        return configurator;
+        mediatorBuilder.Services.TryAddSingleton<ICommandScheduler, TScheduler>();
+        mediatorBuilder.Services.TryAddSingleton(TimeProvider.System);
+        mediatorBuilder.AddOpenCommandMiddleware(typeof(ScheduledCommandMiddleware<>));
+        return mediatorBuilder;
     }
 
 
     /// <summary>
     /// Adds in-memory command scheduling
     /// </summary>
-    /// <param name="configurator"></param>
+    /// <param name="mediatorBuilder"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddInMemoryCommandScheduling(this ShinyConfigurator configurator)
-        => configurator.AddCommandScheduling<Infrastructure.Impl.InMemoryCommandScheduler>();
+    public static ShinyMediatorBuilder AddInMemoryCommandScheduling(this ShinyMediatorBuilder mediatorBuilder)
+        => mediatorBuilder.AddCommandScheduling<InMemoryCommandScheduler>();
 
 
     /// <summary>
@@ -90,7 +89,7 @@ public static class RegistrationExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddPerformanceLoggingMiddleware(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddPerformanceLoggingMiddleware(this ShinyMediatorBuilder cfg)
     {
         cfg.AddOpenRequestMiddleware(typeof(PerformanceLoggingRequestMiddleware<,>));
         cfg.AddOpenCommandMiddleware(typeof(PerformanceLoggingCommandMiddleware<>));
@@ -101,62 +100,37 @@ public static class RegistrationExtensions
     /// <summary>
     /// Add global exception handler
     /// </summary>
-    /// <param name="configurator"></param>
-    /// <param name="lifetime"></param>
+    /// <param name="mediatorBuilder"></param>
     /// <typeparam name="THandler"></typeparam>
     /// <returns></returns>
-    public static ShinyConfigurator AddExceptionHandler<THandler>(
-        this ShinyConfigurator configurator,
-        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    public static ShinyMediatorBuilder AddExceptionHandler<THandler>(
+        this ShinyMediatorBuilder mediatorBuilder
     ) where THandler : class, IExceptionHandler
     {
-        configurator.AddGlobalExceptionHandling();
-        if (lifetime == ServiceLifetime.Singleton)
-            configurator.Services.AddSingleton<IExceptionHandler, THandler>();
-        else
-            configurator.Services.AddScoped<IExceptionHandler, THandler>();
-
-        return configurator;
+        mediatorBuilder.Services.AddSingleton<IExceptionHandler, THandler>();
+        return mediatorBuilder;
     }
 
     
     /// <summary>
     /// Adds global exception handling this logs errors in an event handler without allowing it to crash out your app
     /// </summary>
-    /// <param name="configurator"></param>
+    /// <param name="mediatorBuilder"></param>
     /// <returns></returns>
-    public static ShinyConfigurator PreventEventExceptions(this ShinyConfigurator configurator)
-        => configurator.AddExceptionHandler<EventExceptionHandler>(ServiceLifetime.Singleton);
-    
-    
-    /// <summary>
-    /// Add global exception handling
-    /// </summary>
-    /// <param name="configurator"></param>
-    /// <returns></returns>
-    public static ShinyConfigurator AddGlobalExceptionHandling(this ShinyConfigurator configurator)
-    {
-        if (!configurator.Services.Any(x => x.ImplementationType == typeof(GlobalExceptionHandler)))
-        {
-            configurator.Services.AddScoped<GlobalExceptionHandler>();
-            configurator.AddOpenCommandMiddleware(typeof(ExceptionHandlingCommandMiddleware<>));
-            configurator.AddOpenEventMiddleware(typeof(ExceptionHandlingEventMiddleware<>));
-            configurator.AddOpenRequestMiddleware(typeof(ExceptionHandlingRequestMiddleware<,>));
-        }
-        return configurator;
-    }
+    public static ShinyMediatorBuilder PreventEventExceptions(this ShinyMediatorBuilder mediatorBuilder)
+        => mediatorBuilder.AddExceptionHandler<EventExceptionHandler>();
     
     
     /// <summary>
     /// Adds data annotation validation to your contracts, request handlers, & command handlers
     /// </summary>
-    /// <param name="configurator"></param>
+    /// <param name="mediatorBuilder"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddDataAnnotations(this ShinyConfigurator configurator)
+    public static ShinyMediatorBuilder AddDataAnnotations(this ShinyMediatorBuilder mediatorBuilder)
     {
-        configurator.AddOpenRequestMiddleware(typeof(DataAnnotationsRequestMiddleware<,>));
-        configurator.AddOpenCommandMiddleware(typeof(DataAnnotationsCommandMiddleware<>));
-        return configurator;
+        mediatorBuilder.AddOpenRequestMiddleware(typeof(DataAnnotationsRequestMiddleware<,>));
+        mediatorBuilder.AddOpenCommandMiddleware(typeof(DataAnnotationsCommandMiddleware<>));
+        return mediatorBuilder;
     }
 
 
@@ -165,7 +139,7 @@ public static class RegistrationExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddTimerRefreshStreamMiddleware(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddTimerRefreshStreamMiddleware(this ShinyMediatorBuilder cfg)
         => cfg.AddOpenStreamMiddleware(typeof(TimerRefreshStreamRequestMiddleware<,>));
     
     

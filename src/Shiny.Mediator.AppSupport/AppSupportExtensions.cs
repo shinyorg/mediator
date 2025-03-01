@@ -13,7 +13,7 @@ public static class AppSupportExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddStandardAppSupportMiddleware(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddStandardAppSupportMiddleware(this ShinyMediatorBuilder cfg)
     {
         cfg.AddUserErrorNotificationsHandling();
         cfg.AddOfflineAvailabilityMiddleware();
@@ -28,7 +28,7 @@ public static class AppSupportExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddUserErrorNotificationsHandling(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddUserErrorNotificationsHandling(this ShinyMediatorBuilder cfg)
     {
         cfg.Services.AddScoped<IExceptionHandler, UserNotificationExceptionHandler>();
         return cfg;
@@ -40,7 +40,7 @@ public static class AppSupportExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddOfflineAvailabilityMiddleware(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddOfflineAvailabilityMiddleware(this ShinyMediatorBuilder cfg)
     {
         cfg.Services.TryAddSingleton<IOfflineService, OfflineService>();
         cfg.Services.AddSingletonAsImplementedInterfaces<OfflineFlushEventHandlers>();
@@ -55,7 +55,7 @@ public static class AppSupportExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddReplayStreamMiddleware(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddReplayStreamMiddleware(this ShinyMediatorBuilder cfg)
     {
         cfg.AddOpenStreamMiddleware(typeof(ReplayStreamMiddleware<,>));
         return cfg;

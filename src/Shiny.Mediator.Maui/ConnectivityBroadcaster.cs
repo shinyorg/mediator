@@ -53,9 +53,15 @@ public class ConnectivityBroadcaster(
         try
         {
             var e = new ConnectivityChanged(this.connected);
+            var context = new MediatorContext(null!, e, null!)
+            {
+                MessageHandler = handler
+            };
+            
             await handler
-                .Handle(e,
-                    new MediatorContext(e, handler),
+                .Handle(
+                    e,
+                    context,
                     CancellationToken.None
                 )
                 .ConfigureAwait(false);

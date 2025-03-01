@@ -1,25 +1,22 @@
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Shiny.Mediator.Infrastructure;
+
 
 public interface IEventExecutor
 {
     /// <summary>
-    /// 
+    /// Publish an event
     /// </summary>
-    /// <param name="scope"></param>
+    /// <param name="context"></param>
     /// <param name="event"></param>
     /// <param name="executeInParallel"></param>
     /// <param name="cancellationToken"></param>
-    /// <param name="headers"></param>
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
-    Task<EventAggregatedContext> Publish<TEvent>(
-        IServiceScope scope,
+    Task Publish<TEvent>(
+        MediatorContext context,
         TEvent @event,
-        CancellationToken cancellationToken = default,
-        bool executeInParallel = true,
-        params IEnumerable<(string Key, object Value)> headers
+        bool executeInParallel,
+        CancellationToken cancellationToken
     ) where TEvent : IEvent;
     
     

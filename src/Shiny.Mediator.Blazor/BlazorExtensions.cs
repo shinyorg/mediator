@@ -19,7 +19,7 @@ public static class BlazorExtensions
     /// <returns></returns>
     public static WebAssemblyHostBuilder AddShinyMediator(
         this WebAssemblyHostBuilder builder,
-        Action<ShinyConfigurator>? configAction = null,
+        Action<ShinyMediatorBuilder>? configAction = null,
         bool includeStandardMiddleware = true
     )
     {
@@ -38,7 +38,7 @@ public static class BlazorExtensions
     /// <param name="cfg"></param>
     /// <param name="includeStandardMiddleware"></param>
     /// <returns></returns>
-    public static ShinyConfigurator UseBlazor(this ShinyConfigurator cfg, bool includeStandardMiddleware = true)
+    public static ShinyMediatorBuilder UseBlazor(this ShinyMediatorBuilder cfg, bool includeStandardMiddleware = true)
     {
         cfg.Services.AddSingletonAsImplementedInterfaces<BlazorEventCollector>();
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")))
@@ -51,7 +51,7 @@ public static class BlazorExtensions
     }
 
 
-    public static ShinyConfigurator AddBlazorInfrastructure(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddBlazorInfrastructure(this ShinyMediatorBuilder cfg)
     {
         cfg.Services.TryAddSingleton<IStorageService, StorageService>();
         cfg.Services.TryAddSingleton<IInternetService, InternetService>();
@@ -64,12 +64,12 @@ public static class BlazorExtensions
     /// <summary>
     /// Adds a file based caching service - ideal for cache surviving across app sessions
     /// </summary>
-    /// <param name="configurator"></param>
+    /// <param name="mediatorBuilder"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddBlazorPersistentCache(this ShinyConfigurator configurator)
+    public static ShinyMediatorBuilder AddBlazorPersistentCache(this ShinyMediatorBuilder mediatorBuilder)
     {
-        configurator.AddBlazorInfrastructure();
-        configurator.AddCaching<StorageCacheService>();
-        return configurator;
+        mediatorBuilder.AddBlazorInfrastructure();
+        mediatorBuilder.AddCaching<StorageCacheService>();
+        return mediatorBuilder;
     }
 }

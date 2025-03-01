@@ -8,15 +8,15 @@ public static class SentryExtensions
     /// <summary>
     /// Wires up Sentry to Mediator middleware - be sure to call UseSentry on your hosting provider
     /// </summary>
-    /// <param name="configurator"></param>
+    /// <param name="mediatorBuilder"></param>
     /// <returns></returns>
-    public static ShinyConfigurator UseSentry(this ShinyConfigurator configurator)
+    public static ShinyMediatorBuilder UseSentry(this ShinyMediatorBuilder mediatorBuilder)
     {
-        configurator.AddExceptionHandler<SentryExceptionHandler>();
-        configurator.AddOpenEventMiddleware(typeof(SentryEventMiddleware<>), ServiceLifetime.Singleton);
-        configurator.AddOpenCommandMiddleware(typeof(SentryCommandMiddleware<>), ServiceLifetime.Singleton);
-        configurator.AddOpenRequestMiddleware(typeof(SentryRequestMiddleware<,>), ServiceLifetime.Singleton);
-        configurator.AddOpenStreamMiddleware(typeof(SentryStreamRequestMiddleware<,>), ServiceLifetime.Singleton);
-        return configurator;
+        mediatorBuilder.AddExceptionHandler<SentryExceptionHandler>();
+        mediatorBuilder.AddOpenEventMiddleware(typeof(SentryEventMiddleware<>), ServiceLifetime.Singleton);
+        mediatorBuilder.AddOpenCommandMiddleware(typeof(SentryCommandMiddleware<>), ServiceLifetime.Singleton);
+        mediatorBuilder.AddOpenRequestMiddleware(typeof(SentryRequestMiddleware<,>), ServiceLifetime.Singleton);
+        mediatorBuilder.AddOpenStreamMiddleware(typeof(SentryStreamRequestMiddleware<,>), ServiceLifetime.Singleton);
+        return mediatorBuilder;
     }
 }

@@ -18,7 +18,7 @@ public static class MauiExtensions
     /// <returns></returns>
     public static MauiAppBuilder AddShinyMediator(
         this MauiAppBuilder builder,
-        Action<ShinyConfigurator>? configAction = null,
+        Action<ShinyMediatorBuilder>? configAction = null,
         bool includeStandardMiddleware = true
     )
     {
@@ -34,26 +34,26 @@ public static class MauiExtensions
     /// <summary>
     /// Adds a file based caching service - ideal for cache surviving across app sessions
     /// </summary>
-    /// <param name="configurator"></param>
+    /// <param name="mediatorBuilder"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddMauiPersistentCache(this ShinyConfigurator configurator)
+    public static ShinyMediatorBuilder AddMauiPersistentCache(this ShinyMediatorBuilder mediatorBuilder)
     {
-        configurator.AddMauiInfrastructure();
-        configurator.AddCaching<StorageCacheService>();
-        return configurator;
+        mediatorBuilder.AddMauiInfrastructure();
+        mediatorBuilder.AddCaching<StorageCacheService>();
+        return mediatorBuilder;
     }
 
     
     /// <summary>
     /// Adds connectivity broadcaster
     /// </summary>
-    /// <param name="configurator"></param>
+    /// <param name="mediatorBuilder"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddConnectivityBroadcaster(this ShinyConfigurator configurator)
+    public static ShinyMediatorBuilder AddConnectivityBroadcaster(this ShinyMediatorBuilder mediatorBuilder)
     {
-        configurator.AddMauiInfrastructure();
-        configurator.Services.AddSingleton<IMauiInitializeService, ConnectivityBroadcaster>();
-        return configurator;
+        mediatorBuilder.AddMauiInfrastructure();
+        mediatorBuilder.Services.AddSingleton<IMauiInitializeService, ConnectivityBroadcaster>();
+        return mediatorBuilder;
     }
     
 
@@ -63,7 +63,7 @@ public static class MauiExtensions
     /// <param name="cfg"></param>
     /// <param name="includeStandardMiddleware">If true, event exception handling, main thread event handling, timed requests, and offline availability middle is installed</param>
     /// <returns></returns>
-    public static ShinyConfigurator UseMaui(this ShinyConfigurator cfg, bool includeStandardMiddleware = true)
+    public static ShinyMediatorBuilder UseMaui(this ShinyMediatorBuilder cfg, bool includeStandardMiddleware = true)
     {
         cfg.AddEventCollector<MauiEventCollector>();
         
@@ -82,7 +82,7 @@ public static class MauiExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddMauiInfrastructure(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddMauiInfrastructure(this ShinyMediatorBuilder cfg)
     {
         cfg.Services.TryAddSingleton<IStorageService, StorageService>();
         cfg.Services.TryAddSingleton<IInternetService, InternetService>();
@@ -100,13 +100,13 @@ public static class MauiExtensions
     /// <summary>
     /// This appends app version, device info, and culture to the HTTP request handling framework
     /// </summary>
-    /// <param name="configurator"></param>
+    /// <param name="mediatorBuilder"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddMauiHttpDecorator(this ShinyConfigurator configurator)
+    public static ShinyMediatorBuilder AddMauiHttpDecorator(this ShinyMediatorBuilder mediatorBuilder)
     {
-        configurator.AddMauiInfrastructure();
-        configurator.Services.AddSingleton(typeof(IHttpRequestDecorator<,>), typeof(MauiHttpRequestDecorator<,>));
-        return configurator;
+        mediatorBuilder.AddMauiInfrastructure();
+        mediatorBuilder.Services.AddSingleton(typeof(IHttpRequestDecorator<,>), typeof(MauiHttpRequestDecorator<,>));
+        return mediatorBuilder;
     }
 
     
@@ -115,7 +115,7 @@ public static class MauiExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddShellNavigation(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddShellNavigation(this ShinyMediatorBuilder cfg)
     {
         cfg.Services.AddSingleton(typeof(ICommandHandler<>), typeof(ShellNavigationCommandHandler<>));
         return cfg;
@@ -127,7 +127,7 @@ public static class MauiExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddMainThreadMiddleware(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddMainThreadMiddleware(this ShinyMediatorBuilder cfg)
     {
         cfg.AddOpenEventMiddleware(typeof(MainTheadEventMiddleware<>));
         cfg.AddOpenRequestMiddleware(typeof(MainThreadRequestMiddleware<,>));

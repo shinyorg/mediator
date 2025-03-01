@@ -10,49 +10,46 @@ public class EventExecutor(
 {
     readonly SubscriptionEventCollector subscriptions = new();
 
-    public virtual async Task<EventAggregatedContext> Publish<TEvent>(
-        IServiceScope scope,
+    public async Task Publish<TEvent>(
+        MediatorContext context,
         TEvent @event,
-        CancellationToken cancellationToken = default,
-        bool executeInParallel = true,
-        params IEnumerable<(string Key, object Value)> headers
+        bool executeInParallel,
+        CancellationToken cancellationToken
     ) where TEvent : IEvent
     {
-        var handlers = scope.ServiceProvider.GetServices<IEventHandler<TEvent>>().ToList();
+        var services = context.ServiceScope.ServiceProvider;
+        var handlers = services.GetServices<IEventHandler<TEvent>>().ToList();
         
         AppendHandlersIf(handlers, this.subscriptions);
         foreach (var collector in collectors)
             AppendHandlersIf(handlers, collector);
 
-        var list = new List<MediatorContext>();
-        var context = new EventAggregatedContext(list);
-           
         if (handlers.Count == 0)
-            return context;
-
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<TEvent>>();
-
-        var bypass = headers.Any(x => x.Key.Equals(Headers.BypassMiddleware.Key));
-        var middlewares = bypass ? [] : scope.ServiceProvider.GetServices<IEventMiddleware<TEvent>>();
+            return;
+        
+        var logger = services.GetRequiredService<ILogger<TEvent>>();
+        var bypass = context.BypassMiddlewareEnabled();
+        var middlewares = bypass ? [] : services.GetServices<IEventMiddleware<TEvent>>();
         
         var tasks = handlers
             .Select(async handler =>
             {
-                var econtext = await this
+                // TODO: telemetry
+                var child = context.CreateChild(null);
+                child.MessageHandler = handler;
+                await this
                     .PublishCore(
+                        child,
                         @event, 
                         handler, 
-                        headers,
                         logger, 
                         middlewares,
                         cancellationToken
                     )
                     .ConfigureAwait(false);
-                
-                list.Add(econtext);
             })
             .ToList();
-
+        
         if (executeInParallel)
         {
             await Task
@@ -64,8 +61,6 @@ public class EventExecutor(
             foreach (var task in tasks)
                 await task.ConfigureAwait(false);
         }
-
-        return context;
     }
 
     public IDisposable Subscribe<TEvent>(Func<TEvent, MediatorContext, CancellationToken, Task> action) where TEvent : IEvent
@@ -76,20 +71,18 @@ public class EventExecutor(
     }
     
     
-    async Task<MediatorContext> PublishCore<TEvent>(
+    async Task PublishCore<TEvent>(
+        MediatorContext context,
         TEvent @event,
         IEventHandler<TEvent> eventHandler, 
-        IEnumerable<(string Key, object Value)> headers,
         ILogger logger,
         IEnumerable<IEventMiddleware<TEvent>> middlewares,
         CancellationToken cancellationToken
     ) where TEvent : IEvent
     {
-        var context = new MediatorContext(@event, eventHandler);
-        context.PopulateHeaders(headers);
-        
         var handlerDelegate = new EventHandlerDelegate(() =>
         {
+            // TODO: telemetry
             logger.LogDebug(
                 "Executing Event Handler {HandlerType}", 
                 eventHandler.GetType().FullName
@@ -103,6 +96,7 @@ public class EventExecutor(
                 handlerDelegate, 
                 (next, middleware) => () =>
                 {
+                    // TODO: telemetry
                     logger.LogDebug(
                         "Executing event middleware {MiddlewareType}",
                         middleware.GetType().FullName
@@ -113,8 +107,6 @@ public class EventExecutor(
             )
             .Invoke()
             .ConfigureAwait(false);
-
-        return context;
     }
     
     

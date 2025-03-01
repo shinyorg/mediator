@@ -7,7 +7,7 @@ namespace Shiny.Mediator;
 
 public static class CacheExtensions
 {
-    public static ShinyConfigurator AddCaching<TCache>(this ShinyConfigurator cfg) where TCache : class, ICacheService
+    public static ShinyMediatorBuilder AddCaching<TCache>(this ShinyMediatorBuilder cfg) where TCache : class, ICacheService
     {
         if (cfg.Services.Any(x => x.ServiceType == typeof(ICacheService)))
             throw new InvalidOperationException("You can only have one mediator cache service registered");

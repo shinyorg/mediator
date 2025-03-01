@@ -56,7 +56,7 @@ public interface IMediator
     /// <param name="headers"></param>
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
-    Task<EventAggregatedContext> Publish<TEvent>(
+    Task<MediatorContext> Publish<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default,
         bool executeInParallel = true,

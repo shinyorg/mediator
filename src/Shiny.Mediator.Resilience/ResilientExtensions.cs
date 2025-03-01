@@ -10,25 +10,25 @@ namespace Shiny.Mediator;
 
 public static class ResilientExtensions
 {
-    public static ShinyConfigurator AddResiliencyMiddleware(this ShinyConfigurator configurator, params (string Key, Action<ResiliencePipelineBuilder> Builder)[] rbuilders)
+    public static ShinyMediatorBuilder AddResiliencyMiddleware(this ShinyMediatorBuilder mediatorBuilder, params (string Key, Action<ResiliencePipelineBuilder> Builder)[] rbuilders)
     {
         foreach (var rbs in rbuilders)
-            configurator.Services.AddResiliencePipeline(rbs.Key.ToLower(), builder => rbs.Builder.Invoke(builder));
+            mediatorBuilder.Services.AddResiliencePipeline(rbs.Key.ToLower(), builder => rbs.Builder.Invoke(builder));
 
-        configurator.AddOpenRequestMiddleware(typeof(ResilientRequestMiddleware<,>));
-        configurator.AddOpenCommandMiddleware(typeof(ResilientCommandMiddleware<>));
-        return configurator;
+        mediatorBuilder.AddOpenRequestMiddleware(typeof(ResilientRequestMiddleware<,>));
+        mediatorBuilder.AddOpenCommandMiddleware(typeof(ResilientCommandMiddleware<>));
+        return mediatorBuilder;
     }
 
 
-    public static ShinyConfigurator AddResiliencyMiddleware(this ShinyConfigurator configurator, IConfiguration configuration)
+    public static ShinyMediatorBuilder AddResiliencyMiddleware(this ShinyMediatorBuilder mediatorBuilder, IConfiguration configuration)
     {
         var items = configuration.GetSection("Resilience").Get<Dictionary<string, ResilienceConfig>>();
         if (items != null)
         {
             foreach (var item in items)
             {
-                configurator.Services.AddResiliencePipeline(item.Key.ToLower(), builder =>
+                mediatorBuilder.Services.AddResiliencePipeline(item.Key.ToLower(), builder =>
                 {
                     if (item.Value.TimeoutMilliseconds != null)
                         builder.AddTimeout(TimeSpan.FromMilliseconds(item.Value.TimeoutMilliseconds.Value));
@@ -56,7 +56,7 @@ public static class ResilientExtensions
                 });
             }
         }
-        return configurator;
+        return mediatorBuilder;
     }
 }
 

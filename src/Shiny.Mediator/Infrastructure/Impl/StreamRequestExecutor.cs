@@ -7,18 +7,17 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 public class StreamRequestExecutor : IStreamRequestExecutor
 {
     public virtual RequestResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
-        IServiceScope scope,
+        MediatorContext context,
         IStreamRequest<TResult> request,
-        CancellationToken cancellationToken = default,
-        params IEnumerable<(string Key, object Value)> headers
+        CancellationToken cancellationToken
     )
     {
         var wrapperType = typeof(StreamRequestWrapper<,>).MakeGenericType([request.GetType(), typeof(TResult)]);
 
         var wrapper = (IStreamRequestWrapper<TResult>)ActivatorUtilities.CreateInstance(
-            scope.ServiceProvider,
+            context.ServiceScope.ServiceProvider,
             wrapperType,
-            [scope.ServiceProvider, request, headers, cancellationToken]
+            [context, request, cancellationToken]
         );
         var execution = wrapper.Handle();
         return execution;
@@ -31,21 +30,19 @@ public interface IStreamRequestWrapper<TResult>
 }
 
 public class StreamRequestWrapper<TRequest, TResult>(
-    IServiceProvider scope,
+    MediatorContext context,
     TRequest request,
-    IEnumerable<(string Key, object Value)> headers,
     CancellationToken cancellationToken
 ) : IStreamRequestWrapper<TResult> where TRequest : IStreamRequest<TResult>
 {
     public RequestResult<IAsyncEnumerable<TResult>> Handle()
     {
-        var requestHandler = scope.GetService<IStreamRequestHandler<TRequest, TResult>>();
+        var services = context.ServiceScope.ServiceProvider;
+        var requestHandler = services.GetService<IStreamRequestHandler<TRequest, TResult>>();
         if (requestHandler == null)
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
 
-        var logger = scope.GetRequiredService<ILogger<TRequest>>();
-        var context = new MediatorContext(request, requestHandler);
-        context.PopulateHeaders(headers);
+        var logger = context.ServiceScope.ServiceProvider.GetRequiredService<ILogger<TRequest>>();
         
         var handlerExec = new StreamRequestHandlerDelegate<TResult>(() =>
         {
@@ -56,13 +53,14 @@ public class StreamRequestWrapper<TRequest, TResult>(
             return requestHandler.Handle(request, context, cancellationToken);
         });
         
-        var middlewares = context.BypassMiddlewareEnabled() ? [] : scope.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
+        var middlewares = context.BypassMiddlewareEnabled() ? [] : services.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
         var enumerable = middlewares
             .Reverse()
             .Aggregate(
                 handlerExec,
                 (next, middleware) => () =>
                 {
+                    // TODO: telemetry
                     logger.LogDebug(
                         "Executing stream middleware {MiddlewareType}",
                         middleware.GetType().FullName

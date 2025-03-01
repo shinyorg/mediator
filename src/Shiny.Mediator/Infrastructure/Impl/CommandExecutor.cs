@@ -1,59 +1,64 @@
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-public class CommandExecutor: ICommandExecutor
+public class CommandExecutor : ICommandExecutor
 {
-    public async Task<MediatorContext> Send<TCommand>(
-        IServiceScope scope,
+    public async Task Send<TCommand>(
+        MediatorContext context,
         TCommand command, 
-        CancellationToken cancellationToken = default,
-        params IEnumerable<(string Key, object Value)> headers
+        CancellationToken cancellationToken
     ) where TCommand : ICommand
     {
-        var commandHandler = scope.ServiceProvider.GetService<ICommandHandler<TCommand>>();
+        var services = context.ServiceScope!.ServiceProvider;
+        var commandHandler = services.GetService<ICommandHandler<TCommand>>();
+        
         if (commandHandler == null)
             throw new InvalidOperationException("No command handler found for " + command.GetType().FullName);
 
-        var context = new MediatorContext(command, commandHandler);
-        context.PopulateHeaders(headers);
-        
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<TCommand>>();
+        context.MessageHandler = commandHandler;
+
+        var logger = services.GetRequiredService<ILogger<TCommand>>();
         var handlerExec = new CommandHandlerDelegate(async () =>
         {
-            logger.LogDebug(
-                "Executing request handler {RequestHandlerType}", 
-                commandHandler.GetType().FullName 
-            );
-            await commandHandler
-                .Handle(command, context, cancellationToken)
-                .ConfigureAwait(false);
+            using (var handlerActivity = context.StartActivity("ExecutingHandler"))
+            {
+                logger.LogDebug(
+                    "Executing request handler {RequestHandlerType}",
+                    commandHandler.GetType().FullName
+                );
+                await commandHandler
+                    .Handle(command, context, cancellationToken)
+                    .ConfigureAwait(false);
+            }
         });
 
-        var middlewares = context.BypassMiddlewareEnabled() ? [] : scope.ServiceProvider.GetServices<ICommandMiddleware<TCommand>>();
+        var middlewares = context.BypassMiddlewareEnabled() ? [] : services.GetServices<ICommandMiddleware<TCommand>>();
         await middlewares
             .Reverse()
             .Aggregate(
                 handlerExec, 
                 (next, middleware) => () =>
                 {
-                    logger.LogDebug(
-                        "Executing request middleware {MiddlewareType}",
-                        middleware.GetType().FullName
-                    );
-                    
-                    return middleware.Process(
-                        context, 
-                        next, 
-                        cancellationToken
-                    );
+                    using (var handlerActivity = context.StartActivity("ExecutingMiddleware"))
+                    {
+                        logger.LogDebug(
+                            "Executing request middleware {MiddlewareType}",
+                            middleware.GetType().FullName
+                        );
+
+                        return middleware.Process(
+                            context,
+                            next,
+                            cancellationToken
+                        );
+                    }
                 }
             )
             .Invoke()
             .ConfigureAwait(false);
-
-        return context;
     }
 }

@@ -6,24 +6,28 @@ namespace Shiny.Mediator;
 
 public static class Utils
 {
-    public static IConfigurationSection? GetHandlerSection(this IConfiguration config, string module, object request, object handler)
+    public static IConfigurationSection? GetHandlerSection(this IConfiguration config, string module, object request, object? handler)
     {
         var moduleCfg = config.GetSection("Mediator:" + module);
-        if (!moduleCfg.Exists())
-            return null;
+        if (moduleCfg.Exists())
+            return moduleCfg;
         
         var ct = request.GetType();
-        var ht = handler.GetType();
-        
-        var cfg = moduleCfg.GetHandlerSubSectionOrdered(
-            $"{ct.Namespace}.{ct.Name}",
-            $"{ht.Namespace}.{ht.Name}",
-            $"{ct.Namespace}.*",
-            $"{ht.Namespace}.*",
-            "*"
-        );
+        if (handler != null)
+        {
+            var ht = handler.GetType();
 
-        return cfg;
+            var cfg = moduleCfg.GetHandlerSubSectionOrdered(
+                $"{ct.Namespace}.{ct.Name}",
+                $"{ht.Namespace}.{ht.Name}",
+                $"{ct.Namespace}.*",
+                $"{ht.Namespace}.*",
+                "*"
+            );
+            return cfg;
+        }
+
+        return null;
         // TODO: sub namespaces
         // ORDER: config, attribute contract, attribute handler
         // config contract order: full type, exact namespace, sub namespace, *

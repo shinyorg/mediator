@@ -11,7 +11,7 @@ public static class MemoryCacheExtensions
     static readonly FieldInfo CoherentStateField = typeof(MemoryCache).GetField("_coherentState", BindingFlags.Instance | BindingFlags.NonPublic)!;
     
 
-    public static ShinyConfigurator AddMemoryCaching(this ShinyConfigurator cfg, Action<MemoryCacheOptions>? configureCache = null)
+    public static ShinyMediatorBuilder AddMemoryCaching(this ShinyMediatorBuilder cfg, Action<MemoryCacheOptions>? configureCache = null)
     {
         cfg.Services.AddMemoryCache(x => configureCache?.Invoke(x));
         cfg.AddCaching<MemoryCacheService>();

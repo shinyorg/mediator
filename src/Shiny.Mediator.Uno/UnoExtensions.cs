@@ -14,7 +14,7 @@ public static class UnoExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator UseUno(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder UseUno(this ShinyMediatorBuilder cfg)
     {                    
         cfg.AddStandardAppSupportMiddleware();
         cfg.AddUnoInfrastructure();
@@ -27,7 +27,7 @@ public static class UnoExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddUnoPersistentCache(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddUnoPersistentCache(this ShinyMediatorBuilder cfg)
     {
         cfg.AddUnoInfrastructure();
         cfg.AddCaching<StorageCacheService>();
@@ -44,7 +44,7 @@ public static class UnoExtensions
     /// <returns></returns>
     public static IHostBuilder AddShinyMediator(
         this IHostBuilder builder, 
-        Action<ShinyConfigurator>? configure = null, 
+        Action<ShinyMediatorBuilder>? configure = null, 
         bool includeStandardMiddleware = true
     )
     {
@@ -66,7 +66,7 @@ public static class UnoExtensions
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
-    public static ShinyConfigurator AddUnoInfrastructure(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddUnoInfrastructure(this ShinyMediatorBuilder cfg)
     {
         // if (cfg.Services.Any(x => x.ImplementationType == typeof(UnoEventCollector)))
         //     return cfg;

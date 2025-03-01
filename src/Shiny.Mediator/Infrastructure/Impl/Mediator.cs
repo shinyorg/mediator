@@ -1,35 +1,50 @@
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
+// technically, I want the context to be used in handler within handler calls... we can worry about that in a future release
+// mediator could be scoped but MAUI doesn't deal well with that
+    // scoped would allow me to inject mediatorcontext which would stay with scope
 public class Mediator(
     IServiceProvider services,
     IRequestExecutor requestExecutor, 
     IStreamRequestExecutor streamRequestExecutor,
     ICommandExecutor commandExecutor, 
-    IEventExecutor eventExecutor
+    IEventExecutor eventExecutor,
+    IEnumerable<IExceptionHandler> exceptionHandlers
 ) : IMediator
 {
+    static readonly ActivitySource activitySource = new("Shiny.Mediator");
+    
+
     public async Task<RequestResult<TResult>> RequestWithContext<TResult>(
         IRequest<TResult> request, 
         CancellationToken cancellationToken = default,
         params IEnumerable<(string Key, object Value)> headers
     )
     {
-        using var scope = services.CreateScope();
+        var scope = services.CreateScope();
+        var context = new MediatorContext(scope, request, activitySource, headers);
+        using var activity = context.StartActivity("Request");
         
         var execution = await requestExecutor
             .RequestWithContext(
-                scope,
+                context,
                 request, 
-                cancellationToken, 
-                headers
+                cancellationToken 
             )
             .ConfigureAwait(false);
-        
+
         if (execution.Result is IEvent @event)
-            await this.Publish(@event, cancellationToken).ConfigureAwait(false);
+        {
+            // TODO: publish child telemetry here
+            var child = context.CreateChild(@event);
+            await eventExecutor
+                .Publish(child, @event, true, cancellationToken)
+                .ConfigureAwait(false);
+        }
 
         return execution;
     }
@@ -41,8 +56,9 @@ public class Mediator(
         params IEnumerable<(string Key, object Value)> headers
     )
     {
-        var scope = services.CreateScope(); // we create the scope here, but we do not dispose of it
-        return streamRequestExecutor.RequestWithContext(scope, request, cancellationToken, headers);
+        // we create the scope here, but we do not dispose of it
+        var context = new MediatorContext(services.CreateScope(), request, activitySource, headers); 
+        return streamRequestExecutor.RequestWithContext(context, request, cancellationToken);
     }
 
 
@@ -53,24 +69,61 @@ public class Mediator(
     ) where TCommand : ICommand
     {
         using var scope = services.CreateScope();
-        return await commandExecutor.Send(scope, request, cancellationToken, headers).ConfigureAwait(false);
+        var context = new MediatorContext(scope, request, activitySource, headers);
+        await commandExecutor.Send(context, request, cancellationToken).ConfigureAwait(false);
+
+        return context;
     }
 
 
-    public async Task<EventAggregatedContext> Publish<TEvent>(
+    public async Task<MediatorContext> Publish<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default,
         bool executeInParallel = true,
         params IEnumerable<(string Key, object Value)> headers
     ) where TEvent : IEvent
     {
+        // TODO: IExceptionHandlers move here
         using var scope = services.CreateScope();
-        return await eventExecutor.Publish(scope, @event, cancellationToken, executeInParallel, headers);
+        var context = new MediatorContext(scope, @event, activitySource, headers);
+        await eventExecutor.Publish(context, @event, executeInParallel, cancellationToken);
+        return context;
     }
 
 
     public IDisposable Subscribe<TEvent>(Func<TEvent, MediatorContext, CancellationToken, Task> action) where TEvent : IEvent
         => eventExecutor.Subscribe(action);
+
+
+    async Task ExecuteSafe(MediatorContext context, Func<Task> task)
+    {
+        if (context.BypassExceptionHandlingEnabled())
+            await task().ConfigureAwait(false);
+       
+        try
+        {
+            await task().ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            var handled = false;
+            foreach (var eh in exceptionHandlers)
+            {
+                handled = await eh
+                    .Handle(
+                        context,
+                        exception
+                    )
+                    .ConfigureAwait(false);
+
+                if (handled)
+                    break;
+            }
+
+            if (!handled)
+                throw;
+        }
+    }
 }
 // public async Task<MediatorResult> Request<TResult>(
 //     IRequest<TResult> request,

@@ -7,17 +7,16 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 public class RequestExecutor(IServiceProvider services) : IRequestExecutor
 {
     public virtual async Task<RequestResult<TResult>> RequestWithContext<TResult>(
-        IServiceScope scope,
+        MediatorContext context,
         IRequest<TResult> request,
-        CancellationToken cancellationToken = default,
-        params IEnumerable<(string Key, object Value)> headers
+        CancellationToken cancellationToken
     )
     {
         var wrapperType = typeof(RequestResultWrapper<,>).MakeGenericType([request.GetType(), typeof(TResult)]);
         var wrapper = (IRequestResultWrapper<TResult>)ActivatorUtilities.CreateInstance(
-            scope.ServiceProvider,
+            context.ServiceScope.ServiceProvider,
             wrapperType,
-            [scope.ServiceProvider, request, headers, cancellationToken]
+            [context, request, cancellationToken]
         );
         var execution = await wrapper.Handle().ConfigureAwait(false);
         
@@ -31,26 +30,25 @@ public interface IRequestResultWrapper<TResult>
     Task<RequestResult<TResult>> Handle();
 }
 public class RequestResultWrapper<TRequest, TResult>(
-    IServiceProvider scope, 
+    MediatorContext context, 
     TRequest request,
-    IEnumerable<(string Key, object Value)> headers,
     CancellationToken cancellationToken
 ) : IRequestResultWrapper<TResult> where TRequest : IRequest<TResult>
 {
     public async Task<RequestResult<TResult>> Handle()
     {
-        var requestHandler = scope.GetService<IRequestHandler<TRequest, TResult>>();
+        var services = context.ServiceScope.ServiceProvider;
+        var requestHandler = services.GetService<IRequestHandler<TRequest, TResult>>();
         if (requestHandler == null)
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
-        
-        var context = new MediatorContext(request, requestHandler);
-        context.PopulateHeaders(headers);
 
-        var middlewares = context.BypassMiddlewareEnabled() ? [] : scope.GetServices<IRequestMiddleware<TRequest, TResult>>();
-        var logger = scope.GetRequiredService<ILogger<TRequest>>();
+        context.MessageHandler = requestHandler;
+        var middlewares = context.BypassMiddlewareEnabled() ? [] : services.GetServices<IRequestMiddleware<TRequest, TResult>>();
+        var logger = services.GetRequiredService<ILogger<TRequest>>();
         
         var handlerExec = new RequestHandlerDelegate<TResult>(() =>
         {
+            // TODO: telemetry
             logger.LogDebug(
                 "Executing request handler {RequestHandlerType}", 
                 requestHandler.GetType().FullName 
@@ -64,6 +62,7 @@ public class RequestResultWrapper<TRequest, TResult>(
                 handlerExec, 
                 (next, middleware) => () =>
                 {
+                    // TODO: telemetry
                     logger.LogDebug(
                         "Executing request middleware {MiddlewareType}",
                         middleware.GetType().FullName

@@ -9,7 +9,7 @@ namespace Shiny.Mediator;
 
 public static class ShinyConfiguratorExtensions
 {
-    public static ShinyConfigurator AddDapper<TConnection>(this ShinyConfigurator cfg, string connectionString)
+    public static ShinyMediatorBuilder AddDapper<TConnection>(this ShinyMediatorBuilder cfg, string connectionString)
         where TConnection : class, IDbConnection, new()
     {
         cfg.Services.AddSingleton<IConnectionProvider>(new SingleConnectionProvider<TConnection>(connectionString));
@@ -17,7 +17,7 @@ public static class ShinyConfiguratorExtensions
     }
 
 
-    public static ShinyConfigurator AddDapper<TConnectionProvider>(this ShinyConfigurator cfg)
+    public static ShinyMediatorBuilder AddDapper<TConnectionProvider>(this ShinyMediatorBuilder cfg)
         where TConnectionProvider : class, IConnectionProvider
     {
         cfg.Services.AddSingleton<IConnectionProvider, TConnectionProvider>();
@@ -25,7 +25,7 @@ public static class ShinyConfiguratorExtensions
     }
 
 
-    static ShinyConfigurator AddInfrastructure(this ShinyConfigurator cfg)
+    static ShinyMediatorBuilder AddInfrastructure(this ShinyMediatorBuilder cfg)
     {
         // typeof(DapperFirstQueryRequestHandler<>)
         //     .GetInterfaces()
