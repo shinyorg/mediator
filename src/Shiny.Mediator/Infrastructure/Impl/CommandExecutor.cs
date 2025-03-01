@@ -4,15 +4,15 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-public class CommandExecutor(IServiceProvider services) : ICommandExecutor
+public class CommandExecutor: ICommandExecutor
 {
     public async Task<MediatorContext> Send<TCommand>(
+        IServiceScope scope,
         TCommand command, 
         CancellationToken cancellationToken = default,
         params IEnumerable<(string Key, object Value)> headers
     ) where TCommand : ICommand
     {
-        using var scope = services.CreateScope();
         var commandHandler = scope.ServiceProvider.GetService<ICommandHandler<TCommand>>();
         if (commandHandler == null)
             throw new InvalidOperationException("No command handler found for " + command.GetType().FullName);

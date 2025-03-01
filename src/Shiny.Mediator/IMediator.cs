@@ -4,7 +4,7 @@
 public interface IMediator
 {
     /// <summary>
-    /// Send a `void` return request
+    /// Send a Command
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>

@@ -4,15 +4,15 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-public class StreamRequestExecutor(IServiceProvider services) : IStreamRequestExecutor
+public class StreamRequestExecutor : IStreamRequestExecutor
 {
     public virtual RequestResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
+        IServiceScope scope,
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default,
         params IEnumerable<(string Key, object Value)> headers
     )
     {
-        var scope = services.CreateScope();
         var wrapperType = typeof(StreamRequestWrapper<,>).MakeGenericType([request.GetType(), typeof(TResult)]);
 
         var wrapper = (IStreamRequestWrapper<TResult>)ActivatorUtilities.CreateInstance(

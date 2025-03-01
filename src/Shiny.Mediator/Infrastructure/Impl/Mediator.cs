@@ -1,7 +1,10 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
 public class Mediator(
+    IServiceProvider services,
     IRequestExecutor requestExecutor, 
     IStreamRequestExecutor streamRequestExecutor,
     ICommandExecutor commandExecutor, 
@@ -14,8 +17,11 @@ public class Mediator(
         params IEnumerable<(string Key, object Value)> headers
     )
     {
+        using var scope = services.CreateScope();
+        
         var execution = await requestExecutor
             .RequestWithContext(
+                scope,
                 request, 
                 cancellationToken, 
                 headers
@@ -28,29 +34,41 @@ public class Mediator(
         return execution;
     }
 
-    
+
     public RequestResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default,
         params IEnumerable<(string Key, object Value)> headers
-    ) => streamRequestExecutor.RequestWithContext(request, cancellationToken, headers);
+    )
+    {
+        var scope = services.CreateScope(); // we create the scope here, but we do not dispose of it
+        return streamRequestExecutor.RequestWithContext(scope, request, cancellationToken, headers);
+    }
 
-    
-    public Task<MediatorContext> Send<TCommand>(
-        TCommand request, 
-        CancellationToken cancellationToken = default, 
+
+    public async Task<MediatorContext> Send<TCommand>(
+        TCommand request,
+        CancellationToken cancellationToken = default,
         params IEnumerable<(string Key, object Value)> headers
-    ) where TCommand : ICommand => commandExecutor.Send(request, cancellationToken, headers);
-    
+    ) where TCommand : ICommand
+    {
+        using var scope = services.CreateScope();
+        return await commandExecutor.Send(scope, request, cancellationToken, headers).ConfigureAwait(false);
+    }
 
-    public Task<EventAggregatedContext> Publish<TEvent>(
-        TEvent @event, 
+
+    public async Task<EventAggregatedContext> Publish<TEvent>(
+        TEvent @event,
         CancellationToken cancellationToken = default,
         bool executeInParallel = true,
         params IEnumerable<(string Key, object Value)> headers
-    ) where TEvent : IEvent => eventExecutor.Publish(@event, cancellationToken, executeInParallel, headers);
+    ) where TEvent : IEvent
+    {
+        using var scope = services.CreateScope();
+        return await eventExecutor.Publish(scope, @event, cancellationToken, executeInParallel, headers);
+    }
 
-    
+
     public IDisposable Subscribe<TEvent>(Func<TEvent, MediatorContext, CancellationToken, Task> action) where TEvent : IEvent
         => eventExecutor.Subscribe(action);
 }

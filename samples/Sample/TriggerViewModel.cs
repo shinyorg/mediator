@@ -23,7 +23,7 @@ public partial class TriggerViewModel(
         
     
     [MainThread]
-    public Task Handle(MyMessageEvent @event, EventContext<MyMessageEvent> context, CancellationToken cancellationToken)
+    public Task Handle(MyMessageEvent @event, MediatorContext context, CancellationToken cancellationToken)
     {
         // do something async here
         Console.WriteLine("Scoped Handler: " + @event.Arg);

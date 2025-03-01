@@ -5,20 +5,19 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 
 
 public class EventExecutor(
-    IServiceProvider services, 
     IEnumerable<IEventCollector> collectors
 ) : IEventExecutor
 {
     readonly SubscriptionEventCollector subscriptions = new();
 
     public virtual async Task<EventAggregatedContext> Publish<TEvent>(
+        IServiceScope scope,
         TEvent @event,
         CancellationToken cancellationToken = default,
         bool executeInParallel = true,
         params IEnumerable<(string Key, object Value)> headers
     ) where TEvent : IEvent
     {
-        using var scope = services.CreateScope();
         var handlers = scope.ServiceProvider.GetServices<IEventHandler<TEvent>>().ToList();
         
         AppendHandlersIf(handlers, this.subscriptions);
@@ -31,7 +30,7 @@ public class EventExecutor(
         if (handlers.Count == 0)
             return context;
 
-        var logger = services.GetRequiredService<ILogger<TEvent>>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<TEvent>>();
 
         var bypass = headers.Any(x => x.Key.Equals(Headers.BypassMiddleware.Key));
         var middlewares = bypass ? [] : scope.ServiceProvider.GetServices<IEventMiddleware<TEvent>>();

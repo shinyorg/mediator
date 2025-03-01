@@ -7,12 +7,12 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 public class RequestExecutor(IServiceProvider services) : IRequestExecutor
 {
     public virtual async Task<RequestResult<TResult>> RequestWithContext<TResult>(
+        IServiceScope scope,
         IRequest<TResult> request,
         CancellationToken cancellationToken = default,
         params IEnumerable<(string Key, object Value)> headers
     )
     {
-        using var scope = services.CreateScope();
         var wrapperType = typeof(RequestResultWrapper<,>).MakeGenericType([request.GetType(), typeof(TResult)]);
         var wrapper = (IRequestResultWrapper<TResult>)ActivatorUtilities.CreateInstance(
             scope.ServiceProvider,
