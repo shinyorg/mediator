@@ -12,12 +12,12 @@ public class PerformanceLoggingRequestMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
-        RequestContext<TRequest> context, 
+        MediatorContext context, 
         RequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )
     {
-        var section = configuration.GetHandlerSection("PerformanceLogging", context.Request!, context.Handler);
+        var section = configuration.GetHandlerSection("PerformanceLogging", context.Message!, context.MessageHandler);
         if (section == null)
             return await next().ConfigureAwait(false);
 

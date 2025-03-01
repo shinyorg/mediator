@@ -45,7 +45,7 @@ public class MyScheduleCommandHandler : ICommandHandler<MySchedule>
 {
     public static TaskCompletionSource? Waiter { get; set; }
     public static bool Received { get; set; }
-    public async Task Handle(MySchedule command, CommandContext<MySchedule> context, CancellationToken cancellationToken)
+    public async Task Handle(MySchedule command, MediatorContext context, CancellationToken cancellationToken)
     {
         Waiter?.SetResult();
     }

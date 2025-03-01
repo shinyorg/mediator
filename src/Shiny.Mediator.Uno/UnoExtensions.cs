@@ -79,17 +79,17 @@ public static class UnoExtensions
     }
     
     
-    /// <summary>
-    /// Adds connectivity broadcaster
-    /// </summary>
-    /// <param name="configurator"></param>
-    /// <returns></returns>
-    public static ShinyConfigurator AddConnectivityBroadcaster(this ShinyConfigurator configurator)
-    {
-        configurator.AddUnoInfrastructure();
-        configurator.Services.AddSingleton<IServiceInitialize, ConnectivityBroadcaster>();
-        return configurator;
-    }
+    // /// <summary>
+    // /// Adds connectivity broadcaster
+    // /// </summary>
+    // /// <param name="configurator"></param>
+    // /// <returns></returns>
+    // public static ShinyConfigurator AddConnectivityBroadcaster(this ShinyConfigurator configurator)
+    // {
+    //     configurator.AddUnoInfrastructure();
+    //     configurator.Services.AddSingleton<IServiceInitialize, ConnectivityBroadcaster>();
+    //     return configurator;
+    // }
     
     // /// <summary>
     // /// Adds a file based caching service - ideal for cache surviving across app sessions

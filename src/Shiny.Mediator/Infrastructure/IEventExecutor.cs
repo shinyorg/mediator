@@ -11,7 +11,7 @@ public interface IEventExecutor
     /// <param name="headers"></param>
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
-    Task<EventAggregatedContext<TEvent>> Publish<TEvent>(
+    Task<EventAggregatedContext> Publish<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default,
         bool executeInParallel = true,
@@ -26,6 +26,6 @@ public interface IEventExecutor
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
     IDisposable Subscribe<TEvent>(
-        Func<TEvent, EventContext<TEvent>, CancellationToken, Task> action
+        Func<TEvent, MediatorContext, CancellationToken, Task> action
     ) where TEvent : IEvent;
 }

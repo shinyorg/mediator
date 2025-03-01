@@ -7,7 +7,7 @@ public record TestCommand(int Number, string StringArg) : ICommand;
 [MediatorHttpPost("TestCommand", "/testcommand")]
 public class TestCommandHandler : ICommandHandler<TestCommand>
 {
-    public Task Handle(TestCommand request, CommandContext<TestCommand> context, CancellationToken cancellationToken)
+    public Task Handle(TestCommand request, MediatorContext context, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }

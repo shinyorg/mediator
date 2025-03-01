@@ -9,7 +9,7 @@ public class TickerStreamRequestHandler : IStreamRequestHandler<TickerRequest, s
 {
     public async IAsyncEnumerable<string> Handle(
         TickerRequest request, 
-        RequestContext<TickerRequest> context,
+        MediatorContext context,
         [EnumeratorCancellation] CancellationToken cancellationToken
     )
     {

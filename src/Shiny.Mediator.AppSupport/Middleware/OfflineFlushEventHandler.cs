@@ -9,14 +9,14 @@ public class OfflineFlushEventHandlers(IOfflineService offline) :
 {
     public Task Handle(
         FlushAllStoresEvent @event, 
-        EventContext<FlushAllStoresEvent> context, 
+        MediatorContext context, 
         CancellationToken cancellationToken
     ) => offline.Clear();
 
 
     public Task Handle(
         FlushStoresEvent @event, 
-        EventContext<FlushStoresEvent> context,
+        MediatorContext context,
         CancellationToken cancellationToken
     ) => offline.Remove(@event.RequestKey, @event.PartialMatch);
 }

@@ -44,7 +44,7 @@ public class StreamRequestWrapper<TRequest, TResult>(
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
 
         var logger = scope.GetRequiredService<ILogger<TRequest>>();
-        var context = new RequestContext<TRequest>(request, requestHandler);
+        var context = new MediatorContext(request, requestHandler);
         context.PopulateHeaders(headers);
         
         var handlerExec = new StreamRequestHandlerDelegate<TResult>(() =>

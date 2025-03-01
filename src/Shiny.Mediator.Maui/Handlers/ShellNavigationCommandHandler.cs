@@ -3,7 +3,7 @@ namespace Shiny.Mediator.Handlers;
 
 public class ShellNavigationCommandHandler<TCommand> : ICommandHandler<TCommand> where TCommand : IShellNavigationCommand
 {
-    public async Task Handle(TCommand command, CommandContext<TCommand> context, CancellationToken cancellationToken)
+    public async Task Handle(TCommand command, MediatorContext context, CancellationToken cancellationToken)
     {
         var pn = command.ParameterName ?? command.GetType().Name;
         var parms = new Dictionary<string, object> { { pn, command } };

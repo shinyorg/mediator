@@ -21,17 +21,17 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
 ) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
-        RequestContext<TRequest> context,
+        MediatorContext context,
         StreamRequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )
     {
-        if (!this.IsEnabled(context.Request, context.Handler))
+        if (!this.IsEnabled(context.Message, context.MessageHandler))
             return next();
 
-        logger.LogDebug("Enabled - {Request}", context.Request);
+        logger.LogDebug("Enabled - {Request}", context.Message);
         return this.Iterate(
-            context.Request,
+            (TRequest)context.Message,
             context,
             next, 
             cancellationToken
@@ -39,14 +39,14 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
     }
 
 
-    protected bool IsEnabled(TRequest request, IRequestHandler requestHandler)
+    protected bool IsEnabled(object request, object requestHandler)
     {
         var section = configuration.GetHandlerSection("ReplayStream", request, requestHandler);
         var enabled = false;
         
         if (section == null)
         {
-            enabled = requestHandler.GetHandlerHandleMethodAttribute<TRequest, ReplayStreamAttribute>() != null;
+            enabled = ((IStreamRequestHandler<TRequest, TResult>)requestHandler).GetHandlerHandleMethodAttribute<TRequest, ReplayStreamAttribute>() != null;
         }
         else
         {
@@ -58,7 +58,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
     
     protected virtual async IAsyncEnumerable<TResult> Iterate(
         TRequest request, 
-        RequestContext<TRequest> context,
+        MediatorContext context,
         StreamRequestHandlerDelegate<TResult> next, 
         [EnumeratorCancellation] CancellationToken ct
     )
@@ -71,11 +71,11 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
             var item = await cache.Get<TResult>(requestKey).ConfigureAwait(false);
             if (item == null)
             {
-                logger.LogDebug("Cache Miss - {Request}", context.Request);
+                logger.LogDebug("Cache Miss - {Request}", context.Message);
             }
             else
             {
-                logger.LogDebug("Cache Hit - {Request}", context.Request);
+                logger.LogDebug("Cache Hit - {Request}", context.Message);
                 context.Cache(new CacheContext(item.Key, true, item.CreatedAt));
                 yield return item.Value;
             }
@@ -85,11 +85,11 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
             var store = await offline.Get<TResult>(request);
             if (store == null)
             {
-                logger.LogDebug("Offline Miss - {Request}", context.Request);
+                logger.LogDebug("Offline Miss - {Request}", context.Message);
             }
             else
             {
-                logger.LogDebug("Offline Hit - {Request}", context.Request);
+                logger.LogDebug("Offline Hit - {Request}", context.Message);
                 context.Offline(new OfflineAvailableContext(requestKey, store.Timestamp));
                 yield return store.Value;
             }
@@ -97,11 +97,11 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
 
         if (!internet.IsAvailable)
         {
-            logger.LogDebug("Waiting for internet connection- {Request}", context.Request);
+            logger.LogDebug("Waiting for internet connection- {Request}", context.Message);
             await internet.WaitForAvailable(ct).ConfigureAwait(false);
         }
 
-        logger.LogDebug("Internet Detected - Running Handler - {Request}", context.Request);
+        logger.LogDebug("Internet Detected - Running Handler - {Request}", context.Message);
         var nxt = this.TryNext(next, ct);
         if (nxt != null)
         {
@@ -109,18 +109,18 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
             {
                 if (cache != null)
                 {
-                    logger.LogDebug("Updating Cache - {Request}", context.Request);
+                    logger.LogDebug("Updating Cache - {Request}", context.Message);
                     await cache.Set(requestKey, nxt).ConfigureAwait(false);
                 }
 
 
                 if (offline != null)
                 {
-                    logger.LogDebug("Updating Offline Store - {Request}", context.Request);
+                    logger.LogDebug("Updating Offline Store - {Request}", context.Message);
                     await offline.Set(request, nxt.Current!).ConfigureAwait(false);
                 }
 
-                logger.LogDebug("Yielding Final Result - {Request}", context.Request);
+                logger.LogDebug("Yielding Final Result - {Request}", context.Message);
                 yield return nxt.Current;
             }
         }

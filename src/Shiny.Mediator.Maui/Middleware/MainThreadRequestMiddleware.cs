@@ -8,16 +8,16 @@ public class MainThreadRequestMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     public Task<TResult> Process(
-        RequestContext<TRequest> context, 
+        MediatorContext context, 
         RequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )
     {
-        var attr = context.Handler.GetHandlerHandleMethodAttribute<TRequest, MainThreadAttribute>();
+        var attr = ((IRequestHandler)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, MainThreadAttribute>();
         if (attr == null)
             return next();
 
-        logger.LogDebug("MainThread Enabled - {Request}", context.Request);
+        logger.LogDebug("MainThread Enabled - {Request}", context.Message);
         var tcs = new TaskCompletionSource<TResult>();
         MainThread.BeginInvokeOnMainThread(async () =>
         {

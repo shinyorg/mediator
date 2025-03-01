@@ -37,7 +37,7 @@ public partial class MainViewModel(
     [RelayCommand]
     Task GoToSecondPage() => navigator.NavigateViewModelAsync<SecondViewModel>(this);
 
-    public async Task Handle(AppEvent @event, EventContext<AppEvent> context, CancellationToken cancellationToken)
+    public async Task Handle(AppEvent @event, MediatorContext context, CancellationToken cancellationToken)
     {
         Console.WriteLine(@event.Message);
     }

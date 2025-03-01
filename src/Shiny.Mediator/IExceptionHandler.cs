@@ -13,6 +13,6 @@ public interface IExceptionHandler
         object message,
         object handler,
         Exception exception,
-        IMediatorContext context
+        MediatorContext context
     );
 }

@@ -4,15 +4,15 @@ namespace Shiny.Mediator.Middleware;
 
 public abstract class AbstractValidationCommandMiddleware<TCommand> : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
-    public async Task Process(CommandContext<TCommand> context, CommandHandlerDelegate next, CancellationToken cancellationToken)
+    public async Task Process(MediatorContext context, CommandHandlerDelegate next, CancellationToken cancellationToken)
     {
-        if (context.Command!.GetType().GetCustomAttribute<ValidateAttribute>() == null)
+        if (context.Message!.GetType().GetCustomAttribute<ValidateAttribute>() == null)
         {
             await next();
             return;
         }
         var values = new Dictionary<string, List<string>>();
-        await this.Validate(context.Command, values, cancellationToken).ConfigureAwait(false);
+        await this.Validate((TCommand)context.Message, values, cancellationToken).ConfigureAwait(false);
         
         if (values.Count == 0)
         {

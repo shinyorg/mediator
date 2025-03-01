@@ -1,6 +1,6 @@
 namespace Shiny.Mediator;
 
-public class EventAggregatedContext<TEvent>(IReadOnlyList<EventContext<TEvent>> contexts) where TEvent : IEvent
+public class EventAggregatedContext(IReadOnlyList<MediatorContext> contexts)
 {
-    public IReadOnlyList<EventContext<TEvent>> HandlerExecutions => contexts;
+    public IReadOnlyList<MediatorContext> HandlerExecutions => contexts;
 }

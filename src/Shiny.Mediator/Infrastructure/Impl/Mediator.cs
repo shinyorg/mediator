@@ -36,14 +36,14 @@ public class Mediator(
     ) => streamRequestExecutor.RequestWithContext(request, cancellationToken, headers);
 
     
-    public Task<CommandContext<TCommand>> Send<TCommand>(
+    public Task<MediatorContext> Send<TCommand>(
         TCommand request, 
         CancellationToken cancellationToken = default, 
         params IEnumerable<(string Key, object Value)> headers
     ) where TCommand : ICommand => commandExecutor.Send(request, cancellationToken, headers);
     
 
-    public Task<EventAggregatedContext<TEvent>> Publish<TEvent>(
+    public Task<EventAggregatedContext> Publish<TEvent>(
         TEvent @event, 
         CancellationToken cancellationToken = default,
         bool executeInParallel = true,
@@ -51,7 +51,7 @@ public class Mediator(
     ) where TEvent : IEvent => eventExecutor.Publish(@event, cancellationToken, executeInParallel, headers);
 
     
-    public IDisposable Subscribe<TEvent>(Func<TEvent, EventContext<TEvent>, CancellationToken, Task> action) where TEvent : IEvent
+    public IDisposable Subscribe<TEvent>(Func<TEvent, MediatorContext, CancellationToken, Task> action) where TEvent : IEvent
         => eventExecutor.Subscribe(action);
 }
 // public async Task<MediatorResult> Request<TResult>(
@@ -93,3 +93,30 @@ public class Mediator(
 //     Exception? Exception,
 //     IMediatorContext Context
 // );
+
+
+/*
+ // get scope creation and top level exception handler up here, not in the executors
+if (context.BypassExceptionHandlingEnabled())
+       await next().ConfigureAwait(false);
+
+   TResult result = default;
+   try
+   {
+       result = await next().ConfigureAwait(false);
+   }
+   catch (ValidateException)
+   {
+       throw; // this is a special case we let bubble through to prevent order of ops setup issues
+   }
+   catch (Exception ex)
+   {
+       var handled = await handler
+           .Manage(context.Message!, context.MessageHandler, ex, context)
+           .ConfigureAwait(false);
+       
+       if (!handled)
+           throw;
+   }
+   return result;
+ */

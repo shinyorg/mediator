@@ -9,7 +9,7 @@ public interface ICommandExecutor
     /// <param name="cancellationToken"></param>
     /// <param name="headers"></param>
     /// <returns></returns>
-    Task<CommandContext<TCommand>> Send<TCommand>(
+    Task<MediatorContext> Send<TCommand>(
         TCommand request,
         CancellationToken cancellationToken = default,
         params IEnumerable<(string Key, object Value)> headers

@@ -8,7 +8,7 @@ public class DapperQueryRequestHandler<TResult>(
 {
     public Task<IEnumerable<TResult>> Handle(
         DapperQuery<TResult> request, 
-        RequestContext<DapperQuery<TResult>> context, 
+        MediatorContext context, 
         CancellationToken cancellationToken
     ) => connectionProvider
         .Create(request)

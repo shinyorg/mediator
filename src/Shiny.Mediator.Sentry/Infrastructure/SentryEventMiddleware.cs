@@ -4,13 +4,13 @@ public class SentryEventMiddleware<TEvent> : IEventMiddleware<TEvent> where TEve
 {
     // would be nice to see a transaction across the event spray
     public async Task Process(
-        EventContext<TEvent> context, 
+        MediatorContext context, 
         EventHandlerDelegate next, 
         CancellationToken cancellationToken
     )
     {
         var transaction = SentrySdk.StartTransaction("mediator", "event");
-        var span = transaction.StartChild(context.Handler.GetType().FullName!);
+        var span = transaction.StartChild(context.MessageHandler.GetType().FullName!);
         
         await next().ConfigureAwait(false);
         foreach (var header in context.Values)

@@ -11,7 +11,7 @@ public class TheStreamHandler(ILogger<TheStreamHandler> logger) : IStreamRequest
 {
     public async IAsyncEnumerable<string> Handle(
         TestStreamRequest request, 
-        RequestContext<TestStreamRequest> context, 
+        MediatorContext context, 
         [EnumeratorCancellation] CancellationToken cancellationToken
     )
     {

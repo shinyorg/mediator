@@ -8,16 +8,16 @@ public class MainThreadCommandMiddleware<TCommand>(
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     public Task Process(
-        CommandContext<TCommand> context, 
+        MediatorContext context, 
         CommandHandlerDelegate next,
         CancellationToken cancellationToken
     )
     {
-        var attr = context.Handler.GetHandlerHandleMethodAttribute<TCommand, MainThreadAttribute>();
+        var attr = ((ICommandHandler)context.MessageHandler).GetHandlerHandleMethodAttribute<TCommand, MainThreadAttribute>();
         if (attr == null)
             return next();
 
-        logger.LogDebug("MainThread Enabled - {Request}", context.Command);
+        logger.LogDebug("MainThread Enabled - {Request}", context.Message);
         var tcs = new TaskCompletionSource();
         MainThread.BeginInvokeOnMainThread(async () =>
         {

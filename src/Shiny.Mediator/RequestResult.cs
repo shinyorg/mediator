@@ -1,6 +1,6 @@
 namespace Shiny.Mediator;
 
 public record RequestResult<TResult>(
-    RequestContext Context,
+    MediatorContext Context,
     TResult Result
 );

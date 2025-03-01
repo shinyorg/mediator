@@ -4,12 +4,12 @@ namespace Shiny.Mediator.Middleware;
 public class MainTheadEventMiddleware<TEvent> : IEventMiddleware<TEvent> where TEvent : IEvent
 {
     public async Task Process(
-        EventContext<TEvent> context, 
+        MediatorContext context, 
         EventHandlerDelegate next,
         CancellationToken cancellationToken
     )
     {
-        var attr = context.Handler.GetHandlerHandleMethodAttribute<TEvent, MainThreadAttribute>();
+        var attr = ((IEventHandler<TEvent>)context.MessageHandler).GetHandlerHandleMethodAttribute<TEvent, MainThreadAttribute>();
 
         if (attr == null)
         {

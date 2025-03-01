@@ -57,7 +57,7 @@ public class TestEvent : IEvent
 }
 public class Test1EventHandler : IEventHandler<TestEvent>
 {
-    public async Task Handle(TestEvent @event, EventContext<TestEvent> context, CancellationToken cancellationToken)
+    public async Task Handle(TestEvent @event, MediatorContext context, CancellationToken cancellationToken)
     {
         if (@event.Delay > 0)
             await Task.Delay(@event.Delay);
@@ -65,7 +65,7 @@ public class Test1EventHandler : IEventHandler<TestEvent>
 }
 public class Test2EventHandler : IEventHandler<TestEvent>
 {
-    public async Task Handle(TestEvent @event, EventContext<TestEvent> context, CancellationToken cancellationToken)
+    public async Task Handle(TestEvent @event, MediatorContext context, CancellationToken cancellationToken)
     {
         if (@event.Delay > 0)
             await Task.Delay(@event.Delay);
@@ -76,7 +76,7 @@ public class TestTestEvent : TestEvent;
 public class CatchAllEventHandler : IEventHandler<TestTestEvent>
 {
     public static bool Executed { get; set; }
-    public Task Handle(TestTestEvent @event, EventContext<TestTestEvent> context, CancellationToken cancellationToken)
+    public Task Handle(TestTestEvent @event, MediatorContext context, CancellationToken cancellationToken)
     {
         Executed = true;
         return Task.CompletedTask;

@@ -11,21 +11,21 @@ public class ScheduledCommandMiddleware<TCommand>(
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     public async Task Process(
-        CommandContext<TCommand> context, 
+        MediatorContext context, 
         CommandHandlerDelegate next,
         CancellationToken cancellationToken
     )
     {
-        var dueAt = context.TryGetCommandSchedule() ?? (context.Command as IScheduledCommand)?.DueAt;
+        var dueAt = context.TryGetCommandSchedule() ?? (context.Message as IScheduledCommand)?.DueAt;
         var now = timeProvider.GetUtcNow();
         if (dueAt == null || dueAt < now)
         {
-            logger.LogWarning($"Executing Scheduled Command '{context.Command}' that was due at {dueAt}");
+            logger.LogWarning($"Executing Scheduled Command '{context.Message}' that was due at {dueAt}");
             await next().ConfigureAwait(false);
         }
         else
         {
-            logger.LogInformation($"Command '{context.Command}' scheduled for {dueAt}");
+            logger.LogInformation($"Command '{context.Message}' scheduled for {dueAt}");
             await scheduler
                 .Schedule(context, dueAt.Value, cancellationToken)
                 .ConfigureAwait(false);

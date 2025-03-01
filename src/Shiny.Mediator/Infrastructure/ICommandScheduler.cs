@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Shiny.Mediator.Infrastructure;
 
 
@@ -11,7 +13,7 @@ public interface ICommandScheduler
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<bool> Schedule(
-        CommandContext context,
+        MediatorContext context,
         DateTimeOffset dueAt,
         CancellationToken cancellationToken
     );

@@ -6,7 +6,7 @@ namespace Sample.Handlers;
 [SingletonHandler]
 public class SingletonEventHandler(AppSqliteConnection data) : IEventHandler<MyMessageEvent>
 {
-    public async Task Handle(MyMessageEvent @event, EventContext<MyMessageEvent> context, CancellationToken cancellationToken)
+    public async Task Handle(MyMessageEvent @event, MediatorContext context, CancellationToken cancellationToken)
     {
         var random = new Random();
         var wait = random.Next(500, 5000);

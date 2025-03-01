@@ -4,7 +4,7 @@ namespace Sample.Handlers;
 public class MyStreamRequestMiddleware<TRequest, TResult>(ILogger<MyStreamRequestMiddleware<TRequest, TResult>> logger) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
-        RequestContext<TRequest> context, 
+        MediatorContext context, 
         StreamRequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )

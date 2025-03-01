@@ -11,7 +11,7 @@ public class EventExecutor(
 {
     readonly SubscriptionEventCollector subscriptions = new();
 
-    public virtual async Task<EventAggregatedContext<TEvent>> Publish<TEvent>(
+    public virtual async Task<EventAggregatedContext> Publish<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default,
         bool executeInParallel = true,
@@ -25,8 +25,8 @@ public class EventExecutor(
         foreach (var collector in collectors)
             AppendHandlersIf(handlers, collector);
 
-        var list = new List<EventContext<TEvent>>();
-        var context = new EventAggregatedContext<TEvent>(list);
+        var list = new List<MediatorContext>();
+        var context = new EventAggregatedContext(list);
            
         if (handlers.Count == 0)
             return context;
@@ -69,7 +69,7 @@ public class EventExecutor(
         return context;
     }
 
-    public IDisposable Subscribe<TEvent>(Func<TEvent, EventContext<TEvent>, CancellationToken, Task> action) where TEvent : IEvent
+    public IDisposable Subscribe<TEvent>(Func<TEvent, MediatorContext, CancellationToken, Task> action) where TEvent : IEvent
     {
         var handler = new SubscriptionEventHandler<TEvent>(this.subscriptions);
         handler.OnHandle = action;
@@ -77,7 +77,7 @@ public class EventExecutor(
     }
     
     
-    async Task<EventContext<TEvent>> PublishCore<TEvent>(
+    async Task<MediatorContext> PublishCore<TEvent>(
         TEvent @event,
         IEventHandler<TEvent> eventHandler, 
         IEnumerable<(string Key, object Value)> headers,
@@ -86,7 +86,7 @@ public class EventExecutor(
         CancellationToken cancellationToken
     ) where TEvent : IEvent
     {
-        var context = new EventContext<TEvent>(@event, eventHandler);
+        var context = new MediatorContext(@event, eventHandler);
         context.PopulateHeaders(headers);
         
         var handlerDelegate = new EventHandlerDelegate(() =>
@@ -95,7 +95,7 @@ public class EventExecutor(
                 "Executing Event Handler {HandlerType}", 
                 eventHandler.GetType().FullName
             );
-            return eventHandler.Handle(context.Event, context, cancellationToken);
+            return eventHandler.Handle(@event, context, cancellationToken);
         });
            
         await middlewares

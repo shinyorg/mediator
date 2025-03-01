@@ -9,7 +9,7 @@ public class AutoRefreshStreamRequestHandler : IStreamRequestHandler<AutoRefresh
     [TimerRefresh(3000)]
     public async IAsyncEnumerable<string> Handle(
         AutoRefreshRequest request,
-        RequestContext<AutoRefreshRequest> context,
+        MediatorContext context,
         [EnumeratorCancellation] CancellationToken cancellationToken
     )
     {

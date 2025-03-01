@@ -56,7 +56,7 @@ public class ReplayStreamRequest : IStreamRequest<string>;
 public class ReplayStreamRequestHandler : IStreamRequestHandler<ReplayStreamRequest, string>
 {
     [ReplayStream]
-    public async IAsyncEnumerable<string> Handle(ReplayStreamRequest request, RequestContext<ReplayStreamRequest> context, CancellationToken cancellationToken)
+    public async IAsyncEnumerable<string> Handle(ReplayStreamRequest request, MediatorContext context, CancellationToken cancellationToken)
     {
         context.Add("FromHandler", true);
         yield return "Hello";

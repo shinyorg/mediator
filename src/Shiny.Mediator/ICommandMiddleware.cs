@@ -5,7 +5,7 @@ public delegate Task CommandHandlerDelegate();
 public interface ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     Task Process(
-        CommandContext<TCommand> context,
+        MediatorContext context,
         CommandHandlerDelegate next,
         CancellationToken cancellationToken
     );

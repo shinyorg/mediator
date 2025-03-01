@@ -7,7 +7,7 @@ namespace Sample.Handlers;
 public class MyRequestMiddleware(AppSqliteConnection conn) : IRequestMiddleware<MyMessageRequest, MyMessageResponse>
 {
     public async Task<MyMessageResponse> Process(
-        RequestContext<MyMessageRequest> context, 
+        MediatorContext context, 
         RequestHandlerDelegate<MyMessageResponse> next,
         CancellationToken cancellationToken
     )
@@ -16,11 +16,12 @@ public class MyRequestMiddleware(AppSqliteConnection conn) : IRequestMiddleware<
         var result = await next().ConfigureAwait(false);
         sw.Stop();
 
+        var request = (MyMessageRequest)context.Message;
         await conn.Log(
             nameof(MyRequestMiddleware), 
             new MyMessageEvent(
-                context.Request.Arg, 
-                context.Request.FireAndForgetEvents
+                request.Arg, 
+                request.FireAndForgetEvents
             ), 
             sw.ElapsedMilliseconds
         );

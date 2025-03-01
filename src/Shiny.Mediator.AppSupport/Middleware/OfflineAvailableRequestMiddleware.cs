@@ -13,12 +13,12 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
-        RequestContext<TRequest> context,
+        MediatorContext context,
         RequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )
     {
-        if (!this.IsEnabled(context.Handler, context.Request))
+        if (!this.IsEnabled(context.MessageHandler, context.Message))
             return await next().ConfigureAwait(false);
         
         var result = default(TResult);
@@ -27,8 +27,8 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
             try
             {
                 result = await next().ConfigureAwait(false);
-                var requestKey = await offline.Set(context.Request!, result!);
-                logger.LogDebug("Offline: {Request} - Key: {RequestKey}", context.Request, requestKey);
+                var requestKey = await offline.Set(context.Message!, result!);
+                logger.LogDebug("Offline: {Request} - Key: {RequestKey}", context.Message, requestKey);
             }
             catch (TimeoutException)
             {
@@ -43,11 +43,11 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
     }
 
 
-    async Task<TResult?> GetOffline(RequestContext<TRequest> context)
+    async Task<TResult?> GetOffline(MediatorContext context)
     {
         TResult result = default;
         var offlineResult = await offline
-            .Get<TResult>(context.Request!)
+            .Get<TResult>(context.Message!)
             .ConfigureAwait(false);
             
         if (offlineResult != null)
@@ -57,7 +57,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
             
             logger.LogDebug(
                 "Offline Hit: {Request} - Timestamp: {Timestamp} - Key: {RequestKey}", 
-                context.Request, 
+                context.Message, 
                 offlineResult.Timestamp,
                 offlineResult.RequestKey
             );
@@ -66,13 +66,13 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         return result;
     }
 
-    bool IsEnabled(IRequestHandler requestHandler, TRequest request)
+    bool IsEnabled(object requestHandler, object request)
     {
         var enabled = false;
         var section = configuration.GetHandlerSection("Offline", request!, requestHandler);
         if (section == null)
         {
-            enabled = requestHandler.GetHandlerHandleMethodAttribute<TRequest, OfflineAvailableAttribute>() != null;
+            enabled = ((IRequestHandler)requestHandler).GetHandlerHandleMethodAttribute<TRequest, OfflineAvailableAttribute>() != null;
         }
         else
         {

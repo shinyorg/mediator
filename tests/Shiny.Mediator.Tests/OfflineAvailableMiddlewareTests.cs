@@ -39,11 +39,11 @@ public class OfflineAvailableRequestMiddlewareTests
         this.connectivity.IsAvailable = true;
         
         var request = new OfflineRequest();
-        var context = new RequestContext<OfflineRequest>(request, this.handler);
+        var context = new MediatorContext(request, this.handler);
         
         var func = () => this.middleware.Process(
             context,
-            () => this.handler.Handle(context.Request, context, CancellationToken.None),
+            () => this.handler.Handle(request, context, CancellationToken.None),
             CancellationToken.None
         );
 
@@ -70,7 +70,7 @@ public class OfflineRequestHandler : IRequestHandler<OfflineRequest, long>
     public long ReturnValue { get; set; }
     
     [OfflineAvailable]
-    public Task<long> Handle(OfflineRequest request, RequestContext<OfflineRequest> context, CancellationToken cancellationToken)
+    public Task<long> Handle(OfflineRequest request, MediatorContext context, CancellationToken cancellationToken)
     {
         this.WasHit = true;
         return Task.FromResult(this.ReturnValue);

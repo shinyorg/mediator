@@ -9,11 +9,11 @@ public class InMemoryCommandScheduler(
     TimeProvider timeProvider
 ) : ICommandScheduler
 {
-    readonly List<(DateTimeOffset DueAt, CommandContext Context)> commands = new();
+    readonly List<(DateTimeOffset DueAt, MediatorContext Context)> commands = new();
     ITimer? timer;
     
     
-    public Task<bool> Schedule(CommandContext command, DateTimeOffset dueAt, CancellationToken cancellationToken)
+    public Task<bool> Schedule(MediatorContext command, DateTimeOffset dueAt, CancellationToken cancellationToken)
     {
         var scheduled = false;
         var now = timeProvider.GetUtcNow();
@@ -34,7 +34,7 @@ public class InMemoryCommandScheduler(
     {
         this.timer!.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan); // stop
         
-        List<(DateTimeOffset DueAt, CommandContext Context)> items = null!;
+        List<(DateTimeOffset DueAt, MediatorContext Context)> items = null!;
         lock (this.commands)
             items = this.commands.ToList();
         
@@ -52,7 +52,7 @@ public class InMemoryCommandScheduler(
                 try
                 {
                     await mediator
-                        .Send(item.Context.Command, CancellationToken.None, headers)
+                        .Send((ICommand)item.Context.Message, CancellationToken.None, headers)
                         .ConfigureAwait(false);
                 }
                 catch (Exception ex)

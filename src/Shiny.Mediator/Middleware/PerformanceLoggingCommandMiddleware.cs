@@ -12,12 +12,12 @@ public class PerformanceLoggingCommandMiddleware<TCommand>(
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     public async Task Process(
-        CommandContext<TCommand> context, 
+        MediatorContext context, 
         CommandHandlerDelegate next,
         CancellationToken cancellationToken
     )
     {
-        var section = configuration.GetHandlerSection("PerformanceLogging", context.Command!, context.Handler);
+        var section = configuration.GetHandlerSection("PerformanceLogging", context.Message!, context.MessageHandler);
         if (section == null)
         {
             await next().ConfigureAwait(false);

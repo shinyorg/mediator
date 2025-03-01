@@ -5,15 +5,15 @@ public class SentryRequestMiddleware<TRequest, TResult> : IRequestMiddleware<TRe
 {
     // fingerprint vs span set
     public async Task<TResult> Process(
-        RequestContext<TRequest> context, 
+        MediatorContext context, 
         RequestHandlerDelegate<TResult> next, 
         CancellationToken cancellationToken
     )
     {
         var transaction = SentrySdk.StartTransaction("mediator", "request");
-        var span = transaction.StartChild(context.Handler.GetType().FullName!);
+        var span = transaction.StartChild(context.MessageHandler.GetType().FullName!);
         
-        var requestKey = ContractUtils.GetRequestKey(context.Request!);
+        var requestKey = ContractUtils.GetRequestKey(context.Message!);
         span.SetData("RequestKey", requestKey);
 
         var result = await next().ConfigureAwait(false);

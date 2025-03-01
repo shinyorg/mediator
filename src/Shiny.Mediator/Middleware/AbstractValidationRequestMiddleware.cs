@@ -6,16 +6,16 @@ namespace Shiny.Mediator.Middleware;
 public abstract class AbstractValidationRequestMiddleware<TRequest, TResult> : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
-        RequestContext<TRequest> context,
+        MediatorContext context,
         RequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )
     {
-        if (context.Request!.GetType().GetCustomAttribute<ValidateAttribute>() == null)
+        if (context.Message!.GetType().GetCustomAttribute<ValidateAttribute>() == null)
             return await next();
 
         var values = new Dictionary<string, List<string>>();
-        await this.Validate(context.Request, values, cancellationToken).ConfigureAwait(false);
+        await this.Validate((TRequest)context.Message, values, cancellationToken).ConfigureAwait(false);
         
         if (values.Count == 0)
         {

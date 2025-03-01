@@ -11,7 +11,7 @@ public class UserNotificationExceptionHandler(
     IAlertDialogService alerts
 ) : IExceptionHandler
 {
-    public Task<bool> Handle(object message, object handler, Exception exception, IMediatorContext context)
+    public Task<bool> Handle(object message, object handler, Exception exception, MediatorContext context)
     {
         var msgType = message.GetType();
         var handled = false;

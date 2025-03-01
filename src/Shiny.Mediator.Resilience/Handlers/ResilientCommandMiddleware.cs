@@ -13,13 +13,13 @@ public class ResilientCommandMiddleware<TCommand>(
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     public async Task Process(
-        CommandContext<TCommand> context,
+        MediatorContext context,
         CommandHandlerDelegate next,
         CancellationToken cancellationToken
     )
     {
         ResiliencePipeline? pipeline = null;
-        var section = configuration.GetHandlerSection("Resilience", context.Command, context.Handler);
+        var section = configuration.GetHandlerSection("Resilience", context.Message, context.MessageHandler);
         
         if (section != null)
         {
@@ -27,7 +27,7 @@ public class ResilientCommandMiddleware<TCommand>(
         }
         else
         {
-            var attribute = context.Handler.GetHandlerHandleMethodAttribute<TCommand, ResilientAttribute>();
+            var attribute = ((ICommandHandler)context.MessageHandler).GetHandlerHandleMethodAttribute<TCommand, ResilientAttribute>();
             if (attribute != null)
                 pipeline = pipelineProvider.GetPipeline(attribute.ConfigurationKey.ToLower());
         }
@@ -39,7 +39,7 @@ public class ResilientCommandMiddleware<TCommand>(
         }
 
         // it can't cancel properly here... may need to make next take a CancellationToken
-        logger.LogDebug("Resilience Enabled - {Request}", context.Command);
+        logger.LogDebug("Resilience Enabled - {Request}", context.Message);
         await pipeline
             .ExecuteAsync(async _ => await next(), cancellationToken)
             .ConfigureAwait(false);

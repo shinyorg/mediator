@@ -12,18 +12,18 @@ public class CachingRequestMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
-        RequestContext<TRequest> context,
+        MediatorContext context,
         RequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )
     {
         CacheAttribute? attribute = null;
-        var cacheKey = ContractUtils.GetRequestKey(context.Request!);
-        var section = configuration.GetHandlerSection("Cache", context.Request!, context.Handler);
+        var cacheKey = ContractUtils.GetRequestKey(context.Message!);
+        var section = configuration.GetHandlerSection("Cache", context.Message!, context.MessageHandler);
 
         if (section == null)
         {
-            attribute = context.Handler.GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
+            attribute = ((IRequestHandler)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
         }
         else
         {
@@ -37,14 +37,14 @@ public class CachingRequestMiddleware<TRequest, TResult>(
             };
         }
 
-        var config = this.GetItemConfig(context, attribute, context.Request);
+        var config = this.GetItemConfig(context, attribute, (TRequest)context.Message);
         if (config == null)
             return await next().ConfigureAwait(false);
 
         TResult result = default!;
-        if (context.Request is ICacheControl { ForceRefresh: true } || context.HasForceCacheRefresh())
+        if (context.Message is ICacheControl { ForceRefresh: true } || context.HasForceCacheRefresh())
         {
-            logger.LogDebug("Cache Forced Refresh - {Request}", context.Request);
+            logger.LogDebug("Cache Forced Refresh - {Request}", context.Message);
             result = await next().ConfigureAwait(false);
             if (result != null)
                 await cacheService.Set(cacheKey, result, config).ConfigureAwait(false);
@@ -64,14 +64,14 @@ public class CachingRequestMiddleware<TRequest, TResult>(
                 )
                 .ConfigureAwait(false)!;
 
-            logger.LogDebug("Cache Hit: {Hit} - {Request} - Key: {RequestKey}", hit, context.Request, cacheKey);
+            logger.LogDebug("Cache Hit: {Hit} - {Request} - Key: {RequestKey}", hit, context.Message, cacheKey);
             context.Cache(new CacheContext(cacheKey, hit, entry!.CreatedAt));
         }
         return result!;
     }
 
 
-    protected virtual CacheItemConfig? GetItemConfig(RequestContext context, CacheAttribute? attribute, TRequest request)
+    protected virtual CacheItemConfig? GetItemConfig(MediatorContext context, CacheAttribute? attribute, TRequest request)
     {
         var cache = context.TryGetCacheConfig();
         if (cache != null)

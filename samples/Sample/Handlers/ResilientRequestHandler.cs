@@ -8,7 +8,7 @@ public class ResilientRequestHandler : IRequestHandler<ResilientRequest, string>
 {
     static bool timeoutRequest;
     
-    public async Task<string> Handle(ResilientRequest request, RequestContext<ResilientRequest> context, CancellationToken cancellationToken)
+    public async Task<string> Handle(ResilientRequest request, MediatorContext context, CancellationToken cancellationToken)
     {
         if (timeoutRequest)
         {

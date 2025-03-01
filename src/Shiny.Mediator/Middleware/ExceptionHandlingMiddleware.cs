@@ -8,7 +8,7 @@ public class ExceptionHandlingRequestMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
-        RequestContext<TRequest> context, 
+        MediatorContext context, 
         RequestHandlerDelegate<TResult> next, 
         CancellationToken cancellationToken
     )
@@ -28,7 +28,7 @@ public class ExceptionHandlingRequestMiddleware<TRequest, TResult>(
         catch (Exception ex)
         {
             var handled = await handler
-                .Manage(context.Request!, context.Handler, ex, context)
+                .Manage(context.Message!, context.MessageHandler, ex, context)
                 .ConfigureAwait(false);
             
             if (!handled)
@@ -42,7 +42,7 @@ public class ExceptionHandlingCommandMiddleware<TCommand>(
     GlobalExceptionHandler handler
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
-    public async Task Process(CommandContext<TCommand> context, CommandHandlerDelegate next, CancellationToken cancellationToken)
+    public async Task Process(MediatorContext context, CommandHandlerDelegate next, CancellationToken cancellationToken)
     {
         if (context.BypassExceptionHandlingEnabled())
             await next().ConfigureAwait(false);
@@ -58,7 +58,7 @@ public class ExceptionHandlingCommandMiddleware<TCommand>(
         catch (Exception ex)
         {
             var handled = await handler
-                .Manage(context.Command!, context.Handler, ex, context)
+                .Manage(context.Message!, context.MessageHandler, ex, context)
                 .ConfigureAwait(false);
             
             if (!handled)
@@ -71,7 +71,7 @@ public class ExceptionHandlingEventMiddleware<TEvent>(
     GlobalExceptionHandler handler
 ) : IEventMiddleware<TEvent> where TEvent : IEvent
 {
-    public async Task Process(EventContext<TEvent> context, EventHandlerDelegate next, CancellationToken cancellationToken)
+    public async Task Process(MediatorContext context, EventHandlerDelegate next, CancellationToken cancellationToken)
     {
         if (context.BypassExceptionHandlingEnabled())
             await next().ConfigureAwait(false);
@@ -83,7 +83,7 @@ public class ExceptionHandlingEventMiddleware<TEvent>(
         catch (Exception ex)
         {
             var handled = await handler
-                .Manage(context.Event!, context.Handler, ex, context)
+                .Manage(context.Message!, context.MessageHandler, ex, context)
                 .ConfigureAwait(false);
             
             if (!handled)

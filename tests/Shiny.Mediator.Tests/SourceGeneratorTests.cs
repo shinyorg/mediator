@@ -25,16 +25,16 @@ public record SourceGenEvent : IEvent;
 [SingletonHandler]
 public class SourceGenCommandHandler : ICommandHandler<SourceGenCommand>
 {
-    public Task Handle(SourceGenCommand command, CommandContext<SourceGenCommand> context, CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task Handle(SourceGenCommand command, MediatorContext context, CancellationToken cancellationToken) => Task.CompletedTask;
 }
 [SingletonHandler]
 public class SourceGenResponseRequestHandler : IRequestHandler<SourceGenResponseRequest, SourceGenResponse>
 {
-    public Task<SourceGenResponse> Handle(SourceGenResponseRequest request, RequestContext<SourceGenResponseRequest> context, CancellationToken cancellationToken)
+    public Task<SourceGenResponse> Handle(SourceGenResponseRequest request, MediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult(new SourceGenResponse());
 }
 [SingletonHandler]
 public class SourceGenEventHandler : IEventHandler<SourceGenEvent>
 {
-    public Task Handle(SourceGenEvent @event, EventContext<SourceGenEvent> context, CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task Handle(SourceGenEvent @event, MediatorContext context, CancellationToken cancellationToken) => Task.CompletedTask;
 }
