@@ -1,7 +1,10 @@
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
+
 namespace Shiny.Mediator.Tests;
 
 
-public class CommandHandlerTests
+public class CommandHandlerTests(ITestOutputHelper output)
 {
     [Fact]
     public async Task Missing_CommandHandler()
@@ -9,6 +12,8 @@ public class CommandHandlerTests
         try
         {
             var services = new ServiceCollection();
+            services.AddLogging(x => x.AddXUnit(output));
+            
             services.AddShinyMediator();
             var sp = services.BuildServiceProvider();
             var mediator = sp.GetRequiredService<IMediator>();
