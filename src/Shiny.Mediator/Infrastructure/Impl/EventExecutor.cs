@@ -34,9 +34,9 @@ public class EventExecutor(
         var tasks = handlers
             .Select(async handler =>
             {
-                // TODO: telemetry
                 var child = context.CreateChild(null);
                 child.MessageHandler = handler;
+                
                 await this
                     .PublishCore(
                         child,
@@ -82,12 +82,14 @@ public class EventExecutor(
     {
         var handlerDelegate = new EventHandlerDelegate(() =>
         {
-            // TODO: telemetry
-            logger.LogDebug(
-                "Executing Event Handler {HandlerType}", 
-                eventHandler.GetType().FullName
-            );
-            return eventHandler.Handle(@event, context, cancellationToken);
+            using (var handlerActivity = context.StartActivity("Handler"))
+            {
+                logger.LogDebug(
+                    "Executing Event Handler {HandlerType}",
+                    eventHandler.GetType().FullName
+                );
+                return eventHandler.Handle(@event, context, cancellationToken);
+            }
         });
            
         await middlewares
@@ -96,13 +98,15 @@ public class EventExecutor(
                 handlerDelegate, 
                 (next, middleware) => () =>
                 {
-                    // TODO: telemetry
-                    logger.LogDebug(
-                        "Executing event middleware {MiddlewareType}",
-                        middleware.GetType().FullName
-                    );
-                       
-                    return middleware.Process(context, next, cancellationToken);
+                    using (var midActivity = context.StartActivity("Middleware"))
+                    {
+                        logger.LogDebug(
+                            "Executing event middleware {MiddlewareType}",
+                            middleware.GetType().FullName
+                        );
+
+                        return middleware.Process(context, next, cancellationToken);
+                    }
                 }
             )
             .Invoke()

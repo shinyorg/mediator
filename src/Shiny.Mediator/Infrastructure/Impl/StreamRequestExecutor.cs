@@ -42,15 +42,19 @@ public class StreamRequestWrapper<TRequest, TResult>(
         if (requestHandler == null)
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
 
+        context.MessageHandler = requestHandler;
         var logger = context.ServiceScope.ServiceProvider.GetRequiredService<ILogger<TRequest>>();
         
         var handlerExec = new StreamRequestHandlerDelegate<TResult>(() =>
         {
-            logger.LogDebug(
-                "Executing streaming request handler {RequestHandlerType}",
-                requestHandler.GetType().FullName
-            );
-            return requestHandler.Handle(request, context, cancellationToken);
+            using (var handlerActivity = context.StartActivity("Handler"))
+            {
+                logger.LogDebug(
+                    "Executing streaming request handler {RequestHandlerType}",
+                    requestHandler.GetType().FullName
+                );
+                return requestHandler.Handle(request, context, cancellationToken);
+            }
         });
         
         var middlewares = context.BypassMiddlewareEnabled() ? [] : services.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
@@ -60,21 +64,24 @@ public class StreamRequestWrapper<TRequest, TResult>(
                 handlerExec,
                 (next, middleware) => () =>
                 {
-                    // TODO: telemetry
-                    logger.LogDebug(
-                        "Executing stream middleware {MiddlewareType}",
-                        middleware.GetType().FullName
-                    );
-                    return middleware.Process(
-                        context,
-                        next,
-                        cancellationToken
-                    );
+                    using (var midActivity = context.StartActivity("Middleware"))
+                    {
+                        logger.LogDebug(
+                            "Executing stream middleware {MiddlewareType}",
+                            middleware.GetType().FullName
+                        );
+                        return middleware.Process(
+                            context,
+                            next,
+                            cancellationToken
+                        );
+                    }
                 }
             )
             .Invoke();
         
         // TODO: scope can't die until the enumerable is done - how to handle this?
+            // TODO: when the enumerable stops, I need to dispose of the scope
         return new RequestResult<IAsyncEnumerable<TResult>>(context, enumerable);
     }
 }

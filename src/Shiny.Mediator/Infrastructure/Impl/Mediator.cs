@@ -25,27 +25,41 @@ public class Mediator(
         params IEnumerable<(string Key, object Value)> headers
     )
     {
+        RequestResult<TResult> execution = null!;
+        
         var scope = services.CreateScope();
         var context = new MediatorContext(scope, request, activitySource, headers);
         using var activity = context.StartActivity("Request");
         
-        var execution = await requestExecutor
-            .RequestWithContext(
-                context,
-                request, 
-                cancellationToken 
-            )
-            .ConfigureAwait(false);
-
-        if (execution.Result is IEvent @event)
+        try
         {
-            // TODO: publish child telemetry here
-            var child = context.CreateChild(@event);
-            await eventExecutor
-                .Publish(child, @event, true, cancellationToken)
+            execution = await requestExecutor
+                .RequestWithContext(
+                    context,
+                    request,
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
-        }
 
+            if (execution.Result is IEvent @event)
+            {
+                var child = context.CreateChild(@event);
+                await eventExecutor
+                    .Publish(child, @event, true, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            return execution;
+        }
+        catch (Exception exception)
+        {
+            var handled = await this
+                .TryHandle(context, exception)
+                .ConfigureAwait(false);
+
+            if (!handled)
+                throw;
+        }
         return execution;
     }
 
@@ -70,7 +84,20 @@ public class Mediator(
     {
         using var scope = services.CreateScope();
         var context = new MediatorContext(scope, request, activitySource, headers);
-        await commandExecutor.Send(context, request, cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            await commandExecutor.Send(context, request, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            var handled = await this
+                .TryHandle(context, exception)
+                .ConfigureAwait(false);
+            
+            if (!handled)
+                throw;
+        }
 
         return context;
     }
@@ -83,10 +110,18 @@ public class Mediator(
         params IEnumerable<(string Key, object Value)> headers
     ) where TEvent : IEvent
     {
-        // TODO: IExceptionHandlers move here
         using var scope = services.CreateScope();
         var context = new MediatorContext(scope, @event, activitySource, headers);
-        await eventExecutor.Publish(context, @event, executeInParallel, cancellationToken);
+        try
+        {
+            await eventExecutor.Publish(context, @event, executeInParallel, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            var handled = await this.TryHandle(context, exception).ConfigureAwait(false);
+            if (!handled)
+                throw;
+        }
         return context;
     }
 
@@ -95,34 +130,26 @@ public class Mediator(
         => eventExecutor.Subscribe(action);
 
 
-    async Task ExecuteSafe(MediatorContext context, Func<Task> task)
+    async Task<bool> TryHandle(MediatorContext context, Exception exception)
     {
         if (context.BypassExceptionHandlingEnabled())
-            await task().ConfigureAwait(false);
-       
-        try
+            return false;
+            
+        var handled = false;
+        foreach (var eh in exceptionHandlers)
         {
-            await task().ConfigureAwait(false);
-        }
-        catch (Exception exception)
-        {
-            var handled = false;
-            foreach (var eh in exceptionHandlers)
-            {
-                handled = await eh
-                    .Handle(
-                        context,
-                        exception
-                    )
-                    .ConfigureAwait(false);
+            handled = await eh
+                .Handle(
+                    context,
+                    exception
+                )
+                .ConfigureAwait(false);
 
-                if (handled)
-                    break;
-            }
-
-            if (!handled)
-                throw;
+            if (handled)
+                break;
         }
+
+        return handled;
     }
 }
 // public async Task<MediatorResult> Request<TResult>(
@@ -164,30 +191,3 @@ public class Mediator(
 //     Exception? Exception,
 //     IMediatorContext Context
 // );
-
-
-/*
- // get scope creation and top level exception handler up here, not in the executors
-if (context.BypassExceptionHandlingEnabled())
-       await next().ConfigureAwait(false);
-
-   TResult result = default;
-   try
-   {
-       result = await next().ConfigureAwait(false);
-   }
-   catch (ValidateException)
-   {
-       throw; // this is a special case we let bubble through to prevent order of ops setup issues
-   }
-   catch (Exception ex)
-   {
-       var handled = await handler
-           .Manage(context.Message!, context.MessageHandler, ex, context)
-           .ConfigureAwait(false);
-       
-       if (!handled)
-           throw;
-   }
-   return result;
- */

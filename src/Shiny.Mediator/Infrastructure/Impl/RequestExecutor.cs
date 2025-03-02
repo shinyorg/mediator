@@ -48,12 +48,14 @@ public class RequestResultWrapper<TRequest, TResult>(
         
         var handlerExec = new RequestHandlerDelegate<TResult>(() =>
         {
-            // TODO: telemetry
-            logger.LogDebug(
-                "Executing request handler {RequestHandlerType}", 
-                requestHandler.GetType().FullName 
-            );
-            return requestHandler.Handle((TRequest)context.Message, context, cancellationToken);
+            using (var handlerActivity = context.StartActivity("Handler"))
+            {
+                logger.LogDebug(
+                    "Executing request handler {RequestHandlerType}",
+                    requestHandler.GetType().FullName
+                );
+                return requestHandler.Handle((TRequest)context.Message, context, cancellationToken);
+            }
         });
         
         var result = await middlewares
@@ -62,13 +64,15 @@ public class RequestResultWrapper<TRequest, TResult>(
                 handlerExec, 
                 (next, middleware) => () =>
                 {
-                    // TODO: telemetry
-                    logger.LogDebug(
-                        "Executing request middleware {MiddlewareType}",
-                        middleware.GetType().FullName
-                    );
-                    
-                    return middleware.Process(context, next, cancellationToken);
+                    using (var midActivity = context.StartActivity("Middleware"))
+                    {
+                        logger.LogDebug(
+                            "Executing request middleware {MiddlewareType}",
+                            middleware.GetType().FullName
+                        );
+
+                        return middleware.Process(context, next, cancellationToken);
+                    }
                 }
             )
             .Invoke()
