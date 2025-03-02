@@ -62,23 +62,21 @@ public class Mediator(
     }
 
 
-    public IAsyncEnumerable<TResult> Request<TResult>(
+    public async IAsyncEnumerable<TResult> Request<TResult>(
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
     )
     {
-        // we create the scope here, but we do not dispose of it
-        // try
-        // {
-            var context = new MediatorContext(services.CreateScope(), request, activitySource);
-            configure?.Invoke(context);
-            return streamRequestExecutor.Request(context, request, cancellationToken);
-        // }
-        // catch (Exception exception)
-        // {
-        //     // return AsyncEnumberable.Empty<TResult>();
-        // }
+        using var scope = services.CreateScope();
+        var context = new MediatorContext(scope, request, activitySource);
+        configure?.Invoke(context);
+        var enumerable = streamRequestExecutor.Request(context, request, cancellationToken);
+
+        await foreach (var result in enumerable)
+        {
+            yield return result;
+        }
     }
 
 
