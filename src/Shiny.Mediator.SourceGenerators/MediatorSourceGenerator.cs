@@ -38,13 +38,13 @@ public class MediatorSourceGenerator : ISourceGenerator
                 // </auto-generated>
                 #nullable disable
                 
-                [global::System.CodeDom.Compiler.GeneratedCode("Shiny.Mediator", "4.0.0")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
                 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
                 internal sealed class SingletonHandlerAttribute : global::System.Attribute
                 {
                 }
                 
-                [global::System.CodeDom.Compiler.GeneratedCode("Shiny.Mediator", "4.0.0")]
+                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
                 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
                 internal sealed class ScopedHandlerAttribute : global::System.Attribute
                 {
