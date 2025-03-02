@@ -35,21 +35,26 @@ public static class MediatorExtensions
     /// <param name="mediator"></param>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
-    /// <param name="headers"></param>
+    /// <param name="configure"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    public static async Task<TResult> Request<TResult>(
+    public static async Task<(IMediatorContext Context, TResult Result)> RequestWithContext<TResult>(
         this IMediator mediator, 
         IRequest<TResult> request, 
         CancellationToken cancellationToken = default,
-        params IEnumerable<(string Key, object Value)> headers
+        Action<IMediatorContext>? configure = null
     )
     {
-        var context = await mediator
-            .RequestWithContext(request, cancellationToken, headers)
+        IMediatorContext capture = null!;
+        var result = await mediator
+            .Request(request, cancellationToken, ctx =>
+            {
+                capture = ctx;
+                configure?.Invoke(ctx);
+            })
             .ConfigureAwait(false);
         
-        return context.Result;
+        return (capture, result);
     }
     
     /// <summary>
@@ -58,17 +63,22 @@ public static class MediatorExtensions
     /// <param name="mediator"></param>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
-    /// <param name="headers"></param>
+    /// <param name="configure"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    public static IAsyncEnumerable<TResult> Request<TResult>(
+    public static (IMediatorContext Context, IAsyncEnumerable<TResult> Result) RequestWithContext<TResult>(
         this IMediator mediator, 
         IStreamRequest<TResult> request, 
         CancellationToken cancellationToken = default,
-        params IEnumerable<(string Key, object Value)> headers
+        Action<IMediatorContext>? configure = null
     )
     {
-        var context = mediator.RequestWithContext(request, cancellationToken, headers);
-        return context.Result;
+        IMediatorContext capture = null!;
+        var result = mediator.Request(request, cancellationToken, ctx =>
+        {
+            capture = ctx;
+            configure?.Invoke(capture);
+        });
+        return (capture, result);
     }
 }

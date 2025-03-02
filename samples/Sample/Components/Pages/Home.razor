@@ -8,7 +8,7 @@
 Welcome to your new app.
 
 @code {
-    public async Task Handle(MyMessageEvent @event, MediatorContext context, CancellationToken cancellationToken)
+    public async Task Handle(MyMessageEvent @event, IMediatorContext context, CancellationToken cancellationToken)
     {
         await conn.Log("BlazorPage-Home.razor", @event);
     }

@@ -5,7 +5,7 @@ public delegate IAsyncEnumerable<TResult> StreamRequestHandlerDelegate<TResult>(
 public interface IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     IAsyncEnumerable<TResult> Process(
-        MediatorContext context, 
+        IMediatorContext context, 
         StreamRequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     );

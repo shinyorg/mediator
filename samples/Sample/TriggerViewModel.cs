@@ -23,7 +23,7 @@ public partial class TriggerViewModel(
         
     
     [MainThread]
-    public Task Handle(MyMessageEvent @event, MediatorContext context, CancellationToken cancellationToken)
+    public Task Handle(MyMessageEvent @event, IMediatorContext context, CancellationToken cancellationToken)
     {
         // do something async here
         Console.WriteLine("Scoped Handler: " + @event.Arg);
@@ -202,7 +202,7 @@ public partial class TriggerViewModel(
     
     
     [MainThread]
-    public Task Handle(ConnectivityChanged @event, MediatorContext context, CancellationToken cancellationToken)
+    public Task Handle(ConnectivityChanged @event, IMediatorContext context, CancellationToken cancellationToken)
     {
         this.Connected = @event.Connected;
         this.ConnectivityChangeTime = DateTimeOffset.Now.ToString("h:mm:ss tt");

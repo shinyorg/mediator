@@ -13,7 +13,7 @@ public class ResilientRequestMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     public async Task<TResult> Process(
-        MediatorContext context,
+        IMediatorContext context,
         RequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )

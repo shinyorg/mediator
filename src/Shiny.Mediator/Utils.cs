@@ -59,7 +59,7 @@ public static class Utils
                 BindingFlags.Public | BindingFlags.Instance, 
                 null,
                 CallingConventions.Any,
-                [ typeof(TCommand), typeof(MediatorContext), typeof(CancellationToken) ],
+                [ typeof(TCommand), typeof(IMediatorContext), typeof(CancellationToken) ],
                 null
             )!
             .GetCustomAttribute<TAttribute>();
@@ -73,7 +73,7 @@ public static class Utils
                 BindingFlags.Public | BindingFlags.Instance, 
                 null,
                 CallingConventions.Any,
-                [ typeof(TRequest), typeof(MediatorContext), typeof(CancellationToken) ],
+                [ typeof(TRequest), typeof(IMediatorContext), typeof(CancellationToken) ],
                 null
             )!
             .GetCustomAttribute<TAttribute>();
@@ -89,7 +89,7 @@ public static class Utils
                 BindingFlags.Public | BindingFlags.Instance, 
                 null,
                 CallingConventions.Any,
-                [ typeof(TEvent), typeof(MediatorContext), typeof(CancellationToken) ],
+                [ typeof(TEvent), typeof(IMediatorContext), typeof(CancellationToken) ],
                 null
             )!
             .GetCustomAttribute<TAttribute>();

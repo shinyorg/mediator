@@ -11,7 +11,7 @@ public class ScheduledCommandMiddleware<TCommand>(
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     public async Task Process(
-        MediatorContext context, 
+        IMediatorContext context, 
         CommandHandlerDelegate next,
         CancellationToken cancellationToken
     )

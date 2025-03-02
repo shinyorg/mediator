@@ -13,7 +13,7 @@ public interface IEventExecutor
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
     Task Publish<TEvent>(
-        MediatorContext context,
+        IMediatorContext context,
         TEvent @event,
         bool executeInParallel,
         CancellationToken cancellationToken
@@ -27,6 +27,6 @@ public interface IEventExecutor
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
     IDisposable Subscribe<TEvent>(
-        Func<TEvent, MediatorContext, CancellationToken, Task> action
+        Func<TEvent, IMediatorContext, CancellationToken, Task> action
     ) where TEvent : IEvent;
 }

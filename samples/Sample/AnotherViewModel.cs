@@ -26,6 +26,6 @@ public partial class AnotherViewModel(AppSqliteConnection conn) : ObservableObje
     [ObservableProperty] string arg;
 
     [MainThread]
-    public Task Handle(MyMessageEvent @event, MediatorContext context, CancellationToken cancellationToken) =>
+    public Task Handle(MyMessageEvent @event, IMediatorContext context, CancellationToken cancellationToken) =>
         conn.Log("AnotherViewModel", @event);
 }

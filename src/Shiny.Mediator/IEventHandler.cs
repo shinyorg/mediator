@@ -12,5 +12,5 @@ public interface IEventHandler<TEvent> where TEvent : IEvent
     /// <param name="event"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task Handle(TEvent @event, MediatorContext context, CancellationToken cancellationToken);
+    Task Handle(TEvent @event, IMediatorContext context, CancellationToken cancellationToken);
 }

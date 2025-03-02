@@ -5,7 +5,7 @@ namespace Shiny.Mediator.Infrastructure;
 
 public class EventExceptionHandler(ILogger<EventExceptionHandler> logger) : IExceptionHandler
 {
-    public Task<bool> Handle(MediatorContext context, Exception exception)
+    public Task<bool> Handle(IMediatorContext context, Exception exception)
     {
         var handled = false;
         if (context.Message is IEvent)

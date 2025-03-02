@@ -11,7 +11,7 @@ public class EventExecutor(
     readonly SubscriptionEventCollector subscriptions = new();
 
     public async Task Publish<TEvent>(
-        MediatorContext context,
+        IMediatorContext context,
         TEvent @event,
         bool executeInParallel,
         CancellationToken cancellationToken
@@ -28,7 +28,7 @@ public class EventExecutor(
             return;
         
         var logger = services.GetRequiredService<ILogger<TEvent>>();
-        var bypass = context.BypassMiddlewareEnabled();
+        var bypass = context.BypassMiddlewareEnabled;
         var middlewares = bypass ? [] : services.GetServices<IEventMiddleware<TEvent>>();
         
         var tasks = handlers
@@ -63,7 +63,7 @@ public class EventExecutor(
         }
     }
 
-    public IDisposable Subscribe<TEvent>(Func<TEvent, MediatorContext, CancellationToken, Task> action) where TEvent : IEvent
+    public IDisposable Subscribe<TEvent>(Func<TEvent, IMediatorContext, CancellationToken, Task> action) where TEvent : IEvent
     {
         var handler = new SubscriptionEventHandler<TEvent>(this.subscriptions);
         handler.OnHandle = action;
@@ -72,7 +72,7 @@ public class EventExecutor(
     
     
     async Task PublishCore<TEvent>(
-        MediatorContext context,
+        IMediatorContext context,
         TEvent @event,
         IEventHandler<TEvent> eventHandler, 
         ILogger logger,

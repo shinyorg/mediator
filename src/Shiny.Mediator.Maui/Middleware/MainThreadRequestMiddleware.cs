@@ -8,7 +8,7 @@ public class MainThreadRequestMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     public Task<TResult> Process(
-        MediatorContext context, 
+        IMediatorContext context, 
         RequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )

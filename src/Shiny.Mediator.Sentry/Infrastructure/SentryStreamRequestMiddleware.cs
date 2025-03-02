@@ -4,7 +4,7 @@ namespace Shiny.Mediator.Infrastructure;
 public class SentryStreamRequestMiddleware<TRequest, TResult> : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     public async IAsyncEnumerable<TResult> Process(
-        MediatorContext context, 
+        IMediatorContext context, 
         StreamRequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )

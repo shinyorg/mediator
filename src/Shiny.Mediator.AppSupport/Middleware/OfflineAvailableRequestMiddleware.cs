@@ -13,7 +13,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
-        MediatorContext context,
+        IMediatorContext context,
         RequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )
@@ -43,7 +43,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
     }
 
 
-    async Task<TResult?> GetOffline(MediatorContext context)
+    async Task<TResult?> GetOffline(IMediatorContext context)
     {
         TResult result = default;
         var offlineResult = await offline

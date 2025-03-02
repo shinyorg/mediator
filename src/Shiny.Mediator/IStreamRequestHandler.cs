@@ -5,7 +5,7 @@ public interface IStreamRequestHandler<TRequest, TResult> : IRequestHandler wher
 {
     IAsyncEnumerable<TResult> Handle(
         TRequest request, 
-        MediatorContext context, 
+        IMediatorContext context, 
         CancellationToken cancellationToken
     );
 }

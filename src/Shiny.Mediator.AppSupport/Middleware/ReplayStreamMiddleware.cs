@@ -21,7 +21,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
 ) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
-        MediatorContext context,
+        IMediatorContext context,
         StreamRequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )
@@ -58,7 +58,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
     
     protected virtual async IAsyncEnumerable<TResult> Iterate(
         TRequest request, 
-        MediatorContext context,
+        IMediatorContext context,
         StreamRequestHandlerDelegate<TResult> next, 
         [EnumeratorCancellation] CancellationToken ct
     )

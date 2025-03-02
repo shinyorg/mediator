@@ -21,6 +21,6 @@ public record TestResultRequest(string Arg) : IRequest<string>;
 
 public class TestResultRequestHandler : IRequestHandler<TestResultRequest, string>
 {
-    public Task<string> Handle(TestResultRequest request, MediatorContext context, CancellationToken cancellationToken)
+    public Task<string> Handle(TestResultRequest request, IMediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult("RESPONSE-" + request.Arg);
 }

@@ -1,14 +1,13 @@
-using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-public class RequestExecutor(IServiceProvider services) : IRequestExecutor
+public class RequestExecutor : IRequestExecutor
 {
-    public virtual async Task<RequestResult<TResult>> RequestWithContext<TResult>(
-        MediatorContext context,
+    public virtual async Task<TResult> Request<TResult>(
+        IMediatorContext context,
         IRequest<TResult> request,
         CancellationToken cancellationToken
     )
@@ -28,15 +27,15 @@ public class RequestExecutor(IServiceProvider services) : IRequestExecutor
 
 public interface IRequestResultWrapper<TResult>
 {
-    Task<RequestResult<TResult>> Handle();
+    Task<TResult> Handle();
 }
 public class RequestResultWrapper<TRequest, TResult>(
-    MediatorContext context, 
+    IMediatorContext context, 
     TRequest request,
     CancellationToken cancellationToken
 ) : IRequestResultWrapper<TResult> where TRequest : IRequest<TResult>
 {
-    public async Task<RequestResult<TResult>> Handle()
+    public async Task<TResult> Handle()
     {
         var services = context.ServiceScope.ServiceProvider;
         var requestHandler = services.GetService<IRequestHandler<TRequest, TResult>>();
@@ -44,7 +43,7 @@ public class RequestResultWrapper<TRequest, TResult>(
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
 
         context.MessageHandler = requestHandler;
-        var middlewares = context.BypassMiddlewareEnabled() ? [] : services.GetServices<IRequestMiddleware<TRequest, TResult>>();
+        var middlewares = context.BypassMiddlewareEnabled ? [] : services.GetServices<IRequestMiddleware<TRequest, TResult>>();
         var logger = services.GetRequiredService<ILogger<TRequest>>();
         
         var handlerExec = new RequestHandlerDelegate<TResult>(() =>
@@ -79,6 +78,6 @@ public class RequestResultWrapper<TRequest, TResult>(
             .Invoke()
             .ConfigureAwait(false);
         
-        return new RequestResult<TResult>(context, result);
+        return result;
     }
 }

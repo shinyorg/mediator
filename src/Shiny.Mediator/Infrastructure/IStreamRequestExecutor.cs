@@ -11,8 +11,8 @@ public interface IStreamRequestExecutor
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    RequestResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
-        MediatorContext context,
+    IAsyncEnumerable<TResult> Request<TResult>(
+        IMediatorContext context,
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken
     );

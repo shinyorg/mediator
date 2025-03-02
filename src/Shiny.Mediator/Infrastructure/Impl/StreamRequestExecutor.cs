@@ -6,8 +6,8 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 
 public class StreamRequestExecutor : IStreamRequestExecutor
 {
-    public virtual RequestResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
-        MediatorContext context,
+    public virtual IAsyncEnumerable<TResult> Request<TResult>(
+        IMediatorContext context,
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken
     )
@@ -26,16 +26,16 @@ public class StreamRequestExecutor : IStreamRequestExecutor
 
 public interface IStreamRequestWrapper<TResult>
 {
-    RequestResult<IAsyncEnumerable<TResult>> Handle();
+    IAsyncEnumerable<TResult> Handle();
 }
 
 public class StreamRequestWrapper<TRequest, TResult>(
-    MediatorContext context,
+    IMediatorContext context,
     TRequest request,
     CancellationToken cancellationToken
 ) : IStreamRequestWrapper<TResult> where TRequest : IStreamRequest<TResult>
 {
-    public RequestResult<IAsyncEnumerable<TResult>> Handle()
+    public IAsyncEnumerable<TResult> Handle()
     {
         var services = context.ServiceScope.ServiceProvider;
         var requestHandler = services.GetService<IStreamRequestHandler<TRequest, TResult>>();
@@ -57,7 +57,7 @@ public class StreamRequestWrapper<TRequest, TResult>(
             }
         });
         
-        var middlewares = context.BypassMiddlewareEnabled() ? [] : services.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
+        var middlewares = context.BypassMiddlewareEnabled ? [] : services.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
         var enumerable = middlewares
             .Reverse()
             .Aggregate(
@@ -82,6 +82,6 @@ public class StreamRequestWrapper<TRequest, TResult>(
         
         // TODO: scope can't die until the enumerable is done - how to handle this?
             // TODO: when the enumerable stops, I need to dispose of the scope
-        return new RequestResult<IAsyncEnumerable<TResult>>(context, enumerable);
+        return enumerable;
     }
 }

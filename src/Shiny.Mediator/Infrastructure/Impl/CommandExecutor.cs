@@ -7,7 +7,7 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 public class CommandExecutor : ICommandExecutor
 {
     public async Task Send<TCommand>(
-        MediatorContext context,
+        IMediatorContext context,
         TCommand command, 
         CancellationToken cancellationToken
     ) where TCommand : ICommand
@@ -35,7 +35,7 @@ public class CommandExecutor : ICommandExecutor
             }
         });
 
-        var middlewares = context.BypassMiddlewareEnabled() ? [] : services.GetServices<ICommandMiddleware<TCommand>>();
+        var middlewares = context.BypassMiddlewareEnabled ? [] : services.GetServices<ICommandMiddleware<TCommand>>();
         await middlewares
             .Reverse()
             .Aggregate(

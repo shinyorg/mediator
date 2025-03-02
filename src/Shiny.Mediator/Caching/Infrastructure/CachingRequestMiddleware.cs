@@ -12,7 +12,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult>
 {
     public async Task<TResult> Process(
-        MediatorContext context,
+        IMediatorContext context,
         RequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )
@@ -71,7 +71,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
     }
 
 
-    protected virtual CacheItemConfig? GetItemConfig(MediatorContext context, CacheAttribute? attribute, TRequest request)
+    protected virtual CacheItemConfig? GetItemConfig(IMediatorContext context, CacheAttribute? attribute, TRequest request)
     {
         var cache = context.TryGetCacheConfig();
         if (cache != null)

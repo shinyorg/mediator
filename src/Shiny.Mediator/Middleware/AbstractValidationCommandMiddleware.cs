@@ -4,7 +4,7 @@ namespace Shiny.Mediator.Middleware;
 
 public abstract class AbstractValidationCommandMiddleware<TCommand> : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
-    public async Task Process(MediatorContext context, CommandHandlerDelegate next, CancellationToken cancellationToken)
+    public async Task Process(IMediatorContext context, CommandHandlerDelegate next, CancellationToken cancellationToken)
     {
         if (context.Message!.GetType().GetCustomAttribute<ValidateAttribute>() == null)
         {

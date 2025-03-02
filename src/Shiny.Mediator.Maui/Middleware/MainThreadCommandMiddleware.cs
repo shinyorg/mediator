@@ -8,7 +8,7 @@ public class MainThreadCommandMiddleware<TCommand>(
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     public Task Process(
-        MediatorContext context, 
+        IMediatorContext context, 
         CommandHandlerDelegate next,
         CancellationToken cancellationToken
     )

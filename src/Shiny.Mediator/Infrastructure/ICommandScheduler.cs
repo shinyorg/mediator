@@ -13,7 +13,7 @@ public interface ICommandScheduler
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<bool> Schedule(
-        MediatorContext context,
+        IMediatorContext context,
         DateTimeOffset dueAt,
         CancellationToken cancellationToken
     );

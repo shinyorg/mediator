@@ -9,7 +9,7 @@ public class DapperFirstQueryRequestHandler<TResult>(
 {
     public Task<TResult> Handle(
         DapperFirstQuery<TResult> request, 
-        MediatorContext context, 
+        IMediatorContext context, 
         CancellationToken cancellationToken
     ) => connectionProvider
         .Create(request)

@@ -9,7 +9,7 @@ public interface IExceptionHandler
     /// <param name="exception"></param>
     /// <returns></returns>
     Task<bool> Handle(
-        MediatorContext context,
+        IMediatorContext context,
         Exception exception
     );
 }

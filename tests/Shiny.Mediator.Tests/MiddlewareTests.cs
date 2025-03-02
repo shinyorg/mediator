@@ -49,7 +49,7 @@ public class MiddlewareResultRequest : IRequest<int>;
 
 public class MiddlewareRequestResultHandler : IRequestHandler<MiddlewareResultRequest, int>
 {
-    public Task<int> Handle(MiddlewareResultRequest request, MediatorContext context, CancellationToken cancellationToken)
+    public Task<int> Handle(MiddlewareResultRequest request, IMediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult(1);
 }
 
@@ -61,7 +61,7 @@ public static class Executed
 }
 public class ConstrainedMiddleware : IRequestMiddleware<MiddlewareResultRequest, int>
 {
-    public Task<int> Process(MediatorContext context, RequestHandlerDelegate<int> next, CancellationToken cancellationToken)
+    public Task<int> Process(IMediatorContext context, RequestHandlerDelegate<int> next, CancellationToken cancellationToken)
     {
         Executed.Constrained = true;
         return next();
@@ -71,7 +71,7 @@ public class ConstrainedMiddleware : IRequestMiddleware<MiddlewareResultRequest,
 public class VariantRequestMiddleware<TRequest, TResult> : IRequestMiddleware<TRequest, TResult>
     where TRequest : IRequest<TResult>
 {
-    public Task<TResult> Process(MediatorContext context, RequestHandlerDelegate<TResult> next, CancellationToken cancellationToken)
+    public Task<TResult> Process(IMediatorContext context, RequestHandlerDelegate<TResult> next, CancellationToken cancellationToken)
     {
         Executed.Variant = true;
         return next();

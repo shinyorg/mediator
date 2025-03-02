@@ -11,8 +11,8 @@ public interface IRequestExecutor
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    Task<RequestResult<TResult>> RequestWithContext<TResult>(
-        MediatorContext context,
+    Task<TResult> Request<TResult>(
+        IMediatorContext context,
         IRequest<TResult> request,
         CancellationToken cancellationToken
     );

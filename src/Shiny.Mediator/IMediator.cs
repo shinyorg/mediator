@@ -8,12 +8,12 @@ public interface IMediator
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
-    /// <param name="headers"></param>
+    /// <param name="configure"></param>
     /// <returns></returns>
-    Task<MediatorContext> Send<TCommand>(
+    Task<IMediatorContext> Send<TCommand>(
         TCommand request,
         CancellationToken cancellationToken = default,
-        params IEnumerable<(string Key, object Value)> headers
+        Action<IMediatorContext>? configure = null
     ) where TCommand : ICommand;
     
     
@@ -22,13 +22,13 @@ public interface IMediator
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
-    /// <param name="headers"></param>
+    /// <param name="configure"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    Task<RequestResult<TResult>> RequestWithContext<TResult>(
+    Task<TResult> Request<TResult>(
         IRequest<TResult> request,
         CancellationToken cancellationToken = default,
-        params IEnumerable<(string Key, object Value)> headers
+        Action<IMediatorContext>? configure = null
     );
     
     
@@ -37,13 +37,13 @@ public interface IMediator
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
-    /// <param name="headers"></param>
+    /// <param name="configure"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    RequestResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
+    IAsyncEnumerable<TResult> Request<TResult>(
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default,
-        params IEnumerable<(string Key, object Value)> headers
+        Action<IMediatorContext>? configure = null
     );
     
     
@@ -53,14 +53,14 @@ public interface IMediator
     /// <param name="event"></param>
     /// <param name="executeInParallel"></param>
     /// <param name="cancellationToken"></param>
-    /// <param name="headers"></param>
+    /// <param name="configure"></param>
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
-    Task<MediatorContext> Publish<TEvent>(
+    Task<IMediatorContext> Publish<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default,
         bool executeInParallel = true,
-        params IEnumerable<(string Key, object Value)> headers
+        Action<IMediatorContext>? configure = null
     ) where TEvent : IEvent;
     
     
@@ -71,6 +71,6 @@ public interface IMediator
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
     IDisposable Subscribe<TEvent>(
-        Func<TEvent, MediatorContext, CancellationToken, Task> action
+        Func<TEvent, IMediatorContext, CancellationToken, Task> action
     ) where TEvent : IEvent;
 }

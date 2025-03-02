@@ -4,7 +4,7 @@ public class SentryEventMiddleware<TEvent> : IEventMiddleware<TEvent> where TEve
 {
     // would be nice to see a transaction across the event spray
     public async Task Process(
-        MediatorContext context, 
+        IMediatorContext context, 
         EventHandlerDelegate next, 
         CancellationToken cancellationToken
     )

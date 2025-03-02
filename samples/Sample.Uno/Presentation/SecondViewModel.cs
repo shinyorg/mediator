@@ -17,7 +17,7 @@ public partial class SecondViewModel(
     Task PublishEvent() => mediator.Publish(new AppEvent("Hello from SecondPage"));
 
     
-    public async Task Handle(AppEvent @event, MediatorContext context, CancellationToken cancellationToken)
+    public async Task Handle(AppEvent @event, IMediatorContext context, CancellationToken cancellationToken)
     {
         Console.WriteLine(@event.Message);
     }

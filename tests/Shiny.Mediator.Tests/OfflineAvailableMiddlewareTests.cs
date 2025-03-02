@@ -73,7 +73,7 @@ public class OfflineRequestHandler : IRequestHandler<OfflineRequest, long>
     public long ReturnValue { get; set; }
     
     [OfflineAvailable]
-    public Task<long> Handle(OfflineRequest request, MediatorContext context, CancellationToken cancellationToken)
+    public Task<long> Handle(OfflineRequest request, IMediatorContext context, CancellationToken cancellationToken)
     {
         this.WasHit = true;
         return Task.FromResult(this.ReturnValue);

@@ -19,37 +19,35 @@ public class Mediator(
     static readonly ActivitySource activitySource = new("Shiny.Mediator");
     
 
-    public async Task<RequestResult<TResult>> RequestWithContext<TResult>(
+    public async Task<TResult> Request<TResult>(
         IRequest<TResult> request, 
         CancellationToken cancellationToken = default,
-        params IEnumerable<(string Key, object Value)> headers
+        Action<IMediatorContext>? configure = null
     )
     {
-        RequestResult<TResult> execution = null!;
-        
         var scope = services.CreateScope();
-        var context = new MediatorContext(scope, request, activitySource, headers);
+        var context = new MediatorContext(scope, request, activitySource);
+        configure?.Invoke(context);
         using var activity = context.StartActivity("Request");
         
+        TResult result = default!;
         try
         {
-            execution = await requestExecutor
-                .RequestWithContext(
+            result = await requestExecutor
+                .Request(
                     context,
                     request,
                     cancellationToken
                 )
                 .ConfigureAwait(false);
 
-            if (execution.Result is IEvent @event)
+            if (result is IEvent @event)
             {
                 var child = context.CreateChild(@event);
                 await eventExecutor
                     .Publish(child, @event, true, cancellationToken)
                     .ConfigureAwait(false);
             }
-
-            return execution;
         }
         catch (Exception exception)
         {
@@ -60,31 +58,40 @@ public class Mediator(
             if (!handled)
                 throw;
         }
-        return execution;
+        return result;
     }
 
 
-    public RequestResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
+    public IAsyncEnumerable<TResult> Request<TResult>(
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default,
-        params IEnumerable<(string Key, object Value)> headers
+        Action<IMediatorContext>? configure = null
     )
     {
         // we create the scope here, but we do not dispose of it
-        var context = new MediatorContext(services.CreateScope(), request, activitySource, headers); 
-        return streamRequestExecutor.RequestWithContext(context, request, cancellationToken);
+        // try
+        // {
+            var context = new MediatorContext(services.CreateScope(), request, activitySource);
+            configure?.Invoke(context);
+            return streamRequestExecutor.Request(context, request, cancellationToken);
+        // }
+        // catch (Exception exception)
+        // {
+        //     // return AsyncEnumberable.Empty<TResult>();
+        // }
     }
 
 
-    public async Task<MediatorContext> Send<TCommand>(
+    public async Task<IMediatorContext> Send<TCommand>(
         TCommand request,
         CancellationToken cancellationToken = default,
-        params IEnumerable<(string Key, object Value)> headers
+        Action<IMediatorContext>? configure = null
     ) where TCommand : ICommand
     {
         using var scope = services.CreateScope();
-        var context = new MediatorContext(scope, request, activitySource, headers);
-
+        var context = new MediatorContext(scope, request, activitySource);
+        configure?.Invoke(context);
+        
         try
         {
             await commandExecutor.Send(context, request, cancellationToken).ConfigureAwait(false);
@@ -103,15 +110,17 @@ public class Mediator(
     }
 
 
-    public async Task<MediatorContext> Publish<TEvent>(
+    public async Task<IMediatorContext> Publish<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default,
         bool executeInParallel = true,
-        params IEnumerable<(string Key, object Value)> headers
+        Action<IMediatorContext>? configure = null
     ) where TEvent : IEvent
     {
         using var scope = services.CreateScope();
-        var context = new MediatorContext(scope, @event, activitySource, headers);
+        var context = new MediatorContext(scope, @event, activitySource);
+        configure?.Invoke(context);
+        
         try
         {
             await eventExecutor.Publish(context, @event, executeInParallel, cancellationToken);
@@ -126,13 +135,13 @@ public class Mediator(
     }
 
 
-    public IDisposable Subscribe<TEvent>(Func<TEvent, MediatorContext, CancellationToken, Task> action) where TEvent : IEvent
+    public IDisposable Subscribe<TEvent>(Func<TEvent, IMediatorContext, CancellationToken, Task> action) where TEvent : IEvent
         => eventExecutor.Subscribe(action);
 
 
-    async Task<bool> TryHandle(MediatorContext context, Exception exception)
+    async Task<bool> TryHandle(IMediatorContext context, Exception exception)
     {
-        if (context.BypassExceptionHandlingEnabled())
+        if (context.BypassExceptionHandlingEnabled)
             return false;
             
         var handled = false;

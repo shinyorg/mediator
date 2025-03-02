@@ -10,7 +10,7 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
     where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(
-        MediatorContext context, 
+        IMediatorContext context, 
         StreamRequestHandlerDelegate<TResult> next,
         CancellationToken cancellationToken
     )

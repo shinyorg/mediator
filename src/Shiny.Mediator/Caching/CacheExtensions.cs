@@ -24,7 +24,7 @@ public static class CacheExtensions
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-    public static CacheContext? Cache(this MediatorContext context)
+    public static CacheContext? Cache(this IMediatorContext context)
         => context.TryGetValue<CacheContext>("Cache");
     
     /// <summary>
@@ -32,6 +32,6 @@ public static class CacheExtensions
     /// </summary>
     /// <param name="context"></param>
     /// <param name="cacheContext"></param>
-    public static void Cache(this MediatorContext context, CacheContext cacheContext)
-        => context.Add("Cache", cacheContext);
+    public static void Cache(this IMediatorContext context, CacheContext cacheContext)
+        => context.AddHeader("Cache", cacheContext);
 }

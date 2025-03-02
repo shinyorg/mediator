@@ -5,7 +5,7 @@ public class SentryRequestMiddleware<TRequest, TResult> : IRequestMiddleware<TRe
 {
     // fingerprint vs span set
     public async Task<TResult> Process(
-        MediatorContext context, 
+        IMediatorContext context, 
         RequestHandlerDelegate<TResult> next, 
         CancellationToken cancellationToken
     )

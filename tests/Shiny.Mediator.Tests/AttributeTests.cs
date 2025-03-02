@@ -31,7 +31,7 @@ public record MyAttributeRequest : IRequest<string>;
 public class MyAttributeRequestHandler : IRequestHandler<MyAttributeRequest, string>
 {
     [MyAttribute]
-    public Task<string> Handle(MyAttributeRequest request, MediatorContext context, CancellationToken cancellationToken)
+    public Task<string> Handle(MyAttributeRequest request, IMediatorContext context, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
@@ -45,13 +45,13 @@ public record MyAttribute2Command : ICommand;
 public class MyAttributeCommandHandler : ICommandHandler<MyAttribute1Command>, ICommandHandler<MyAttribute2Command>
 {
     [MyAttribute]
-    public Task Handle(MyAttribute1Command command, MediatorContext context, CancellationToken cancellationToken)
+    public Task Handle(MyAttribute1Command command, IMediatorContext context, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
 
-    public Task Handle(MyAttribute2Command command, MediatorContext context, CancellationToken cancellationToken)
+    public Task Handle(MyAttribute2Command command, IMediatorContext context, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

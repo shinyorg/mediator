@@ -4,7 +4,7 @@ namespace Shiny.Mediator.Middleware;
 public class MainTheadEventMiddleware<TEvent> : IEventMiddleware<TEvent> where TEvent : IEvent
 {
     public async Task Process(
-        MediatorContext context, 
+        IMediatorContext context, 
         EventHandlerDelegate next,
         CancellationToken cancellationToken
     )
