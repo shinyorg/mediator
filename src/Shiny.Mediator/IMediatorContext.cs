@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator;
 
@@ -20,6 +21,8 @@ public interface IMediatorContext
     /// Assigned activity source for observability
     /// </summary>
     ActivitySource ActivitySource { get; }
+    
+    //IMediator Mediator { get; }
     
     /// <summary>
     /// Message
@@ -90,65 +93,68 @@ public interface IMediatorContext
     /// <returns></returns>
     T? TryGetValue<T>(string key);
     
-    // /// <summary>
-    // /// Publish additional events through this context
-    // /// </summary>
-    // /// <param name="event"></param>
-    // /// <param name="cancellationToken"></param>
-    // /// <param name="configure"></param>
-    // /// <typeparam name="TEvent"></typeparam>
-    // /// <returns></returns>
-    // Task Publish<TEvent>(
-    //     TEvent @event, 
-    //     CancellationToken cancellationToken = default,
-    //     Action<IMediatorContext>? configure = null
-    // );
-    //
-    // /// <summary>
-    // /// Request additional data through this context
-    // /// </summary>
-    // /// <param name="request"></param>
-    // /// <param name="cancellationToken"></param>
-    // /// <param name="configure"></param>
-    // /// <typeparam name="TResult"></typeparam>
-    // /// <returns></returns>
-    // Task<TResult> Request<TResult>(
-    //     IRequest<TResult> request, 
-    //     CancellationToken cancellationToken = default,
-    //     Action<IMediatorContext>? configure = null
-    // );
-    //
-    // /// <summary>
-    // /// Send additional commands through this context
-    // /// </summary>
-    // /// <param name="command"></param>
-    // /// <param name="cancellationToken"></param>
-    // /// <typeparam name="TCommand"></typeparam>
-    // /// <returns></returns>
-    // Task Send<TCommand>(
-    //     TCommand command, 
-    //     CancellationToken cancellationToken = default
-    // ) where TCommand : ICommand;
+    
+    /// <summary>
+    /// Send a request in the same scope
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="configure"></param>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    Task<TResult> Request<TResult>(
+        IRequest<TResult> request, 
+        CancellationToken cancellationToken = default, 
+        Action<IMediatorContext>? configure = null
+    );
+    
+    
+    /// <summary>
+    /// Send a command in the same scope
+    /// </summary>
+    /// <param name="command"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="configure"></param>
+    /// <typeparam name="TCommand"></typeparam>
+    /// <returns></returns>
+    Task Send<TCommand>(
+        TCommand command, 
+        CancellationToken cancellationToken = default,
+        Action<IMediatorContext>? configure = null
+    ) where TCommand : ICommand;
+    
+    
+    /// <summary>
+    /// Publish a command within the same scope
+    /// </summary>
+    /// <param name="event"></param>
+    /// <param name="executeInParallel"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="configure"></param>
+    /// <typeparam name="TEvent"></typeparam>
+    /// <returns></returns>
+    Task Publish<TEvent>(
+        TEvent @event, 
+        bool executeInParallel = true,
+        CancellationToken cancellationToken = default,
+        Action<IMediatorContext>? configure = null
+    ) where TEvent : IEvent;
 }
 
-public class MediatorContext : IMediatorContext
+class MediatorContext(
+    IServiceScope scope, 
+    object message,
+    IRequestExecutor requestExecutor,
+    ICommandExecutor commandExecutor,
+    IEventExecutor eventExecutor
+) : IMediatorContext
 {
-    public MediatorContext(    
-        IServiceScope scope,
-        object message, 
-        ActivitySource activitySource
-    )
-    {
-        this.Message = message;
-        this.ServiceScope = scope;
-        this.ActivitySource = activitySource;
-    }
-    
+    static readonly ActivitySource activitySource = new("Shiny.Mediator");
     
     public Guid Id { get; } = Guid.NewGuid();
-    public IServiceScope ServiceScope { get; }
-    public ActivitySource ActivitySource { get; }
-    public object Message { get; }
+    public IServiceScope ServiceScope => scope;
+    public ActivitySource ActivitySource => activitySource;
+    public object Message => message;
     public object? MessageHandler { get; set; }
     
     Dictionary<string, object> store = new();
@@ -180,7 +186,13 @@ public class MediatorContext : IMediatorContext
         lock (this.children)
         {
             var msg = newMessage ?? this.Message;
-            var newContext = new MediatorContext(this.ServiceScope, msg, this.ActivitySource)
+            var newContext = new MediatorContext(
+                ServiceScope, 
+                msg,
+                requestExecutor, 
+                commandExecutor,
+                eventExecutor
+            )
             {
                 Parent = this,
                 BypassExceptionHandlingEnabled = this.BypassExceptionHandlingEnabled,
@@ -212,5 +224,42 @@ public class MediatorContext : IMediatorContext
             return t;
 
         return default;
+    }
+
+
+    public Task<TResult> Request<TResult>(
+        IRequest<TResult> request,
+        CancellationToken cancellationToken = default,
+        Action<IMediatorContext>? configure = null
+    )
+    {
+        var newContext = this.CreateChild(request);
+        configure?.Invoke(newContext);
+        return requestExecutor.Request(newContext, request, cancellationToken);
+    }
+
+    
+    public Task Send<TCommand>(
+        TCommand command, 
+        CancellationToken cancellationToken = default, 
+        Action<IMediatorContext>? configure = null
+    ) where TCommand : ICommand
+    {
+        var newContext = this.CreateChild(command);
+        configure?.Invoke(newContext);
+        return commandExecutor.Send(newContext, command, cancellationToken);
+    }
+    
+
+    public Task Publish<TEvent>(
+        TEvent @event, 
+        bool executeInParallel = true,
+        CancellationToken cancellationToken = default, 
+        Action<IMediatorContext>? configure = null
+    ) where TEvent : IEvent
+    {
+        var newContext = this.CreateChild(@event);
+        configure?.Invoke(newContext);
+        return eventExecutor.Publish(newContext, @event, executeInParallel, cancellationToken);
     }
 }

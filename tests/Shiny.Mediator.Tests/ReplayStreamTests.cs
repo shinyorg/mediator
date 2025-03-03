@@ -1,10 +1,10 @@
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Tests.Mocks;
 using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests;
+
 
 public class ReplayStreamTests(ITestOutputHelper output)
 {

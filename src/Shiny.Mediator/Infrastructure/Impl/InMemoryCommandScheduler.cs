@@ -48,8 +48,9 @@ public class InMemoryCommandScheduler(
                     await mediator
                         .Send((ICommand)item.Context.Message, CancellationToken.None, ctx =>
                         {
-                            // TODO
-                            
+                            // TODO: I want to replace the context or copy over everything else from the context?
+                            foreach (var item in item.Context.Headers)
+                                ctx.AddHeader(item.Key, item.Value);
                         })
                         .ConfigureAwait(false);
                 }

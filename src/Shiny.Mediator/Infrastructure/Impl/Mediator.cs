@@ -1,12 +1,9 @@
-using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-// technically, I want the context to be used in handler within handler calls... we can worry about that in a future release
-// mediator could be scoped but MAUI doesn't deal well with that
-    // scoped would allow me to inject mediatorcontext which would stay with scope
 public class Mediator(
     IServiceProvider services,
     IRequestExecutor requestExecutor, 
@@ -16,21 +13,19 @@ public class Mediator(
     IEnumerable<IExceptionHandler> exceptionHandlers
 ) : IMediator
 {
-    static readonly ActivitySource activitySource = new("Shiny.Mediator");
-    
-
     public async Task<TResult> Request<TResult>(
         IRequest<TResult> request, 
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
     )
     {
+        TResult result = default!;
+        
         var scope = services.CreateScope();
-        var context = new MediatorContext(scope, request, activitySource);
+        var context = new MediatorContext(scope, request, requestExecutor, commandExecutor, eventExecutor);
         configure?.Invoke(context);
         using var activity = context.StartActivity("Request");
         
-        TResult result = default!;
         try
         {
             result = await requestExecutor
@@ -64,12 +59,12 @@ public class Mediator(
 
     public async IAsyncEnumerable<TResult> Request<TResult>(
         IStreamRequest<TResult> request,
-        CancellationToken cancellationToken = default,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
     )
     {
         using var scope = services.CreateScope();
-        var context = new MediatorContext(scope, request, activitySource);
+        var context = new MediatorContext(scope, request, requestExecutor, commandExecutor, eventExecutor);
         configure?.Invoke(context);
         var enumerable = streamRequestExecutor.Request(context, request, cancellationToken);
 
@@ -81,18 +76,20 @@ public class Mediator(
 
 
     public async Task<IMediatorContext> Send<TCommand>(
-        TCommand request,
+        TCommand command,
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
     ) where TCommand : ICommand
     {
         using var scope = services.CreateScope();
-        var context = new MediatorContext(scope, request, activitySource);
+        var context = new MediatorContext(scope, command, requestExecutor, commandExecutor, eventExecutor);
         configure?.Invoke(context);
         
         try
         {
-            await commandExecutor.Send(context, request, cancellationToken).ConfigureAwait(false);
+            await commandExecutor
+                .Send(context, command, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (Exception exception)
         {
@@ -116,12 +113,14 @@ public class Mediator(
     ) where TEvent : IEvent
     {
         using var scope = services.CreateScope();
-        var context = new MediatorContext(scope, @event, activitySource);
+        var context = new MediatorContext(scope, @event, requestExecutor, commandExecutor, eventExecutor);
         configure?.Invoke(context);
         
         try
         {
-            await eventExecutor.Publish(context, @event, executeInParallel, cancellationToken);
+            await eventExecutor
+                .Publish(context, @event, executeInParallel, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (Exception exception)
         {
@@ -159,42 +158,3 @@ public class Mediator(
         return handled;
     }
 }
-// public async Task<MediatorResult> Request<TResult>(
-//     IRequest<TResult> request,
-//     CancellationToken cancellationToken = default,
-//     params IEnumerable<(string Key, object Value)> headers
-// )
-// {
-//     try
-//     {
-//         var context = await this
-//             .RequestWithContext(request, cancellationToken, headers)
-//             .ConfigureAwait(false);
-//
-//         // TODO: this gets me nothing that the context didn't already have... however, I'm returning a loose object, so I can transform
-//         // the result now
-//         return new MediatorResult(
-//             request,
-//             context.Result,
-//             null,
-//             context.Context
-//         );
-//     }
-//     catch (Exception ex)
-//     {
-//         // TODO: could apply different exception handler allowing Result to set/handled
-//         return new MediatorResult(
-//             request,
-//             null,
-//             ex,
-//             null // TODO: context is lost and shouldn't be on exceptions
-//         );   
-//     }
-// }
-//
-// public record MediatorResult(
-//     object Contract,
-//     object? Result,
-//     Exception? Exception,
-//     IMediatorContext Context
-// );

@@ -12,6 +12,10 @@
     <ItemGroup>
         <ProjectReference Include="..\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj" />
     </ItemGroup>
+    
+    <ItemGroup>
+        <InternalsVisibleTo Include="Shiny.Mediator.Tests" PublicKey="$(ShinyMediatorPublicKey)"  />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />

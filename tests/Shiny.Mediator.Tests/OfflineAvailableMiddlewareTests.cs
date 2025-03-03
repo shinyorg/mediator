@@ -39,7 +39,7 @@ public class OfflineAvailableRequestMiddlewareTests
         this.connectivity.IsAvailable = true;
         
         var request = new OfflineRequest();
-        var context = new MediatorContext(null!, request, null!)
+        var context = new MockMediatorContext
         {
             MessageHandler = this.handler
         };
