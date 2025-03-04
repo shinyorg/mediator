@@ -13,6 +13,8 @@ public class MockMediatorContext : IMediatorContext
     public Dictionary<string, object> OpenHeaders { get; } = new();
     public IReadOnlyDictionary<string, object> Headers => this.OpenHeaders;
     public void AddHeader(string key, object value) => this.OpenHeaders.Add(key, value);
+    public void RemoveHeader(string key) => this.OpenHeaders.Remove(key);
+    public void ClearHeaders() => this.OpenHeaders.Clear();
 
     public IMediatorContext? Parent { get; set; }
 
