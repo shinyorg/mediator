@@ -143,7 +143,7 @@ public partial class TriggerViewModel(
             while (await en.MoveNextAsync())
             {
                 await MainThread.InvokeOnMainThreadAsync(
-                    () => this.LastRefreshTimerValue = en.Current
+                    () => this.LastRefreshTimerValue = en.Current.Result
                 );
             }
         }
@@ -187,7 +187,7 @@ public partial class TriggerViewModel(
             );
             await foreach (var item in stream)
             {
-                this.StreamLastResponse = item;
+                this.StreamLastResponse = item.Result;
             }
         }
         catch (TaskCanceledException) {}
