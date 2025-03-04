@@ -47,6 +47,17 @@ public interface IMediatorContext
     void AddHeader(string key, object value);
     
     /// <summary>
+    /// Remove Header by key
+    /// </summary>
+    /// <param name="key"></param>
+    void RemoveHeader(string key);
+    
+    /// <summary>
+    /// Clear headers
+    /// </summary>
+    void ClearHeaders();
+    
+    /// <summary>
     /// The parent of this context
     /// </summary>
     IMediatorContext? Parent { get; }
@@ -168,7 +179,9 @@ class MediatorContext(
     Dictionary<string, object> store = new();
     public IReadOnlyDictionary<string, object> Headers => this.store.ToDictionary();
     public void AddHeader(string key, object value) => this.store.Add(key, value);
-    
+    public void RemoveHeader(string key) => this.store.Remove(key);
+    public void ClearHeaders() => this.store.Clear();
+
     public bool BypassExceptionHandlingEnabled { get; set; }
     public bool BypassMiddlewareEnabled { get; set; }
     
