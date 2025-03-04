@@ -1,12 +1,13 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
 public class InMemoryCommandScheduler(
-    IMediator mediator, 
     ILogger<ICommandScheduler> logger,
-    TimeProvider timeProvider
+    TimeProvider timeProvider,
+    IServiceProvider services
 ) : ICommandScheduler
 {
     readonly List<(DateTimeOffset DueAt, IMediatorContext Context)> commands = new();
@@ -45,13 +46,11 @@ public class InMemoryCommandScheduler(
             {
                 try
                 {
-                    await mediator
-                        .Send((ICommand)item.Context.Message, CancellationToken.None, ctx =>
-                        {
-                            // TODO: I want to replace the context or copy over everything else from the context?
-                            foreach (var item in item.Context.Headers)
-                                ctx.AddHeader(item.Key, item.Value);
-                        })
+                    using var scope = services.CreateScope();
+                    item.Context.Rebuild(scope);
+                    await item
+                        .Context
+                        .Send((ICommand)item.Context.Message, CancellationToken.None)
                         .ConfigureAwait(false);
                 }
                 catch (Exception ex)

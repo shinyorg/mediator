@@ -92,6 +92,14 @@ public interface IMediatorContext
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     T? TryGetValue<T>(string key);
+
+
+    /// <summary>
+    /// This is meant to rebuild a context if the service scope has died (ie. deferred command)
+    /// </summary>
+    /// 
+    /// <param name="scope"></param>
+    void Rebuild(IServiceScope scope);
     
     
     /// <summary>
@@ -152,7 +160,7 @@ class MediatorContext(
     static readonly ActivitySource activitySource = new("Shiny.Mediator");
     
     public Guid Id { get; } = Guid.NewGuid();
-    public IServiceScope ServiceScope => scope;
+    public IServiceScope ServiceScope { get; private set; } = scope;
     public ActivitySource ActivitySource => activitySource;
     public object Message => message;
     public object? MessageHandler { get; set; }
@@ -224,6 +232,11 @@ class MediatorContext(
             return t;
 
         return default;
+    }
+
+    public void Rebuild(IServiceScope scope)
+    {
+        this.ServiceScope = scope;
     }
 
 
