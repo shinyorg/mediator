@@ -41,9 +41,9 @@ public partial class TriggerViewModel(
     [RelayCommand]
     async Task Offline()
     {
-        var context = await mediator.RequestWithContext(new OfflineRequest());
-        this.OfflineValue = context.Result;
-        this.OfflineTimestamp = context.Context.Offline()?.Timestamp;
+        var response = await mediator.Request(new OfflineRequest());
+        this.OfflineValue = response.Result;
+        this.OfflineTimestamp = response.Context.Offline()?.Timestamp;
     }
     
     [ObservableProperty] string offlineValue;
@@ -62,12 +62,12 @@ public partial class TriggerViewModel(
             this.Arg!,
             this.FireAndForgetEvents
         );
-        var result = await mediator.Request(request, this.cancelSource.Token);
+        var response = await mediator.Request(request, this.cancelSource.Token);
         
         await data.Log(
             "TriggerViewModel-Response",
             new MyMessageEvent(
-                result.Response, 
+                response.Result.Response, 
                 this.FireAndForgetEvents 
             )
         );
@@ -88,8 +88,8 @@ public partial class TriggerViewModel(
     {
         try
         {
-            var result = await mediator.Request(new GetDestinationsHttpRequest(), this.cancelSource.Token);
-            await dialogs.DisplayAlertAsync("Results", result.Destinations.Count.ToString(), "OK");
+            var response = await mediator.Request(new GetDestinationsHttpRequest(), this.cancelSource.Token);
+            await dialogs.DisplayAlertAsync("Results", response.Result.Destinations.Count.ToString(), "OK");
         }
         catch (Exception ex)
         {
@@ -101,9 +101,9 @@ public partial class TriggerViewModel(
     [RelayCommand]
     async Task CacheRequest()
     {
-        var context = await mediator.RequestWithContext(new CacheRequest());
-        this.CacheValue = context.Result;
-        this.CacheTimestamp = context.Context.Cache()?.Timestamp;
+        var response = await mediator.Request(new CacheRequest());
+        this.CacheValue = response.Result;
+        this.CacheTimestamp = response.Context.Cache()?.Timestamp;
     }
 
 
@@ -169,7 +169,7 @@ public partial class TriggerViewModel(
 
 
     [RelayCommand]
-    async Task Resilient() => this.ResilientValue = await mediator.Request(new ResilientRequest());
+    async Task Resilient() => this.ResilientValue = (await mediator.Request(new ResilientRequest())).Result;
     [ObservableProperty] string resilientValue;
 
     

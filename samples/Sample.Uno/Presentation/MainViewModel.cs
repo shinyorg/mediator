@@ -15,12 +15,12 @@ public partial class MainViewModel(
     [RelayCommand]
     async Task Offline()
     {
-        var context = await mediator
-            .RequestWithContext(new OfflineRequest())
+        var response = await mediator
+            .Request(new OfflineRequest())
             .ConfigureAwait(true);
-        var offline = context.Context.Offline();
+        var offline = response.Context.Offline();
 
-        this.OfflineResultText = context.Result;
+        this.OfflineResultText = response.Result;
         this.OfflineDate = offline?.Timestamp.ToString() ?? "Not Offline Data";
     }
 

@@ -24,17 +24,18 @@ public class ReplayStreamTests(ITestOutputHelper output)
 
         var internet = sp.GetRequiredService<MockInternetService>();
         internet.IsAvailable = false;
-        
-        var context = await mediator.RequestWithContext(new ReplayStreamRequest());
+
+        IMediatorContext context = null!;
+        var enumerable = mediator.Request(new ReplayStreamRequest(), CancellationToken.None, ctx => context = ctx);
 
         var i = 0;
-        await foreach (var item in context.Result)
+        await foreach (var item in enumerable)
         {
-            var cache = context.Context.Cache();
+            var cache = context.Cache();
             cache.ShouldBeNull("Cache should be null");
-            context.Context.Headers.ContainsKey("FromHandler").ShouldBeTrue();
+            context.Headers.ContainsKey("FromHandler").ShouldBeTrue();
             
-            var offline = context.Context.Offline();
+            var offline = context.Offline();
             switch (i)
             {
                 case 0:

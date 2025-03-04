@@ -22,8 +22,8 @@ public class DataAnnotationsTests
     [Fact]
     public async Task WithValidateResult()
     {
-        var result = await this.mediator.Request(new ValidationRequest());
-        result.Errors.Count.ShouldBe(2);
+        var response = await this.mediator.Request(new ValidationRequest());
+        response.Result.Errors.Count.ShouldBe(2);
     }
     
     
@@ -45,8 +45,8 @@ public class DataAnnotationsTests
     [Fact]
     public async Task Success()
     {
-        var result = await this.mediator.Request(new ValidationRequest { Name = "Allan", Url = "https://test.com" });
-        result.IsValid.ShouldBeTrue();
+        var response = await this.mediator.Request(new ValidationRequest { Name = "Allan", Url = "https://test.com" });
+        response.Result.IsValid.ShouldBeTrue();
     }
 }
 

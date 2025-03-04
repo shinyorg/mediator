@@ -13,7 +13,7 @@ public class Mediator(
     IEnumerable<IExceptionHandler> exceptionHandlers
 ) : IMediator
 {
-    public async Task<TResult> Request<TResult>(
+    public async Task<(IMediatorContext Context, TResult Result)> Request<TResult>(
         IRequest<TResult> request, 
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
@@ -53,7 +53,7 @@ public class Mediator(
             if (!handled)
                 throw;
         }
-        return result;
+        return (context, result);
     }
 
 

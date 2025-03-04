@@ -25,7 +25,7 @@ public interface IMediator
     /// <param name="configure"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    Task<TResult> Request<TResult>(
+    Task<(IMediatorContext Context, TResult Result)> Request<TResult>(
         IRequest<TResult> request,
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null

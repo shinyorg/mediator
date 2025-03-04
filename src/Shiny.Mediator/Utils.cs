@@ -1,11 +1,37 @@
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator;
 
 
 public static class Utils
 {
+    /// <summary>
+    /// Fire & Forget task pattern
+    /// </summary>
+    /// <param name="task"></param>
+    /// <param name="onError"></param>
+    public static void RunInBackground(this Task task, Action<Exception> onError)
+        => task.ContinueWith(x =>
+        {
+            if (x.Exception != null)
+                onError(x.Exception);
+        }, TaskContinuationOptions.OnlyOnFaulted);
+    
+    /// <summary>
+    /// Fire & Forget task pattern that logs errors
+    /// </summary>
+    /// <param name="task"></param>
+    /// <param name="errorLogger"></param>
+    public static void RunInBackground(this Task task, ILogger errorLogger)
+        => task.ContinueWith(x =>
+        {
+            if (x.Exception != null)
+                errorLogger.LogError(x.Exception, "Fire & Forget trapped error");
+        }, TaskContinuationOptions.OnlyOnFaulted);
+    
+    
     public static IConfigurationSection? GetHandlerSection(this IConfiguration config, string module, object request, object? handler)
     {
         var moduleCfg = config.GetSection("Mediator:" + module);

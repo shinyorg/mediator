@@ -45,9 +45,9 @@ Welcome to your new app.
 
         try
         {
-            var context = await mediator.RequestWithContext(new DoThing(this.text ?? "No Text Sent"));
-            this.resultText = context.Result.ToString();
-            var off = context.Context.Offline();
+            var response = await mediator.Request(new DoThing(this.text ?? "No Text Sent"));
+            this.resultText = response.Result.ToString();
+            var off = response.Context.Offline();
             if (off != null)
                 this.offlineText = $"Data From: {off.Timestamp.ToLocalTime():h:mm:ss tt} - Key: {off.RequestKey}";
         }
