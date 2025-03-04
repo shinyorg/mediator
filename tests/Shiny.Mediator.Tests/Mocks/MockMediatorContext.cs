@@ -38,7 +38,12 @@ public class MockMediatorContext : IMediatorContext
 
         return default;
     }
-    
+
+    public void Rebuild(IServiceScope scope)
+    {
+        
+    }
+
 
     public Task<TResult> Request<TResult>(
         IRequest<TResult> request, 
