@@ -40,7 +40,7 @@ public interface IMediator
     /// <param name="configure"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    IAsyncEnumerable<TResult> Request<TResult>(
+    IAsyncEnumerable<(IMediatorContext Context, TResult Result)> Request<TResult>(
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null

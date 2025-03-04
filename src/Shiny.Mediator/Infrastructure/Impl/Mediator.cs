@@ -57,7 +57,7 @@ public class Mediator(
     }
 
 
-    public async IAsyncEnumerable<TResult> Request<TResult>(
+    public async IAsyncEnumerable<(IMediatorContext Context, TResult Result)> Request<TResult>(
         IStreamRequest<TResult> request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
@@ -70,7 +70,7 @@ public class Mediator(
 
         await foreach (var result in enumerable)
         {
-            yield return result;
+            yield return (context, result);
         }
     }
 

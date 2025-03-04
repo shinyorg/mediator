@@ -8,7 +8,7 @@ namespace Shiny.Mediator.Tests;
 
 public class ReplayStreamTests(ITestOutputHelper output)
 {
-    [Fact(Skip = "Borked")]
+    [Fact]
     public async Task ContextUpdatingBetweenAwaits()
     {
         var services = new ServiceCollection();
@@ -25,17 +25,15 @@ public class ReplayStreamTests(ITestOutputHelper output)
         var internet = sp.GetRequiredService<MockInternetService>();
         internet.IsAvailable = false;
 
-        IMediatorContext context = null!;
-        var enumerable = mediator.Request(new ReplayStreamRequest(), CancellationToken.None, ctx => context = ctx);
-
+        var enumerable = mediator.Request(new ReplayStreamRequest(), CancellationToken.None);
         var i = 0;
         await foreach (var item in enumerable)
         {
-            var cache = context.Cache();
+            var cache = item.Context.Cache();
             cache.ShouldBeNull("Cache should be null");
-            context.Headers.ContainsKey("FromHandler").ShouldBeTrue();
+            item.Context.Headers.ContainsKey("FromHandler").ShouldBeTrue();
             
-            var offline = context.Offline();
+            var offline = item.Context.Offline();
             switch (i)
             {
                 case 0:
