@@ -14,6 +14,20 @@ public class RequestHandlerTests
         var result = await sp.GetRequiredService<IMediator>().Request(new TestResultRequest("HELLO"));
         result.ShouldBe("RESPONSE-HELLO");
     }
+
+
+    [Fact]
+    public async Task EndToEndWithContext()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddShinyMediator(includeStandardMiddleware: false);
+        services.AddSingletonAsImplementedInterfaces<TestResultRequestHandler>();
+        var sp = services.BuildServiceProvider();
+        var result = await sp.GetRequiredService<IMediator>().RequestWithContext(new TestResultRequest("HELLO"), CancellationToken.None, ctx => ctx.AddHeader("Hello", "World"));
+        result.Result.ShouldBe("RESPONSE-HELLO");
+        result.Context.Headers.ShouldContainKey("Hello");
+    }
 }
 
 

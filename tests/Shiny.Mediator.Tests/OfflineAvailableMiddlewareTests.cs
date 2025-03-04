@@ -24,7 +24,7 @@ public class OfflineAvailableRequestMiddlewareTests
         // this.config.AddConfiguration(new MemoryConfigurationProvider(new MemoryConfigurationSource().InitialData))
         
         this.middleware = new OfflineAvailableRequestMiddleware<OfflineRequest, long>(
-            Logging.CreateLogger<OfflineAvailableRequestMiddleware<OfflineRequest, long>>(output),
+            TestHelpers.CreateLogger<OfflineAvailableRequestMiddleware<OfflineRequest, long>>(output),
             this.connectivity, 
             this.offline,
             this.config
@@ -41,6 +41,7 @@ public class OfflineAvailableRequestMiddlewareTests
         var request = new OfflineRequest();
         var context = new MockMediatorContext
         {
+            Message = request,
             MessageHandler = this.handler
         };
         

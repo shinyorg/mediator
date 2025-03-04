@@ -20,7 +20,7 @@ public class HttpRequestTests(ITestOutputHelper output)
             QueryValue = query
         };
         var serializer = new SysTextJsonSerializerService();
-        var logger = Logging.CreateLogger<HttpRequestHandler<MyHttpResultRequest, HttpResult>>(output);
+        var logger = TestHelpers.CreateLogger<HttpRequestHandler<MyHttpResultRequest, HttpResult>>(output);
         var handler = new TestHttpRequestHandler<MyHttpResultRequest, HttpResult>(logger, null, serializer, null!);
         var message = handler.GetMessage(request, "https://test.com");
         message.RequestUri!.ToString().ShouldBe(expectedUri);

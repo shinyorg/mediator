@@ -51,6 +51,7 @@ public static class Utils
     }
     
 
+    // TODO: AOT hated
     public static TAttribute? GetHandlerHandleMethodAttribute<TCommand, TAttribute>(this ICommandHandler handler) where TAttribute : Attribute where TCommand : ICommand
         => handler
             .GetType()
@@ -65,6 +66,7 @@ public static class Utils
             .GetCustomAttribute<TAttribute>();
     
     
+    // TODO: AOT hated
     public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TAttribute>(this IRequestHandler handler) where TAttribute : Attribute
         => handler
             .GetType()
@@ -79,6 +81,7 @@ public static class Utils
             .GetCustomAttribute<TAttribute>();
    
    
+    // TODO: AOT hated
     public static TAttribute? GetHandlerHandleMethodAttribute<TEvent, TAttribute>(this IEventHandler<TEvent> handler) 
         where TEvent : IEvent
         where TAttribute : Attribute

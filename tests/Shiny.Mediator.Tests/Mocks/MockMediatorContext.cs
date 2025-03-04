@@ -26,28 +26,44 @@ public class MockMediatorContext : IMediatorContext
         throw new NotImplementedException();
     }
 
-    public Activity? StartActivity(string activityName)
-    {
-        throw new NotImplementedException();
-    }
+    public Activity? StartActivity(string activityName) => null;
 
     public T? TryGetValue<T>(string key)
     {
-        throw new NotImplementedException();
-    }
+        if (this.OpenHeaders.TryGetValue(key, out var value))
+        {
+            if (value is T result)
+                return result;
+        }
 
-    public Task<TResult> Request<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default, Action<IMediatorContext>? configure = null)
+        return default;
+    }
+    
+
+    public Task<TResult> Request<TResult>(
+        IRequest<TResult> request, 
+        CancellationToken cancellationToken = default, 
+        Action<IMediatorContext>? configure = null
+    )
     {
         throw new NotImplementedException();
     }
 
-    public Task Send<TCommand>(TCommand command, CancellationToken cancellationToken = default, Action<IMediatorContext>? configure = null) where TCommand : ICommand
+    public Task Send<TCommand>(
+        TCommand command, 
+        CancellationToken cancellationToken = default, 
+        Action<IMediatorContext>? configure = null
+    ) where TCommand : ICommand
     {
         throw new NotImplementedException();
     }
 
-    public Task Publish<TEvent>(TEvent @event, bool executeInParallel = true, CancellationToken cancellationToken = default,
-        Action<IMediatorContext>? configure = null) where TEvent : IEvent
+    public Task Publish<TEvent>(
+        TEvent @event, 
+        bool executeInParallel = true, 
+        CancellationToken cancellationToken = default,
+        Action<IMediatorContext>? configure = null
+    ) where TEvent : IEvent
     {
         throw new NotImplementedException();
     }
