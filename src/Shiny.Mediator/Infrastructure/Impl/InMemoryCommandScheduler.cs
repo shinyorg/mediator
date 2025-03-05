@@ -14,7 +14,7 @@ public class InMemoryCommandScheduler(
     ITimer? timer;
     
     
-    public Task<bool> Schedule(IMediatorContext command, DateTimeOffset dueAt, CancellationToken cancellationToken)
+    public Task<bool> Schedule(IMediatorContext context, DateTimeOffset dueAt, CancellationToken cancellationToken)
     {
         var scheduled = false;
         var now = timeProvider.GetUtcNow();
@@ -22,7 +22,7 @@ public class InMemoryCommandScheduler(
         if (dueAt > now)
         {
             lock (this.commands)
-                this.commands.Add((dueAt, command));
+                this.commands.Add((dueAt, context));
 
             scheduled = true;
             this.timer ??= timeProvider.CreateTimer(_ => this.OnTimerElapsed(), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
@@ -48,6 +48,10 @@ public class InMemoryCommandScheduler(
                 {
                     using var scope = services.CreateScope();
                     item.Context.Rebuild(scope);
+
+                    item.Context.BypassMiddlewareEnabled = true;
+                    item.Context.BypassExceptionHandlingEnabled = true;
+                    
                     await item
                         .Context
                         .Send((ICommand)item.Context.Message, CancellationToken.None)
