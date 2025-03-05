@@ -29,9 +29,12 @@ public class HttpRequestHandler<TRequest, TResult>(
         logger.LogDebug("Base URI: " + baseUri);
         
         var httpRequest = this.ContractToHttpRequest(request, http, baseUri);
-        await this.Decorate(request, httpRequest).ConfigureAwait(false);
+        await this.Decorate(request, context, httpRequest).ConfigureAwait(false);
 
-        var result = await this.Send(httpRequest, http.Timeout, cancellationToken).ConfigureAwait(false);
+        var result = await this
+            .Send(httpRequest, http.Timeout, cancellationToken)
+            .ConfigureAwait(false);
+        
         return result;
     }
     
@@ -75,13 +78,13 @@ public class HttpRequestHandler<TRequest, TResult>(
     }
     
 
-    protected virtual async Task Decorate(TRequest request, HttpRequestMessage httpRequest)
+    protected virtual async Task Decorate(TRequest request, IMediatorContext context, HttpRequestMessage httpRequest)
     {
         foreach (var decorator in decorators)
         {
             logger.LogDebug("Decorating " + decorator.GetType().Name);
             await decorator
-                .Decorate(httpRequest, request)
+                .Decorate(httpRequest, context, request)
                 .ConfigureAwait(false);
         }
     }
