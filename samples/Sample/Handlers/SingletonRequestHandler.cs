@@ -4,7 +4,7 @@ namespace Sample.Handlers;
 
 
 [SingletonHandler]
-public class SingletonRequestHandler(IMediator mediator, AppSqliteConnection data) : IRequestHandler<MyMessageRequest, MyMessageResponse>
+public class SingletonRequestHandler(AppSqliteConnection data) : IRequestHandler<MyMessageRequest, MyMessageResponse>
 {
     // [Cache(Storage = StoreType.File, MaxAgeSeconds = 30, OnlyForOffline = true)]
     [OfflineAvailable]
@@ -17,7 +17,7 @@ public class SingletonRequestHandler(IMediator mediator, AppSqliteConnection dat
         await data.Log("SingletonRequestHandler", e);
         if (request.FireAndForgetEvents)
         {
-            mediator.Publish(e).RunInBackground(ex =>
+            context.Publish(e).RunInBackground(ex =>
             {
                 // log this or something
                 Console.WriteLine(ex);
@@ -25,8 +25,9 @@ public class SingletonRequestHandler(IMediator mediator, AppSqliteConnection dat
         }
         else
         {
-            await mediator.Publish(
+            await context.Publish(
                 e,
+                true,
                 cancellationToken
             );
         }
