@@ -46,7 +46,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         
         if (section == null)
         {
-            enabled = ((IStreamRequestHandler<TRequest, TResult>)requestHandler).GetHandlerHandleMethodAttribute<TRequest, ReplayStreamAttribute>() != null;
+            enabled = ((IStreamRequestHandler<TRequest, TResult>)requestHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, ReplayStreamAttribute>() != null;
         }
         else
         {

@@ -1,7 +1,7 @@
 namespace Shiny.Mediator;
 
 
-public interface IStreamRequestHandler<TRequest, TResult> : IRequestHandler where TRequest : IStreamRequest<TResult>
+public interface IStreamRequestHandler<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     IAsyncEnumerable<TResult> Handle(
         TRequest request, 

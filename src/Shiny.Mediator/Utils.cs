@@ -32,7 +32,12 @@ public static class Utils
         }, TaskContinuationOptions.OnlyOnFaulted);
     
     
-    public static IConfigurationSection? GetHandlerSection(this IConfiguration config, string module, object request, object? handler)
+    public static IConfigurationSection? GetHandlerSection(
+        this IConfiguration config, 
+        string module, 
+        object request, 
+        object? handler
+    )
     {
         var moduleCfg = config.GetSection("Mediator:" + module);
         if (moduleCfg.Exists())
@@ -78,7 +83,9 @@ public static class Utils
     
 
     // TODO: AOT hated
-    public static TAttribute? GetHandlerHandleMethodAttribute<TCommand, TAttribute>(this ICommandHandler handler) where TAttribute : Attribute where TCommand : ICommand
+    public static TAttribute? GetHandlerHandleMethodAttribute<TCommand, TAttribute>(this ICommandHandler<TCommand> handler) 
+            where TAttribute : Attribute 
+            where TCommand : ICommand
         => handler
             .GetType()
             .GetMethod(
@@ -93,7 +100,26 @@ public static class Utils
     
     
     // TODO: AOT hated
-    public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TAttribute>(this IRequestHandler handler) where TAttribute : Attribute
+    public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IRequestHandler<TRequest, TResult> handler) 
+            where TAttribute : Attribute
+            where TRequest : IRequest<TResult>
+        => handler
+            .GetType()
+            .GetMethod(
+                "Handle", 
+                BindingFlags.Public | BindingFlags.Instance, 
+                null,
+                CallingConventions.Any,
+                [ typeof(TRequest), typeof(IMediatorContext), typeof(CancellationToken) ],
+                null
+            )!
+            .GetCustomAttribute<TAttribute>();
+    
+    
+    // TODO: AOT hated
+    public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IStreamRequestHandler<TRequest, TResult> handler) 
+        where TAttribute : Attribute
+        where TRequest : IStreamRequest<TResult>
         => handler
             .GetType()
             .GetMethod(

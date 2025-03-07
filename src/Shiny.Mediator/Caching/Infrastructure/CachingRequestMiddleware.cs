@@ -10,6 +10,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
     IConfiguration configuration,
     ICacheService cacheService
 ) : IRequestMiddleware<TRequest, TResult>
+    where TRequest : IRequest<TResult>
 {
     public async Task<TResult> Process(
         IMediatorContext context,
@@ -23,7 +24,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
 
         if (section == null)
         {
-            attribute = ((IRequestHandler)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, CacheAttribute>();
+            attribute = ((IRequestHandler<TRequest, TResult>)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, CacheAttribute>();
         }
         else
         {

@@ -4,6 +4,7 @@ namespace Shiny.Mediator.Middleware;
 
 
 public abstract class AbstractValidationRequestMiddleware<TRequest, TResult> : IRequestMiddleware<TRequest, TResult>
+    where TRequest : IRequest<TResult>
 {
     public async Task<TResult> Process(
         IMediatorContext context,

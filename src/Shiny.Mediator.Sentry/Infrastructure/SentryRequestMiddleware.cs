@@ -2,6 +2,7 @@ namespace Shiny.Mediator.Infrastructure;
 
 
 public class SentryRequestMiddleware<TRequest, TResult> : IRequestMiddleware<TRequest, TResult>
+    where TRequest : IRequest<TResult>
 {
     // fingerprint vs span set
     public async Task<TResult> Process(

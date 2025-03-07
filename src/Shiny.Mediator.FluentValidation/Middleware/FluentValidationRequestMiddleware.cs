@@ -6,6 +6,7 @@ namespace Shiny.Mediator.FluentValidation.Middleware;
 
 
 public class FluentValidationRequestMiddleware<TRequest, TResult>(IServiceProvider services) : AbstractValidationRequestMiddleware<TRequest, TResult>
+    where TRequest : IRequest<TResult>
 {
     protected override async Task Validate(TRequest request, Dictionary<string, List<string>> populate, CancellationToken cancellationToken)
     {

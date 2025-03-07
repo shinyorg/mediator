@@ -4,6 +4,7 @@ namespace Shiny.Mediator.Middleware;
 
 
 public class DataAnnotationsRequestMiddleware<TRequest, TResult> : AbstractValidationRequestMiddleware<TRequest, TResult>
+    where TRequest : IRequest<TResult>
 {
     protected override Task Validate(
         TRequest request, 

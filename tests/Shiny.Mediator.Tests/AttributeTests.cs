@@ -6,7 +6,7 @@ public class AttributeTests
     public void FoundAttributeOnContract()
     {
         new MyAttributeRequestHandler()
-            .GetHandlerHandleMethodAttribute<MyAttributeRequest, MyAttributeAttribute>()
+            .GetHandlerHandleMethodAttribute<MyAttributeRequest, string, MyAttributeAttribute>()
             .ShouldNotBeNull();
     }
     
