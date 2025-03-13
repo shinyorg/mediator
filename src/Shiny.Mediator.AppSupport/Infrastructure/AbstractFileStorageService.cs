@@ -25,9 +25,18 @@ public abstract class AbstractFileStorageService(
 
     public async Task<T?> Get<T>(string category, string key)
     {
-        var fileName = await this.GetFileIndexer(category, key).ConfigureAwait(false);
-        var obj = await this.GetObject<T>(fileName);
-        return obj;
+        try
+        {
+            var fileName = await this.GetFileIndexer(category, key).ConfigureAwait(false);
+            var obj = await this.GetObject<T>(fileName);
+            return obj;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error getting {Category}-{Key}", category, key);
+            await this.Remove(category, key).ConfigureAwait(false); // serialization was messed up? let's remove it
+            return default;
+        }
     }
     
 
@@ -143,7 +152,7 @@ public abstract class AbstractFileStorageService(
             this._indexes ??= await this
                 .GetObject<ConcurrentDictionary<string, ConcurrentDictionary<string, string>>>(IndexFile)
                 .ConfigureAwait(false);
-            
+
             this._indexes ??= new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
             catIndex = this._indexes.GetOrAdd(category, _ => new ConcurrentDictionary<string, string>());
         }
