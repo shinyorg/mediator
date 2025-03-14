@@ -6,6 +6,8 @@
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Diagnostics" Version="9.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+
+        <PackageVersion Include="Nerdbank.GitVersioning" Version="3.7.115" PrivateAssets="All" />
     </ItemGroup>
     
     <!--support libs-->
