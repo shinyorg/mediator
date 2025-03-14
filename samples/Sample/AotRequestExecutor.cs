@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 // using Sample.Contracts;
 // using Shiny.Mediator.Infrastructure;
 // using Shiny.Mediator.Infrastructure.Impl;
@@ -32,3 +33,16 @@
 //         throw new NotImplementedException();
 //     }
 // }
+
+
+
+public class TestContract
+{
+    public string Message { get; set; }
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(TestContract))]
+internal partial class SourceGenerationContext : JsonSerializerContext
+{
+}

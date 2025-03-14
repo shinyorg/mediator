@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Shiny.Mediator.Infrastructure;
-using Uno.Extensions.Hosting;
 
 namespace Shiny.Mediator;
 
@@ -15,7 +13,7 @@ public static class UnoExtensions
     /// <param name="cfg"></param>
     /// <returns></returns>
     public static ShinyMediatorBuilder UseUno(this ShinyMediatorBuilder cfg)
-    {                    
+    {
         cfg.AddStandardAppSupportMiddleware();
         cfg.AddUnoInfrastructure();
         return cfg;

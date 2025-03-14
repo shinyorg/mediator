@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj" />
+        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="FluentValidation" Version="11.11.0" />
+        <PackageReference Include="FluentValidation"/>
     </ItemGroup>
 
 </Project>

@@ -7,7 +7,8 @@ namespace Shiny.Mediator;
 public class ConnectivityBroadcaster(
     ILogger<ConnectivityBroadcaster> logger,
     IMediator mediator,
-    IInternetService internetService
+    IInternetService internetService,
+    IApplication application
 ) : IMauiInitializeService
 {
     bool connected = false;
@@ -31,12 +32,65 @@ public class ConnectivityBroadcaster(
                 logger.LogError(ex, "Error occured while connectivity Sprayer");
             }
         };
-
+        
         var app = await this.WaitForApp().ConfigureAwait(false);
         if (app != null)
             app.PageAppearing += async (_, page) => await this.TryPageBinding(page);
     }
 
+    
+//     #if __IOS__
+//             events.AddiOS(lifecycle =>
+//             {
+//                 lifecycle.FinishedLaunching((application, launchOptions) =>
+//                 {
+//                     // A bit of hackery here, because we can't mock UIKit.UIApplication in tests.
+//                     var platformApplication = application != null!
+//                         ? application.Delegate as IPlatformApplication
+//                         : launchOptions["application"] as IPlatformApplication;
+//
+//                     platformApplication?.HandleMauiEvents();
+//                     return true;
+//                 });
+//                 lifecycle.WillTerminate(application =>
+//                 {
+//                     if (application == null!)
+//                     {
+//                         return;
+//                     }
+//
+//                     var platformApplication = application.Delegate as IPlatformApplication;
+//                     platformApplication?.HandleMauiEvents(bind: false);
+//
+//                     //According to https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623111-applicationwillterminate#discussion
+//                     //WillTerminate is called: in situations where the app is running in the background (not suspended) and the system needs to terminate it for some reason.
+//                     SentryMauiEventProcessor.InForeground = false;
+//                 });
+//
+//                 lifecycle.OnActivated(application => SentryMauiEventProcessor.InForeground = true);
+//
+//                 lifecycle.DidEnterBackground(application => SentryMauiEventProcessor.InForeground = false);
+//                 lifecycle.OnResignActivation(application => SentryMauiEventProcessor.InForeground = false);
+//             });
+// #elif ANDROID
+//             events.AddAndroid(lifecycle =>
+//             {
+//                 lifecycle.OnApplicationCreating(application => (application as IPlatformApplication)?.HandleMauiEvents());
+//                 lifecycle.OnDestroy(application => (application as IPlatformApplication)?.HandleMauiEvents(bind: false));
+//
+//                 lifecycle.OnResume(activity => SentryMauiEventProcessor.InForeground = true);
+//                 lifecycle.OnStart(activity => SentryMauiEventProcessor.InForeground = true);
+//
+//                 lifecycle.OnStop(activity => SentryMauiEventProcessor.InForeground = false);
+//                 lifecycle.OnPause(activity => SentryMauiEventProcessor.InForeground = false);
+//             });
+// #elif WINDOWS
+//             events.AddWindows(lifecycle =>
+//             {
+//                 lifecycle.OnLaunching((application, _) => (application as IPlatformApplication)?.HandleMauiEvents());
+//                 lifecycle.OnClosed((application, _) => (application as IPlatformApplication)?.HandleMauiEvents(bind: false));
+//             });
+// #endif
 
     async Task TryPageBinding(Page page)
     {

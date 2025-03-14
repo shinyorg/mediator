@@ -15,7 +15,8 @@
         <PackageTags>mediator shiny aspnet maui blazor prism</PackageTags>
         <RepositoryUrl>https://github.com/shinyorg/mediator</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+        
         <CI Condition="'$(GITHUB_ACTIONS)' == 'true'">true</CI>
         <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     </PropertyGroup>
