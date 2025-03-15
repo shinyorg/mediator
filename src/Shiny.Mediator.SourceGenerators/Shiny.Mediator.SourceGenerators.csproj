@@ -16,12 +16,12 @@
 
     <ItemGroup>
         <!--4.11 does not generate in project refs on rider-->
-        <PackageReference Include="SharpYaml" Version="2.1.1" PrivateAssets="All" GeneratePathProperty="true" />
-        <PackageReference Include="Microsoft.OpenApi" Version="1.6.23" PrivateAssets="All" GeneratePathProperty="true" />
-        <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.6.23" PrivateAssets="All" GeneratePathProperty="true" />
+        <PackageReference Include="SharpYaml" PrivateAssets="All" GeneratePathProperty="true" />
+        <PackageReference Include="Microsoft.OpenApi" PrivateAssets="All" GeneratePathProperty="true" />
+        <PackageReference Include="Microsoft.OpenApi.Readers" PrivateAssets="All" GeneratePathProperty="true" />
         
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>

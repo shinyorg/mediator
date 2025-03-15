@@ -10,6 +10,7 @@ public class PerformanceLoggingRequestMiddleware<TRequest, TResult>(
     IConfiguration configuration,
     ILogger<TRequest> logger
 ) : IRequestMiddleware<TRequest, TResult>
+    where TRequest : IRequest<TResult>
 {
     public async Task<TResult> Process(
         IMediatorContext context, 

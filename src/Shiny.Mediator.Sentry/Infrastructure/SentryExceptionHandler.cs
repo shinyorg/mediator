@@ -1,10 +1,10 @@
 namespace Shiny.Mediator.Infrastructure;
 
-public class SentryExceptionHandler : IExceptionHandler
+public class SentryExceptionHandler(IHub hub) : IExceptionHandler
 {
-    public async Task<bool> Handle(IMediatorContext context, Exception exception)
+    public Task<bool> Handle(IMediatorContext context, Exception exception)
     {
-        SentrySdk.CaptureException(exception);
-        return false;
+        hub.CaptureException(exception);
+        return Task.FromResult(false);
     }
 }

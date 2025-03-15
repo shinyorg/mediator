@@ -1,6 +1,6 @@
 {
     "solution": {
-        "path": "ShinyMediator.sln",
+        "path": "ShinyMediator.slnx",
         "projects": [
             "src\\Shiny.Mediator\\Shiny.Mediator.csproj",
             "src\\Shiny.Mediator.AppSupport\\Shiny.Mediator.AppSupport.csproj",

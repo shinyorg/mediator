@@ -19,6 +19,9 @@
         <ApplicationIdGuid>7E332C26-A4DC-43D8-88AC-E80C9A240953</ApplicationIdGuid>
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
+        <!--<PublishAot>true</PublishAot>-->
+        <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
         <ApplicationVersion>1</ApplicationVersion>
 

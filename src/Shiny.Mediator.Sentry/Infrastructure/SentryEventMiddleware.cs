@@ -1,6 +1,6 @@
 namespace Shiny.Mediator.Infrastructure;
 
-public class SentryEventMiddleware<TEvent> : IEventMiddleware<TEvent> where TEvent : IEvent
+public class SentryEventMiddleware<TEvent>(IHub hub) : IEventMiddleware<TEvent> where TEvent : IEvent
 {
     // would be nice to see a transaction across the event spray
     public async Task Process(
@@ -9,7 +9,7 @@ public class SentryEventMiddleware<TEvent> : IEventMiddleware<TEvent> where TEve
         CancellationToken cancellationToken
     )
     {
-        var transaction = SentrySdk.StartTransaction("mediator", "event");
+        var transaction = hub.StartTransaction("mediator", "event");
         var span = transaction.StartChild(context.MessageHandler.GetType().FullName!);
         
         await next().ConfigureAwait(false);

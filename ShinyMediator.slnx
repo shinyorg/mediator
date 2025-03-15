@@ -1,0 +1,41 @@
+﻿<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+  </Configurations>
+  <Folder Name="/Samples/">
+    <Project Path="samples\Sample.Api\Sample.Api.csproj" />
+    <Project Path="samples\Sample.Blazor\Sample.Blazor.csproj" />
+    <Project Path="samples\Sample.Uno\Sample.Uno.csproj" />
+    <Project Path="samples\Sample\Sample.csproj" />
+    <Project Path="tests\Shiny.Mediator.Tests\Shiny.Mediator.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Solution/">
+    <File Path="readme.md" />
+    <File Path=".github\workflows\build.yml" />
+    <File Path=".github\ISSUE_TEMPLATE\bug_report.yml" />
+    <File Path=".github\ISSUE_TEMPLATE\config.yml" />
+    <File Path=".github\ISSUE_TEMPLATE\feature_request.yml" />
+    <File Path="src\Directory.build.props" />
+    <File Path="src\Directory.build.targets" />
+    <File Path="src\nuget.txt" />
+    <File Path="version.json" />
+    <File Path="LICENSE" />
+    <File Path=".github\PULL_REQUEST_TEMPLATE.md" />
+    <File Path="src\Directory.packages.props" />
+    <File Path="Build.slnf" />
+  </Folder>
+  <Project Path="src\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj" />
+  <Project Path="src\Shiny.Mediator.AspNet\Shiny.Mediator.AspNet.csproj" />
+  <Project Path="src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj" />
+  <Project Path="src\Shiny.Mediator.Caching.MicrosoftMemoryCache\Shiny.Mediator.Caching.MicrosoftMemoryCache.csproj" />
+  <Project Path="src\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj" />
+  <Project Path="src\Shiny.Mediator.DapperRequests\Shiny.Mediator.DapperRequests.csproj" />
+  <Project Path="src\Shiny.Mediator.FluentValidation\Shiny.Mediator.FluentValidation.csproj" />
+  <Project Path="src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj" />
+  <Project Path="src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj" />
+  <Project Path="src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj" />
+  <Project Path="src\Shiny.Mediator.Sentry\Shiny.Mediator.Sentry.csproj" />
+  <Project Path="src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" />
+  <Project Path="src\Shiny.Mediator.Uno\Shiny.Mediator.Uno.csproj" />
+  <Project Path="src\Shiny.Mediator\Shiny.Mediator.csproj" />
+</Solution>

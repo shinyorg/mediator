@@ -11,6 +11,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
     IOfflineService offline,
     IConfiguration configuration
 ) : IRequestMiddleware<TRequest, TResult>
+    where TRequest : IRequest<TResult>
 {
     public async Task<TResult> Process(
         IMediatorContext context,
@@ -72,7 +73,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         var section = configuration.GetHandlerSection("Offline", request!, requestHandler);
         if (section == null)
         {
-            enabled = ((IRequestHandler)requestHandler).GetHandlerHandleMethodAttribute<TRequest, OfflineAvailableAttribute>() != null;
+            enabled = ((IRequestHandler<TRequest, TResult>)requestHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, OfflineAvailableAttribute>() != null;
         }
         else
         {

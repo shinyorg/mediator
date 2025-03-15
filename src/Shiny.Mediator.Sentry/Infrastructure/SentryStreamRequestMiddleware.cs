@@ -1,15 +1,18 @@
+using System.Runtime.CompilerServices;
+
 namespace Shiny.Mediator.Infrastructure;
 
 
-public class SentryStreamRequestMiddleware<TRequest, TResult> : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
+public class SentryStreamRequestMiddleware<TRequest, TResult>(IHub hub) : IStreamRequestMiddleware<TRequest, TResult> 
+    where TRequest : IStreamRequest<TResult>
 {
     public async IAsyncEnumerable<TResult> Process(
         IMediatorContext context, 
         StreamRequestHandlerDelegate<TResult> next,
-        CancellationToken cancellationToken
+        [EnumeratorCancellation] CancellationToken cancellationToken
     )
     {
-        var transaction = SentrySdk.StartTransaction("mediator", "stream");
+        var transaction = hub.StartTransaction("mediator", "stream");
         var span = transaction.StartChild(context.MessageHandler.GetType().FullName!);
         var nxt = next().GetAsyncEnumerator(cancellationToken);
         
