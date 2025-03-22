@@ -33,7 +33,8 @@ public class StorageCacheService(
             }
             else if (e.Config?.SlidingExpiration != null)
             {
-                var expiresAt = DateTimeOffset.UtcNow.Add(e.Config.SlidingExpiration.Value);
+                var now = timeProvider.GetUtcNow();
+                var expiresAt = now.Add(e.Config.SlidingExpiration.Value);
                 e = e with { ExpiresAt = expiresAt };
                 await storage.Set(Category, key, e).ConfigureAwait(false);
             }
@@ -42,10 +43,10 @@ public class StorageCacheService(
         if (e == null)
         {
             var result = await factory.Invoke().ConfigureAwait(false);
-            await this.Store(key, result, config).ConfigureAwait(false);
+            e = await this.Store(key, result, config).ConfigureAwait(false);
         }
 
-        return null;
+        return new CacheEntry<T>(e.Key, e.Value, e.CreatedAt);
     }
     
     
@@ -72,22 +73,23 @@ public class StorageCacheService(
     async Task<InternalCacheEntry<T>> Store<T>(string key, T result, CacheItemConfig? config)
     {
         DateTimeOffset? expiresAt = null;
-            
+        var now = timeProvider.GetUtcNow();
+        
         if (config != null)
         {
             if (config.AbsoluteExpiration != null)
             {
-                expiresAt = timeProvider.GetUtcNow().Add(config.AbsoluteExpiration.Value);
+                expiresAt = now.Add(config.AbsoluteExpiration.Value);
             }   
             else if (config.SlidingExpiration != null)
             {
-                expiresAt = timeProvider.GetUtcNow().Add(config.SlidingExpiration.Value);
+                expiresAt = now.Add(config.SlidingExpiration.Value);
             }
         }
         var e = new InternalCacheEntry<T>(
             key,
             result,
-            timeProvider.GetUtcNow(),
+            now,
             expiresAt,
             config
         );
