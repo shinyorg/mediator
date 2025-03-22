@@ -47,20 +47,27 @@ public class StorageCacheServiceTests
     
 
     [Fact]
-    public async Task Get_ShouldReturnNull_Expired()
+    public async Task GetOrCreate_ShouldReturn_NotFromCache_Expired()
     {
+        var cfg = new CacheItemConfig
+        {
+            AbsoluteExpiration = TimeSpan.FromMinutes(1)
+        };
+        
         var item = await this.cache.GetOrCreate(
             "test",
             async () => "notfromcache",
-            new CacheItemConfig
-            {
-                AbsoluteExpiration = TimeSpan.FromMinutes(1)
-            }
+            cfg
         );
         item.ShouldNotBeNull();
-        item.Value.ShouldBe("fromcache");
-        
+        item.Value.ShouldBe("notfromcache");
+
         this.fakeTime.Advance(TimeSpan.FromMinutes(2));
+        item = await this.cache.GetOrCreate(
+            "test",
+            async () => "notfromcache",
+            cfg
+        );
         item.ShouldNotBeNull();
         item.Value.ShouldBe("notfromcache");
 
