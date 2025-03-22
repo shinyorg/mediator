@@ -5,13 +5,15 @@ namespace Shiny.Mediator.Tests.Mocks;
 
 public class MockStorageService : IStorageService
 {
-    readonly Dictionary<string, Dictionary<string, object>> items = new();
+    public Dictionary<string, Dictionary<string, object>> Items { get; } = new();
     
     
     public Task Set<T>(string category, string key, T value)
     {
-        this.items[category] ??= new();
-        this.items[category][key] = value;
+        if (!this.Items.ContainsKey(category))
+            this.Items.Add(category, new Dictionary<string, object>());
+        
+        this.Items[category][key] = value;
         return Task.CompletedTask;
     }
 
@@ -20,9 +22,9 @@ public class MockStorageService : IStorageService
     {
         var result = default(T);
 
-        if (this.items.ContainsKey(category))
+        if (this.Items.ContainsKey(category))
         {
-            var cat = this.items[category];
+            var cat = this.Items[category];
             if (cat.ContainsKey(key))
             {
                 result = (T)cat[key];
@@ -35,9 +37,9 @@ public class MockStorageService : IStorageService
     public Task Remove(string category, string requestKey, bool partialMatchKey = false)
     {
         // TODO: implement partialMatchKey
-        if (this.items.ContainsKey(category))
+        if (this.Items.ContainsKey(category))
         {
-            this.items[category].Remove(requestKey);
+            this.Items[category].Remove(requestKey);
         }
         return Task.CompletedTask;
     }
@@ -45,7 +47,7 @@ public class MockStorageService : IStorageService
 
     public Task Clear(string category)
     {
-        this.items.Remove(category);
+        this.Items.Remove(category);
         return Task.CompletedTask;
     }
 }
