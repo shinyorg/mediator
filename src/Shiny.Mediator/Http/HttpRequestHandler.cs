@@ -26,7 +26,7 @@ public class HttpRequestHandler<TRequest, TResult>(
             throw new InvalidOperationException("HttpAttribute not specified on request");
         
         var baseUri = this.GetBaseUri(request);
-        logger.LogDebug("Base URI: " + baseUri);
+        logger.LogDebug("Base URI: {BaseUri}", baseUri);
         
         var httpRequest = this.ContractToHttpRequest(request, http, baseUri);
         await this.Decorate(request, context, httpRequest).ConfigureAwait(false);
@@ -52,6 +52,10 @@ public class HttpRequestHandler<TRequest, TResult>(
                 .SendAsync(httpRequest, cancellationToken)
                 .ConfigureAwait(false);
 
+            await this
+                .WriteDebugIfEnable(httpRequest, response, cancellationToken)
+                .ConfigureAwait(false);
+            
             response.EnsureSuccessStatusCode();
 
             if (typeof(TResult) == typeof(HttpResponseMessage))
@@ -65,7 +69,6 @@ public class HttpRequestHandler<TRequest, TResult>(
                     .ReadAsStringAsync(cancellationToken)
                     .ConfigureAwait(false);
 
-                logger.LogDebug("Raw Result: " + stringResult);
                 finalResult = serializer.Deserialize<TResult>(stringResult)!;
             }
         }
@@ -82,7 +85,7 @@ public class HttpRequestHandler<TRequest, TResult>(
     {
         foreach (var decorator in decorators)
         {
-            logger.LogDebug("Decorating " + decorator.GetType().Name);
+            logger.LogDebug("Decorating {Type}", decorator.GetType().Name);
             await decorator
                 .Decorate(httpRequest, context, request)
                 .ConfigureAwait(false);
@@ -108,7 +111,7 @@ public class HttpRequestHandler<TRequest, TResult>(
     )
     {
         var httpMethod = ToMethod(attribute.Verb);
-        logger.LogDebug("HTTP Method: " + httpMethod);
+        logger.LogDebug("HTTP Method: {HttpMethod}", httpMethod);
         
         var httpRequest = new HttpRequestMessage(httpMethod, baseUri);
         var properties = request
@@ -182,6 +185,47 @@ public class HttpRequestHandler<TRequest, TResult>(
         httpRequest.RequestUri = new Uri(uri);
         return httpRequest;
     }
+
+
+    protected virtual async ValueTask WriteDebugIfEnable(HttpRequestMessage request, HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        var debug = configuration.GetValue<bool>("Mediator:Http:Debug");
+        if (!debug)
+            return;
+
+        var requestBody = String.Empty;
+        if (request.Content != null)
+        {
+            requestBody = await request
+                .Content!
+                .ReadAsStringAsync(cancellationToken)
+                .ConfigureAwait(false);    
+        }
+        
+        var responseBody = await response
+            .Content
+            .ReadAsStringAsync(cancellationToken)
+            .ConfigureAwait(false);
+        
+        var details = new Dictionary<string, object>
+        {
+            ["Method"] = request.Method.Method,
+            ["Url"] = request.RequestUri?.ToString() ?? "",
+            ["StatusCode"] = response.StatusCode,
+            ["StatusDescription"] = response
+        };
+        foreach (var header in request.Headers)
+            details.Add("Request_" + header.Key, header.Value);
+        
+        foreach (var header in response.Headers)
+            details.Add("Response_" + header.Key, header.Value);
+        
+        using (logger.BeginScope(details))
+        {
+            logger.LogInformation("Request Body: {Body}", requestBody);
+            logger.LogInformation("Response Body: {Body}", responseBody);
+        }
+    }
     
 
     protected virtual string GetBaseUri(TRequest request)
@@ -193,7 +237,7 @@ public class HttpRequestHandler<TRequest, TResult>(
         if (String.IsNullOrWhiteSpace(cfg.Value))
             throw new InvalidOperationException("Base URI empty for: " + request.GetType().FullName);
         
-        logger.LogDebug("Base URI: " + cfg.Value);
+        logger.LogDebug("Base URI: {Uri}", cfg.Value);
         return cfg.Value;
     }
 }
