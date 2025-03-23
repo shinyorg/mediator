@@ -19,7 +19,7 @@ public interface ICacheService
     /// <param name="key"></param>
     /// <param name="factory"></param>
     /// <param name="config"></param>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Configuration of cache, assumes default if not set</typeparam>
     /// <returns></returns>
     Task<CacheEntry<T>?> GetOrCreate<T>(
         string key, 
@@ -32,7 +32,7 @@ public interface ICacheService
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
-    /// <param name="config"></param>
+    /// <param name="config">Configuration of cache, assumes default if not set</param>
     Task Set<T>(
         string key, 
         T value, 

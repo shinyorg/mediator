@@ -15,7 +15,7 @@ were aimed more at server scenarios, while also adding some features we feel ben
 ## Samples & Documentation
 - Docs
   - [Main](https://shinylib.net/mediator/)
-  - [Quick Start](https://shinylib.net/mediator/quick-start/)
+  - [Getting Started](https://shinylib.net/mediator/getting-started/)
 - [Sample](https://github.com/shinyorg/mediator/tree/main/Sample)
 - [End-to-End Architectural Layout Sample](https://github.com/shinyorg/mediatorsample)
 - [A Cool Offline Capable App with Mediator and Shiny](https://github.com/shinyorg/wonderland)
