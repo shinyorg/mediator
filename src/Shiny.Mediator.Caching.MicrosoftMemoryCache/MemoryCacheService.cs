@@ -4,18 +4,18 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator;
 
 
-public class MemoryCacheService(IMemoryCache cache) : ICacheService
+public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) : ICacheService
 {
-    public Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> factory, CacheItemConfig? config = null)
+    public Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> retrieveFunc, CacheItemConfig? config = null)
         => cache.GetOrCreateAsync(
             key, 
             async _ =>
             {
-                var result = await factory().ConfigureAwait(false);
+                var result = await retrieveFunc.Invoke().ConfigureAwait(false);
                 return new CacheEntry<T>(
                     key,
                     result,
-                    DateTimeOffset.UtcNow
+                    timeProvider.GetUtcNow()
                 );
             }, 
             new MemoryCacheEntryOptions
@@ -31,7 +31,7 @@ public class MemoryCacheService(IMemoryCache cache) : ICacheService
     {
         // TODO: what if entry already exists?
         var entry = cache.CreateEntry(key);
-        entry.Value = new CacheEntry<T>(key, value, DateTimeOffset.UtcNow);
+        entry.Value = new CacheEntry<T>(key, value, timeProvider.GetUtcNow());
         entry.AbsoluteExpirationRelativeToNow = config?.AbsoluteExpiration;
         entry.SlidingExpiration = config?.SlidingExpiration;
         

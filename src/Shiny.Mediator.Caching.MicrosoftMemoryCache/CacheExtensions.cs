@@ -37,20 +37,31 @@ public static class MemoryCacheExtensions
     {
         var entries = new Dictionary<object, ICacheEntry>();
         var state = CoherentStateField.GetValue(cache);
+
         if (state == null)
             return entries;
+#if NET8_0
+        TryReflectOut(entries, state, "_entries");
+#else 
+        TryReflectOut(entries, state, "_stringEntries");
+        TryReflectOut(entries, state, "_nonStringEntries");
+#endif
         
-        var entryField = state.GetType().GetField("_entries", BindingFlags.NonPublic | BindingFlags.Instance);
+        return entries;
+    }
+
+
+    static void TryReflectOut(IDictionary<object, ICacheEntry> entries, object state, string fieldName)
+    {
+        var entryField = state.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
         if (entryField == null)
-            return entries;
+            return;
         
         var dict = entryField.GetValue(state) as IDictionary;
         if (dict == null)
-            return entries;
+            return;
 
         foreach (DictionaryEntry entry in dict)
             entries.Add(entry.Key, (ICacheEntry)entry.Value!);
-        
-        return entries;
     }
 }
