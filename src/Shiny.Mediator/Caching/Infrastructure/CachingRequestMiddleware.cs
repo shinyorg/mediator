@@ -67,6 +67,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
 
             logger.LogDebug("Cache Hit: {Hit} - {Request} - Key: {RequestKey}", hit, context.Message, cacheKey);
             context.Cache(new CacheContext(cacheKey, hit, entry!.CreatedAt));
+			result = entry.Value;
         }
         return result!;
     }

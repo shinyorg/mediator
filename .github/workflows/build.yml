@@ -50,7 +50,7 @@ jobs:
       run: dotnet build Build.slnf /restore -m -property:Configuration=Release -property:PublicRelease=true
 
     - name: Test
-      run: dotnet test tests/Shiny.Mediator.Tests/Shiny.Mediator.Tests.csproj --no-restore --verbosity normal
+      run: dotnet test tests/Shiny.Mediator.Tests/Shiny.Mediator.Tests.csproj -c Release --no-build --nologo --no-restore --verbosity normal -l "trx;LogFilePrefix=testresults" --collect "Code Coverage"
       
     - name: Post NuGet Artifacts
       uses: actions/upload-artifact@v4
