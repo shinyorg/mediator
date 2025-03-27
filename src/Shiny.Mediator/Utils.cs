@@ -40,8 +40,6 @@ public static class Utils
     )
     {
         var moduleCfg = config.GetSection("Mediator:" + module);
-        if (moduleCfg.Exists())
-            return moduleCfg;
         
         var ct = request.GetType();
         if (handler != null)
@@ -55,7 +53,10 @@ public static class Utils
                 $"{ht.Namespace}.*",
                 "*"
             );
-            return cfg;
+            if (cfg != null)
+            {
+                return cfg;
+            }
         }
 
         return null;
