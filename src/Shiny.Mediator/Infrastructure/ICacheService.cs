@@ -33,7 +33,7 @@ public interface ICacheService
     /// <param name="key"></param>
     /// <param name="value"></param>
     /// <param name="config">Configuration of cache, assumes default if not set</param>
-    Task Set<T>(
+    Task<CacheEntry<T>> Set<T>(
         string key, 
         T value, 
         CacheItemConfig? config = null

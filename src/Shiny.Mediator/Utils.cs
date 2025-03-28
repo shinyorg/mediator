@@ -40,8 +40,8 @@ public static class Utils
     )
     {
         var moduleCfg = config.GetSection("Mediator:" + module);
-        if (moduleCfg.Exists())
-            return moduleCfg;
+        if (!moduleCfg.Exists())
+            return null;
         
         var ct = request.GetType();
         if (handler != null)

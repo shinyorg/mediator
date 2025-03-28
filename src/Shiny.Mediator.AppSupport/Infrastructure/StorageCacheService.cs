@@ -38,12 +38,16 @@ public class StorageCacheService(
         }
         return ToExternal(e);
     }
-    
-    
-    public Task Set<T>(string key, T value, CacheItemConfig? config = null)
-        => this.Store(key, value, config);
 
-    
+
+    public async Task<CacheEntry<T>> Set<T>(string key, T value, CacheItemConfig? config = null)
+    {
+        var intCache = await this.Store(key, value, config).ConfigureAwait(false);
+        var entry = ToExternal(intCache);
+        return entry!;
+    }
+
+
     public async Task<CacheEntry<T>?> Get<T>(string key)
     {
         var e = await this

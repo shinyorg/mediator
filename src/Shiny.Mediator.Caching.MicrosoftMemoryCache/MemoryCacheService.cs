@@ -27,17 +27,19 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
         );
     
 
-    public Task Set<T>(string key, T value, CacheItemConfig? config = null)
+    public Task<CacheEntry<T>> Set<T>(string key, T value, CacheItemConfig? config = null)
     {
         // TODO: what if entry already exists?
+        var entryValue = new CacheEntry<T>(key, value, timeProvider.GetUtcNow());
         var entry = cache.CreateEntry(key);
-        entry.Value = new CacheEntry<T>(key, value, timeProvider.GetUtcNow());
+        entry.Value = entryValue;
         entry.AbsoluteExpirationRelativeToNow = config?.AbsoluteExpiration;
         entry.SlidingExpiration = config?.SlidingExpiration;
         
-        return Task.CompletedTask;
+        return Task.FromResult(entryValue);
     }
 
+    
     public Task<CacheEntry<T>?> Get<T>(string key)
     {
         if (cache.TryGetValue(key, out var result) && result is CacheEntry<T> entry)
