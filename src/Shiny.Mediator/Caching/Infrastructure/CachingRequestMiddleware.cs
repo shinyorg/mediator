@@ -9,8 +9,8 @@ public class CachingRequestMiddleware<TRequest, TResult>(
     ILogger<CachingRequestMiddleware<TRequest, TResult>> logger,
     IConfiguration configuration,
     ICacheService cacheService
-) : IRequestMiddleware<TRequest, TResult>
-    where TRequest : IRequest<TResult>
+) 
+: IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     public async Task<TResult> Process(
         IMediatorContext context,
@@ -18,37 +18,23 @@ public class CachingRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        CacheAttribute? attribute = null;
         var cacheKey = ContractUtils.GetRequestKey(context.Message!);
-        var section = configuration.GetHandlerSection("Cache", context.Message!, context.MessageHandler);
 
-        if (section == null)
-        {
-            attribute = ((IRequestHandler<TRequest, TResult>)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, CacheAttribute>();
-        }
-        else
-        {
-            var absoluteExpirationSeconds = section.GetValue("AbsoluteExpirationSeconds", 60);
-            var slidingExpirationSeconds = section.GetValue("SlidingExpirationSeconds", 0);
-
-            attribute = new CacheAttribute
-            {
-                AbsoluteExpirationSeconds = absoluteExpirationSeconds,
-                SlidingExpirationSeconds = slidingExpirationSeconds
-            };
-        }
-
-        var config = this.GetItemConfig(context, attribute, (TRequest)context.Message);
+        var config = this.GetItemConfig(context, (TRequest)context.Message);
         if (config == null)
             return await next().ConfigureAwait(false);
 
         TResult result = default!;
-        if (context.Message is ICacheControl { ForceRefresh: true } || context.HasForceCacheRefresh())
+        if (context.HasForceCacheRefresh())
         {
             logger.LogDebug("Cache Forced Refresh - {Request}", context.Message);
             result = await next().ConfigureAwait(false);
+            
             if (result != null)
-                await cacheService.Set(cacheKey, result, config).ConfigureAwait(false);
+            {
+                var entry = await cacheService.Set(cacheKey, result, config).ConfigureAwait(false);
+                context.Cache(new CacheContext(cacheKey, false, entry.CreatedAt, config));
+            }
         }
         else
         {
@@ -66,40 +52,49 @@ public class CachingRequestMiddleware<TRequest, TResult>(
                 .ConfigureAwait(false)!;
 
             logger.LogDebug("Cache Hit: {Hit} - {Request} - Key: {RequestKey}", hit, context.Message, cacheKey);
-            context.Cache(new CacheContext(cacheKey, hit, entry!.CreatedAt));
+            context.Cache(new CacheContext(cacheKey, hit, entry!.CreatedAt, config));
 			result = entry.Value;
         }
         return result!;
     }
 
 
-    protected virtual CacheItemConfig? GetItemConfig(IMediatorContext context, CacheAttribute? attribute, TRequest request)
+    protected virtual CacheItemConfig? GetItemConfig(IMediatorContext context, TRequest request)
     {
+        // context #1
         var cache = context.TryGetCacheConfig();
         if (cache != null)
             return cache;
         
-        if (request is ICacheControl control)
+        // config #2
+        var section = configuration.GetHandlerSection("Cache", context.Message!, context.MessageHandler);
+        if (section != null)
         {
-            return new CacheItemConfig(
-                control.AbsoluteExpiration,
-                control.SlidingExpiration
-            );
+            var absoluteExpirationSeconds = section.GetValue("AbsoluteExpirationSeconds", 60);
+            var slidingExpirationSeconds = section.GetValue("SlidingExpirationSeconds", 0);
+            
+            return FromSeconds(absoluteExpirationSeconds, slidingExpirationSeconds);
         }
         
+        // handler attribute #3
+        var attribute = ((IRequestHandler<TRequest, TResult>)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, CacheAttribute>();
         if (attribute != null)
-        {
-            TimeSpan? absoluteExpiration = null;
-            TimeSpan? slidingExpiration = null;
-            if (attribute.AbsoluteExpirationSeconds > 0)
-                absoluteExpiration = TimeSpan.FromSeconds(attribute.AbsoluteExpirationSeconds);
-            
-            if (attribute.SlidingExpirationSeconds > 0)
-                slidingExpiration = TimeSpan.FromSeconds(attribute.SlidingExpirationSeconds);
-
-            return new CacheItemConfig(absoluteExpiration, slidingExpiration);
-        }
+            return FromSeconds(attribute.AbsoluteExpirationSeconds, attribute.SlidingExpirationSeconds);
 
         return null;
-    } 
+    }
+
+    
+    static CacheItemConfig FromSeconds(int absoluteExpirationSeconds, int slidingExpirationSeconds)
+    {
+        TimeSpan? absoluteExpiration = null;
+        TimeSpan? slidingExpiration = null;
+        if (absoluteExpirationSeconds > 0)
+            absoluteExpiration = TimeSpan.FromSeconds(absoluteExpirationSeconds);
+            
+        if (slidingExpirationSeconds > 0)
+            slidingExpiration = TimeSpan.FromSeconds(slidingExpirationSeconds);
+        
+        return new CacheItemConfig(absoluteExpiration, slidingExpiration);
+    }
 }

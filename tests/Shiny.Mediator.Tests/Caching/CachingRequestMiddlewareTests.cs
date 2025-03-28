@@ -1,79 +1,188 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
-using Shiny.Mediator.Caching;
 using Shiny.Mediator.Caching.Infrastructure;
+using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Tests.Mocks;
 using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests.Caching;
 
 
-public class CachingRequestMiddlewareTests
+public class CachingRequestMiddlewareTests(ITestOutputHelper output)
 {
-    readonly ILogger<CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>> logger;
-    readonly FakeTimeProvider timeProvider;
-    readonly ConfigurationManager config;
-    readonly MockCacheService cache;
-    readonly CachingRequestMiddleware<CachingRequestMiddlewareRequest, string> middleware;
-    
-    
-    public CachingRequestMiddlewareTests(ITestOutputHelper output)
-    {
-        this.timeProvider = new FakeTimeProvider();
-        this.logger = TestHelpers.CreateLogger<CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>>(output);
-        this.config = new ConfigurationManager();
-        this.cache = new MockCacheService(this.timeProvider);
-        
-        this.middleware = new CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>(logger, config, cache);
-    }
-    
+    readonly FakeTimeProvider timeProvider = new();
+    readonly ConfigurationManager config = new();
+
     
     [Fact]
-    public async Task EndToEnd_NotFromCache()
+    public async Task DirectMiddleware_NotFromCache()
     {
+        var app = this.MiddlewareSetup();
         var handler = new RequestHandlerDelegate<string>(() => Task.FromResult("NotFromCache"));
-        var context = new MockMediatorContext
-        {
-            Message = new CachingRequestMiddlewareRequest("Hello"),
-            MessageHandler = new CacheRequestMiddlewareTestHandler()
-        };
-        var result = await this.middleware.Process(context, handler, CancellationToken.None);
+        var result = await app.Middleware.Process(app.Context, handler, CancellationToken.None);
         
         result.ShouldBe("NotFromCache");
     }
     
     
     [Fact]
-    public async Task EndToEnd_FromCache()
+    public async Task DirectMiddleware_FromCache()
     {
-        await this.cache.Set("Test", "FromCache");
+        var app = this.MiddlewareSetup();
+        await app.Cache.Set("Test", "FromCache");
         
         var handler = new RequestHandlerDelegate<string>(() => Task.FromResult("NotFromCache"));
+        var result = await app.Middleware.Process(app.Context, handler, CancellationToken.None);
+        
+        result.ShouldBe("NotFromCache");
+    }
+
+    
+    [Fact]
+    public async Task MediatorContext_CacheConfig()
+    {
+        var app = this.MiddlewareSetup();
+        await app.Cache.Set("Test", "FromCache");
+        
+        var handler = new RequestHandlerDelegate<string>(() => Task.FromResult("NotFromCache"));
+        app.Context.SetCacheConfig(new CacheItemConfig
+        {
+            AbsoluteExpiration = TimeSpan.FromSeconds(33)
+        });
+        
+        var result = await app.Middleware.Process(app.Context, handler, CancellationToken.None);
+        result.ShouldBe("FromCache");
+
+        var cache = app.Context.Cache();
+        cache?.Config?.AbsoluteExpiration.ShouldNotBeNull();
+        cache!.Config!.AbsoluteExpiration.ShouldBe(TimeSpan.FromSeconds(33));
+    }
+    
+    
+    [Fact]
+    public async Task MediatorContext_ForceRefresh()
+    {
+        var app = this.MiddlewareSetup();
+        app.Context.SetCacheConfig(new CacheItemConfig
+        {
+            AbsoluteExpiration = TimeSpan.FromSeconds(18)
+        });
+        await app.Cache.Set("Test", "FromCache");
+        
+        var handler = new RequestHandlerDelegate<string>(() => Task.FromResult("NotFromCache"));
+        app.Context.ForceCacheRefresh();
+        
+        var result = await app.Middleware.Process(app.Context, handler, CancellationToken.None);
+        result.ShouldBe("NotFromCache");
+
+        var cache = app.Context.Cache();
+        cache.ShouldNotBeNull();
+        cache.IsHit.ShouldBeFalse();
+    }
+    
+
+    (
+        IMediatorContext Context,
+        MockCacheService Cache, 
+        ILogger<CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>> Logger, 
+        CachingRequestMiddleware<CachingRequestMiddlewareRequest, string> Middleware
+    ) MiddlewareSetup(string requestArg = "NotFromCache")
+    {
         var context = new MockMediatorContext
         {
-            Message = new CachingRequestMiddlewareRequest("Hello"),
-            MessageHandler = new CacheRequestMiddlewareTestHandler()
+            Message = new CachingRequestMiddlewareRequest(requestArg),
+            MessageHandler = new CachingRequestMiddlewareRequestHandler()
         };
-        var result = await this.middleware.Process(context, handler, CancellationToken.None);
+        var cache = new MockCacheService(timeProvider);
+        var logger = TestHelpers.CreateLogger<CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>>(output);
+        var middleware = new CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>(logger, this.config, cache);
         
-        result.ShouldBe("FromCache");
+        return (context, cache, logger, middleware);
+    }
+    
+
+    [Fact]
+    public async Task Mediator_ConfigFromAttribute()
+    {
+        var app = this.StandardCacheMediator(x => x.AddSingletonAsImplementedInterfaces<AttributedTestHandler>());
+
+        var result = await app.Mediator.Request(new AttributedTestRequest("Test1"));
+        result.Result.ShouldBe("Test1");
+            
+        var cache = result.Context.Cache();
+        cache.ShouldNotBeNull();
+        cache.IsHit.ShouldBeFalse("Cache should not be hit");
+        
+        result = await app.Mediator.Request(new AttributedTestRequest("Test2"));
+        result.Result.ShouldBe("Test1"); // still test one
+        
+        cache = result.Context.Cache();
+        cache.ShouldNotBeNull("Cache should not be null");
+        cache.IsHit.ShouldBeTrue("Cache should be hit");
+        cache.Config.ShouldNotBeNull("Cache config should not be null");
+        cache.Config.SlidingExpiration!.Value.TotalSeconds.ShouldBe(99);
+    }
+    
+    
+    [Fact]
+    public async Task MediatorContext_ForceCacheRefresh()
+    {
+        var app = this.StandardCacheMediator(x => x.AddSingletonAsImplementedInterfaces<AttributedTestHandler>());
+
+        var result = await app.Mediator.Request(new AttributedTestRequest("Test1"));
+        result.Result.ShouldBe("Test1");
+            
+        var cache = result.Context.Cache();
+        cache.ShouldNotBeNull();
+        cache.IsHit.ShouldBeFalse("Cache should not be hit");
+        
+        result = await app.Mediator.Request(new AttributedTestRequest("Test2"), CancellationToken.None, ctx => ctx.ForceCacheRefresh());
+        result.Result.ShouldBe("Test2"); // still test one
+        
+        cache = result.Context.Cache();
+        cache.ShouldNotBeNull("Cache should not be null");
+        cache.IsHit.ShouldBeFalse("Cache should be hit");
+    }
+    
+
+    (IServiceProvider Services, IMediator Mediator) StandardCacheMediator(Action<IServiceCollection> configure)
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(this.config);
+        services.AddSingleton<TimeProvider>(this.timeProvider);
+        services.AddLogging(x => x.AddXUnit(output));
+        services.AddShinyMediator(x => x.AddCaching<MockCacheService>(), false);
+        configure.Invoke(services);
+
+        var sp = services.BuildServiceProvider();
+        
+        return (sp, sp.GetRequiredService<IMediator>());
     }
 }
 
-public record CachingRequestMiddlewareRequest(string Value) : IRequest<string>, ICacheControl, IRequestKey
+public record CachingRequestMiddlewareRequest(string Value) : IRequest<string>, IRequestKey
 {
-    public bool ForceRefresh { get; set; }
-    public TimeSpan? AbsoluteExpiration { get; set; }
-    public TimeSpan? SlidingExpiration { get; set; }
-
     public string GetKey() => "Test";
 };
 
-public class CacheRequestMiddlewareTestHandler : IRequestHandler<CachingRequestMiddlewareRequest, string>
+file class CachingRequestMiddlewareRequestHandler : IRequestHandler<CachingRequestMiddlewareRequest, string>
 {
     public Task<string> Handle(CachingRequestMiddlewareRequest request, IMediatorContext context, CancellationToken cancellationToken)
     {
         return Task.FromResult("FromHandler");
+    }
+}
+
+file record AttributedTestRequest(string Value) : IRequest<string>, IRequestKey
+{
+    public string GetKey() => "Test";
+};
+file class AttributedTestHandler : IRequestHandler<AttributedTestRequest, string>
+{
+    [Cache(SlidingExpirationSeconds = 99)]
+    public Task<string> Handle(AttributedTestRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(request.Value);
     }
 }

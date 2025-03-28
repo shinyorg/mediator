@@ -4,7 +4,7 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Tests.Mocks;
 
 
-public class MockCacheService(FakeTimeProvider timeProvider) : ICacheService
+public class MockCacheService(TimeProvider timeProvider) : ICacheService
 {
     public Dictionary<string, object> Items { get; } = new();
     
@@ -22,10 +22,11 @@ public class MockCacheService(FakeTimeProvider timeProvider) : ICacheService
     }
     
 
-    public Task Set<T>(string key, T value, CacheItemConfig? config = null)
+    public Task<CacheEntry<T>> Set<T>(string key, T value, CacheItemConfig? config = null)
     {
-        this.Items[key] = new CacheEntry<T>(key, value, timeProvider.GetUtcNow());
-        return Task.CompletedTask;
+        var entry = new CacheEntry<T>(key, value, timeProvider.GetUtcNow());
+        this.Items[key] = entry;
+        return Task.FromResult(entry);
     }
 
     
