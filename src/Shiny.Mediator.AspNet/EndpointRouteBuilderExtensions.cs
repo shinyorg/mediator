@@ -25,7 +25,7 @@ public static class EndpointRouteBuilderExtensions
             var result = await mediator
                 .Request(request, cancellationToken)
                 .ConfigureAwait(false);
-
+            
             return Results.Ok(result);
         }
     );
