@@ -3,7 +3,6 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Prism.Infrastructure;
 
 internal class PrismRegionEventCollector(
-    IEventCollector eventCollector,
     IRegionManager regionManager
 ) : IEventCollector
 {
