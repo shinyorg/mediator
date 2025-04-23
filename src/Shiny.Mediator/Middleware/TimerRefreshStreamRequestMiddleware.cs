@@ -52,7 +52,7 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
     {
         while (!ct.IsCancellationRequested)
         {
-            await Task.Delay(refreshSeconds, ct);
+            await Task.Delay(TimeSpan.FromSeconds(refreshSeconds), ct);
         
             var nxt = next().GetAsyncEnumerator(ct);
             while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)

@@ -23,7 +23,7 @@ public static class MediatorContextExtensions
     }
 
     public static int? TryGetTimerRefresh(this IMediatorContext context)
-        => context.TryGetValue<int>(TimerRefreshHeader);
+        => context.TryGetValue<int?>(TimerRefreshHeader);
 
 
     const string CommandScheduleHeader = nameof(CommandScheduleHeader);
@@ -34,7 +34,7 @@ public static class MediatorContextExtensions
     }
 
     public static DateTimeOffset? TryGetCommandSchedule(this IMediatorContext context)
-        => context.TryGetValue<DateTimeOffset>(CommandScheduleHeader);
+        => context.TryGetValue<DateTimeOffset?>(CommandScheduleHeader);
     
     #region Caching
     
