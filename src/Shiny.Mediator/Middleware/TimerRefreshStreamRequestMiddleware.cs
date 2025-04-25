@@ -1,7 +1,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.Middleware;
 

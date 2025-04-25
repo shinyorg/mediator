@@ -1,5 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Shiny.Mediator.Infrastructure;
 
 
