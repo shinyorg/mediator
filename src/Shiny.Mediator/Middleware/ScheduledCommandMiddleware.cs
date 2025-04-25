@@ -18,14 +18,19 @@ public class ScheduledCommandMiddleware<TCommand>(
     {
         var dueAt = context.TryGetCommandSchedule() ?? (context.Message as IScheduledCommand)?.DueAt;
         var now = timeProvider.GetUtcNow();
-        if (dueAt == null || dueAt < now)
+        
+        if (dueAt == null || dueAt <= now)
         {
-            logger.LogWarning($"Executing Scheduled Command '{context.Message}' that was due at {dueAt}");
+            logger.LogWarning(
+                "Executing Scheduled Command '{message}' that was due at {dueAt}",
+                context.Message,
+                dueAt
+            );
             await next().ConfigureAwait(false);
         }
         else
         {
-            logger.LogInformation($"Command '{context.Message}' scheduled for {dueAt}");
+            logger.LogInformation("Command '{message}' scheduled for {dueAt}", context.Message, dueAt);
             await scheduler
                 .Schedule(context, dueAt.Value, cancellationToken)
                 .ConfigureAwait(false);

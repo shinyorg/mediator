@@ -34,7 +34,7 @@ public static class MediatorContextExtensions
     }
 
     public static DateTimeOffset? TryGetCommandSchedule(this IMediatorContext context)
-        => context.TryGetValue<DateTimeOffset>(CommandScheduleHeader);
+        => context.TryGetValue<DateTimeOffset?>(CommandScheduleHeader);
     
     #region Caching
     
