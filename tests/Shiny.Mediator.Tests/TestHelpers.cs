@@ -9,7 +9,11 @@ public static class TestHelpers
     public static ILogger<T> CreateLogger<T>(ITestOutputHelper output)
     {
         var serviceProvider = new ServiceCollection()
-            .AddLogging(x => x.AddXUnit(output))
+            .AddLogging(x =>
+            {
+                x.AddXUnit(output);
+                x.SetMinimumLevel(LogLevel.Debug);
+            })
             .BuildServiceProvider();
 
         var factory = serviceProvider.GetRequiredService<ILoggerFactory>();
@@ -20,7 +24,11 @@ public static class TestHelpers
     
     public static IServiceCollection AddXUnitLogging(this IServiceCollection services, ITestOutputHelper output)
     {
-        services.AddLogging(x => x.AddXUnit(output));
+        services.AddLogging(x =>
+        {
+            x.AddXUnit(output);
+            x.SetMinimumLevel(LogLevel.Debug);
+        });
         return services;
     }
     
