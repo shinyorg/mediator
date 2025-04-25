@@ -7,10 +7,10 @@ public class MauiEventCollector : IEventCollector
     {
         // I need to make this crawl the tree, but really I don't need a ton of use-cases here
         if (Application.Current == null)
-            return Array.Empty<IEventHandler<TEvent>>();
-        
+            return []; //Array.Empty<IEventHandler<TEvent>>();
+
         if (Application.Current.Windows.Count == 0)
-            return Array.Empty<IEventHandler<TEvent>>();
+            return []; // Array.Empty<IEventHandler<TEvent>>();
         
         var list = new List<IEventHandler<TEvent>>();
         foreach (var window in Application.Current.Windows)
@@ -59,6 +59,7 @@ public class MauiEventCollector : IEventCollector
         }
     }
     
+    
     static void TryAppendEvents<TEvent>(Page page, List<IEventHandler<TEvent>> list) where TEvent : IEvent
     {
         if (page is IEventHandler<TEvent> handler1)
@@ -70,21 +71,16 @@ public class MauiEventCollector : IEventCollector
 
     
     static void TryAppendEvents<TEvent>(NavigationPage navPage, List<IEventHandler<TEvent>> list) where TEvent : IEvent
-    {
-        var navStack = navPage.Navigation?.NavigationStack;
-        if (navStack != null)
-        {
-            foreach (var page in navStack)
-            {
-                TryAppendEvents(page, list);
-            }
-        }        
-    }
-    
+        => TryAppendEvents(navPage.Navigation, list);
 
+    
     static void TryAppendEvents<TEvent>(Shell shell, List<IEventHandler<TEvent>> list) where TEvent : IEvent
+        => TryAppendEvents(shell.Navigation, list);
+    
+    
+    static void TryAppendEvents<TEvent>(INavigation? navigation, List<IEventHandler<TEvent>> list) where TEvent : IEvent
     {
-        var navStack = shell.Navigation?.NavigationStack;
+        var navStack = navigation?.NavigationStack;
         if (navStack != null)
         {
             foreach (var page in navStack)
@@ -92,6 +88,35 @@ public class MauiEventCollector : IEventCollector
                 if (page != null)
                 {
                     TryAppendEvents(page, list);
+                }
+            }
+        }
+        
+        var modalStack = navigation?.ModalStack;
+        if (modalStack != null)
+        {
+            foreach (var page in modalStack)
+            {
+                if (page != null)
+                {
+                    if (page is NavigationPage navPage)
+                    {
+                        var modalNavStack = navPage.Navigation?.NavigationStack;
+                        if (modalNavStack != null)
+                        {
+                            foreach (var modalPage in modalNavStack)
+                            {
+                                if (modalPage != null)
+                                {
+                                    TryAppendEvents(modalPage, list);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        TryAppendEvents(page, list);
+                    }
                 }
             }
         }

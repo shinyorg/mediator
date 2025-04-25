@@ -31,10 +31,12 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
     {
         // TODO: what if entry already exists?
         var entryValue = new CacheEntry<T>(key, value, timeProvider.GetUtcNow());
-        var entry = cache.CreateEntry(key);
-        entry.Value = entryValue;
-        entry.AbsoluteExpirationRelativeToNow = config?.AbsoluteExpiration;
-        entry.SlidingExpiration = config?.SlidingExpiration;
+        var opts = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = config?.AbsoluteExpiration,
+            SlidingExpiration = config?.SlidingExpiration
+        };
+        cache.Set(key, entryValue, opts);
         
         return Task.FromResult(entryValue);
     }

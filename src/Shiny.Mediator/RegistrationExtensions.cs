@@ -101,13 +101,29 @@ public static class RegistrationExtensions
     /// Add global exception handler
     /// </summary>
     /// <param name="mediatorBuilder"></param>
+    /// <param name="lifetime"></param>
     /// <typeparam name="THandler"></typeparam>
     /// <returns></returns>
     public static ShinyMediatorBuilder AddExceptionHandler<THandler>(
-        this ShinyMediatorBuilder mediatorBuilder
+        this ShinyMediatorBuilder mediatorBuilder,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton
     ) where THandler : class, IExceptionHandler
     {
-        mediatorBuilder.Services.AddSingleton<IExceptionHandler, THandler>();
+        switch (lifetime)
+        {
+            case ServiceLifetime.Singleton:
+                mediatorBuilder.Services.AddSingleton<IExceptionHandler, THandler>();
+                break;
+            
+            case ServiceLifetime.Scoped:
+                mediatorBuilder.Services.AddScoped<IExceptionHandler, THandler>();
+                break;
+            
+            default:
+                throw new InvalidOperationException($"Invalid Lifetime for ExceptionHandler: {lifetime}");
+        }
+
+        
         return mediatorBuilder;
     }
 

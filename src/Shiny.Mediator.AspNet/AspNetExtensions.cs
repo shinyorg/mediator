@@ -19,4 +19,16 @@ public static class AspNetExtensions
 
         return ip;
     }
+
+
+    /// <summary>
+    /// If the mediator validation middleware throws a validation exception, this will translate it to JSON output
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
+    public static ShinyMediatorBuilder AddJsonValidationExceptionHandler(this ShinyMediatorBuilder builder)
+    {
+        builder.AddExceptionHandler<ValidationJsonExceptionHandler>(ServiceLifetime.Scoped);
+        return builder;
+    }
 }

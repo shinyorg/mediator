@@ -1,10 +1,12 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
-using Shiny.Mediator.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Middleware;
 
+
 public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
+    ILogger<TimerRefreshStreamRequestMiddleware<TRequest, TResult>> logger,
     IConfiguration configuration
 ) : IStreamRequestMiddleware<TRequest, TResult> 
     where TRequest : IStreamRequest<TResult>
@@ -20,6 +22,7 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
         var header = context.TryGetTimerRefresh();
         if (header != null)
         {
+            logger.LogDebug("Timer setting in MediatorContext");
             interval = header.Value;
         }
         else
@@ -28,18 +31,27 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
             if (section != null)
             {
                 interval = section.GetValue("IntervalSeconds", 0);
+                logger.LogDebug("Timer setting found in configuration");
             }
             else
             {
                 var attribute = ((IStreamRequestHandler<TRequest, TResult>)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, TimerRefreshAttribute>();
                 if (attribute != null)
+                {
                     interval = attribute.IntervalSeconds;
+                    logger.LogDebug("Timer setting found on attribute");
+                }
             }
         }
 
+        logger.LogDebug("Timer Setting Interval: {value}", interval);
         if (interval <= 0)
+        {
+            logger.LogDebug("Timer Refresh will not be used - returning");
             return next();
-        
+        }
+
+        logger.LogDebug("Timer Refresh Set to run");
         return this.Iterate(interval, next, cancellationToken);
     }
 
@@ -50,13 +62,22 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
         [EnumeratorCancellation] CancellationToken ct
     )
     {
+        var ts = TimeSpan.FromSeconds(refreshSeconds);
+        
         while (!ct.IsCancellationRequested)
         {
-            await Task.Delay(refreshSeconds, ct);
-        
+            // fire initial before waiting
+            logger.LogDebug("Firing Timer Request");
             var nxt = next().GetAsyncEnumerator(ct);
             while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
+            {
                 yield return nxt.Current;
+                logger.LogDebug("Firing Timer Response");
+            }
+
+            // TODO: number of iterations configuration?
+            logger.LogDebug("Waiting for next iteration");
+            await Task.Delay(ts, ct).ConfigureAwait(false);
         }
     }
 }

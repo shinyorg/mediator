@@ -1,7 +1,7 @@
 namespace Shiny.Mediator.Infrastructure;
 
 
-public class SentryRequestMiddleware<TRequest, TResult>(IHub hub) : IRequestMiddleware<TRequest, TResult>
+public class SentryRequestMiddleware<TRequest, TResult>(IHub? hub = null) : IRequestMiddleware<TRequest, TResult>
     where TRequest : IRequest<TResult>
 {
     // fingerprint vs span set
@@ -11,6 +11,9 @@ public class SentryRequestMiddleware<TRequest, TResult>(IHub hub) : IRequestMidd
         CancellationToken cancellationToken
     )
     {
+        if (hub == null)
+            return await next().ConfigureAwait(false);
+        
         var transaction = hub.StartTransaction("mediator", "request");
         var span = transaction.StartChild(context.MessageHandler.GetType().FullName!);
         
