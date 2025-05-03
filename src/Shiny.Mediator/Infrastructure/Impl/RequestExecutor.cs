@@ -45,34 +45,42 @@ public class RequestResultWrapper<TRequest, TResult>(
         context.MessageHandler = requestHandler;
         var middlewares = context.BypassMiddlewareEnabled ? [] : services.GetServices<IRequestMiddleware<TRequest, TResult>>();
         var logger = services.GetRequiredService<ILogger<TRequest>>();
-        
-        var handlerExec = new RequestHandlerDelegate<TResult>(() =>
+
+        var handlerExec = new RequestHandlerDelegate<TResult>(async () =>
         {
-            using (var handlerActivity = context.StartActivity("Handler"))
-            {
-                logger.LogDebug(
-                    "Executing request handler {RequestHandlerType}",
-                    requestHandler.GetType().FullName
-                );
-                return requestHandler.Handle((TRequest)context.Message, context, cancellationToken);
-            }
+            logger.LogDebug(
+                "Executing request handler {RequestHandlerType}",
+                requestHandler.GetType().FullName
+            );
+            var postAction = context.Execution.OnHandlerExecute(context);
+            var result = await requestHandler
+                .Handle((TRequest)context.Message, context, cancellationToken)
+                .ConfigureAwait(false);
+            
+            postAction.Invoke();
+            
+            return result;
         });
         
         var result = await middlewares
             .Reverse()
             .Aggregate(
                 handlerExec, 
-                (next, middleware) => () =>
+                (next, middleware) => async () =>
                 {
-                    using (var midActivity = context.StartActivity("Middleware"))
-                    {
-                        logger.LogDebug(
-                            "Executing request middleware {MiddlewareType}",
-                            middleware.GetType().FullName
-                        );
+                    logger.LogDebug(
+                        "Executing request middleware {MiddlewareType}",
+                        middleware.GetType().FullName
+                    );
 
-                        return middleware.Process(context, next, cancellationToken);
-                    }
+                    var postExecute = context.Execution.OnMiddlewareExecute(context, middleware);
+                    
+                    var result = await middleware
+                        .Process(context, next, cancellationToken)
+                        .ConfigureAwait(false);
+
+                    postExecute.Invoke();
+                    return result;
                 }
             )
             .Invoke()

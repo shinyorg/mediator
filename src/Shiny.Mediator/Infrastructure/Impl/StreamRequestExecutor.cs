@@ -47,14 +47,11 @@ public class StreamRequestWrapper<TRequest, TResult>(
         
         var handlerExec = new StreamRequestHandlerDelegate<TResult>(() =>
         {
-            using (var handlerActivity = context.StartActivity("Handler"))
-            {
-                logger.LogDebug(
-                    "Executing streaming request handler {RequestHandlerType}",
-                    requestHandler.GetType().FullName
-                );
-                return requestHandler.Handle(request, context, cancellationToken);
-            }
+            logger.LogDebug(
+                "Executing streaming request handler {RequestHandlerType}",
+                requestHandler.GetType().FullName
+            );
+            return requestHandler.Handle(request, context, cancellationToken);
         });
         
         var middlewares = context.BypassMiddlewareEnabled ? [] : services.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
@@ -64,18 +61,15 @@ public class StreamRequestWrapper<TRequest, TResult>(
                 handlerExec,
                 (next, middleware) => () =>
                 {
-                    using (var midActivity = context.StartActivity("Middleware"))
-                    {
-                        logger.LogDebug(
-                            "Executing stream middleware {MiddlewareType}",
-                            middleware.GetType().FullName
-                        );
-                        return middleware.Process(
-                            context,
-                            next,
-                            cancellationToken
-                        );
-                    }
+                    logger.LogDebug(
+                        "Executing stream middleware {MiddlewareType}",
+                        middleware.GetType().FullName
+                    );
+                    return middleware.Process(
+                        context,
+                        next,
+                        cancellationToken
+                    );
                 }
             )
             .Invoke();

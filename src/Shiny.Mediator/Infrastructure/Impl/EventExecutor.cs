@@ -80,16 +80,19 @@ public class EventExecutor(
         CancellationToken cancellationToken
     ) where TEvent : IEvent
     {
-        var handlerDelegate = new EventHandlerDelegate(() =>
+        var handlerDelegate = new EventHandlerDelegate(async () =>
         {
-            using (var handlerActivity = context.StartActivity("Handler"))
-            {
-                logger.LogDebug(
-                    "Executing Event Handler {HandlerType}",
-                    eventHandler.GetType().FullName
-                );
-                return eventHandler.Handle(@event, context, cancellationToken);
-            }
+            var postAction = context.Execution.OnHandlerExecute(context);
+            
+            logger.LogDebug(
+                "Executing Event Handler {HandlerType}",
+                eventHandler.GetType().FullName
+            );
+            await eventHandler
+                .Handle(@event, context, cancellationToken)
+                .ConfigureAwait(false);
+
+            postAction.Invoke();
         });
            
         await middlewares
@@ -98,15 +101,15 @@ public class EventExecutor(
                 handlerDelegate, 
                 (next, middleware) => () =>
                 {
-                    using (var midActivity = context.StartActivity("Middleware"))
-                    {
-                        logger.LogDebug(
-                            "Executing event middleware {MiddlewareType}",
-                            middleware.GetType().FullName
-                        );
+                    var postAction = context.Execution.OnMiddlewareExecute(context, middleware);
+                    logger.LogDebug(
+                        "Executing event middleware {MiddlewareType}",
+                        middleware.GetType().FullName
+                    );
 
-                        return middleware.Process(context, next, cancellationToken);
-                    }
+                    return middleware
+                        .Process(context, next, cancellationToken)
+                        .ContinueWith(x => postAction.Invoke());
                 }
             )
             .Invoke()

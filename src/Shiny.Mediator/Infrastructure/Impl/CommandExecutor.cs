@@ -21,18 +21,17 @@ public class CommandExecutor : ICommandExecutor
         context.MessageHandler = commandHandler;
 
         var logger = services.GetRequiredService<ILogger<TCommand>>();
-        var handlerExec = new CommandHandlerDelegate(async () =>
+        var handlerExec = new CommandHandlerDelegate(() =>
         {
-            using (var handlerActivity = context.StartActivity("ExecutingHandler"))
-            {
-                logger.LogDebug(
-                    "Executing request handler {RequestHandlerType}",
-                    commandHandler.GetType().FullName
-                );
-                await commandHandler
-                    .Handle(command, context, cancellationToken)
-                    .ConfigureAwait(false);
-            }
+            var postAction = context.Execution.OnHandlerExecute(context);
+            logger.LogDebug(
+                "Executing request handler {RequestHandlerType}",
+                commandHandler.GetType().FullName
+            );
+            
+            return commandHandler
+                .Handle(command, context, cancellationToken)
+                .ContinueWith(_ => postAction.Invoke());
         });
 
         var middlewares = context.BypassMiddlewareEnabled ? [] : services.GetServices<ICommandMiddleware<TCommand>>();
@@ -42,19 +41,20 @@ public class CommandExecutor : ICommandExecutor
                 handlerExec, 
                 (next, middleware) => () =>
                 {
-                    using (var handlerActivity = context.StartActivity("ExecutingMiddleware"))
-                    {
-                        logger.LogDebug(
-                            "Executing request middleware {MiddlewareType}",
-                            middleware.GetType().FullName
-                        );
+                    var postAction = context.Execution.OnMiddlewareExecute(context, middleware);
+                    
+                    logger.LogDebug(
+                        "Executing request middleware {MiddlewareType}",
+                        middleware.GetType().FullName
+                    );
 
-                        return middleware.Process(
+                    return middleware
+                        .Process(
                             context,
                             next,
                             cancellationToken
-                        );
-                    }
+                        )
+                        .ContinueWith(_ => postAction.Invoke());
                 }
             )
             .Invoke()

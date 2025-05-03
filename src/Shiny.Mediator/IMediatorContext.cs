@@ -7,6 +7,8 @@ namespace Shiny.Mediator;
 
 public interface IMediatorContext
 {
+    IExecutionMiddleware Execution { get; }
+    
     /// <summary>
     /// Id of request train
     /// </summary>
@@ -16,13 +18,6 @@ public interface IMediatorContext
     /// Current service scope
     /// </summary>
     IServiceScope ServiceScope { get; }
-    
-    /// <summary>
-    /// Assigned activity source for observability
-    /// </summary>
-    ActivitySource ActivitySource { get; }
-    
-    //IMediator Mediator { get; }
     
     /// <summary>
     /// Message
@@ -88,13 +83,6 @@ public interface IMediatorContext
     /// <param name="newMessage">If you're creating a context for a new message type (ie. Publishing an event from a handler - this would be used)</param>
     /// <returns></returns>
     IMediatorContext CreateChild(object? newMessage);
-
-    /// <summary>
-    /// Start an instrumentation activity
-    /// </summary>
-    /// <param name="activityName"></param>
-    /// <returns></returns>
-    Activity? StartActivity(string activityName);
     
     /// <summary>
     /// Try to get value from mediator headers
@@ -168,13 +156,13 @@ class MediatorContext(
     IEventExecutor eventExecutor
 ) : IMediatorContext
 {
-    static readonly ActivitySource activitySource = new("Shiny.Mediator");
-    
     public Guid Id { get; } = Guid.NewGuid();
     public IServiceScope ServiceScope { get; private set; } = scope;
-    public ActivitySource ActivitySource => activitySource;
     public object Message => message;
     public object? MessageHandler { get; set; }
+    
+    IExecutionMiddleware? execution;
+    public IExecutionMiddleware Execution => execution ??= scope.ServiceProvider.GetRequiredService<IExecutionMiddleware>();
     
     Dictionary<string, object> store = new();
     public IReadOnlyDictionary<string, object> Headers => this.store.ToDictionary();
@@ -218,24 +206,12 @@ class MediatorContext(
                 Parent = this,
                 BypassExceptionHandlingEnabled = this.BypassExceptionHandlingEnabled,
                 BypassMiddlewareEnabled = this.BypassMiddlewareEnabled,
+                execution = this.Execution,
                 store = this.store.ToDictionary() // copy over
             };
             this.children.Add(newContext);
             return newContext;
         }
-    }
-    
-
-    public Activity? StartActivity(string activityName)
-    {
-        var activity = this.ActivitySource?.StartActivity(activityName);
-        if (activity != null)
-        {
-            activity.SetTag("operation_id", this.Id);
-            foreach (var header in this.Headers)
-                activity.SetTag(header.Key, header.Value);
-        }
-        return activity;
     }
     
     
@@ -247,6 +223,7 @@ class MediatorContext(
         return default;
     }
 
+    
     public void Rebuild(IServiceScope scope)
     {
         this.ServiceScope = scope;

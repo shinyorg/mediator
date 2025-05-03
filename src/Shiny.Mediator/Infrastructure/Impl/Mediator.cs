@@ -24,7 +24,8 @@ public class Mediator(
         var scope = services.CreateScope();
         var context = new MediatorContext(scope, request, requestExecutor, commandExecutor, eventExecutor);
         configure?.Invoke(context);
-        using var activity = context.StartActivity("Request");
+        
+        // using var activity = context.StartActivity("Request");
         
         try
         {
