@@ -42,7 +42,6 @@ public static class RegistrationExtensions
         services.TryAddSingleton<IEventExecutor, EventExecutor>();
         services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();
         services.TryAddSingleton(TimeProvider.System);
-        
         return services;
     }
     

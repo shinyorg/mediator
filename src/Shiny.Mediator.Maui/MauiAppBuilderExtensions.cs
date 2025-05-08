@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Maui.LifecycleEvents;
 using Shiny.Mediator.Handlers;
 using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
@@ -7,7 +8,7 @@ using Shiny.Mediator.Middleware;
 namespace Shiny.Mediator;
 
 
-public static class MauiExtensions
+public static class MauiAppBuilderExtensions
 {
     /// <summary>
     /// Easier path to add Shiny Mediator to Maui
@@ -27,6 +28,10 @@ public static class MauiExtensions
             cfg.UseMaui(includeStandardMiddleware);
             configAction?.Invoke(cfg);
         });
+        // builder.ConfigureLifecycleEvents(events =>
+        // {
+        //     events.AddEvent()
+        // });
         return builder;
     }
 
@@ -135,3 +140,58 @@ public static class MauiExtensions
         return cfg;
     }
 }
+
+/*
+#if __IOS__
+               events.AddiOS(lifecycle =>
+               {
+                   lifecycle.FinishedLaunching((application, launchOptions) =>
+                   {
+                       // A bit of hackery here, because we can't mock UIKit.UIApplication in tests.
+                       var platformApplication = application != null!
+                           ? application.Delegate as IPlatformApplication
+                           : launchOptions["application"] as IPlatformApplication;
+   
+                       platformApplication?.HandleMauiEvents();
+                       return true;
+                   });
+                   lifecycle.WillTerminate(application =>
+                   {
+                       if (application == null!)
+                       {
+                           return;
+                       }
+   
+                       var platformApplication = application.Delegate as IPlatformApplication;
+                       platformApplication?.HandleMauiEvents(bind: false);
+   
+                       //According to https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623111-applicationwillterminate#discussion
+                       //WillTerminate is called: in situations where the app is running in the background (not suspended) and the system needs to terminate it for some reason.
+                       SentryMauiEventProcessor.InForeground = false;
+                   });
+   
+                   lifecycle.OnActivated(application => SentryMauiEventProcessor.InForeground = true);
+   
+                   lifecycle.DidEnterBackground(application => SentryMauiEventProcessor.InForeground = false);
+                   lifecycle.OnResignActivation(application => SentryMauiEventProcessor.InForeground = false);
+               });
+   #elif ANDROID
+               events.AddAndroid(lifecycle =>
+               {
+                   lifecycle.OnApplicationCreating(application => (application as IPlatformApplication)?.HandleMauiEvents());
+                   lifecycle.OnDestroy(application => (application as IPlatformApplication)?.HandleMauiEvents(bind: false));
+   
+                   lifecycle.OnResume(activity => SentryMauiEventProcessor.InForeground = true);
+                   lifecycle.OnStart(activity => SentryMauiEventProcessor.InForeground = true);
+   
+                   lifecycle.OnStop(activity => SentryMauiEventProcessor.InForeground = false);
+                   lifecycle.OnPause(activity => SentryMauiEventProcessor.InForeground = false);
+               });
+   #elif WINDOWS
+               events.AddWindows(lifecycle =>
+               {
+                   lifecycle.OnLaunching((application, _) => (application as IPlatformApplication)?.HandleMauiEvents());
+                   lifecycle.OnClosed((application, _) => (application as IPlatformApplication)?.HandleMauiEvents(bind: false));
+               });
+   #endif
+ */
