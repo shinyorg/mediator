@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using Sample.Blazor.Contracts
+@using Sample.Blazor.Handlers
 @using Shiny.Mediator
 @using Shiny.Mediator.Infrastructure
 @inject IInternetService internet
@@ -30,12 +31,16 @@ Welcome to your new app.
     <text>Value is from Offline: @this.offlineText</text>
 }
 
+<button @onclick="() => TestExceptionHandling(false)">No Exception Handling</button>
+<button @onclick="() => TestExceptionHandling(true)">Test Exception Handling</button>
 
 @code {
     string? text;
     string? resultText;
     string? eventText;
     string? offlineText;
+
+    Task TestExceptionHandling(bool handleIt) => mediator.Send(new ErrorCommand(handleIt));
     
     async Task TestSend()
     {

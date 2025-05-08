@@ -9,8 +9,7 @@ public class Mediator(
     IRequestExecutor requestExecutor, 
     IStreamRequestExecutor streamRequestExecutor,
     ICommandExecutor commandExecutor, 
-    IEventExecutor eventExecutor,
-    IEnumerable<IExceptionHandler> exceptionHandlers
+    IEventExecutor eventExecutor
 ) : IMediator
 {
     public async Task<(IMediatorContext Context, TResult Result)> Request<TResult>(
@@ -140,7 +139,12 @@ public class Mediator(
     {
         if (context.BypassExceptionHandlingEnabled)
             return false;
-            
+
+        var exceptionHandlers = context
+            .ServiceScope
+            .ServiceProvider
+            .GetServices<IExceptionHandler>();
+        
         var handled = false;
         foreach (var eh in exceptionHandlers)
         {
