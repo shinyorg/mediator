@@ -9,7 +9,7 @@ public class MockAnalyzerConfigOptionsProvider(Dictionary<string, string> buildP
     readonly MockAnalyzerConfigOptions options = new (buildProperties);
 
     public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => this.options;
-    public override AnalyzerConfigOptions GetOptions(AdditionalText textFile)  => this.options;
+    public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => this.options;
     public override AnalyzerConfigOptions GlobalOptions => this.options;
 }
 

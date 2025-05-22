@@ -1,0 +1,19 @@
+﻿{
+  Generator: {},
+  GeneratedSources: null,
+  Diagnostics: [
+    {
+      Message: HTTP Generator - Item Count: 0,
+      Severity: Info,
+      WarningLevel: 1,
+      Descriptor: {
+        Id: SHINYMED000,
+        Title: Mediator,
+        MessageFormat: HTTP Generator - Item Count: 0,
+        Category: Shiny.Mediator,
+        DefaultSeverity: Info,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}
