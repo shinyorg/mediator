@@ -12,8 +12,8 @@ namespace Shiny.Mediator.Tests;
 
 public class MediatorHttpRequestSourceGeneratorTests
 {
-    // could do a theory with several urls
-    [Fact(Skip = "Not finding items - needs more investigation")]
+    // TODO: could do a theory with several urls
+    [Fact]
     public Task Generate_HttpContracts_Remote_Yaml()
     {
         var driver = BuildDriver(this.GetType().Assembly, "OpenApiRemote", "MyTests", "https://api.themeparks.wiki/docs/v1.yaml");
@@ -24,9 +24,10 @@ public class MediatorHttpRequestSourceGeneratorTests
     
     
     [Fact(Skip = "TODO")]
-    public void Generate_HttpContracts_Local()
+    public Task Generate_HttpContracts_Local()
     {
         // var driver = BuildDriver(this.GetType().Assembly, "openapi.json", "MyTests");
+        return Task.CompletedTask; // Verify
     }
     
     static GeneratorDriver BuildDriver(
@@ -52,11 +53,9 @@ public class MediatorHttpRequestSourceGeneratorTests
             dict.Add("build_metadata.AdditionalFiles.Uri", remoteUri!);
         
         var provider = new MockAnalyzerConfigOptionsProvider(dict);
-        var driver = CSharpGeneratorDriver.Create([generator], optionsProvider: provider);
+        var additionalText = new VoidAdditionalText(remoteNameOrLocalFile);
+        var driver = CSharpGeneratorDriver.Create([generator], additionalTexts: [additionalText], optionsProvider: provider);
 
-        var text = new VoidAdditionalText(remoteNameOrLocalFile);
-        driver.AddAdditionalTexts([text]);
-        
         return driver.RunGenerators(compilation);
     }
 }
@@ -67,43 +66,16 @@ class VoidAdditionalText(string path) : AdditionalText
     public override SourceText GetText(CancellationToken cancellationToken = default) => null;
 }
 /*
-    <!--how to test?-->
-    <ItemGroup>
-       <MediatorHttp Include="OpenApiRemote"
-                     Uri="https://api.themeparks.wiki/docs/v1.yaml"
-                     Namespace="Sample.ThemeParksApi"
-                     ContractPostfix="HttpRequest"
-                     Visible="false" />
-    </ItemGroup>
-
-        public static string? GetAdditionalTextProperty(this GeneratorExecutionContext context, AdditionalText text, string name)
-       {
-           context
-               .AnalyzerConfigOptions
-               .GetOptions(text)
-               .TryGetValue($"build_metadata.AdditionalFiles.{name}", out var value);
-
-           return value;
-       }
-
-
-       const string SourceItemGroupMetadata = "build_metadata.AdditionalFiles.SourceItemGroup";
-       public static AdditionalText[] GetAddtionalTexts(this GeneratorExecutionContext context, string name)
-           => context
-               .AdditionalFiles
-               .Where(x =>
-                   context
-                       .AnalyzerConfigOptions
-                       .GetOptions(x)
-                       .TryGetValue(SourceItemGroupMetadata, out var sourceItemGroup) &&
-                   sourceItemGroup == name
-               )
-               .ToArray();
-
-
-                       <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false" />
-       <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" Visible="false" />
-       <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Uri" Visible="false" />
-       <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPrefix" Visible="false" />
-       <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPostfix" Visible="false" />
-     */
+<ItemGroup>
+   <MediatorHttp Include="OpenApiRemote"
+                 Uri="https://api.themeparks.wiki/docs/v1.yaml"
+                 Namespace="Sample.ThemeParksApi"
+                 ContractPostfix="HttpRequest"
+                 Visible="false" />
+</ItemGroup>
+<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false" />
+<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" Visible="false" />
+<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Uri" Visible="false" />
+<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPrefix" Visible="false" />
+<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPostfix" Visible="false" />
+*/
