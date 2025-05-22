@@ -1,13 +1,11 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Shiny.Mediator.SourceGenerators;
 
 namespace Shiny.Mediator.Tests;
 
-public class SourceGeneratorTests
+public class MediatorSourceGeneratorTests
 {
     [Fact]
     public void DidRegister()
@@ -104,21 +102,4 @@ public class SourceGenResponseRequestHandler : IRequestHandler<SourceGenResponse
 public class SourceGenEventHandler : IEventHandler<SourceGenEvent>
 {
     public Task Handle(SourceGenEvent @event, IMediatorContext context, CancellationToken cancellationToken) => Task.CompletedTask;
-}
-
-file class MockAnalyzerConfigOptionsProvider(Dictionary<string, string> buildProperties) : AnalyzerConfigOptionsProvider
-{
-    readonly MockAnalyzerConfigOptions options = new (buildProperties);
-
-    public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => this.options;
-    public override AnalyzerConfigOptions GetOptions(AdditionalText textFile)  => this.options;
-    public override AnalyzerConfigOptions GlobalOptions => this.options;
-}
-
-file class MockAnalyzerConfigOptions(Dictionary<string, string> values) : AnalyzerConfigOptions
-{
-    public override bool TryGetValue(string key, [NotNullWhen(true)] out string? value)
-        => values.TryGetValue(key, out value);
-
-    public override IEnumerable<string> Keys => values.Keys;
 }

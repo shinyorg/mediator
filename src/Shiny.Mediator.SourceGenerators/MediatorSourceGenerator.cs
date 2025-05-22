@@ -8,7 +8,7 @@ using SourceGeneratorsKit;
 namespace Shiny.Mediator.SourceGenerators;
 
 
-[Generator]
+[Generator(LanguageNames.CSharp)]
 public class MediatorSourceGenerator : ISourceGenerator
 {
     readonly SyntaxReceiver syntaxReceiver = new RegisterHandlerAttributeSyntaxReceiver();

@@ -8,8 +8,8 @@ using Shiny.Mediator.SourceGenerators.Http;
 namespace Shiny.Mediator.SourceGenerators;
 
 
-[Generator]
-public class MediatorHttpRequestGenerator : ISourceGenerator
+[Generator(LanguageNames.CSharp)]
+public class MediatorHttpRequestSourceGenerator : ISourceGenerator
 {
     public void Initialize(GeneratorInitializationContext context)
     {
@@ -18,6 +18,10 @@ public class MediatorHttpRequestGenerator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
+        var skip = context.GetMSBuildProperty("ShinyMediatorDisableSourceGen")?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false;
+        if (skip)
+            return;
+        
         var rootNamespace = context.GetMSBuildProperty("RootNamespace")!;
         var items = context.GetAddtionalTexts("MediatorHttp");
         
