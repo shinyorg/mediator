@@ -68,7 +68,7 @@ public class MediatorSourceGenerator : ISourceGenerator
     
     public void Execute(GeneratorExecutionContext context)
     {
-        var skip = context.GetMSBuildProperty("ShinyMediatorSkipGenerate")?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false;
+        var skip = context.GetMSBuildProperty("ShinyMediatorDisableSourceGen")?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false;
         if (skip)
             return;
         

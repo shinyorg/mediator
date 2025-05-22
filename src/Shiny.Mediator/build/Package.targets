@@ -9,7 +9,7 @@
 
     <ItemGroup>
         <CompilerVisibleProperty Include="RootNamespace" />
-        <CompilerVisibleProperty Include="MediatorSkipGenerator" />
+        <CompilerVisibleProperty Include="ShinyMediatorDisableSourceGen" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" Visible="false" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Uri" Visible="false" />
@@ -17,7 +17,9 @@
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPostfix" Visible="false" />
     </ItemGroup>
 
-    <Target Name="_InjectShinyMediatorAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
+    <Target Name="_InjectShinyMediatorAdditionalFiles" 
+            BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun"
+            Condition="'$(ShinyMediatorDisableSourceGen)' != 'true'">
         <ItemGroup>
             <AdditionalFiles Include="@(MediatorHttp)" Namespace="%(MediatorHttp.Namespace)" SourceItemGroup="MediatorHttp" />
         </ItemGroup>
