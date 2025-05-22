@@ -18,8 +18,7 @@
     </ItemGroup>
 
     <Target Name="_InjectShinyMediatorAdditionalFiles" 
-            BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun"
-            Condition="'$(ShinyMediatorDisableSourceGen)' != 'true'">
+            BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
         <ItemGroup>
             <AdditionalFiles Include="@(MediatorHttp)" Namespace="%(MediatorHttp.Namespace)" SourceItemGroup="MediatorHttp" />
         </ItemGroup>
