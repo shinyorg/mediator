@@ -1,8 +1,6 @@
 using Android.App;
-using Android.Content.PM;
 using Android.OS;
 using Android.Views;
-using Android.Widget;
 
 namespace Sample.Uno.Droid;
 
@@ -13,4 +11,10 @@ namespace Sample.Uno.Droid;
 )]
 public class MainActivity : Microsoft.UI.Xaml.ApplicationActivity
 {
+    protected override void OnCreate(Bundle? savedInstanceState)
+    {
+        global::AndroidX.Core.SplashScreen.SplashScreen.InstallSplashScreen(this);
+
+        base.OnCreate(savedInstanceState);
+    }
 }

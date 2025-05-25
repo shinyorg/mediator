@@ -51,6 +51,10 @@
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false"/>
     </ItemGroup>
+    
+    <ItemGroup>
+      <Folder Include="Platforms\Android\Assets\" />
+    </ItemGroup>
 
     <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets" />
 </Project>

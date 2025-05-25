@@ -1,13 +1,9 @@
-namespace Sample.Uno;
+using Uno.UI.Hosting;
+using Sample.Uno;
 
-public class Program
-{
-    private static App? _app;
+var host = UnoPlatformHostBuilder.Create()
+    .App(() => new App())
+    .UseWebAssembly()
+    .Build();
 
-    public static int Main(string[] args)
-    {
-        Microsoft.UI.Xaml.Application.Start(_ => _app = new App());
-
-        return 0;
-    }
-}
+await host.RunAsync();
