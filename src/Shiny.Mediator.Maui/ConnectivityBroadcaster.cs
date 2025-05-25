@@ -27,6 +27,14 @@ public class ConnectivityBroadcaster(
         else
         {
             // this may be too late for the initial page
+            // app.DescendantAdded += (sender, args) =>
+            // {
+            //     if (args.Element is Page page)
+            //     {
+            //         // page.BindingContextChanged
+            //     }
+            // };
+
             app.PageAppearing += async (_, page) =>
             {
                 logger.LogDebug("Firing PageAppearing ConnectivityChanged for pages");
@@ -43,8 +51,6 @@ public class ConnectivityBroadcaster(
                 }
             };
         }
-
-        await this.FireMediator(internetService.IsAvailable).ConfigureAwait(false);
     }
     
 
