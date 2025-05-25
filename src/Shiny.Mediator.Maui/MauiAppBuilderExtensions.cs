@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Maui.LifecycleEvents;
 using Shiny.Mediator.Handlers;
 using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
@@ -28,10 +27,6 @@ public static class MauiAppBuilderExtensions
             cfg.UseMaui(includeStandardMiddleware);
             configAction?.Invoke(cfg);
         });
-        // builder.ConfigureLifecycleEvents(events =>
-        // {
-        //     events.AddEvent()
-        // });
         return builder;
     }
 
@@ -71,7 +66,7 @@ public static class MauiAppBuilderExtensions
     public static ShinyMediatorBuilder UseMaui(this ShinyMediatorBuilder cfg, bool includeStandardMiddleware = true)
     {
         cfg.AddEventCollector<MauiEventCollector>();
-        
+
         if (includeStandardMiddleware)
         {
             cfg.AddMauiInfrastructure();
