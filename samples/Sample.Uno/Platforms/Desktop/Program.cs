@@ -14,7 +14,7 @@ public class Program
             .UseMacOS()
             .UseWindows()
             .Build();
-
+        
         host.Run();
     }
 }
