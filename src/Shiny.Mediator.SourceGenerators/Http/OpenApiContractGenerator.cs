@@ -234,7 +234,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         "int64" => "long",
         "float" => "float",
         "double" => "double",
-        null => "int",
+        null => "double",
         _ => throw new InvalidOperationException("Invalid Number Format - " + format)
     };
     
