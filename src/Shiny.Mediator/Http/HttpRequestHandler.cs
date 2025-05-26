@@ -31,8 +31,9 @@ public class HttpRequestHandler<TRequest, TResult>(
         var httpRequest = this.ContractToHttpRequest(request, http, baseUri);
         await this.Decorate(request, context, httpRequest).ConfigureAwait(false);
 
+        var timeoutSeconds = configuration.GetValue("Mediator:Http:Timeout", 20);
         var result = await this
-            .Send(httpRequest, http.Timeout, cancellationToken)
+            .Send(httpRequest, TimeSpan.FromSeconds(timeoutSeconds), cancellationToken)
             .ConfigureAwait(false);
         
         return result;
@@ -49,11 +50,11 @@ public class HttpRequestHandler<TRequest, TResult>(
         try
         {
             var response = await this.httpClient
-                .SendAsync(httpRequest, cancellationToken)
+                .SendAsync(httpRequest, cts.Token)
                 .ConfigureAwait(false);
 
             await this
-                .WriteDebugIfEnable(httpRequest, response, cancellationToken)
+                .WriteDebugIfEnable(httpRequest, response, cts.Token)
                 .ConfigureAwait(false);
             
             response.EnsureSuccessStatusCode();
@@ -66,7 +67,7 @@ public class HttpRequestHandler<TRequest, TResult>(
             {
                 var stringResult = await response
                     .Content
-                    .ReadAsStringAsync(cancellationToken)
+                    .ReadAsStringAsync(cts.Token)
                     .ConfigureAwait(false);
 
                 finalResult = serializer.Deserialize<TResult>(stringResult)!;
