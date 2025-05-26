@@ -34,7 +34,6 @@
   <Project Path="src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj" />
   <Project Path="src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj" />
   <Project Path="src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj" />
-  <Project Path="src\Shiny.Mediator.Sentry\Shiny.Mediator.Sentry.csproj" />
   <Project Path="src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" />
   <Project Path="src\Shiny.Mediator.Uno\Shiny.Mediator.Uno.csproj" />
   <Project Path="src\Shiny.Mediator\Shiny.Mediator.csproj" />
