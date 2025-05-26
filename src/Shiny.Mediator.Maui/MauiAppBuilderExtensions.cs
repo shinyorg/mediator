@@ -65,7 +65,7 @@ public static class MauiAppBuilderExtensions
     /// <returns></returns>
     public static ShinyMediatorBuilder UseMaui(this ShinyMediatorBuilder cfg, bool includeStandardMiddleware = true)
     {
-        cfg.AddEventCollector<MauiEventCollector>();
+        cfg.Services.AddSingletonAsImplementedInterfaces<MauiEventCollector>();
 
         if (includeStandardMiddleware)
         {

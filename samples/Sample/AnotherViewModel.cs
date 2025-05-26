@@ -4,7 +4,9 @@ using Sample.Contracts;
 namespace Sample;
 
 
-public partial class AnotherViewModel(AppSqliteConnection conn) : ObservableObject, INavigatedAware, IEventHandler<MyMessageEvent>
+public partial class AnotherViewModel(
+    AppSqliteConnection conn
+) : ObservableObject, INavigatedAware, IEventHandler<MyMessageEvent>
 {
     const string Key = nameof(MyPrismNavCommand);
 
