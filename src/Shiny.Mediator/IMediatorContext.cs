@@ -20,9 +20,7 @@ public interface IMediatorContext
     /// <summary>
     /// Assigned activity source for observability
     /// </summary>
-    ActivitySource ActivitySource { get; }
-    
-    //IMediator Mediator { get; }
+    Activity? Activity { get; }
     
     /// <summary>
     /// Message
@@ -110,7 +108,8 @@ public interface IMediatorContext
     /// </summary>
     /// 
     /// <param name="scope"></param>
-    void Rebuild(IServiceScope scope);
+    /// <param name="activity"></param>
+    void Rebuild(IServiceScope scope, Activity? activity);
     
     
     /// <summary>
@@ -163,16 +162,15 @@ public interface IMediatorContext
 class MediatorContext(
     IServiceScope scope, 
     object message,
+    Activity? activity,
     IRequestExecutor requestExecutor,
     ICommandExecutor commandExecutor,
     IEventExecutor eventExecutor
 ) : IMediatorContext
 {
-    static readonly ActivitySource activitySource = new("Shiny.Mediator");
-    
     public Guid Id { get; } = Guid.NewGuid();
     public IServiceScope ServiceScope { get; private set; } = scope;
-    public ActivitySource ActivitySource => activitySource;
+    public Activity? Activity { get; private set; } = activity;
     public object Message => message;
     public object? MessageHandler { get; set; }
     
@@ -207,9 +205,12 @@ class MediatorContext(
         lock (this.children)
         {
             var msg = newMessage ?? this.Message;
+            var act = this.StartActivity("child_mediator");
+            
             var newContext = new MediatorContext(
                 ServiceScope, 
                 msg,
+                act,
                 requestExecutor, 
                 commandExecutor,
                 eventExecutor
@@ -228,14 +229,15 @@ class MediatorContext(
 
     public Activity? StartActivity(string activityName)
     {
-        var activity = this.ActivitySource?.StartActivity(activityName);
-        if (activity != null)
+        var childActivity = this.Activity?.Start();
+        
+        if (childActivity != null)
         {
-            activity.SetTag("operation_id", this.Id);
+            childActivity.SetTag("operation_id", this.Id);
             foreach (var header in this.Headers)
-                activity.SetTag(header.Key, header.Value);
+                childActivity.SetTag(header.Key, header.Value);
         }
-        return activity;
+        return childActivity;
     }
     
     
@@ -247,9 +249,10 @@ class MediatorContext(
         return default;
     }
 
-    public void Rebuild(IServiceScope scope)
+    public void Rebuild(IServiceScope scope, Activity? activity)
     {
         this.ServiceScope = scope;
+        this.Activity = activity;
     }
 
 
