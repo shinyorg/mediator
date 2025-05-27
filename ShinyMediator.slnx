@@ -35,6 +35,7 @@
   <Project Path="src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj" />
   <Project Path="src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj" />
   <Project Path="src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" />
+  <Project Path="src\Shiny.Mediator.Testing\Shiny.Mediator.Testing.csproj" Type="Classic C#" />
   <Project Path="src\Shiny.Mediator.Uno\Shiny.Mediator.Uno.csproj" />
   <Project Path="src\Shiny.Mediator\Shiny.Mediator.csproj" />
 </Solution>
