@@ -105,7 +105,7 @@ public static class MauiAppBuilderExtensions
     public static ShinyMediatorBuilder AddMauiHttpDecorator(this ShinyMediatorBuilder mediatorBuilder)
     {
         mediatorBuilder.AddMauiInfrastructure();
-        mediatorBuilder.Services.AddSingleton(typeof(IHttpRequestDecorator<,>), typeof(MauiHttpRequestDecorator<,>));
+        mediatorBuilder.Services.AddSingleton<IHttpRequestDecorator, MauiHttpRequestDecorator>();
         return mediatorBuilder;
     }
 

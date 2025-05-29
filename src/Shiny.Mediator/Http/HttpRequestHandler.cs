@@ -13,7 +13,7 @@ public class HttpRequestHandler<TRequest, TResult>(
     ILogger<HttpRequestHandler<TRequest, TResult>> logger,
     IConfiguration configuration,
     ISerializerService serializer,
-    IEnumerable<IHttpRequestDecorator<TRequest, TResult>> decorators
+    IEnumerable<IHttpRequestDecorator> decorators
 ) : IRequestHandler<TRequest, TResult> where TRequest : IHttpRequest<TResult>
 {
     readonly HttpClient httpClient = new();
@@ -29,7 +29,7 @@ public class HttpRequestHandler<TRequest, TResult>(
         logger.LogDebug("Base URI: {BaseUri}", baseUri);
         
         var httpRequest = this.ContractToHttpRequest(request, http, baseUri);
-        await this.Decorate(request, context, httpRequest).ConfigureAwait(false);
+        await this.Decorate(context, httpRequest).ConfigureAwait(false);
 
         var timeoutSeconds = configuration.GetValue("Mediator:Http:Timeout", 20);
         var result = await this
@@ -82,13 +82,13 @@ public class HttpRequestHandler<TRequest, TResult>(
     }
     
 
-    protected virtual async Task Decorate(TRequest request, IMediatorContext context, HttpRequestMessage httpRequest)
+    protected virtual async Task Decorate(IMediatorContext context, HttpRequestMessage httpRequest)
     {
         foreach (var decorator in decorators)
         {
             logger.LogDebug("Decorating {Type}", decorator.GetType().Name);
             await decorator
-                .Decorate(httpRequest, context, request)
+                .Decorate(httpRequest, context)
                 .ConfigureAwait(false);
         }
     }

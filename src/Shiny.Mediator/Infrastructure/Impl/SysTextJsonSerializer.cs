@@ -20,9 +20,15 @@ public class SysTextJsonSerializerService : ISerializerService
         return json;
     }
 
-    public T Deserialize<T>(string json)
+    public T Deserialize<T>(string content)
     {
-        var obj = JsonSerializer.Deserialize<T>(json, this.JsonOptions)!;
+        var obj = JsonSerializer.Deserialize<T>(content, this.JsonOptions)!;
+        return obj;
+    }
+
+    public object Deserialize(string content, Type type)
+    {
+        var obj = JsonSerializer.Deserialize(content, type, this.JsonOptions)!;
         return obj;
     }
 }

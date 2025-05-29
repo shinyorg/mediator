@@ -10,7 +10,7 @@ public class TestHttpRequestHandler<TRequest, TResult>(
     ILogger<HttpRequestHandler<TRequest, TResult>> logger,
     IConfiguration configuration, 
     ISerializerService serializer,
-    IEnumerable<IHttpRequestDecorator<TRequest, TResult>> decorators
+    IEnumerable<IHttpRequestDecorator> decorators
 ) : HttpRequestHandler<TRequest, TResult>(logger, configuration, serializer, decorators) 
     where TRequest : IHttpRequest<TResult>
 {

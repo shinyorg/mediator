@@ -6,14 +6,14 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Http;
 
 
-public class MauiHttpRequestDecorator<TRequest, TResult>(
-    ILogger<MauiHttpRequestDecorator<TRequest, TResult>> logger,
+public class MauiHttpRequestDecorator(
+    ILogger<MauiHttpRequestDecorator> logger,
     IAppInfo appInfo,
     IDeviceInfo deviceInfo,
     IGeolocation geolocation
-) : IHttpRequestDecorator<TRequest, TResult> where TRequest : IHttpRequest<TResult>
+) : IHttpRequestDecorator
 {
-    public async Task Decorate(HttpRequestMessage httpMessage, IMediatorContext context, TRequest request)
+    public async Task Decorate(HttpRequestMessage httpMessage, IMediatorContext context)
     {
         httpMessage.Headers.Add("AppId", appInfo.PackageName);
         httpMessage.Headers.Add("AppVersion", appInfo.Version.ToString());

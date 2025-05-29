@@ -31,7 +31,6 @@ public static class RegistrationExtensions
         {
             cfg.AddHttpClient();
             cfg.PreventEventExceptions();
-            cfg.AddPerformanceLoggingMiddleware();
             cfg.AddTimerRefreshStreamMiddleware();
         }
         
@@ -54,6 +53,7 @@ public static class RegistrationExtensions
     public static ShinyMediatorBuilder AddHttpClient(this ShinyMediatorBuilder mediatorBuilder)
     {
         mediatorBuilder.Services.AddScoped(typeof(IRequestHandler<,>), typeof(HttpRequestHandler<,>));
+        mediatorBuilder.Services.AddSingleton<IRequestHandler<HttpDirectRequest, object?>, HttpDirectRequestHandler>();
         return mediatorBuilder;
     }
     
