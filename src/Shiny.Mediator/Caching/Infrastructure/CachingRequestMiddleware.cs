@@ -19,7 +19,8 @@ public class CachingRequestMiddleware<TRequest, TResult>(
     )
     {
         var cacheKey = ContractUtils.GetRequestKey(context.Message!);
-
+        // TODO: ensure wait if key is already being requested, if item was just put in cache, don't force a flush even if one is requested?
+        
         var config = this.GetItemConfig(context, (TRequest)context.Message);
         if (config == null)
             return await next().ConfigureAwait(false);
