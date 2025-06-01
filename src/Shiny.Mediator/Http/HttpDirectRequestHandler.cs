@@ -37,7 +37,7 @@ public class HttpDirectRequestHandler(
         await using var _ = cancellationToken.Register(() => cts.Cancel());
         if (request.Timeout != null)
             cts.CancelAfter(request.Timeout.Value);
-        
+
         var httpResponse = await httpClient
             .SendAsync(httpRequest, cts.Token)
             .ConfigureAwait(false);
@@ -58,15 +58,36 @@ public class HttpDirectRequestHandler(
 
     string GetUrl(string routeName)
     {
-        var url = configuration.GetValue<string>($"Mediator:Http:Direct:{routeName}:Url");
-        if (url == null)
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(routeName);
+        string? url = null;
+        
+        if (routeName.StartsWith("http:", StringComparison.OrdinalIgnoreCase) ||
+            routeName.StartsWith("https:", StringComparison.OrdinalIgnoreCase))
         {
-            var baseUrl = configuration.GetValue<string>("Mediator:Http:Direct:BaseUrl");
-            url = (baseUrl + routeName).Replace("//", "/");
+            url = routeName;
         }
+        else
+        {
+            url = configuration.GetValue<string>($"Mediator:Http:Direct:{routeName}:Url");
+            if (url == null)
+            {
+                var baseUrl = configuration.GetValue<string>("Mediator:Http:Direct:BaseUrl");
+                if (baseUrl != null)
+                {
+                    if (baseUrl.EndsWith("/"))
+                        baseUrl = baseUrl.TrimEnd('/');
+
+                    if (!routeName.StartsWith("/"))
+                        routeName = "/" + routeName;
+                    
+                    url = (baseUrl + routeName);
+                }
+            }
+        } 
         if (String.IsNullOrWhiteSpace(url))
             throw new InvalidOperationException($"No URL set for route '{routeName}'");
         
+        logger.LogDebug("URL: {url}", url);
         return url;
     }
     
@@ -91,6 +112,7 @@ public class HttpDirectRequestHandler(
         }
         else
         {
+            logger.LogDebug("Sending Multipart Content");
             var multipart = new MultipartFormDataContent();
             this.PopulateUploadFiles(multipart, request);
             var data = this.TryGetDataContent(request);
