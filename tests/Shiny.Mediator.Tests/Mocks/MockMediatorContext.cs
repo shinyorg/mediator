@@ -6,7 +6,7 @@ public class MockMediatorContext : IMediatorContext
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public IServiceScope ServiceScope { get; set; }
-    public ActivitySource ActivitySource { get; set; }
+    public Activity Activity { get; set; } = new("MockActivity");
     public object Message { get; set; }
     public object? MessageHandler { get; set; }
     
@@ -41,7 +41,7 @@ public class MockMediatorContext : IMediatorContext
         return default;
     }
 
-    public void Rebuild(IServiceScope scope)
+    public void Rebuild(IServiceScope scope, Activity activity)
     {
         
     }

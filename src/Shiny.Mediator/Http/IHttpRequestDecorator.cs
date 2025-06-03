@@ -1,6 +1,6 @@
 namespace Shiny.Mediator.Http;
 
-public interface IHttpRequestDecorator<TRequest, TResult> where TRequest : IHttpRequest<TResult>
+public interface IHttpRequestDecorator
 {
-    Task Decorate(HttpRequestMessage httpMessage, IMediatorContext context, TRequest request);
+    Task Decorate(HttpRequestMessage httpMessage, IMediatorContext context);
 }

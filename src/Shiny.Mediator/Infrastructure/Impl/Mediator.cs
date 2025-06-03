@@ -21,10 +21,9 @@ public class Mediator(
         TResult result = default!;
         
         var scope = services.CreateScope();
-        var context = new MediatorContext(scope, request, requestExecutor, commandExecutor, eventExecutor);
-        configure?.Invoke(context);
-        using var activity = context.StartActivity("Request");
-        
+        using var activity = MediatorActivitySource.Value.StartActivity()!;
+        var context = new MediatorContext(scope, request, activity, requestExecutor, commandExecutor, eventExecutor);
+        configure?.Invoke(context);        
         try
         {
             result = await requestExecutor
@@ -63,7 +62,9 @@ public class Mediator(
     )
     {
         using var scope = services.CreateScope();
-        var context = new MediatorContext(scope, request, requestExecutor, commandExecutor, eventExecutor);
+        using var activity = MediatorActivitySource.Value.StartActivity()!;
+        
+        var context = new MediatorContext(scope, request, activity, requestExecutor, commandExecutor, eventExecutor);
         configure?.Invoke(context);
         var enumerable = streamRequestExecutor.Request(context, request, cancellationToken);
 
@@ -81,7 +82,9 @@ public class Mediator(
     ) where TCommand : ICommand
     {
         using var scope = services.CreateScope();
-        var context = new MediatorContext(scope, command, requestExecutor, commandExecutor, eventExecutor);
+        using var activity = MediatorActivitySource.Value.StartActivity()!;
+        
+        var context = new MediatorContext(scope, command, activity, requestExecutor, commandExecutor, eventExecutor);
         configure?.Invoke(context);
         
         try
@@ -112,7 +115,9 @@ public class Mediator(
     ) where TEvent : IEvent
     {
         using var scope = services.CreateScope();
-        var context = new MediatorContext(scope, @event, requestExecutor, commandExecutor, eventExecutor);
+        using var activity = MediatorActivitySource.Value.StartActivity()!;
+        
+        var context = new MediatorContext(scope, @event, activity, requestExecutor, commandExecutor, eventExecutor);
         configure?.Invoke(context);
         
         try

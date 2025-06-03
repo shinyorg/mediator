@@ -1,124 +1,57 @@
-﻿namespace Shiny.Mediator.Infrastructure;
+using Microsoft.Extensions.Logging;
+
+namespace Shiny.Mediator.Infrastructure;
 
 
-public class MauiEventCollector : IEventCollector
+public class MauiEventCollector(IApplication app, ILogger<MauiEventCollector> logger) : IMauiInitializeService, IEventCollector
 {
+    readonly List<Page> trackingPages = new();
+    
+    public void Initialize(IServiceProvider services)
+    {
+        var application = app as Application;
+        if (application == null)
+        {
+            logger.LogWarning("Application was not detected properly and cannot be wired");
+            return;
+        }
+        application.DescendantAdded += (_, args) =>
+        {
+            if (args.Element is Page page)
+            {
+                this.trackingPages.Add(page);
+                logger.LogDebug("Tracking {count} pages", this.trackingPages.Count);
+            }
+        };
+        application.DescendantRemoved += (_, args) =>
+        {
+            if (args.Element is Page page)
+            {
+                this.trackingPages.Remove(page);
+                logger.LogDebug("Tracking {count} pages", this.trackingPages.Count);
+            }
+        };
+    }
+
+    
     public IReadOnlyList<IEventHandler<TEvent>> GetHandlers<TEvent>() where TEvent : IEvent
     {
-        // I need to make this crawl the tree, but really I don't need a ton of use-cases here
-        if (Application.Current == null)
-            return []; //Array.Empty<IEventHandler<TEvent>>();
-
-        if (Application.Current.Windows.Count == 0)
-            return []; // Array.Empty<IEventHandler<TEvent>>();
+        logger.LogDebug("Collecting MAUI Pages/binding contexts for Event Handler Type: {type}", typeof(TEvent).FullName);
         
         var list = new List<IEventHandler<TEvent>>();
-        foreach (var window in Application.Current.Windows)
+        foreach (var page in this.trackingPages)
         {
-            if (window.Page != null)
-                VisitPage(window.Page, list);
+            if (page is IEventHandler<TEvent> handler1)
+                list.Add(handler1);
+            
+            if (page.BindingContext is IEventHandler<TEvent> handler2)
+                list.Add(handler2);
         }
+        logger.LogDebug(
+            "Found {count} MAUI pages/binding contexts for Event Hander Type: {type}",
+            this.trackingPages.Count,
+            typeof(TEvent).FullName
+        );
         return list;
-    }
-
-
-    static void VisitPage<TEvent>(Page page, List<IEventHandler<TEvent>> list) where TEvent : IEvent
-    {
-        if (page is TabbedPage tabs)
-        {
-            foreach (var tab in tabs.Children)
-            {
-                TryNavPage(tab, list);
-            }
-        }
-        else if (page is FlyoutPage flyout)
-        {
-            TryNavPage(flyout.Flyout, list);
-            TryNavPage(flyout.Detail, list); // could be a tabs page
-        }
-        else
-        {
-            TryNavPage(page, list);
-        }
-    }
-    
-
-    static void TryNavPage<TEvent>(Page page, List<IEventHandler<TEvent>> list) where TEvent : IEvent
-    {
-        if (page is NavigationPage navPage)
-        {
-            TryAppendEvents(navPage, list);
-        }
-        else if (page is Shell shell)
-        {
-            TryAppendEvents(shell, list);
-        }
-        else
-        {
-            TryAppendEvents(page, list);
-        }
-    }
-    
-    
-    static void TryAppendEvents<TEvent>(Page page, List<IEventHandler<TEvent>> list) where TEvent : IEvent
-    {
-        if (page is IEventHandler<TEvent> handler1)
-            list.Add(handler1);
-        
-        if (page.BindingContext is IEventHandler<TEvent> handler2)
-            list.Add(handler2);
-    }
-
-    
-    static void TryAppendEvents<TEvent>(NavigationPage navPage, List<IEventHandler<TEvent>> list) where TEvent : IEvent
-        => TryAppendEvents(navPage.Navigation, list);
-
-    
-    static void TryAppendEvents<TEvent>(Shell shell, List<IEventHandler<TEvent>> list) where TEvent : IEvent
-        => TryAppendEvents(shell.Navigation, list);
-    
-    
-    static void TryAppendEvents<TEvent>(INavigation? navigation, List<IEventHandler<TEvent>> list) where TEvent : IEvent
-    {
-        var navStack = navigation?.NavigationStack;
-        if (navStack != null)
-        {
-            foreach (var page in navStack)
-            {
-                if (page != null)
-                {
-                    TryAppendEvents(page, list);
-                }
-            }
-        }
-        
-        var modalStack = navigation?.ModalStack;
-        if (modalStack != null)
-        {
-            foreach (var page in modalStack)
-            {
-                if (page != null)
-                {
-                    if (page is NavigationPage navPage)
-                    {
-                        var modalNavStack = navPage.Navigation?.NavigationStack;
-                        if (modalNavStack != null)
-                        {
-                            foreach (var modalPage in modalNavStack)
-                            {
-                                if (modalPage != null)
-                                {
-                                    TryAppendEvents(modalPage, list);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        TryAppendEvents(page, list);
-                    }
-                }
-            }
-        }
     }
 }

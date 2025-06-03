@@ -50,7 +50,7 @@ public enum BoardingGroupState
 public partial class PriceData
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("amount")]
-    public int Amount { get; set; }
+    public double Amount { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("currency")]
     public string Currency { get; set; }
@@ -64,7 +64,7 @@ public partial class PriceData
 public partial class LiveQueueStandby
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
-    public int WaitTime { get; set; }
+    public double WaitTime { get; set; }
 
 }
 
@@ -72,7 +72,7 @@ public partial class LiveQueueStandby
 public partial class LiveQueueSingleRider
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
-    public int? WaitTime { get; set; }
+    public double? WaitTime { get; set; }
 
 }
 
@@ -114,16 +114,16 @@ public partial class LiveQueueBoardingGroup
     public global::MyTests.BoardingGroupState AllocationStatus { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("currentGroupStart")]
-    public int? CurrentGroupStart { get; set; }
+    public double? CurrentGroupStart { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("currentGroupEnd")]
-    public int? CurrentGroupEnd { get; set; }
+    public double? CurrentGroupEnd { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("nextAllocationTime")]
     public System.DateTimeOffset? NextAllocationTime { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("estimatedWait")]
-    public int? EstimatedWait { get; set; }
+    public double? EstimatedWait { get; set; }
 
 }
 
@@ -131,7 +131,7 @@ public partial class LiveQueueBoardingGroup
 public partial class LiveQueuePaidStandby
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
-    public int? WaitTime { get; set; }
+    public double? WaitTime { get; set; }
 
 }
 
@@ -176,10 +176,10 @@ public partial class LiveShowTime
 public partial class DiningAvailability
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("partySize")]
-    public int? PartySize { get; set; }
+    public double? PartySize { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
-    public int? WaitTime { get; set; }
+    public double? WaitTime { get; set; }
 
 }
 
@@ -201,10 +201,10 @@ public partial class TagData
 public partial class EntityDataLocation
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("latitude")]
-    public int Latitude { get; set; }
+    public double Latitude { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("longitude")]
-    public int Longitude { get; set; }
+    public double Longitude { get; set; }
 
 }
 
@@ -241,10 +241,10 @@ public partial class EntityData
 public partial class EntityChildLocation
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("latitude")]
-    public int? Latitude { get; set; }
+    public double? Latitude { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("longitude")]
-    public int? Longitude { get; set; }
+    public double? Longitude { get; set; }
 
 }
 
@@ -510,10 +510,10 @@ public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.Http.IH
     public string EntityID { get; set; }
 
     [global::Shiny.Mediator.Http.HttpParameterAttribute(global::Shiny.Mediator.Http.HttpParameterType.Path, "year")]
-    public int Year { get; set; }
+    public double Year { get; set; }
 
     [global::Shiny.Mediator.Http.HttpParameterAttribute(global::Shiny.Mediator.Http.HttpParameterType.Path, "month")]
-    public int Month { get; set; }
+    public double Month { get; set; }
 
 }
 
@@ -951,13 +951,13 @@ public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.Http.IH
       }
     },
     {
-      Message: PROPERTY: Amount (int),
+      Message: PROPERTY: Amount (double),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: Amount (int),
+        MessageFormat: PROPERTY: Amount (double),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
@@ -1042,13 +1042,13 @@ public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.Http.IH
       }
     },
     {
-      Message: PROPERTY: WaitTime (int),
+      Message: PROPERTY: WaitTime (double),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: WaitTime (int),
+        MessageFormat: PROPERTY: WaitTime (double),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
@@ -1094,13 +1094,13 @@ public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.Http.IH
       }
     },
     {
-      Message: PROPERTY: WaitTime (int?),
+      Message: PROPERTY: WaitTime (double?),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: WaitTime (int?),
+        MessageFormat: PROPERTY: WaitTime (double?),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
@@ -1328,26 +1328,26 @@ public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.Http.IH
       }
     },
     {
-      Message: PROPERTY: CurrentGroupStart (int?),
+      Message: PROPERTY: CurrentGroupStart (double?),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: CurrentGroupStart (int?),
+        MessageFormat: PROPERTY: CurrentGroupStart (double?),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
     },
     {
-      Message: PROPERTY: CurrentGroupEnd (int?),
+      Message: PROPERTY: CurrentGroupEnd (double?),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: CurrentGroupEnd (int?),
+        MessageFormat: PROPERTY: CurrentGroupEnd (double?),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
@@ -1367,13 +1367,13 @@ public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.Http.IH
       }
     },
     {
-      Message: PROPERTY: EstimatedWait (int?),
+      Message: PROPERTY: EstimatedWait (double?),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: EstimatedWait (int?),
+        MessageFormat: PROPERTY: EstimatedWait (double?),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
@@ -1419,13 +1419,13 @@ public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.Http.IH
       }
     },
     {
-      Message: PROPERTY: WaitTime (int?),
+      Message: PROPERTY: WaitTime (double?),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: WaitTime (int?),
+        MessageFormat: PROPERTY: WaitTime (double?),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
@@ -1575,26 +1575,26 @@ public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.Http.IH
       }
     },
     {
-      Message: PROPERTY: PartySize (int?),
+      Message: PROPERTY: PartySize (double?),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: PartySize (int?),
+        MessageFormat: PROPERTY: PartySize (double?),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
     },
     {
-      Message: PROPERTY: WaitTime (int?),
+      Message: PROPERTY: WaitTime (double?),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: WaitTime (int?),
+        MessageFormat: PROPERTY: WaitTime (double?),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
@@ -1809,26 +1809,26 @@ public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.Http.IH
       }
     },
     {
-      Message: PROPERTY: Latitude (int),
+      Message: PROPERTY: Latitude (double),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: Latitude (int),
+        MessageFormat: PROPERTY: Latitude (double),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
     },
     {
-      Message: PROPERTY: Longitude (int),
+      Message: PROPERTY: Longitude (double),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: Longitude (int),
+        MessageFormat: PROPERTY: Longitude (double),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
@@ -1991,26 +1991,26 @@ public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.Http.IH
       }
     },
     {
-      Message: PROPERTY: Latitude (int?),
+      Message: PROPERTY: Latitude (double?),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: Latitude (int?),
+        MessageFormat: PROPERTY: Latitude (double?),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
     },
     {
-      Message: PROPERTY: Longitude (int?),
+      Message: PROPERTY: Longitude (double?),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: Longitude (int?),
+        MessageFormat: PROPERTY: Longitude (double?),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
@@ -3408,26 +3408,26 @@ public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.Http.IH
       }
     },
     {
-      Message: PROPERTY: Year (int - Path),
+      Message: PROPERTY: Year (double - Path),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: Year (int - Path),
+        MessageFormat: PROPERTY: Year (double - Path),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
     },
     {
-      Message: PROPERTY: Month (int - Path),
+      Message: PROPERTY: Month (double - Path),
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
         Id: SHINYMED000,
         Title: Mediator,
-        MessageFormat: PROPERTY: Month (int - Path),
+        MessageFormat: PROPERTY: Month (double - Path),
         Category: Shiny.Mediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true

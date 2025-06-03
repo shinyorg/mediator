@@ -31,7 +31,6 @@ public static class RegistrationExtensions
         {
             cfg.AddHttpClient();
             cfg.PreventEventExceptions();
-            cfg.AddPerformanceLoggingMiddleware();
             cfg.AddTimerRefreshStreamMiddleware();
         }
         
@@ -54,6 +53,7 @@ public static class RegistrationExtensions
     public static ShinyMediatorBuilder AddHttpClient(this ShinyMediatorBuilder mediatorBuilder)
     {
         mediatorBuilder.Services.AddScoped(typeof(IRequestHandler<,>), typeof(HttpRequestHandler<,>));
+        mediatorBuilder.Services.AddSingleton<IRequestHandler<HttpDirectRequest, object?>, HttpDirectRequestHandler>();
         return mediatorBuilder;
     }
     
@@ -166,6 +166,10 @@ public static class RegistrationExtensions
         ] TImplementation
     >(this IServiceCollection services) where TImplementation : class
     {
+        // check if implementation is already registered and ignore if it is
+        if (services.Any(x => x.ServiceType == typeof(TImplementation)))
+            return services;
+        
         var interfaceTypes = typeof(TImplementation).GetInterfaces();
         if (interfaceTypes.Length == 0)
             throw new InvalidOperationException(services.GetType().FullName + " does not implement any interfaces");
@@ -186,6 +190,10 @@ public static class RegistrationExtensions
         )] TImplementation
     >(this IServiceCollection services) where TImplementation : class
     {
+        // check if implementation is already registered and ignore if it is
+        if (services.Any(x => x.ServiceType == typeof(TImplementation)))
+            return services;
+        
         var interfaceTypes = typeof(TImplementation).GetInterfaces();
         if (interfaceTypes.Length == 0)
             throw new InvalidOperationException(services.GetType().FullName + " does not implement any interfaces");

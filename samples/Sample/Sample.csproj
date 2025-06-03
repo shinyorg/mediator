@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
     <PropertyGroup>
-        <TargetFrameworks>$(TargetFrameworks);net9.0-ios</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks);net9.0-android</TargetFrameworks>
-        <TargetFrameworks>$(TargetFrameworks);net9.0-maccatalyst</TargetFrameworks>
-        <IosSimulatorBuild Condition="'$(Configuration)' == 'Debug'">False</IosSimulatorBuild>
-
-        <MauiVersion>9.0.40</MauiVersion>
+        <TargetFrameworks>$(TargetFrameworks);net9.0-ios</TargetFrameworks>
+        <!--<TargetFrameworks>$(TargetFrameworks);net9.0-maccatalyst</TargetFrameworks>-->
+        <MauiVersion>9.0.70</MauiVersion>
         <OutputType>Exe</OutputType>
         <RootNamespace>Sample</RootNamespace>
         <SingleProject>true</SingleProject>
@@ -46,13 +44,8 @@
         <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
         <DefineConstants>$(DefineConstants);APPLE;PLATFORM</DefineConstants>
     </PropertyGroup>
-
+    
     <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
-        <RuntimeIdentifier Condition="'$(IosSimulator)' != 'true'">ios-arm64</RuntimeIdentifier>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' AND '$(IosSimulatorBuild)' == 'true'">
-        <RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>
         <EnableCodeSigning>true</EnableCodeSigning>
         <CodesignRequireProvisioningProfile>true</CodesignRequireProvisioningProfile>
         <DisableCodesignVerification>true</DisableCodesignVerification>
@@ -99,10 +92,10 @@
     
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.5" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" Condition="'$(Configuration)' == 'Debug'" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" Condition="'$(Configuration)' == 'Debug'" />
 
         <PackageReference Include="Prism.DryIoc.Maui" Version="9.0.537"/>
         <PackageReference Include="sqlite-net-pcl" Version="1.9.172"/>

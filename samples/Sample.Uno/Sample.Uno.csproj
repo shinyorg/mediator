@@ -41,6 +41,7 @@
             Configuration;
             Navigation;
             ThemeService;
+            SkiaRenderer;
         </UnoFeatures>
     </PropertyGroup>
     
@@ -49,6 +50,10 @@
         <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Folder Include="Platforms\Android\Assets\" />
     </ItemGroup>
 
     <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets" />

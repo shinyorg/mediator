@@ -43,7 +43,8 @@ public class InMemoryCommandScheduler(
                 try
                 {
                     using var scope = services.CreateScope();
-                    item.Context.Rebuild(scope);
+                    using var activity = MediatorActivitySource.Value.StartActivity()!;
+                    item.Context.Rebuild(scope, activity);
 
                     item.Context.BypassMiddlewareEnabled = true;
                     item.Context.BypassExceptionHandlingEnabled = true;

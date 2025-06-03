@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Maui.LifecycleEvents;
 using Shiny.Mediator.Handlers;
 using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
@@ -28,10 +27,6 @@ public static class MauiAppBuilderExtensions
             cfg.UseMaui(includeStandardMiddleware);
             configAction?.Invoke(cfg);
         });
-        // builder.ConfigureLifecycleEvents(events =>
-        // {
-        //     events.AddEvent()
-        // });
         return builder;
     }
 
@@ -70,8 +65,8 @@ public static class MauiAppBuilderExtensions
     /// <returns></returns>
     public static ShinyMediatorBuilder UseMaui(this ShinyMediatorBuilder cfg, bool includeStandardMiddleware = true)
     {
-        cfg.AddEventCollector<MauiEventCollector>();
-        
+        cfg.Services.AddSingletonAsImplementedInterfaces<MauiEventCollector>();
+
         if (includeStandardMiddleware)
         {
             cfg.AddMauiInfrastructure();
@@ -110,7 +105,7 @@ public static class MauiAppBuilderExtensions
     public static ShinyMediatorBuilder AddMauiHttpDecorator(this ShinyMediatorBuilder mediatorBuilder)
     {
         mediatorBuilder.AddMauiInfrastructure();
-        mediatorBuilder.Services.AddSingleton(typeof(IHttpRequestDecorator<,>), typeof(MauiHttpRequestDecorator<,>));
+        mediatorBuilder.Services.AddSingleton<IHttpRequestDecorator, MauiHttpRequestDecorator>();
         return mediatorBuilder;
     }
 

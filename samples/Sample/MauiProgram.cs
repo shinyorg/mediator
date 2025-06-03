@@ -48,7 +48,7 @@ public static class MauiProgram
         );
         
         // builder.Services.AddSingleton<IRequestExecutor, AotRequestExecutor>();
-        builder.Services.AddShinyMediator(x => x
+        builder.AddShinyMediator(x => x
             .UseMaui()
             .UseBlazor()
             .PreventEventExceptions()

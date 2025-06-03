@@ -33,9 +33,11 @@ public static class TestHelpers
     }
     
     
-    public static IServiceCollection AddConfiguration(this IServiceCollection services)
+    public static IServiceCollection AddConfiguration(this IServiceCollection services, Action<ConfigurationManager>? configure = null)
     {
-        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        var config = new ConfigurationManager();
+        configure?.Invoke(config);
+        services.AddSingleton<IConfiguration>(config);
         return services;
     }
 }
