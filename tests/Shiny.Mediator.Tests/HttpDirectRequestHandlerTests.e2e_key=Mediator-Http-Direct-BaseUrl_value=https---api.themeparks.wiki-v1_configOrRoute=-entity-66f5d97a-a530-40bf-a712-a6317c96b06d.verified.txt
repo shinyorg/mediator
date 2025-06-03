@@ -1,0 +1,29 @@
+﻿{
+  Item1: {
+    Id: Guid_1,
+    ServiceScope: {
+      IsRootScope: false
+    },
+    Message: {
+      ConfigNameOrRoute: /entity/66f5d97a-a530-40bf-a712-a6317c96b06d,
+      ResultType: <HttpDirectRequestHandlerTests>FC7C028DB722C8EF30BD334D6E6A35202D75D4711C7BB9068C8A0ED5270A0D7B4__EntityInfo,
+      Method: {
+        Method: GET
+      }
+    },
+    MessageHandler: {},
+    BypassExceptionHandlingEnabled: false,
+    BypassMiddlewareEnabled: false,
+    CreatedAt: DateTimeOffset_1
+  },
+  Item2: {
+    Id: Guid_2,
+    Name: Canada's Wonderland,
+    Location: {},
+    ParentId: Guid_3,
+    TimeZone: America/Toronto,
+    EntityType: PARK,
+    DestinationId: Guid_3,
+    ExternalId: canadaswonderland
+  }
+}
