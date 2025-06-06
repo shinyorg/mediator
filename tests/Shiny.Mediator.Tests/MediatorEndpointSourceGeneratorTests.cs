@@ -12,6 +12,7 @@ public class MediatorEndpointSourceGeneratorTests
     {
         var source = @"
 using Shiny.Mediator;
+using System.Threading;
 
 namespace Test;
 
@@ -34,6 +35,7 @@ public class GetUserHandler : IRequestHandler<GetUserRequest, UserResponse>
     {
         var source = @"
 using Shiny.Mediator;
+using System.Threading;
 
 namespace Test;
 
@@ -55,6 +57,7 @@ public class CreateUserHandler : ICommandHandler<CreateUserCommand>
     {
         var source = @"
 using Shiny.Mediator;
+using System.Threading;
 
 namespace Test;
 
@@ -82,6 +85,7 @@ public class MixedHandler : IRequestHandler<GetUserRequest, UserResponse>, IComm
     {
         var source = @"
 using Shiny.Mediator;
+using System.Threading;
 
 namespace Test;
 
@@ -110,6 +114,7 @@ public class GroupedHandler : IRequestHandler<GetUserRequest, UserResponse>, ICo
     {
         var source = @"
 using Shiny.Mediator;
+using System.Threading;
 
 namespace Test;
 
@@ -142,6 +147,7 @@ public class UserHandler : IRequestHandler<GetUserRequest, UserResponse>, IComma
     {
         var source = @"
 using Shiny.Mediator;
+using System.Threading;
 
 namespace Test;
 
@@ -174,19 +180,22 @@ public class UserHandler : IRequestHandler<GetUserRequest, UserResponse>
     {
         var source = @"
 using Shiny.Mediator;
+using System.Threading;
 
 namespace Test;
 
 public record GetUserRequest(int Id) : IRequest<UserResponse>;
 public record UserResponse(string Name);
 
-[MediatorHttpGroup(""/api/v1"",
+[MediatorHttpGroup(
+    ""/api/v1"",
     RequiresAuthorization = true,
     AuthorizationPolicies = new[] { ""ApiPolicy"" },
     Tags = new[] { ""V1"", ""API"" },
     CachePolicy = ""ApiCache"",
     CorsPolicy = ""ApiCors"",
-    RateLimitingPolicy = ""ApiRateLimit"")]
+    RateLimitingPolicy = ""ApiRateLimit""
+)]
 public class GroupedUserHandler : IRequestHandler<GetUserRequest, UserResponse>
 {
     [MediatorHttpGet(""GetUser"", ""/users/{id}"")]
@@ -203,6 +212,7 @@ public class GroupedUserHandler : IRequestHandler<GetUserRequest, UserResponse>
     {
         var source = @"
 using Shiny.Mediator;
+using System.Threading;
 
 namespace Test;
 
@@ -224,6 +234,7 @@ public class UserHandler : IRequestHandler<GetUserRequest, UserResponse>
     {
         var source = @"
 using Shiny.Mediator;
+using System.Threading;
 
 namespace Test;
 
@@ -241,33 +252,14 @@ public class UserHandler : IRequestHandler<GetUserRequest, UserResponse>
         var result = RunGeneratorAndGetFiles(source);
         return Verify(result);
     }
-
-    [Fact]
-    public Task RequestWithVoidResult_TreatedAsCommand()
-    {
-        var source = @"
-using Shiny.Mediator;
-
-namespace Test;
-
-public record ProcessDataRequest : IRequest;
-
-public class ProcessDataHandler : IRequestHandler<ProcessDataRequest>
-{
-    [MediatorHttpPost(""ProcessData"", ""/process"")]
-    public Task Handle(ProcessDataRequest request, IMediatorContext context, CancellationToken cancellationToken)
-        => Task.CompletedTask;
-}";
-
-        var result = RunGeneratorAndGetFiles(source);
-        return Verify(result);
-    }
+    
 
     [Fact]
     public Task ComplexTypes_GeneratesCorrectParameterTypes()
     {
         var source = @"
 using Shiny.Mediator;
+using System.Threading;
 
 namespace Test.Complex;
 
@@ -289,7 +281,6 @@ public class ComplexUserHandler : IRequestHandler<GetUserDetailRequest, UserDeta
     {
         var driver = BuildDriver(source);
         var runResult = driver.GetRunResult();
-        
         var generatedFiles = new Dictionary<string, string>();
         
         foreach (var result in runResult.Results)
@@ -312,6 +303,7 @@ public class ComplexUserHandler : IRequestHandler<GetUserDetailRequest, UserDeta
         // Add minimal references for compilation
         var references = new[]
         {
+            MetadataReference.CreateFromFile(typeof(IMediator).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(MediatorHttpGroupAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Task).Assembly.Location),

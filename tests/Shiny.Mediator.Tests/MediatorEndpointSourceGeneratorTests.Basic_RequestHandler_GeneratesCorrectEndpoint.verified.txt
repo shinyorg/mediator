@@ -16,7 +16,7 @@ public static class MediatorDependencyInjectionExtensions
     /// </summary>
     public static global::Shiny.Mediator.ShinyMediatorBuilder AddGeneratedEndpoints(this global::Shiny.Mediator.ShinyMediatorBuilder builder)
     {
-        builder.Services.AddScopedAsImplementedInterfaces<Test.Complex.ComplexUserHandler>();
+        builder.Services.AddScopedAsImplementedInterfaces<Test.GetUserHandler>();
         return builder;
     }
 }
@@ -39,12 +39,12 @@ public static class MediatorEndpoints
     public static global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder MapGeneratedMediatorEndpoints(this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder)
     {
 
-        // ComplexUserHandler - GetUserDetail
+        // GetUserHandler - GetUser
         builder.MapGet(
-            "/users/{userId}/details",
+            "/users/{id}",
             async (
                 [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,
-                [global::Microsoft.AspNetCore.Http.AsParameters] Test.Complex.GetUserDetailRequest request,
+                [global::Microsoft.AspNetCore.Http.AsParameters] Test.GetUserRequest request,
                 global::System.Threading.CancellationToken cancellationToken
             ) =>
             {
@@ -54,7 +54,7 @@ public static class MediatorEndpoints
                 return global::Microsoft.AspNetCore.Http.Results.Ok(result);
             }
         )
-            .WithName("GetUserDetail")
+            .WithName("GetUser")
         ;
         return builder;
     }

@@ -21,18 +21,18 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             .Where(static m => m is not null);
 
         // Combine with compilation to access symbols
-        var compilationAndClasses = context.CompilationProvider.Combine(classDeclarations.Collect());
+        var compilationAndClasses = context
+            .CompilationProvider
+            .Combine(classDeclarations.Collect());
 
         // Generate the output
-        context.RegisterSourceOutput(compilationAndClasses,
-            static (spc, source) => Execute(source.Left, source.Right, spc));
+        context.RegisterSourceOutput(
+            compilationAndClasses,
+            static (spc, source) => Execute(source.Left, source.Right, spc)
+        );
     }
 
-    static bool IsSyntaxTargetForGeneration(SyntaxNode node)
-    {
-        var isClass = node is ClassDeclarationSyntax;
-        return isClass;
-    }
+    static bool IsSyntaxTargetForGeneration(SyntaxNode node) => node is ClassDeclarationSyntax;
 
     static ClassInfo? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
     {
@@ -43,25 +43,43 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             return null;
 
         // Check if this class implements IRequestHandler or ICommandHandler
-        var isRequestHandler = classSymbol.AllInterfaces.Any(i => 
-            i.IsGenericType && 
-            i.OriginalDefinition.ToDisplayString() == "Shiny.Mediator.IRequestHandler<TRequest, TResult>");
+        var isRequestHandler = false;
+        var isCommandHandler = false;
+        
+        foreach (var intf in classSymbol.AllInterfaces)
+        {
+            if (intf.IsGenericType)
+            {
+                if (!isRequestHandler)
+                    isRequestHandler = intf.OriginalDefinition.ToDisplayString() == "Shiny.Mediator.IRequestHandler<TRequest, TResult>";
+                
+                if (!isCommandHandler)
+                    isCommandHandler = intf.OriginalDefinition.ToDisplayString() == "Shiny.Mediator.ICommandHandler<TCommand>";
+            }
 
-        var isCommandHandler = classSymbol.AllInterfaces.Any(i => 
-            i.IsGenericType && 
-            i.OriginalDefinition.ToDisplayString() == "Shiny.Mediator.ICommandHandler<TCommand>");
+            if (isRequestHandler && isCommandHandler)
+                break;
+        }
 
         if (!isRequestHandler && !isCommandHandler)
             return null;
 
         // Find all Handle methods with MediatorHttp attributes
-        var handleMethods = classSymbol.GetMembers("Handle")
-            .OfType<IMethodSymbol>()
-            .Where(m => 
-                m.Parameters.Length == 3 &&
-                m.Parameters[1].Type.ToDisplayString() == "Shiny.Mediator.IMediatorContext" &&
-                m.Parameters[2].Type.ToDisplayString() == "System.Threading.CancellationToken")
-            .ToList();
+        var handleMethods = new List<IMethodSymbol>();
+        
+        foreach (var member in classSymbol.GetMembers("Handle"))
+        {
+            if (member is IMethodSymbol { Parameters.Length: 3 } method)
+            {
+                var p1Name = method.Parameters[1].ToDisplayString();
+                var p2Name = method.Parameters[2].ToDisplayString();
+                
+                if (p1Name.StartsWith("Shiny.Mediator.IMediatorContext") && p2Name.StartsWith("System.Threading.CancellationToken"))
+                {
+                    handleMethods.Add(method);
+                }
+            }
+        }
 
         if (!handleMethods.Any())
             return null;
@@ -71,23 +89,23 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         foreach (var method in handleMethods)
         {
             var methodAttributes = method.GetAttributes()
-                .Where(attr => attr.AttributeClass?.Name?.Contains("MediatorHttp") == true && !attr.AttributeClass.Name.Contains("Group"))
+                .Where(attr =>
+                    attr.AttributeClass?.Name?.Contains("MediatorHttp") == true &&
+                    !attr.AttributeClass.Name.Contains("Group"))
                 .ToList();
-            
+
             if (methodAttributes.Any())
             {
                 // Get the first parameter type (the request/command type)
                 var parameterType = method.Parameters[0].Type.ToDisplayString();
-                
+
                 // Determine result type based on method return type
                 var resultType = "void";
-                if (method.ReturnType is INamedTypeSymbol namedReturnType && 
-                    namedReturnType.IsGenericType && 
-                    namedReturnType.TypeArguments.Length > 0)
+                if (method.ReturnType is INamedTypeSymbol { IsGenericType: true, TypeArguments.Length: > 0 } namedReturnType)
                 {
                     resultType = namedReturnType.TypeArguments[0].ToDisplayString();
                 }
-                
+
                 foreach (var attr in methodAttributes)
                 {
                     allHttpAttributes.Add((attr, parameterType, resultType));
@@ -99,13 +117,16 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             return null;
 
         // Check for MediatorHttpGroupAttribute at class level
-        var groupAttribute = classSymbol.GetAttributes()
+        var groupAttribute = classSymbol
+            .GetAttributes()
             .FirstOrDefault(attr => attr.AttributeClass?.Name == "MediatorHttpGroupAttribute");
 
         return new ClassInfo(
             classSymbol.ToDisplayString(),
             classSymbol.Name,
-            allHttpAttributes.Select(tuple => GetAttributeInfo(tuple.attribute, tuple.parameterType, tuple.resultType)).ToList(),
+            allHttpAttributes
+                .Select(tuple => GetAttributeInfo(tuple.attribute, tuple.parameterType, tuple.resultType))
+                .ToList(),
             isRequestHandler,
             isCommandHandler,
             GetGenericTypes(classSymbol),
@@ -115,11 +136,11 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
     static AttributeInfo GetAttributeInfo(AttributeData attribute, string parameterType, string resultType)
     {
-        var operationId = attribute.ConstructorArguments.Length > 0 
+        var operationId = attribute.ConstructorArguments.Length > 0
             ? attribute.ConstructorArguments[0].Value?.ToString() ?? ""
             : "";
-        
-        var uriTemplate = attribute.ConstructorArguments.Length > 1 
+
+        var uriTemplate = attribute.ConstructorArguments.Length > 1
             ? attribute.ConstructorArguments[1].Value?.ToString() ?? ""
             : "";
 
@@ -128,7 +149,15 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         var properties = new Dictionary<string, object>();
         foreach (var namedArg in attribute.NamedArguments)
         {
-            properties[namedArg.Key] = namedArg.Value.Value ?? "";
+            if (namedArg.Value.Kind == TypedConstantKind.Array)
+            {
+                var arrayValues = namedArg.Value.Values.Select(v => v.Value?.ToString() ?? "").ToArray();
+                properties[namedArg.Key] = arrayValues;
+            }
+            else
+            {
+                properties[namedArg.Key] = namedArg.Value.Value ?? "";
+            }
         }
 
         return new AttributeInfo(operationId, uriTemplate, httpMethod, properties, parameterType, resultType);
@@ -136,14 +165,22 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
     static GroupAttributeInfo GetGroupAttributeInfo(AttributeData attribute)
     {
-        var prefix = attribute.ConstructorArguments.Length > 0 
+        var prefix = attribute.ConstructorArguments.Length > 0
             ? attribute.ConstructorArguments[0].Value?.ToString() ?? ""
             : "";
 
         var properties = new Dictionary<string, object>();
         foreach (var namedArg in attribute.NamedArguments)
         {
-            properties[namedArg.Key] = namedArg.Value.Value ?? "";
+            if (namedArg.Value.Kind == TypedConstantKind.Array)
+            {
+                var arrayValues = namedArg.Value.Values.Select(v => v.Value?.ToString() ?? "").ToArray();
+                properties[namedArg.Key] = arrayValues;
+            }
+            else
+            {
+                properties[namedArg.Key] = namedArg.Value.Value ?? "";
+            }
         }
 
         return new GroupAttributeInfo(prefix, properties);
@@ -160,12 +197,12 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
     static GenericTypeInfo GetGenericTypes(INamedTypeSymbol classSymbol)
     {
-        var requestInterface = classSymbol.AllInterfaces.FirstOrDefault(i => 
-            i.IsGenericType && 
+        var requestInterface = classSymbol.AllInterfaces.FirstOrDefault(i =>
+            i.IsGenericType &&
             i.OriginalDefinition.ToDisplayString() == "Shiny.Mediator.IRequestHandler<TRequest, TResult>");
 
-        var commandInterface = classSymbol.AllInterfaces.FirstOrDefault(i => 
-            i.IsGenericType && 
+        var commandInterface = classSymbol.AllInterfaces.FirstOrDefault(i =>
+            i.IsGenericType &&
             i.OriginalDefinition.ToDisplayString() == "Shiny.Mediator.ICommandHandler<TCommand>");
 
         string requestType = "";
@@ -221,7 +258,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         // }
         //
         // context.AddSource("Debug_SourceGenerator.g.cs", SourceText.From(debugSb.ToString(), Encoding.UTF8));
-        
+
         if (classes.IsDefaultOrEmpty)
             return;
 
@@ -230,15 +267,16 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             return;
 
         var nameSpace = compilation.AssemblyName ?? "Generated";
-        
+
         // Generate dependency injection extensions
         GenerateDependencyInjectionExtensions(context, nameSpace, validClasses);
-        
+
         // Generate endpoint mapping extensions
         GenerateEndpointMappingExtensions(context, nameSpace, validClasses);
     }
 
-    static void GenerateDependencyInjectionExtensions(SourceProductionContext context, string nameSpace, List<ClassInfo> classes)
+    static void GenerateDependencyInjectionExtensions(SourceProductionContext context, string nameSpace,
+        List<ClassInfo> classes)
     {
         var sb = new StringBuilder();
         sb.AppendLine("// <auto-generated>");
@@ -255,7 +293,8 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine("    /// <summary>");
         sb.AppendLine("    /// Registers all generated mediator endpoint handlers");
         sb.AppendLine("    /// </summary>");
-        sb.AppendLine("    public static global::Shiny.Mediator.ShinyMediatorBuilder AddGeneratedEndpoints(this global::Shiny.Mediator.ShinyMediatorBuilder builder)");
+        sb.AppendLine(
+            "    public static global::Shiny.Mediator.ShinyMediatorBuilder AddGeneratedEndpoints(this global::Shiny.Mediator.ShinyMediatorBuilder builder)");
         sb.AppendLine("    {");
 
         foreach (var classInfo in classes)
@@ -270,7 +309,8 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         context.AddSource("MediatorDependencyInjectionExtensions.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
     }
 
-    static void GenerateEndpointMappingExtensions(SourceProductionContext context, string nameSpace, List<ClassInfo> classes)
+    static void GenerateEndpointMappingExtensions(SourceProductionContext context, string nameSpace,
+        List<ClassInfo> classes)
     {
         var sb = new StringBuilder();
         sb.AppendLine("// <auto-generated>");
@@ -287,7 +327,8 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine("    /// <summary>");
         sb.AppendLine("    /// Maps all generated mediator endpoints");
         sb.AppendLine("    /// </summary>");
-        sb.AppendLine("    public static global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder MapGeneratedMediatorEndpoints(this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder)");
+        sb.AppendLine(
+            "    public static global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder MapGeneratedMediatorEndpoints(this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder)");
         sb.AppendLine("    {");
 
         // Group classes by their group attribute
@@ -303,20 +344,23 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
                 // Create a group for classes with MediatorHttpGroupAttribute
                 sb.AppendLine();
                 sb.AppendLine($"        // Group: {groupPrefix}");
-                sb.AppendLine($"        var group_{groupPrefix.Replace("/", "_").Replace("-", "_")} = builder.MapGroup(\"{groupPrefix}\");");
+                sb.AppendLine(
+                    $"        var group_{groupPrefix.Replace("/", "_").Replace("-", "_")} = builder.MapGroup(\"{groupPrefix}\");");
 
                 // Get the first class's group attribute for group-level configuration
                 var groupAttribute = classesInGroup.First().GroupAttribute;
                 if (groupAttribute != null)
                 {
-                    ApplyGroupConfiguration(sb, $"group_{groupPrefix.Replace("/", "_").Replace("-", "_")}", groupAttribute);
+                    ApplyGroupConfiguration(sb, $"group_{groupPrefix.Replace("/", "_").Replace("-", "_")}",
+                        groupAttribute);
                 }
 
                 foreach (var classInfo in classesInGroup)
                 {
                     foreach (var attribute in classInfo.HttpAttributes)
                     {
-                        GenerateGroupedEndpointMapping(sb, $"group_{groupPrefix.Replace("/", "_").Replace("-", "_")}", classInfo, attribute);
+                        GenerateGroupedEndpointMapping(sb, $"group_{groupPrefix.Replace("/", "_").Replace("-", "_")}",
+                            classInfo, attribute);
                     }
                 }
             }
@@ -354,10 +398,11 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
         // Determine if this is a request or command based on the result type
         var isRequest = resultType != "void" && resultType != "System.Threading.Tasks.Task";
-        
+
         if (isRequest)
         {
-            GenerateRequestEndpoint(sb, httpMethod, uriTemplate, requestType, resultType, attribute, classInfo.GroupAttribute);
+            GenerateRequestEndpoint(sb, httpMethod, uriTemplate, requestType, resultType, attribute,
+                classInfo.GroupAttribute);
         }
         else
         {
@@ -365,15 +410,19 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         }
     }
 
-    static void GenerateRequestEndpoint(StringBuilder sb, string httpMethod, string uriTemplate, string requestType, string resultType, AttributeInfo attribute, GroupAttributeInfo? groupAttribute)
+    static void GenerateRequestEndpoint(StringBuilder sb, string httpMethod, string uriTemplate, string requestType,
+        string resultType, AttributeInfo attribute, GroupAttributeInfo? groupAttribute)
     {
         var isGetOrDelete = httpMethod == "get" || httpMethod == "delete";
-        var fromClause = isGetOrDelete ? "[global::Microsoft.AspNetCore.Http.AsParameters]" : "[global::Microsoft.AspNetCore.Mvc.FromBody]";
+        var fromClause = isGetOrDelete
+            ? "[global::Microsoft.AspNetCore.Http.AsParameters]"
+            : "[global::Microsoft.AspNetCore.Mvc.FromBody]";
 
         sb.AppendLine($"        builder.Map{httpMethod.Substring(0, 1).ToUpper()}{httpMethod.Substring(1)}(");
         sb.AppendLine($"            \"{uriTemplate}\",");
         sb.AppendLine($"            async (");
-        sb.AppendLine($"                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,");
+        sb.AppendLine(
+            $"                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,");
         sb.AppendLine($"                {fromClause} {requestType} request,");
         sb.AppendLine($"                global::System.Threading.CancellationToken cancellationToken");
         sb.AppendLine($"            ) =>");
@@ -389,15 +438,19 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine($"        ;");
     }
 
-    static void GenerateCommandEndpoint(StringBuilder sb, string httpMethod, string uriTemplate, string requestType, AttributeInfo attribute, GroupAttributeInfo? groupAttribute)
+    static void GenerateCommandEndpoint(StringBuilder sb, string httpMethod, string uriTemplate, string requestType,
+        AttributeInfo attribute, GroupAttributeInfo? groupAttribute)
     {
         var isGetOrDelete = httpMethod == "get" || httpMethod == "delete";
-        var fromClause = isGetOrDelete ? "[global::Microsoft.AspNetCore.Http.AsParameters]" : "[global::Microsoft.AspNetCore.Mvc.FromBody]";
+        var fromClause = isGetOrDelete
+            ? "[global::Microsoft.AspNetCore.Http.AsParameters]"
+            : "[global::Microsoft.AspNetCore.Mvc.FromBody]";
 
         sb.AppendLine($"        builder.Map{httpMethod.Substring(0, 1).ToUpper()}{httpMethod.Substring(1)}(");
         sb.AppendLine($"            \"{uriTemplate}\",");
         sb.AppendLine($"            async (");
-        sb.AppendLine($"                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,");
+        sb.AppendLine(
+            $"                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,");
         sb.AppendLine($"                {fromClause} {requestType} command,");
         sb.AppendLine($"                global::System.Threading.CancellationToken cancellationToken");
         sb.AppendLine($"            ) =>");
@@ -413,7 +466,8 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine($"        ;");
     }
 
-    static void ApplyEndpointConfiguration(StringBuilder sb, AttributeInfo attribute, GroupAttributeInfo? groupAttribute)
+    static void ApplyEndpointConfiguration(StringBuilder sb, AttributeInfo attribute,
+        GroupAttributeInfo? groupAttribute)
     {
         // Apply WithName
         sb.AppendLine($"            .WithName(\"{attribute.OperationId}\")");
@@ -428,10 +482,11 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         {
             if (groupAttribute.Properties.TryGetValue("RequiresAuthorization", out var groupRequiresAuth))
                 requiresAuth = (bool)groupRequiresAuth;
-            
-            if (groupAttribute.Properties.TryGetValue("AuthorizationPolicies", out var groupPolicies) && groupPolicies is string[] groupPolicyArray)
+
+            if (groupAttribute.Properties.TryGetValue("AuthorizationPolicies", out var groupPolicies) &&
+                groupPolicies is string[] groupPolicyArray)
                 authPolicies = groupPolicyArray;
-                
+
             if (groupAttribute.Properties.TryGetValue("AllowAnonymous", out var groupAllowAnon))
                 allowAnonymous = (bool)groupAllowAnon;
         }
@@ -439,10 +494,11 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         // Override with attribute-level settings if present
         if (attribute.Properties.TryGetValue("RequiresAuthorization", out var attrRequiresAuth))
             requiresAuth = (bool)attrRequiresAuth;
-        
-        if (attribute.Properties.TryGetValue("AuthorizationPolicies", out var attrPolicies) && attrPolicies is string[] attrPolicyArray)
+
+        if (attribute.Properties.TryGetValue("AuthorizationPolicies", out var attrPolicies) &&
+            attrPolicies is string[] attrPolicyArray)
             authPolicies = attrPolicyArray;
-            
+
         if (attribute.Properties.TryGetValue("AllowAnonymous", out var attrAllowAnon))
             allowAnonymous = (bool)attrAllowAnon;
 
@@ -479,9 +535,10 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             var displayName = "";
             if (groupAttribute?.Properties.TryGetValue("DisplayName", out var groupDisplayName) == true)
                 displayName = (string)groupDisplayName;
-            if (attribute.Properties.TryGetValue("DisplayName", out var attrDisplayName) && !string.IsNullOrEmpty((string)attrDisplayName))
+            if (attribute.Properties.TryGetValue("DisplayName", out var attrDisplayName) &&
+                !string.IsNullOrEmpty((string)attrDisplayName))
                 displayName = (string)attrDisplayName;
-            
+
             if (!string.IsNullOrEmpty(displayName))
                 sb.AppendLine($"            .WithDisplayName(\"{displayName}\")");
 
@@ -489,9 +546,10 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             var summary = "";
             if (groupAttribute?.Properties.TryGetValue("Summary", out var groupSummary) == true)
                 summary = (string)groupSummary;
-            if (attribute.Properties.TryGetValue("Summary", out var attrSummary) && !string.IsNullOrEmpty((string)attrSummary))
+            if (attribute.Properties.TryGetValue("Summary", out var attrSummary) &&
+                !string.IsNullOrEmpty((string)attrSummary))
                 summary = (string)attrSummary;
-            
+
             if (!string.IsNullOrEmpty(summary))
                 sb.AppendLine($"            .WithSummary(\"{summary}\")");
 
@@ -499,19 +557,21 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             var description = "";
             if (groupAttribute?.Properties.TryGetValue("Description", out var groupDescription) == true)
                 description = (string)groupDescription;
-            if (attribute.Properties.TryGetValue("Description", out var attrDescription) && !string.IsNullOrEmpty((string)attrDescription))
+            if (attribute.Properties.TryGetValue("Description", out var attrDescription) &&
+                !string.IsNullOrEmpty((string)attrDescription))
                 description = (string)attrDescription;
-            
+
             if (!string.IsNullOrEmpty(description))
                 sb.AppendLine($"            .WithDescription(\"{description}\")");
 
             // Tags - merge group and attribute tags
             var allTags = new List<string>();
-            if (groupAttribute?.Properties.TryGetValue("Tags", out var groupTags) == true && groupTags is string[] groupTagArray)
+            if (groupAttribute?.Properties.TryGetValue("Tags", out var groupTags) == true &&
+                groupTags is string[] groupTagArray)
                 allTags.AddRange(groupTagArray);
             if (attribute.Properties.TryGetValue("Tags", out var attrTags) && attrTags is string[] attrTagArray)
                 allTags.AddRange(attrTagArray);
-            
+
             if (allTags.Any())
             {
                 var tagList = string.Join("\", \"", allTags.Distinct());
@@ -522,11 +582,13 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             var groupName = "";
             if (groupAttribute?.Properties.TryGetValue("GroupName", out var groupGroupName) == true)
                 groupName = (string)groupGroupName;
-            if (attribute.Properties.TryGetValue("GroupName", out var attrGroupName) && !string.IsNullOrEmpty((string)attrGroupName))
+            if (attribute.Properties.TryGetValue("GroupName", out var attrGroupName) &&
+                !string.IsNullOrEmpty((string)attrGroupName))
                 groupName = (string)attrGroupName;
-            
+
             if (!string.IsNullOrEmpty(groupName))
-                sb.AppendLine($"            .WithOpenApi(operation => {{ operation.Tags = new List<Microsoft.OpenApi.Models.OpenApiTag> {{ new() {{ Name = \"{groupName}\" }} }}; return operation; }})");
+                sb.AppendLine(
+                    $"            .WithOpenApi(operation => {{ operation.Tags = new List<Microsoft.OpenApi.Models.OpenApiTag> {{ new() {{ Name = \"{groupName}\" }} }}; return operation; }})");
         }
 
         // Exclude from description - attribute takes precedence
@@ -535,7 +597,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             excludeFromDesc = (bool)groupExcludeFromDesc;
         if (attribute.Properties.TryGetValue("ExcludeFromDescription", out var attrExcludeFromDesc))
             excludeFromDesc = (bool)attrExcludeFromDesc;
-        
+
         if (excludeFromDesc)
             sb.AppendLine($"            .ExcludeFromDescription()");
 
@@ -543,9 +605,10 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         var cachePolicy = "";
         if (groupAttribute?.Properties.TryGetValue("CachePolicy", out var groupCachePolicy) == true)
             cachePolicy = (string)groupCachePolicy;
-        if (attribute.Properties.TryGetValue("CachePolicy", out var attrCachePolicy) && !string.IsNullOrEmpty((string)attrCachePolicy))
+        if (attribute.Properties.TryGetValue("CachePolicy", out var attrCachePolicy) &&
+            !string.IsNullOrEmpty((string)attrCachePolicy))
             cachePolicy = (string)attrCachePolicy;
-        
+
         if (!string.IsNullOrEmpty(cachePolicy))
             sb.AppendLine($"            .CacheOutput(\"{cachePolicy}\")");
 
@@ -553,9 +616,10 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         var corsPolicy = "";
         if (groupAttribute?.Properties.TryGetValue("CorsPolicy", out var groupCorsPolicy) == true)
             corsPolicy = (string)groupCorsPolicy;
-        if (attribute.Properties.TryGetValue("CorsPolicy", out var attrCorsPolicy) && !string.IsNullOrEmpty((string)attrCorsPolicy))
+        if (attribute.Properties.TryGetValue("CorsPolicy", out var attrCorsPolicy) &&
+            !string.IsNullOrEmpty((string)attrCorsPolicy))
             corsPolicy = (string)attrCorsPolicy;
-        
+
         if (!string.IsNullOrEmpty(corsPolicy))
             sb.AppendLine($"            .RequireCors(\"{corsPolicy}\")");
 
@@ -563,9 +627,10 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         var rateLimitPolicy = "";
         if (groupAttribute?.Properties.TryGetValue("RateLimitingPolicy", out var groupRateLimitPolicy) == true)
             rateLimitPolicy = (string)groupRateLimitPolicy;
-        if (attribute.Properties.TryGetValue("RateLimitingPolicy", out var attrRateLimitPolicy) && !string.IsNullOrEmpty((string)attrRateLimitPolicy))
+        if (attribute.Properties.TryGetValue("RateLimitingPolicy", out var attrRateLimitPolicy) &&
+            !string.IsNullOrEmpty((string)attrRateLimitPolicy))
             rateLimitPolicy = (string)attrRateLimitPolicy;
-        
+
         if (!string.IsNullOrEmpty(rateLimitPolicy))
             sb.AppendLine($"            .RequireRateLimiting(\"{rateLimitPolicy}\")");
     }
@@ -575,7 +640,8 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         // Apply group-level authorization settings
         if (groupAttribute.Properties.TryGetValue("RequiresAuthorization", out var requiresAuth) && (bool)requiresAuth)
         {
-            if (groupAttribute.Properties.TryGetValue("AuthorizationPolicies", out var policies) && policies is string[] policyArray && policyArray.Length > 0)
+            if (groupAttribute.Properties.TryGetValue("AuthorizationPolicies", out var policies) &&
+                policies is string[] policyArray && policyArray.Length > 0)
             {
                 foreach (var policy in policyArray)
                 {
@@ -594,32 +660,37 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         }
 
         // Apply group-level CORS
-        if (groupAttribute.Properties.TryGetValue("CorsPolicy", out var corsPolicy) && !string.IsNullOrEmpty((string)corsPolicy))
+        if (groupAttribute.Properties.TryGetValue("CorsPolicy", out var corsPolicy) &&
+            !string.IsNullOrEmpty((string)corsPolicy))
         {
             sb.AppendLine($"        {groupVariableName}.RequireCors(\"{corsPolicy}\");");
         }
 
         // Apply group-level rate limiting
-        if (groupAttribute.Properties.TryGetValue("RateLimitingPolicy", out var rateLimitPolicy) && !string.IsNullOrEmpty((string)rateLimitPolicy))
+        if (groupAttribute.Properties.TryGetValue("RateLimitingPolicy", out var rateLimitPolicy) &&
+            !string.IsNullOrEmpty((string)rateLimitPolicy))
         {
             sb.AppendLine($"        {groupVariableName}.RequireRateLimiting(\"{rateLimitPolicy}\");");
         }
 
         // Apply group-level caching
-        if (groupAttribute.Properties.TryGetValue("CachePolicy", out var cachePolicy) && !string.IsNullOrEmpty((string)cachePolicy))
+        if (groupAttribute.Properties.TryGetValue("CachePolicy", out var cachePolicy) &&
+            !string.IsNullOrEmpty((string)cachePolicy))
         {
             sb.AppendLine($"        {groupVariableName}.CacheOutput(\"{cachePolicy}\");");
         }
 
         // Apply group-level tags
-        if (groupAttribute.Properties.TryGetValue("Tags", out var tags) && tags is string[] tagArray && tagArray.Length > 0)
+        if (groupAttribute.Properties.TryGetValue("Tags", out var tags) && tags is string[] tagArray &&
+            tagArray.Length > 0)
         {
             var tagList = string.Join("\", \"", tagArray);
             sb.AppendLine($"        {groupVariableName}.WithTags(\"{tagList}\");");
         }
     }
 
-    static void GenerateGroupedEndpointMapping(StringBuilder sb, string groupVariableName, ClassInfo classInfo, AttributeInfo attribute)
+    static void GenerateGroupedEndpointMapping(StringBuilder sb, string groupVariableName, ClassInfo classInfo,
+        AttributeInfo attribute)
     {
         var httpMethod = attribute.HttpMethod.ToLower();
         var operationId = attribute.OperationId;
@@ -632,10 +703,11 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
         // Determine if this is a request or command based on the result type
         var isRequest = resultType != "void" && resultType != "System.Threading.Tasks.Task";
-        
+
         if (isRequest)
         {
-            GenerateGroupedRequestEndpoint(sb, groupVariableName, httpMethod, uriTemplate, requestType, resultType, attribute);
+            GenerateGroupedRequestEndpoint(sb, groupVariableName, httpMethod, uriTemplate, requestType, resultType,
+                attribute);
         }
         else
         {
@@ -643,15 +715,20 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         }
     }
 
-    static void GenerateGroupedRequestEndpoint(StringBuilder sb, string groupVariableName, string httpMethod, string uriTemplate, string requestType, string resultType, AttributeInfo attribute)
+    static void GenerateGroupedRequestEndpoint(StringBuilder sb, string groupVariableName, string httpMethod,
+        string uriTemplate, string requestType, string resultType, AttributeInfo attribute)
     {
         var isGetOrDelete = httpMethod == "get" || httpMethod == "delete";
-        var fromClause = isGetOrDelete ? "[global::Microsoft.AspNetCore.Http.AsParameters]" : "[global::Microsoft.AspNetCore.Mvc.FromBody]";
+        var fromClause = isGetOrDelete
+            ? "[global::Microsoft.AspNetCore.Http.AsParameters]"
+            : "[global::Microsoft.AspNetCore.Mvc.FromBody]";
 
-        sb.AppendLine($"        {groupVariableName}.Map{httpMethod.Substring(0, 1).ToUpper()}{httpMethod.Substring(1)}(");
+        sb.AppendLine(
+            $"        {groupVariableName}.Map{httpMethod.Substring(0, 1).ToUpper()}{httpMethod.Substring(1)}(");
         sb.AppendLine($"            \"{uriTemplate}\",");
         sb.AppendLine($"            async (");
-        sb.AppendLine($"                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,");
+        sb.AppendLine(
+            $"                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,");
         sb.AppendLine($"                {fromClause} {requestType} request,");
         sb.AppendLine($"                global::System.Threading.CancellationToken cancellationToken");
         sb.AppendLine($"            ) =>");
@@ -667,15 +744,20 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine($"        ;");
     }
 
-    static void GenerateGroupedCommandEndpoint(StringBuilder sb, string groupVariableName, string httpMethod, string uriTemplate, string requestType, AttributeInfo attribute)
+    static void GenerateGroupedCommandEndpoint(StringBuilder sb, string groupVariableName, string httpMethod,
+        string uriTemplate, string requestType, AttributeInfo attribute)
     {
         var isGetOrDelete = httpMethod == "get" || httpMethod == "delete";
-        var fromClause = isGetOrDelete ? "[global::Microsoft.AspNetCore.Http.AsParameters]" : "[global::Microsoft.AspNetCore.Mvc.FromBody]";
+        var fromClause = isGetOrDelete
+            ? "[global::Microsoft.AspNetCore.Http.AsParameters]"
+            : "[global::Microsoft.AspNetCore.Mvc.FromBody]";
 
-        sb.AppendLine($"        {groupVariableName}.Map{httpMethod.Substring(0, 1).ToUpper()}{httpMethod.Substring(1)}(");
+        sb.AppendLine(
+            $"        {groupVariableName}.Map{httpMethod.Substring(0, 1).ToUpper()}{httpMethod.Substring(1)}(");
         sb.AppendLine($"            \"{uriTemplate}\",");
         sb.AppendLine($"            async (");
-        sb.AppendLine($"                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,");
+        sb.AppendLine(
+            $"                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,");
         sb.AppendLine($"                {fromClause} {requestType} command,");
         sb.AppendLine($"                global::System.Threading.CancellationToken cancellationToken");
         sb.AppendLine($"            ) =>");
@@ -699,7 +781,8 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         // Apply attribute-level authorization settings (group-level already applied to the group)
         if (attribute.Properties.TryGetValue("RequiresAuthorization", out var requiresAuth) && (bool)requiresAuth)
         {
-            if (attribute.Properties.TryGetValue("AuthorizationPolicies", out var policies) && policies is string[] policyArray && policyArray.Length > 0)
+            if (attribute.Properties.TryGetValue("AuthorizationPolicies", out var policies) &&
+                policies is string[] policyArray && policyArray.Length > 0)
             {
                 foreach (var policy in policyArray)
                 {
@@ -724,35 +807,44 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
         if (useOpenApi)
         {
-            if (attribute.Properties.TryGetValue("DisplayName", out var displayName) && !string.IsNullOrEmpty((string)displayName))
+            if (attribute.Properties.TryGetValue("DisplayName", out var displayName) &&
+                !string.IsNullOrEmpty((string)displayName))
                 sb.AppendLine($"            .WithDisplayName(\"{displayName}\")");
 
             if (attribute.Properties.TryGetValue("Summary", out var summary) && !string.IsNullOrEmpty((string)summary))
                 sb.AppendLine($"            .WithSummary(\"{summary}\")");
 
-            if (attribute.Properties.TryGetValue("Description", out var description) && !string.IsNullOrEmpty((string)description))
+            if (attribute.Properties.TryGetValue("Description", out var description) &&
+                !string.IsNullOrEmpty((string)description))
                 sb.AppendLine($"            .WithDescription(\"{description}\")");
 
-            if (attribute.Properties.TryGetValue("Tags", out var tags) && tags is string[] tagArray && tagArray.Length > 0)
+            if (attribute.Properties.TryGetValue("Tags", out var tags) && tags is string[] tagArray &&
+                tagArray.Length > 0)
             {
                 var tagList = string.Join("\", \"", tagArray);
                 sb.AppendLine($"            .WithTags(\"{tagList}\")");
             }
 
-            if (attribute.Properties.TryGetValue("GroupName", out var groupName) && !string.IsNullOrEmpty((string)groupName))
-                sb.AppendLine($"            .WithOpenApi(operation => {{ operation.Tags = new List<Microsoft.OpenApi.Models.OpenApiTag> {{ new() {{ Name = \"{groupName}\" }} }}; return operation; }})");
+            if (attribute.Properties.TryGetValue("GroupName", out var groupName) &&
+                !string.IsNullOrEmpty((string)groupName))
+                sb.AppendLine(
+                    $"            .WithOpenApi(operation => {{ operation.Tags = new List<Microsoft.OpenApi.Models.OpenApiTag> {{ new() {{ Name = \"{groupName}\" }} }}; return operation; }})");
         }
 
-        if (attribute.Properties.TryGetValue("ExcludeFromDescription", out var excludeFromDesc) && (bool)excludeFromDesc)
+        if (attribute.Properties.TryGetValue("ExcludeFromDescription", out var excludeFromDesc) &&
+            (bool)excludeFromDesc)
             sb.AppendLine($"            .ExcludeFromDescription()");
 
-        if (attribute.Properties.TryGetValue("CachePolicy", out var cachePolicy) && !string.IsNullOrEmpty((string)cachePolicy))
+        if (attribute.Properties.TryGetValue("CachePolicy", out var cachePolicy) &&
+            !string.IsNullOrEmpty((string)cachePolicy))
             sb.AppendLine($"            .CacheOutput(\"{cachePolicy}\")");
 
-        if (attribute.Properties.TryGetValue("CorsPolicy", out var corsPolicy) && !string.IsNullOrEmpty((string)corsPolicy))
+        if (attribute.Properties.TryGetValue("CorsPolicy", out var corsPolicy) &&
+            !string.IsNullOrEmpty((string)corsPolicy))
             sb.AppendLine($"            .RequireCors(\"{corsPolicy}\")");
 
-        if (attribute.Properties.TryGetValue("RateLimitingPolicy", out var rateLimitPolicy) && !string.IsNullOrEmpty((string)rateLimitPolicy))
+        if (attribute.Properties.TryGetValue("RateLimitingPolicy", out var rateLimitPolicy) &&
+            !string.IsNullOrEmpty((string)rateLimitPolicy))
             sb.AppendLine($"            .RequireRateLimiting(\"{rateLimitPolicy}\")");
     }
 }

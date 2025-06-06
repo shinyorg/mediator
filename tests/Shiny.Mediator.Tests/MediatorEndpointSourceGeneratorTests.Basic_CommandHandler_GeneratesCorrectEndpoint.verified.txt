@@ -16,7 +16,7 @@ public static class MediatorDependencyInjectionExtensions
     /// </summary>
     public static global::Shiny.Mediator.ShinyMediatorBuilder AddGeneratedEndpoints(this global::Shiny.Mediator.ShinyMediatorBuilder builder)
     {
-        builder.Services.AddScopedAsImplementedInterfaces<Test.Complex.ComplexUserHandler>();
+        builder.Services.AddScopedAsImplementedInterfaces<Test.CreateUserHandler>();
         return builder;
     }
 }
@@ -39,22 +39,22 @@ public static class MediatorEndpoints
     public static global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder MapGeneratedMediatorEndpoints(this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder)
     {
 
-        // ComplexUserHandler - GetUserDetail
-        builder.MapGet(
-            "/users/{userId}/details",
+        // CreateUserHandler - CreateUser
+        builder.MapPost(
+            "/users",
             async (
                 [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,
-                [global::Microsoft.AspNetCore.Http.AsParameters] Test.Complex.GetUserDetailRequest request,
+                [global::Microsoft.AspNetCore.Mvc.FromBody] Test.CreateUserCommand command,
                 global::System.Threading.CancellationToken cancellationToken
             ) =>
             {
-                var result = await mediator
-                    .Request(request, cancellationToken)
+                await mediator
+                    .Send(command, cancellationToken)
                     .ConfigureAwait(false);
-                return global::Microsoft.AspNetCore.Http.Results.Ok(result);
+                return global::Microsoft.AspNetCore.Http.Results.Ok();
             }
         )
-            .WithName("GetUserDetail")
+            .WithName("CreateUser")
         ;
         return builder;
     }
