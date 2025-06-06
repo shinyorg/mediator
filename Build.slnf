@@ -5,6 +5,7 @@
             "src\\Shiny.Mediator\\Shiny.Mediator.csproj",
             "src\\Shiny.Mediator.AppSupport\\Shiny.Mediator.AppSupport.csproj",
             "src\\Shiny.Mediator.AspNet\\Shiny.Mediator.AspNet.csproj",
+            "src\\Shiny.Mediator.AspNet.SourceGenerators\\Shiny.Mediator.AspNet.SourceGenerators.csproj",
             "src\\Shiny.Mediator.Blazor\\Shiny.Mediator.Blazor.csproj",
             "src\\Shiny.Mediator.Caching.MicrosoftMemoryCache\\Shiny.Mediator.Caching.MicrosoftMemoryCache.csproj",
             "src\\Shiny.Mediator.Contracts\\Shiny.Mediator.Contracts.csproj",
