@@ -1,6 +1,5 @@
 namespace Sample.Api.Handlers;
 
-[ScopedHandler]
 [MediatorHttpGet("GetThing", "/getthing/{parameter}")]
 public class GetResultRequestHandler : IRequestHandler<GetThingRequest, string>
 {

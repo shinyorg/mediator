@@ -25,6 +25,7 @@
     <File Path="Build.slnf" />
   </Folder>
   <Project Path="src\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj" />
+  <Project Path="src\Shiny.Mediator.AspNet.SourceGenerators\Shiny.Mediator.AspNet.SourceGenerators.csproj" Type="Classic C#" />
   <Project Path="src\Shiny.Mediator.AspNet\Shiny.Mediator.AspNet.csproj" />
   <Project Path="src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj" />
   <Project Path="src\Shiny.Mediator.Caching.MicrosoftMemoryCache\Shiny.Mediator.Caching.MicrosoftMemoryCache.csproj" />

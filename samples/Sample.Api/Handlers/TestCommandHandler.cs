@@ -3,7 +3,6 @@ namespace Sample.Api.Handlers;
 public record TestCommand(int Number, string StringArg) : ICommand;
 
 
-[ScopedHandler]
 [MediatorHttpPost("TestCommand", "/testcommand")]
 public class TestCommandHandler : ICommandHandler<TestCommand>
 {
