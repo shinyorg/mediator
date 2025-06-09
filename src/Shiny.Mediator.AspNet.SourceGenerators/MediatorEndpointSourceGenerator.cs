@@ -735,7 +735,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine($"                var result = await mediator");
         sb.AppendLine($"                    .Request(request, cancellationToken)");
         sb.AppendLine($"                    .ConfigureAwait(false);");
-        sb.AppendLine($"                return global::Microsoft.AspNetCore.Http.Results.Ok(result);");
+        sb.AppendLine($"                return global::Microsoft.AspNetCore.Http.Results.Ok(result.Result);");
         sb.AppendLine($"            }}");
         sb.AppendLine($"        )");
 
