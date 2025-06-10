@@ -26,7 +26,7 @@ public static class EndpointRouteBuilderExtensions
                 .Request(request, cancellationToken)
                 .ConfigureAwait(false);
 
-            return Results.Ok(result);
+            return TypedResults.Ok(result.Result);
         }
     );
     
@@ -45,7 +45,7 @@ public static class EndpointRouteBuilderExtensions
                 .Request(request, cancellationToken)
                 .ConfigureAwait(false);
 
-            return Results.Ok(result);
+            return TypedResults.Ok(result.Result);
         }
     );
     
@@ -64,7 +64,7 @@ public static class EndpointRouteBuilderExtensions
                 .Request(request, cancellationToken)
                 .ConfigureAwait(false);
 
-            return Results.Ok(result);
+            return TypedResults.Ok(result.Result);
         }
     ); 
     
@@ -83,7 +83,7 @@ public static class EndpointRouteBuilderExtensions
                 .Request(request, cancellationToken)
                 .ConfigureAwait(false);
 
-            return Results.Ok(result);
+            return TypedResults.Ok(result.Result);
         }
     );
     

@@ -429,7 +429,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine($"                var result = await mediator");
         sb.AppendLine($"                    .Request(request, cancellationToken)");
         sb.AppendLine($"                    .ConfigureAwait(false);");
-        sb.AppendLine($"                return global::Microsoft.AspNetCore.Http.Results.Ok(result.Result);");
+        sb.AppendLine($"                return global::Microsoft.AspNetCore.Http.TypedResults.Ok(result.Result);");
         sb.AppendLine($"            }}");
         sb.AppendLine($"        )");
 
@@ -705,8 +705,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
         if (isRequest)
         {
-            GenerateGroupedRequestEndpoint(sb, groupVariableName, httpMethod, uriTemplate, requestType, resultType,
-                attribute);
+            GenerateGroupedRequestEndpoint(sb, groupVariableName, httpMethod, uriTemplate, requestType, resultType, attribute);
         }
         else
         {
@@ -735,7 +734,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine($"                var result = await mediator");
         sb.AppendLine($"                    .Request(request, cancellationToken)");
         sb.AppendLine($"                    .ConfigureAwait(false);");
-        sb.AppendLine($"                return global::Microsoft.AspNetCore.Http.Results.Ok(result.Result);");
+        sb.AppendLine($"                return global::Microsoft.AspNetCore.Http.TypedResults.Ok(result.Result);");
         sb.AppendLine($"            }}");
         sb.AppendLine($"        )");
 
