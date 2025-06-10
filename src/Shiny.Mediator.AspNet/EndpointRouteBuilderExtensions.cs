@@ -26,7 +26,7 @@ public static class EndpointRouteBuilderExtensions
                 .Request(request, cancellationToken)
                 .ConfigureAwait(false);
 
-            return Results.Ok(result);
+            return TypedResults.Ok(result.Result);
         }
     );
     
@@ -45,7 +45,7 @@ public static class EndpointRouteBuilderExtensions
                 .Request(request, cancellationToken)
                 .ConfigureAwait(false);
 
-            return Results.Ok(result);
+            return TypedResults.Ok(result.Result);
         }
     );
     
@@ -64,7 +64,7 @@ public static class EndpointRouteBuilderExtensions
                 .Request(request, cancellationToken)
                 .ConfigureAwait(false);
 
-            return Results.Ok(result);
+            return TypedResults.Ok(result.Result);
         }
     ); 
     
@@ -83,7 +83,7 @@ public static class EndpointRouteBuilderExtensions
                 .Request(request, cancellationToken)
                 .ConfigureAwait(false);
 
-            return Results.Ok(result);
+            return TypedResults.Ok(result.Result);
         }
     );
     
@@ -166,52 +166,5 @@ public static class EndpointRouteBuilderExtensions
         }
     );
     
-    #endregion
-    
-    #region Streams
-    
-    public static RouteHandlerBuilder MapMediatorStreamPost<TRequest, TResult>(this IEndpointRouteBuilder builder, string pattern)
-        where TRequest : IStreamRequest<TResult>
-        => builder.MapPost(
-            pattern, 
-            (
-                [FromServices] IMediator mediator,
-                [FromBody] TRequest request,
-                CancellationToken cancellationToken
-            ) => mediator.Request(request, cancellationToken)
-        );
-    
-    public static RouteHandlerBuilder MapMediatorStreamGet<TRequest, TResult>(this IEndpointRouteBuilder builder, string pattern)
-        where TRequest : IStreamRequest<TResult>
-        => builder.MapGet(
-            pattern, 
-            (
-                [FromServices] IMediator mediator,
-                [AsParameters] TRequest request,
-                CancellationToken cancellationToken
-            ) => mediator.Request(request, cancellationToken)
-        );
-    
-    public static RouteHandlerBuilder MapMediatorStreamPut<TRequest, TResult>(this IEndpointRouteBuilder builder, string pattern)
-        where TRequest : IStreamRequest<TResult>
-        => builder.MapPut(
-            pattern, 
-            (
-                [FromServices] IMediator mediator,
-                [FromBody] TRequest request,
-                CancellationToken cancellationToken
-            ) => mediator.Request(request, cancellationToken)
-        );
-    
-    public static RouteHandlerBuilder MapMediatorStreamDelete<TRequest, TResult>(this IEndpointRouteBuilder builder, string pattern)
-        where TRequest : IStreamRequest<TResult>
-        => builder.MapDelete(
-            pattern, 
-            (
-                [FromServices] IMediator mediator,
-                [AsParameters] TRequest request,
-                CancellationToken cancellationToken
-            ) => mediator.Request(request, cancellationToken)
-        );
     #endregion
 }
