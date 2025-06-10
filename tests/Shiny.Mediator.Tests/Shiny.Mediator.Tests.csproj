@@ -48,6 +48,10 @@
 
     <ItemGroup>
         <None Remove="Http\*.json"/>
+        <Content Include="..\..\samples\Sample.Api\Sample.Api.json">
+          <Link>Sample.Api.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
         <Content Include="Http\*.json" CopyToOutputDirectory="Always"/>
     </ItemGroup>
 

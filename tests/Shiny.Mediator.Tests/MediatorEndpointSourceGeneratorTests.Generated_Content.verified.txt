@@ -1,0 +1,202 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Sample.Api | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/thing/{parameter}": {
+      "get": {
+        "tags": [
+          "Sample.Api"
+        ],
+        "operationId": "GetThing",
+        "parameters": [
+          {
+            "name": "parameter",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Query",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetThingResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/thing": {
+      "put": {
+        "tags": [
+          "Sample.Api"
+        ],
+        "operationId": "DoThing",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DoThing"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": [
+          "Sample.Api"
+        ],
+        "operationId": "GetMyRequest",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/test/command": {
+      "post": {
+        "tags": [
+          "Sample.Api"
+        ],
+        "operationId": "TestCommand",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/test/result": {
+      "post": {
+        "tags": [
+          "Sample.Api"
+        ],
+        "operationId": "TestResult",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestResultRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DoThing": {
+        "type": "object"
+      },
+      "GetThingResult": {
+        "required": [
+          "parameter",
+          "query"
+        ],
+        "type": "object",
+        "properties": {
+          "parameter": {
+            "type": "string",
+            "nullable": true
+          },
+          "query": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "TestCommand": {
+        "required": [
+          "number",
+          "stringArg"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "stringArg": {
+            "type": "string"
+          }
+        }
+      },
+      "TestResult": {
+        "type": "object"
+      },
+      "TestResultRequest": {
+        "required": [
+          "number"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sample.Api"
+    }
+  ]
+}
