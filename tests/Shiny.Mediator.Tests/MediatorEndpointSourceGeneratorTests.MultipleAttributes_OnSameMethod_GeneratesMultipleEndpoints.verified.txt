@@ -8,7 +8,7 @@
 #nullable enable
 namespace TestAssembly;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.AspNet", "1.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.AspNet.SourceGenerators", "4.5.0")]
 public static class MediatorDependencyInjectionExtensions
 {
     /// <summary>
@@ -30,7 +30,7 @@ public static class MediatorDependencyInjectionExtensions
 #nullable enable
 namespace TestAssembly;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.AspNet", "1.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.AspNet.SourceGenerators", "4.5.0")]
 public static class MediatorEndpoints
 {
     /// <summary>
@@ -51,7 +51,7 @@ public static class MediatorEndpoints
                 var result = await mediator
                     .Request(request, cancellationToken)
                     .ConfigureAwait(false);
-                return global::Microsoft.AspNetCore.Http.Results.Ok(result);
+                return global::Microsoft.AspNetCore.Http.TypedResults.Ok(result.Result);
             }
         )
             .WithName("GetUser")
@@ -69,7 +69,7 @@ public static class MediatorEndpoints
                 var result = await mediator
                     .Request(request, cancellationToken)
                     .ConfigureAwait(false);
-                return global::Microsoft.AspNetCore.Http.Results.Ok(result);
+                return global::Microsoft.AspNetCore.Http.TypedResults.Ok(result.Result);
             }
         )
             .WithName("GetUserAlt")

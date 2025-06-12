@@ -286,7 +286,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine("#nullable enable");
         sb.AppendLine($"namespace {nameSpace};");
         sb.AppendLine();
-        sb.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Shiny.Mediator.AspNet\", \"1.0.0\")]");
+        sb.AppendLine(Constants.GeneratedCodeAttributeString);
         sb.AppendLine("public static class MediatorDependencyInjectionExtensions");
         sb.AppendLine("{");
         sb.AppendLine("    /// <summary>");
@@ -320,7 +320,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine("#nullable enable");
         sb.AppendLine($"namespace {nameSpace};");
         sb.AppendLine();
-        sb.AppendLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Shiny.Mediator.AspNet\", \"1.0.0\")]");
+        sb.AppendLine(Constants.GeneratedCodeAttributeString);
         sb.AppendLine("public static class MediatorEndpoints");
         sb.AppendLine("{");
         sb.AppendLine("    /// <summary>");

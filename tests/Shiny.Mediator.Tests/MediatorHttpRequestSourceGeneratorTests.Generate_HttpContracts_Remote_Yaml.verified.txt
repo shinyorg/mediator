@@ -10,7 +10,7 @@
 /// </summary>
 namespace MyTests;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.5.0")]
 public enum EntityType
 {
     DESTINATION,
@@ -21,7 +21,7 @@ public enum EntityType
     SHOW,
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.5.0")]
 public enum LiveStatusType
 {
     OPERATING,
@@ -30,7 +30,7 @@ public enum LiveStatusType
     REFURBISHMENT,
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.5.0")]
 public enum ReturnTimeState
 {
     AVAILABLE,
@@ -38,7 +38,7 @@ public enum ReturnTimeState
     FINISHED,
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.5.0")]
 public enum BoardingGroupState
 {
     AVAILABLE,
@@ -343,7 +343,7 @@ public partial class EntityLiveDataResponse
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.5.0")]
 public enum SchedulePriceObjectType
 {
     ADMISSION,
@@ -371,7 +371,7 @@ public partial class SchedulePriceObject
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.5.0")]
 public enum ScheduleEntryType
 {
     OPERATING,
@@ -460,13 +460,13 @@ public partial class DestinationsResponse
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.5.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/destinations")]
 public partial class GetDestinations : global::Shiny.Mediator.Http.IHttpRequest<global::MyTests.DestinationsResponse>
 {
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.5.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/entity/{entityID}")]
 public partial class GetEntity : global::Shiny.Mediator.Http.IHttpRequest<global::MyTests.EntityData>
 {
@@ -475,7 +475,7 @@ public partial class GetEntity : global::Shiny.Mediator.Http.IHttpRequest<global
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.5.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/entity/{entityID}/children")]
 public partial class GetEntityChildren : global::Shiny.Mediator.Http.IHttpRequest<global::MyTests.EntityChildrenResponse>
 {
@@ -484,7 +484,7 @@ public partial class GetEntityChildren : global::Shiny.Mediator.Http.IHttpReques
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.5.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/entity/{entityID}/live")]
 public partial class GetEntityLiveData : global::Shiny.Mediator.Http.IHttpRequest<global::MyTests.EntityLiveDataResponse>
 {
@@ -493,7 +493,7 @@ public partial class GetEntityLiveData : global::Shiny.Mediator.Http.IHttpReques
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.5.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/entity/{entityID}/schedule")]
 public partial class GetEntityScheduleUpcoming : global::Shiny.Mediator.Http.IHttpRequest<global::MyTests.EntityScheduleResponse>
 {
@@ -502,7 +502,7 @@ public partial class GetEntityScheduleUpcoming : global::Shiny.Mediator.Http.IHt
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.5.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/entity/{entityID}/schedule/{year}/{month}")]
 public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.Http.IHttpRequest<global::MyTests.EntityScheduleResponse>
 {

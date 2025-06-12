@@ -8,7 +8,6 @@ static class Extensions
 {
     const string SourceItemGroupMetadata = "build_metadata.AdditionalFiles.SourceItemGroup";
 
-    internal const string GeneratedCodeAttribute = "[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Shiny.Mediator\", \"4.0.0\")]";
     
     public static string Pascalize(this string str)
     {

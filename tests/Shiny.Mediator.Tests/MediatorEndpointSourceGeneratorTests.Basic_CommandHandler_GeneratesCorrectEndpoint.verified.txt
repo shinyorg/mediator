@@ -8,7 +8,7 @@
 #nullable enable
 namespace TestAssembly;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.AspNet", "1.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.AspNet.SourceGenerators", "4.5.0")]
 public static class MediatorDependencyInjectionExtensions
 {
     /// <summary>
@@ -30,7 +30,7 @@ public static class MediatorDependencyInjectionExtensions
 #nullable enable
 namespace TestAssembly;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.AspNet", "1.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.AspNet.SourceGenerators", "4.5.0")]
 public static class MediatorEndpoints
 {
     /// <summary>
