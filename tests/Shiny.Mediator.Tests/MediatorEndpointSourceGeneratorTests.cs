@@ -73,6 +73,8 @@ public record CreateUserCommand(string Name) : ICommand;
 public record UserResponse(string Name);
 
 [MediatorHttpGroup(""/users"")]
+public partial class MixedHandler {}
+
 public partial class MixedHandler : IRequestHandler<GetUserRequest, UserResponse>
 {
     [MediatorHttpGet(""GetUser"", ""/{id}"")]
