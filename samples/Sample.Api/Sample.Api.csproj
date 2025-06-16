@@ -14,7 +14,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Scalar.AspNetCore" Version="2.4.13"/>
+        <PackageReference Include="Scalar.AspNetCore" Version="2.4.17" />
     </ItemGroup>
 
     <ItemGroup>

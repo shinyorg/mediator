@@ -3,7 +3,7 @@
         <TargetFrameworks>$(TargetFrameworks);net9.0-android</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks);net9.0-ios</TargetFrameworks>
         <!--<TargetFrameworks>$(TargetFrameworks);net9.0-maccatalyst</TargetFrameworks>-->
-        <MauiVersion>9.0.70</MauiVersion>
+        <MauiVersion>9.0.80</MauiVersion>
         <OutputType>Exe</OutputType>
         <RootNamespace>Sample</RootNamespace>
         <SingleProject>true</SingleProject>
