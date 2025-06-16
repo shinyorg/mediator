@@ -114,10 +114,29 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         }
 
         if (!allHttpAttributes.Any())
-            return null;
+        {
+            // Check if this class has a group attribute - if so, keep it for merging
+            var groupAttribute = classSymbol
+                .GetAttributes()
+                .FirstOrDefault(attr => attr.AttributeClass?.Name == "MediatorHttpGroupAttribute");
+            
+            if (groupAttribute == null)
+                return null;
+            
+            // Return class info with group attribute but no HTTP attributes
+            return new ClassInfo(
+                classSymbol.ToDisplayString(),
+                classSymbol.Name,
+                new List<AttributeInfo>(),
+                isRequestHandler,
+                isCommandHandler,
+                GetGenericTypes(classSymbol),
+                GetGroupAttributeInfo(groupAttribute)
+            );
+        }
 
         // Check for MediatorHttpGroupAttribute at class level
-        var groupAttribute = classSymbol
+        var classGroupAttribute = classSymbol
             .GetAttributes()
             .FirstOrDefault(attr => attr.AttributeClass?.Name == "MediatorHttpGroupAttribute");
 
@@ -130,7 +149,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             isRequestHandler,
             isCommandHandler,
             GetGenericTypes(classSymbol),
-            groupAttribute != null ? GetGroupAttributeInfo(groupAttribute) : null
+            classGroupAttribute != null ? GetGroupAttributeInfo(classGroupAttribute) : null
         );
     }
 
@@ -224,41 +243,6 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
     static void Execute(Compilation compilation, ImmutableArray<ClassInfo?> classes, SourceProductionContext context)
     {
-        // // Debug: Always generate a debug file to understand what's happening
-        // var debugSb = new StringBuilder();
-        // debugSb.AppendLine("// Debug information from MediatorEndpointSourceGenerator");
-        // debugSb.AppendLine($"// Compilation: {compilation.AssemblyName}");
-        // debugSb.AppendLine($"// Classes array is default or empty: {classes.IsDefaultOrEmpty}");
-        // debugSb.AppendLine($"// Total classes found: {classes.Length}");
-        // debugSb.AppendLine($"// Source trees count: {compilation.SyntaxTrees.Count()}");
-        //
-        // foreach (var tree in compilation.SyntaxTrees)
-        // {
-        //     debugSb.AppendLine($"// Syntax tree: {tree.FilePath}");
-        // }
-        //
-        // if (!classes.IsDefaultOrEmpty)
-        // {
-        //     for (int i = 0; i < classes.Length; i++)
-        //     {
-        //         var cls = classes[i];
-        //         debugSb.AppendLine($"// Class {i}: {(cls != null ? cls.FullName : "null")}");
-        //         if (cls != null)
-        //         {
-        //             debugSb.AppendLine($"//   - IsRequestHandler: {cls.IsRequestHandler}");
-        //             debugSb.AppendLine($"//   - IsCommandHandler: {cls.IsCommandHandler}");
-        //             debugSb.AppendLine($"//   - HttpAttributes count: {cls.HttpAttributes.Count}");
-        //             debugSb.AppendLine($"//   - Group attribute: {cls.GroupAttribute?.Prefix ?? "null"}");
-        //             foreach (var attr in cls.HttpAttributes)
-        //             {
-        //                 debugSb.AppendLine($"//     - {attr.HttpMethod} {attr.UriTemplate} ({attr.OperationId})");
-        //             }
-        //         }
-        //     }
-        // }
-        //
-        // context.AddSource("Debug_SourceGenerator.g.cs", SourceText.From(debugSb.ToString(), Encoding.UTF8));
-
         if (classes.IsDefaultOrEmpty)
             return;
 
@@ -266,13 +250,59 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         if (!validClasses.Any())
             return;
 
+        // Group by full class name and merge partial classes
+        var mergedClasses = validClasses
+            .GroupBy(c => c.FullName)
+            .Select(group => MergePartialClasses(group))
+            .ToList();
+
         var nameSpace = compilation.AssemblyName ?? "Generated";
 
         // Generate dependency injection extensions
-        GenerateDependencyInjectionExtensions(context, nameSpace, validClasses);
+        GenerateDependencyInjectionExtensions(context, nameSpace, mergedClasses);
 
         // Generate endpoint mapping extensions
-        GenerateEndpointMappingExtensions(context, nameSpace, validClasses);
+        GenerateEndpointMappingExtensions(context, nameSpace, mergedClasses);
+    }
+
+    static ClassInfo MergePartialClasses(IGrouping<string, ClassInfo> group)
+    {
+        var first = group.First();
+        
+        // If there's only one class, return it as-is
+        if (group.Count() == 1)
+            return first;
+        
+        // Merge all HTTP attributes from all partial classes and deduplicate by operation ID and HTTP method
+        var allHttpAttributes = group
+            .SelectMany(c => c.HttpAttributes)
+            .GroupBy(attr => new { attr.OperationId, attr.HttpMethod, attr.UriTemplate })
+            .Select(g => g.First()) // Take the first occurrence of each unique attribute
+            .ToList();
+        
+        // Use the group attribute from the first class that has one
+        var groupAttribute = group
+            .Select(c => c.GroupAttribute)
+            .FirstOrDefault(ga => ga != null);
+        
+        // Combine the boolean flags (OR operation for handler types)
+        var isRequestHandler = group.Any(c => c.IsRequestHandler);
+        var isCommandHandler = group.Any(c => c.IsCommandHandler);
+        
+        // Use the generic types from the first class that has them
+        var genericTypes = group
+            .Select(c => c.GenericTypes)
+            .FirstOrDefault(gt => !string.IsNullOrEmpty(gt.RequestType));
+        
+        return new ClassInfo(
+            first.FullName,
+            first.ClassName,
+            allHttpAttributes,
+            isRequestHandler,
+            isCommandHandler,
+            genericTypes ?? first.GenericTypes,
+            groupAttribute
+        );
     }
 
     static void GenerateDependencyInjectionExtensions(SourceProductionContext context, string nameSpace, List<ClassInfo> classes)
