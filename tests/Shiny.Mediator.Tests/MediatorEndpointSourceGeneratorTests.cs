@@ -60,6 +60,38 @@ public class CreateUserHandler : ICommandHandler<CreateUserCommand>
     }
 
     [Fact]
+    public Task MixedHandler_PartialClasses()
+    {
+        var source = @"
+using Shiny.Mediator;
+using System.Threading;
+
+namespace Test;
+
+public record GetUserRequest(int Id) : IRequest<UserResponse>;
+public record CreateUserCommand(string Name) : ICommand;
+public record UserResponse(string Name);
+
+[MediatorHttpGroup(""/users"")]
+public partial class MixedHandler : IRequestHandler<GetUserRequest, UserResponse>
+{
+    [MediatorHttpGet(""GetUser"", ""/{id}"")]
+    public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(new UserResponse(""Test""));
+}
+public partial class MixedHandler : ICommandHandler<CreateUserCommand>
+{
+    [MediatorHttpPost(""CreateUser"", ""/"")]
+    public Task Handle(CreateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.CompletedTask;
+}
+";
+
+        var generatedFiles = RunGeneratorAndGetFiles(source);
+        return Verify(generatedFiles);
+    }
+    
+    [Fact]
     public Task MixedHandler_UsesCorrectParameterTypes()
     {
         var source = @"
