@@ -3,7 +3,7 @@ using Shiny.Mediator;
 
 namespace TestAssembly;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.5.0")]
 public static class __ShinyMediatorSourceGenExtensions {
 	public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFromTestAssembly(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
 	{

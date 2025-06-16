@@ -8,6 +8,13 @@ namespace Shiny.Mediator.Tests;
 public class MediatorEndpointSourceGeneratorTests
 {
     [Fact]
+    public Task Generated_Content()
+    {
+        var content = File.ReadAllText("./Sample.Api.json");
+        return Verify(content);
+    }
+    
+    [Fact]
     public Task Basic_RequestHandler_GeneratesCorrectEndpoint()
     {
         var source = @"

@@ -80,7 +80,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                 var httpMethod = op.Key.ToString();
                 
                 this.contractBuilder
-                    .AppendLine(Extensions.GeneratedCodeAttribute)
+                    .AppendLine(Constants.GeneratedCodeAttributeString)
                     .AppendLine($"[global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.{httpMethod}, \"{path.Key}\")]")
                     .AppendLine($"public partial class {contractName} : global::Shiny.Mediator.Http.IHttpRequest<{responseType}>")
                     .AppendLine("{");
@@ -105,7 +105,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                         if (!body.Required)
                             bodyResponseType += "?";
                         
-                        this.contractBuilder.AppendLine($"    " + Extensions.GeneratedCodeAttribute);
+                        this.contractBuilder.AppendLine($"    " + Constants.GeneratedCodeAttributeString);
                         this.contractBuilder.AppendLine($"    [global::Shiny.Mediator.Http.HttpParameter(global::Shiny.Mediator.Http.HttpParameterType.Body)]");
                         this.contractBuilder.AppendLine($"    public {bodyResponseType} Body {{ get; set; }}");
                         output("BODY: " + bodyResponseType, DiagnosticSeverity.Info);
@@ -265,7 +265,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
 
         var sb = new StringBuilder();
         sb
-            .AppendLine(Extensions.GeneratedCodeAttribute)
+            .AppendLine(Constants.GeneratedCodeAttributeString)
             .AppendLine($"public enum {enumName}")
             .AppendLine("{");
         

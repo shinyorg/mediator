@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj" />
+        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
     </ItemGroup>
 
 </Project>

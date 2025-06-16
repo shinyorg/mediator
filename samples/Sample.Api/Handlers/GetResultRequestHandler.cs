@@ -2,12 +2,13 @@ namespace Sample.Api.Handlers;
 
 
 [MediatorHttpGroup("/thing")]
-public class GetResultRequestHandler : IRequestHandler<GetThingRequest, string>, ICommandHandler<DoThing>, ICommandHandler<DoOtherThing>
+public class GetResultRequestHandler : IRequestHandler<GetThingRequest, GetThingResult>, ICommandHandler<DoThing>, ICommandHandler<DoOtherThing>
 {
     [MediatorHttpGet("GetThing", "/{parameter}")]
-    public Task<string> Handle(GetThingRequest request, IMediatorContext context, CancellationToken cancellationToken)
-        => Task.FromResult($"Route: {request.Parameter} - Query: {request.Query}");
-
+    public Task<GetThingResult> Handle(GetThingRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new GetThingResult(request.Parameter, request.Query));
+    }
 
     [MediatorHttpPut("DoThing", "/")]
     public Task Handle(DoThing command, IMediatorContext context, CancellationToken cancellationToken)
@@ -22,8 +23,10 @@ public class DoThing : ICommand;
 
 public class DoOtherThing : ICommand;
 
-public class GetThingRequest : IRequest<string>
+public class GetThingRequest : IRequest<GetThingResult>
 {
     public string? Parameter { get; set; }
     public string? Query { get; set; }
 }
+
+public record GetThingResult(string? Parameter, string? Query);

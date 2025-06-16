@@ -6,6 +6,7 @@
     <Project Path="samples\Sample.Api\Sample.Api.csproj" />
     <Project Path="samples\Sample.Blazor\Sample.Blazor.csproj" />
     <Project Path="samples\Sample.Uno\Sample.Uno.csproj" />
+    <Project Path="samples\Samples.Mcp\Samples.Mcp.csproj" Type="Classic C#" />
     <Project Path="samples\Sample\Sample.csproj" />
     <Project Path="tests\Shiny.Mediator.Tests\Shiny.Mediator.Tests.csproj" />
   </Folder>

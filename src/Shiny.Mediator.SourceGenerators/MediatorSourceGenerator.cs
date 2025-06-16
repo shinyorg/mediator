@@ -38,18 +38,18 @@ public class MediatorSourceGenerator : ISourceGenerator
                 // </auto-generated>
                 #nullable disable
                 
-                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+                $GENCODEATTRIBUTE$
                 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
                 internal sealed class SingletonHandlerAttribute : global::System.Attribute
                 {
                 }
                 
-                [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator", "4.0.0")]
+                $GENCODEATTRIBUTE$
                 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
                 internal sealed class ScopedHandlerAttribute : global::System.Attribute
                 {
                 }
-                """,
+                """.Replace("$GENCODEATTRIBUTE$", Constants.GeneratedCodeAttributeString),
                 Encoding.UTF8
             )
         ));
@@ -97,7 +97,7 @@ public class MediatorSourceGenerator : ISourceGenerator
             .AppendLine()
             .AppendLine($"namespace {nameSpace};")
             .AppendLine()
-            .AppendLine(Extensions.GeneratedCodeAttribute)
+            .AppendLine(Constants.GeneratedCodeAttributeString)
             .AppendLine("public static class __ShinyMediatorSourceGenExtensions {")
             .AppendLine($"\tpublic static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFrom{assName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)")
             .AppendLine("\t{");
@@ -119,129 +119,3 @@ public class MediatorSourceGenerator : ISourceGenerator
         context.AddSource("__MediatorHandlersRegistration.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
     }
 }
-
-// using Shiny.Mediator.Http;
-// using Shiny.Mediator.Infrastructure.Impl;
-// using Shiny.Mediator.Middleware;
-//
-// namespace Shiny.Mediator;
-//
-// public static class __GeneratedCalls
-// {
-//     public static IServiceCollection AddShinyMediatorAot(this IServiceCollection services)
-//     {
-//         // TODO: the registration isn't required, but will speed things up
-//             // TODO: only the sender for requests/streams need to be generated
-//         // TODO: what about middleware ordering in the generated scenario?
-//         
-//         // TODO: what about event collectors?
-//         services.AddSingleton<ICommandMiddleware<TestCommand>, PerformanceLoggingCommandMiddleware<TestCommand>>();
-//         services.AddSingleton<ICommandMiddleware<TestCommand>, ExceptionHandlingCommandMiddleware<TestCommand>>();
-//         services.AddSingleton<ICommandMiddleware<TestCommand>, DataAnnotationsCommandMiddleware<TestCommand>>();
-//         services.AddSingleton<ICommandMiddleware<TestCommand>, ScheduledCommandMiddleware<TestCommand>>();
-//         services.AddSingleton<ICommandHandler<TestCommand>, TestCommandHandler>();
-//         
-//         // TODO: what about open handlers like HTTP and prism?  detect the generic handlers that aren't marked abstract?
-//         services.AddSingleton<IRequestMiddleware<TestHttpRequest, string>, ExceptionHandlingRequestMiddleware<TestHttpRequest, string>>();
-//         services.AddSingleton<IRequestMiddleware<TestHttpRequest, string>, DataAnnotationsRequestMiddleware<TestHttpRequest, string>>();
-//         services.AddSingleton<IRequestHandler<TestHttpRequest, string>, HttpRequestHandler<TestHttpRequest, string>>();
-//         
-//         services.AddSingleton<IRequestMiddleware<TestRequest, string>, ExceptionHandlingRequestMiddleware<TestRequest, string>>();
-//         services.AddSingleton<IRequestMiddleware<TestRequest, string>, DataAnnotationsRequestMiddleware<TestRequest, string>>();
-//         services.AddSingleton<IRequestHandler<TestRequest, string>, TestRequestHandler>();
-//
-//         services.AddSingleton<IEventMiddleware<TestEvent>, ExceptionHandlingEventMiddleware<TestEvent>>();
-//         services.AddSingleton<IEventHandler<TestEvent>, TestEventHandler>();
-//         
-//         services.AddSingleton<IStreamRequestMiddleware<TestStreamRequest, string>, TimerRefreshStreamRequestMiddleware<TestStreamRequest, string>>();
-//         services.AddSingleton<IStreamRequestHandler<TestStreamRequest, string>, TestStreamRequestHandler>();
-//         return services;
-//     }
-// }
-//
-// public class MediatorAotImpl(IServiceProvider services) : IMediator
-// {
-//
-//     public async Task<RequestResult<TResult>> RequestWithContext<TResult>(
-//         IRequest<TResult> request, 
-//         CancellationToken cancellationToken = default,
-//         params IEnumerable<(string Key, object Value)> headers)
-//     {
-//         using var scope = services.CreateScope();
-//         
-//         if (request.GetType() == typeof(TestRequest))
-//         {
-//             var v1 = new RequestResultWrapper<TestRequest, string>(scope.ServiceProvider, (TestRequest)request, headers, cancellationToken);
-//             var result = await v1.Handle().ConfigureAwait(false);
-//             return (result as RequestResult<TResult>)!;
-//         }
-//
-//         throw new InvalidOperationException("Invalid request type");
-//     }
-//     
-//     public RequestResult<IAsyncEnumerable<TResult>> RequestWithContext<TResult>(
-//         IStreamRequest<TResult> request, 
-//         CancellationToken cancellationToken = default,
-//         params IEnumerable<(string Key, object Value)> headers)
-//     {
-//         // TODO: AOT
-//         throw new NotImplementedException();
-//     }
-//
-//     public Task<CommandContext<TCommand>> Send<TCommand>(TCommand request, CancellationToken cancellationToken = default, params IEnumerable<(string Key, object Value)> headers) where TCommand : ICommand
-//     {
-//         // TODO: command call is already AOT compliant
-//         throw new NotImplementedException();
-//     }
-//     
-//
-//     public Task<EventAggregatedContext<TEvent>> Publish<TEvent>(TEvent @event, CancellationToken cancellationToken = default, bool executeInParallel = true,
-//         params IEnumerable<(string Key, object Value)> headers) where TEvent : IEvent
-//     {
-//         // TODO: already AOT compliant
-//         throw new NotImplementedException();
-//     }
-//
-//     public IDisposable Subscribe<TEvent>(Func<TEvent, EventContext<TEvent>, CancellationToken, Task> action) where TEvent : IEvent
-//     {
-//         // TODO: already AOT compliant
-//         throw new NotImplementedException();
-//     }
-// }
-//
-// public class TestCommand : ICommand;
-// public class TestRequest : IRequest<string>;
-//
-// public class TestHttpRequest : IHttpRequest<string>;
-// public class TestStreamRequest : IStreamRequest<string>;
-// public class TestEvent : IEvent;
-//
-// public class TestCommandHandler : ICommandHandler<TestCommand>
-// {
-//     public Task Handle(TestCommand command, CommandContext<TestCommand> context, CancellationToken cancellationToken)
-//     {
-//         throw new NotImplementedException();
-//     }
-// }
-//
-// public class TestRequestHandler : IRequestHandler<TestRequest, string>
-// {
-//     public Task<string> Handle(TestRequest request, RequestContext<TestRequest> context, CancellationToken cancellationToken)
-//     {
-//         throw new NotImplementedException();
-//     }
-// }
-// public class TestEventHandler : IEventHandler<TestEvent>
-// {
-//     public Task Handle(TestEvent @event, EventContext<TestEvent> context, CancellationToken cancellationToken)
-//     {
-//         throw new NotImplementedException();
-//     }
-// }
-// public class TestStreamRequestHandler : IStreamRequestHandler<TestStreamRequest, string>
-// {
-//     public IAsyncEnumerable<string> Handle(TestStreamRequest request, RequestContext<TestStreamRequest> context, CancellationToken cancellationToken)
-//     {
-//         throw new NotImplementedException();
-//     }
-// }

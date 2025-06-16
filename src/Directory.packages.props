@@ -1,36 +1,36 @@
 <Project>
     <!--core project-->
     <ItemGroup>
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0" />
-        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
-        <PackageVersion Include="Microsoft.Extensions.Diagnostics" Version="9.0.0" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
-
-        <PackageVersion Include="Nerdbank.GitVersioning" Version="3.7.115" PrivateAssets="All" />
+        
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Diagnostics" Version="9.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0"/>
+        <PackageVersion Include="Nerdbank.GitVersioning" Version="3.7.115" PrivateAssets="All"/>
     </ItemGroup>
     
     <!--support libs-->
     <ItemGroup>
-        <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.21" />
-        <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
-        <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
-        <PackageVersion Include="Microsoft.Extensions.Resilience" Version="9.0.0" />
+        <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.21"/>
+        <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Resilience" Version="9.0.0"/>
         <PackageVersion Include="Dapper" Version="2.1.35"/>
         <PackageVersion Include="InterpolatedSql.Dapper" Version="2.3.0"/>
-        <PackageVersion Include="FluentValidation" Version="11.11.0" />
-        <PackageVersion Include="Prism.Maui" Version="9.0.537" />
+        <PackageVersion Include="FluentValidation" Version="12.0.0"/>
+        <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0"/>
+        <PackageVersion Include="Prism.Maui" Version="9.0.537"/>
         <PackageVersion Include="Uno.Extensions.Navigation.WinUI" Version="5.2.7"/>
     </ItemGroup>
     
     <!--source generator-->
     <ItemGroup>
-        <PackageVersion Include="SharpYaml" Version="2.1.1" PrivateAssets="All" GeneratePathProperty="true" />
-        <PackageVersion Include="Microsoft.OpenApi" Version="1.6.23" PrivateAssets="All" GeneratePathProperty="true" />
-        <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.23" PrivateAssets="All" GeneratePathProperty="true" />
-
-        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
-        <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+        <PackageVersion Include="SharpYaml" Version="2.1.3" PrivateAssets="All" GeneratePathProperty="true"/>
+        <PackageVersion Include="Microsoft.OpenApi" Version="1.6.24" PrivateAssets="All" GeneratePathProperty="true"/>
+        <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.24" PrivateAssets="All" GeneratePathProperty="true"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all"/>
     </ItemGroup>
 </Project>
