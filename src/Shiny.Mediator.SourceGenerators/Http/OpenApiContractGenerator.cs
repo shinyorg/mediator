@@ -318,31 +318,29 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                 var add = this.GenerateObject(prop.Value, typeName);
                 this.typeBuilder.AppendLine(add);
             }
-            else if (prop.Value.Enum.Count > 0)
+            else if (prop.Value.Enum.Count > 0 && prop.Value.Reference == null)
             {
                 typeName = className + propertyName.Pascalize();
-
-                if (prop.Value.Reference == null)
-                {
-                    var add = this.GenerateEnum(prop.Value, typeName);
-                    this.typeBuilder.AppendLine(add);
-                }
+                var add = this.GenerateEnum(prop.Value, typeName);
+                this.typeBuilder.AppendLine(add);
             }
             else
             {
                 typeName = this.GetSchemaType(prop.Value);
+                if (typeName == null && prop.Value.Reference != null)
+                    typeName = className + propertyName.Pascalize();
             }
 
-            // TODO: null when OneOf setup
             if (typeName == null)
             {
-                output($"PROPERTY: {propertyName} - TypeName is null", DiagnosticSeverity.Warning);
+                output($"PROPERTY: {propertyName} - Type was not found", DiagnosticSeverity.Warning);
             }
             else
             {
+                // TODO: null when OneOf setup
                 // throw new InvalidOperationException("TypeName is null");
                 sb.AppendLine($"    [global::System.Text.Json.Serialization.JsonPropertyName(\"{prop.Key}\")]");
-                sb.AppendLine( "    public " + typeName + " " + propertyName + " { get; set; }");
+                sb.AppendLine("    public " + typeName + " " + propertyName + " { get; set; }");
                 sb.AppendLine();
                 output($"PROPERTY: {propertyName} ({typeName})", DiagnosticSeverity.Info);
             }
