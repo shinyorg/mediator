@@ -23,7 +23,7 @@ public partial class Ad
     public string? AudioUri { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("duration")]
-    public string Duration { get; set; }
+    public System.TimeSpan Duration { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("isForIdle")]
     public bool IsForIdle { get; set; }
