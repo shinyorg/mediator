@@ -27,7 +27,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         if (document == null)
             throw new InvalidOperationException("OpenApi Document is null");
         
-        if (diagnostic.Errors != null && diagnostic.Errors.Count > 0)
+        if (diagnostic.Errors is { Count: > 0 })
         {
             var e = diagnostic.Errors.First();
             throw new InvalidOperationException($"OpenApi Error: {e.Message} - {e.Pointer}");
@@ -287,7 +287,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         output("===GENERATING CLASS COMPONENT: " + className, DiagnosticSeverity.Info);
         var sb = new StringBuilder();
         sb
-            .AppendLine("[global::System.CodeDom.Compiler.GeneratedCode(\"Shiny.Mediator\", \"3.3.0\")]")
+            .AppendLine(Constants.GeneratedCodeAttributeString)
             .Append("public partial class " + className);
 
         // TODO: this will be 2 when discriminators are present
@@ -318,11 +318,15 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                 var add = this.GenerateObject(prop.Value, typeName);
                 this.typeBuilder.AppendLine(add);
             }
-            else if (prop.Value.Type == "string" && prop.Value.Enum.Count > 0 && prop.Value.Reference == null)
+            else if (prop.Value.Enum.Count > 0)
             {
                 typeName = className + propertyName.Pascalize();
-                var add = this.GenerateEnum(prop.Value, typeName);
-                this.typeBuilder.AppendLine(add);
+
+                if (prop.Value.Reference == null)
+                {
+                    var add = this.GenerateEnum(prop.Value, typeName);
+                    this.typeBuilder.AppendLine(add);
+                }
             }
             else
             {
@@ -330,7 +334,11 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
             }
 
             // TODO: null when OneOf setup
-            if (typeName != null)
+            if (typeName == null)
+            {
+                output($"PROPERTY: {propertyName} - TypeName is null", DiagnosticSeverity.Warning);
+            }
+            else
             {
                 // throw new InvalidOperationException("TypeName is null");
                 sb.AppendLine($"    [global::System.Text.Json.Serialization.JsonPropertyName(\"{prop.Key}\")]");
