@@ -4,7 +4,7 @@
 /// </summary>
 namespace MyTests;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class Ad
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -33,7 +33,7 @@ public partial class Ad
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public enum AdVisualType
 {
     Lottie,
@@ -41,7 +41,7 @@ public enum AdVisualType
     Video,
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/ads")]
 public partial class HttpRequestGetAds : global::Shiny.Mediator.Http.IHttpRequest<global::System.Collections.Generic.List<global::MyTests.Ad>>
 {

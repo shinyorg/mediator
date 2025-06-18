@@ -5,7 +5,7 @@
 /// </summary>
 namespace MyTests;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public enum EntityType
 {
     DESTINATION,
@@ -16,7 +16,7 @@ public enum EntityType
     SHOW,
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public enum LiveStatusType
 {
     OPERATING,
@@ -25,7 +25,7 @@ public enum LiveStatusType
     REFURBISHMENT,
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public enum ReturnTimeState
 {
     AVAILABLE,
@@ -33,7 +33,7 @@ public enum ReturnTimeState
     FINISHED,
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public enum BoardingGroupState
 {
     AVAILABLE,
@@ -41,7 +41,7 @@ public enum BoardingGroupState
     CLOSED,
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class PriceData
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("amount")]
@@ -55,7 +55,7 @@ public partial class PriceData
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class LiveQueueStandby
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
@@ -63,7 +63,7 @@ public partial class LiveQueueStandby
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class LiveQueueSingleRider
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
@@ -71,7 +71,7 @@ public partial class LiveQueueSingleRider
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class LiveQueueReturnTime
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("state")]
@@ -85,7 +85,7 @@ public partial class LiveQueueReturnTime
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class LiveQueuePaidReturnTime
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("state")]
@@ -102,7 +102,7 @@ public partial class LiveQueuePaidReturnTime
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class LiveQueueBoardingGroup
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("allocationStatus")]
@@ -122,7 +122,7 @@ public partial class LiveQueueBoardingGroup
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class LiveQueuePaidStandby
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
@@ -130,7 +130,7 @@ public partial class LiveQueuePaidStandby
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class LiveQueue
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("STANDBY")]
@@ -153,7 +153,7 @@ public partial class LiveQueue
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class LiveShowTime
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("type")]
@@ -167,7 +167,7 @@ public partial class LiveShowTime
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class DiningAvailability
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("partySize")]
@@ -178,7 +178,7 @@ public partial class DiningAvailability
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class TagData
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("tag")]
@@ -192,7 +192,7 @@ public partial class TagData
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class EntityDataLocation
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("latitude")]
@@ -203,7 +203,7 @@ public partial class EntityDataLocation
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class EntityData
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -232,7 +232,7 @@ public partial class EntityData
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class EntityChildLocation
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("latitude")]
@@ -243,7 +243,7 @@ public partial class EntityChildLocation
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class EntityChild
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -266,7 +266,7 @@ public partial class EntityChild
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class EntityChildrenResponse
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -286,7 +286,7 @@ public partial class EntityChildrenResponse
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class EntityLiveData
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -318,7 +318,7 @@ public partial class EntityLiveData
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class EntityLiveDataResponse
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -338,7 +338,7 @@ public partial class EntityLiveDataResponse
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public enum SchedulePriceObjectType
 {
     ADMISSION,
@@ -346,7 +346,7 @@ public enum SchedulePriceObjectType
     ATTRACTION,
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class SchedulePriceObject
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("type")]
@@ -366,7 +366,7 @@ public partial class SchedulePriceObject
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public enum ScheduleEntryType
 {
     OPERATING,
@@ -376,7 +376,7 @@ public enum ScheduleEntryType
     INFO,
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class ScheduleEntry
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("date")]
@@ -396,7 +396,7 @@ public partial class ScheduleEntry
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class EntityScheduleResponse
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -419,7 +419,7 @@ public partial class EntityScheduleResponse
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class DestinationParkEntry
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -430,7 +430,7 @@ public partial class DestinationParkEntry
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class DestinationEntry
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -447,7 +447,7 @@ public partial class DestinationEntry
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class DestinationsResponse
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("destinations")]
@@ -455,13 +455,13 @@ public partial class DestinationsResponse
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/destinations")]
 public partial class GetDestinations : global::Shiny.Mediator.Http.IHttpRequest<global::MyTests.DestinationsResponse>
 {
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/entity/{entityID}")]
 public partial class GetEntity : global::Shiny.Mediator.Http.IHttpRequest<global::MyTests.EntityData>
 {
@@ -470,7 +470,7 @@ public partial class GetEntity : global::Shiny.Mediator.Http.IHttpRequest<global
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/entity/{entityID}/children")]
 public partial class GetEntityChildren : global::Shiny.Mediator.Http.IHttpRequest<global::MyTests.EntityChildrenResponse>
 {
@@ -479,7 +479,7 @@ public partial class GetEntityChildren : global::Shiny.Mediator.Http.IHttpReques
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/entity/{entityID}/live")]
 public partial class GetEntityLiveData : global::Shiny.Mediator.Http.IHttpRequest<global::MyTests.EntityLiveDataResponse>
 {
@@ -488,7 +488,7 @@ public partial class GetEntityLiveData : global::Shiny.Mediator.Http.IHttpReques
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/entity/{entityID}/schedule")]
 public partial class GetEntityScheduleUpcoming : global::Shiny.Mediator.Http.IHttpRequest<global::MyTests.EntityScheduleResponse>
 {
@@ -497,7 +497,7 @@ public partial class GetEntityScheduleUpcoming : global::Shiny.Mediator.Http.IHt
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.6.2")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/entity/{entityID}/schedule/{year}/{month}")]
 public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.Http.IHttpRequest<global::MyTests.EntityScheduleResponse>
 {
