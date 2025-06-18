@@ -7,28 +7,39 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Shiny.Mediator.SourceGenerators;
 using Shiny.Mediator.SourceGenerators.Http;
+using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests;
 
-public class MediatorHttpRequestSourceGeneratorTests
+public class MediatorHttpRequestSourceGeneratorTests(ITestOutputHelper output)
 {
     // TODO: could do a theory with several urls
     [Fact]
     public Task Generate_HttpContracts_Remote_Yaml()
     {
         var driver = BuildDriver(this.GetType().Assembly, "OpenApiRemote", "MyTests", "https://api.themeparks.wiki/docs/v1.yaml");
-        var result = driver.GetRunResult().Results.FirstOrDefault();
-        result.Exception.ShouldBeNull();
-        return Verify(result);
+        var results = driver.GetRunResult();
+        return Verify(results);
     }
-    
-    
-    [Fact(Skip = "TODO")]
-    public Task Generate_HttpContracts_Local()
+
+    [Fact]
+    public Task Generate_HttpContracts_Enums()
     {
-        // var driver = BuildDriver(this.GetType().Assembly, "openapi.json", "MyTests");
-        return Task.CompletedTask; // Verify
+        var file = new FileInfo("testapi.json");
+        var generator = new OpenApiContractGenerator(
+            new MediatorHttpItemConfig
+            {
+                Namespace = "MyTests",
+                ContractPrefix = "HttpRequest",
+            },
+            (msg, severity) => output.WriteLine($"[{severity}] {msg}")
+        );
+        
+        file.Exists.ShouldBeTrue("Could not find file 'testapi.json'.");
+        var content = generator.Generate(file.OpenRead());
+        return Verify(content);
     }
+    
     
     static GeneratorDriver BuildDriver(
         Assembly metadataAssembly, 
@@ -65,17 +76,3 @@ class VoidAdditionalText(string path) : AdditionalText
     public override string Path => path;
     public override SourceText GetText(CancellationToken cancellationToken = default) => null;
 }
-/*
-<ItemGroup>
-   <MediatorHttp Include="OpenApiRemote"
-                 Uri="https://api.themeparks.wiki/docs/v1.yaml"
-                 Namespace="Sample.ThemeParksApi"
-                 ContractPostfix="HttpRequest"
-                 Visible="false" />
-</ItemGroup>
-<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false" />
-<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" Visible="false" />
-<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Uri" Visible="false" />
-<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPrefix" Visible="false" />
-<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPostfix" Visible="false" />
-*/
