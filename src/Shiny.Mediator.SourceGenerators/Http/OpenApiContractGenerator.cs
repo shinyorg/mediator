@@ -213,21 +213,27 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         
         return type;
     }
-    
-    
-    static string GetStringType(OpenApiSchema schema) => schema.Format switch
-    {
-        "date-time" => "System.DateTimeOffset",
-        "uuid" => "System.Guid",
-        "date" => "System.DateOnly",
-        "time" => "System.TimeOnly",
-        "date-span" => "System.TimeSpan",
-        // "binary" => "byte[]",
-        // "file" => "",
-        _ => "string"
-    };
 
-    
+
+    static string GetStringType(OpenApiSchema schema)
+    {
+        if (schema.Pattern?.Equals("^-?(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$") ?? false)
+            return "System.TimeSpan";
+        
+        return schema.Format switch
+        {
+            "date-time" => "System.DateTimeOffset",
+            "uuid" => "System.Guid",
+            "date" => "System.DateOnly",
+            "time" => "System.TimeOnly",
+            "date-span" => "System.TimeSpan",
+            // "binary" => "byte[]",
+            // "file" => "",
+            _ => "string"
+        };
+    }
+
+
     static string GetNumberType(string format) => format switch
     {
         "int32" => "int",

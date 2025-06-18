@@ -23,8 +23,9 @@ public class MediatorHttpRequestSourceGeneratorTests(ITestOutputHelper output)
     }
 
     [Fact]
-    public Task Generate_HttpContracts_Enums()
+    public Task Generate_HttpContracts_Local()
     {
+        // tests enums and timespans
         var file = new FileInfo("testapi.json");
         var generator = new OpenApiContractGenerator(
             new MediatorHttpItemConfig
