@@ -8,9 +8,9 @@ namespace Shiny.Mediator.Http;
 
 public class HttpDirectRequestHandler(
     ILogger<HttpDirectRequestHandler> logger,
-    IConfiguration configuration,
     ISerializerService serializer,
-    IEnumerable<IHttpRequestDecorator> decorators
+    IEnumerable<IHttpRequestDecorator> decorators,
+    IConfiguration? configuration = null
 ) : IRequestHandler<HttpDirectRequest, object?>
 {
     static readonly HttpClient httpClient = new();
@@ -22,7 +22,7 @@ public class HttpDirectRequestHandler(
         
         if (request.Method == null)
         {
-            var method = configuration.GetValue($"Mediator:Http:Direct:{request.ConfigNameOrRoute}:Method", "get");
+            var method = configuration?.GetValue($"Mediator:Http:Direct:{request.ConfigNameOrRoute}:Method", "get") ?? "get";
             request.Method = HttpMethod.Parse(method);
         }
         var httpRequest = new HttpRequestMessage(request.Method, url);
@@ -68,6 +68,9 @@ public class HttpDirectRequestHandler(
         }
         else
         {
+            if (configuration == null)
+                throw new InvalidOperationException("IConfiguration is null");
+            
             url = configuration.GetValue<string>($"Mediator:Http:Direct:{routeName}:Url");
             if (url == null)
             {
