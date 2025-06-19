@@ -271,7 +271,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
 
         var sb = new StringBuilder();
         sb
-            .AppendLine(Constants.GeneratedCodeAttributeString)
+            //.AppendLine(Constants.GeneratedCodeAttributeString)
             .AppendLine($"public enum {enumName}")
             .AppendLine("{");
         

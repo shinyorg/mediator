@@ -4,7 +4,6 @@
 /// </summary>
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public partial class Ad
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -36,6 +35,7 @@ public partial class Ad
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public enum AdVisualType
 {
+    None,
     Lottie,
     Image,
     Video,
