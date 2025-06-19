@@ -333,8 +333,8 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
             else
             {
                 typeName = this.GetSchemaType(prop.Value);
-                if (typeName == null && prop.Value.Reference != null)
-                    typeName = className + propertyName.Pascalize();
+                if (typeName == null && prop.Value.Enum.Count > 0 && prop.Value.Reference != null)
+                    typeName = prop.Value.Reference.Id;
             }
 
             if (typeName == null)
