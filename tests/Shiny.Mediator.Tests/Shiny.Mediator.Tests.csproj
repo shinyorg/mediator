@@ -54,10 +54,6 @@
         </Content>
         <Content Include="Http\*.json" CopyToOutputDirectory="Always"/>
         <None Remove="testapi.json" />
-        <None Update="Http\MediatorHttpRequestSourceGeneratorTests.Generate_HttpContracts_Local.verified.txt">
-          <ParentFile>MediatorHttpRequestSourceGeneratorTests</ParentFile>
-          <DependentUpon>MediatorHttpRequestSourceGeneratorTests.cs</DependentUpon>
-        </None>
         <None Update="Http\MediatorHttpRequestSourceGeneratorTests.Generate_HttpContracts_Remote_Yaml.verified.txt">
           <ParentFile>MediatorHttpRequestSourceGeneratorTests</ParentFile>
           <DependentUpon>MediatorHttpRequestSourceGeneratorTests.cs</DependentUpon>

@@ -10,32 +10,13 @@ namespace Shiny.Mediator.Tests.Http;
 
 public class MediatorHttpRequestSourceGeneratorTests(ITestOutputHelper output)
 {
-    // TODO: could do a theory with several urls
-    [Fact]
-    public Task Generate_HttpContracts_Remote_Yaml()
+    [Theory]
+    [InlineData("https://api.themeparks.wiki/docs/v1.yaml")]
+    public Task Generate_HttpContracts_Remote_Yaml(string url)
     {
-        var driver = BuildDriver(this.GetType().Assembly, "OpenApiRemote", "MyTests", "https://api.themeparks.wiki/docs/v1.yaml");
+        var driver = BuildDriver(this.GetType().Assembly, "OpenApiRemote", "MyTests", url);
         var results = driver.GetRunResult();
-        return Verify(results);
-    }
-
-    [Fact]
-    public Task Generate_HttpContracts_Local()
-    {
-        // tests enums and timespans
-        var file = new FileInfo("./Http/testapi.json");
-        var generator = new OpenApiContractGenerator(
-            new MediatorHttpItemConfig
-            {
-                Namespace = "MyTests",
-                ContractPrefix = "HttpRequest",
-            },
-            (msg, severity) => output.WriteLine($"[{severity}] {msg}")
-        );
-        
-        file.Exists.ShouldBeTrue("Could not find file 'testapi.json'.");
-        var content = generator.Generate(file.OpenRead());
-        return Verify(content);
+        return Verify(results).UseParameters(url);
     }
     
     

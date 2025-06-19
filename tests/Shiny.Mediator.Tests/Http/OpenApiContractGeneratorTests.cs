@@ -4,22 +4,25 @@ using Xunit.Abstractions;
 namespace Shiny.Mediator.Tests.Http;
 
 
-public class HttpRequestGeneratorTests(ITestOutputHelper output)
+public class OpenApiContractGeneratorTests(ITestOutputHelper output)
 {
     [Theory]
-    [InlineData("./Http/test.json", "TestApi")]
-    public void Tests(string path, string nameSpace)
+    [InlineData("./Http/standard.json", "HttpRequest", "TestApi")]
+    [InlineData("./Http/enums.json", null, "TestApi")]
+    public Task Tests(string path, string? contractPostfix, string nameSpace)
     { 
         using var doc = File.OpenRead(path);
-        var item = new MediatorHttpItemConfig
-        {
-            Namespace = nameSpace,
-            ContractPostfix = "HttpRequest"
-        };
-        var generator = new OpenApiContractGenerator(item, (msg, level) => output.WriteLine(msg));
-        var code = generator.Generate(doc);
+        var generator = new OpenApiContractGenerator(
+            new MediatorHttpItemConfig
+            {
+                Namespace = nameSpace,
+                ContractPostfix = contractPostfix
+            },
+            (msg, severity) => output.WriteLine($"[{severity}] {msg}")
+        );
+        var content = generator.Generate(doc);
         
-        output.WriteLine(code);
+        return Verify(content).UseParameters(path, contractPostfix, nameSpace);
     }
 
     
