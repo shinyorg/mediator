@@ -32,16 +32,13 @@ public partial class Ad
 
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 public enum AdVisualType
 {
-    None,
     Lottie,
     Image,
     Video,
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 [global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Get, "/ads")]
 public partial class GetAds : global::Shiny.Mediator.Http.IHttpRequest<global::System.Collections.Generic.List<global::TestApi.Ad>>
 {
