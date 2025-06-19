@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Shiny.Mediator.AspNet.SourceGenerators;
 
-
 [Generator(LanguageNames.CSharp)]
 public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 {
@@ -45,16 +44,18 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         // Check if this class implements IRequestHandler or ICommandHandler
         var isRequestHandler = false;
         var isCommandHandler = false;
-        
+
         foreach (var intf in classSymbol.AllInterfaces)
         {
             if (intf.IsGenericType)
             {
                 if (!isRequestHandler)
-                    isRequestHandler = intf.OriginalDefinition.ToDisplayString() == "Shiny.Mediator.IRequestHandler<TRequest, TResult>";
-                
+                    isRequestHandler = intf.OriginalDefinition.ToDisplayString() ==
+                        "Shiny.Mediator.IRequestHandler<TRequest, TResult>";
+
                 if (!isCommandHandler)
-                    isCommandHandler = intf.OriginalDefinition.ToDisplayString() == "Shiny.Mediator.ICommandHandler<TCommand>";
+                    isCommandHandler = intf.OriginalDefinition.ToDisplayString() ==
+                        "Shiny.Mediator.ICommandHandler<TCommand>";
             }
 
             if (isRequestHandler && isCommandHandler)
@@ -66,15 +67,16 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
         // Find all Handle methods with MediatorHttp attributes
         var handleMethods = new List<IMethodSymbol>();
-        
+
         foreach (var member in classSymbol.GetMembers("Handle"))
         {
             if (member is IMethodSymbol { Parameters.Length: 3 } method)
             {
                 var p1Name = method.Parameters[1].ToDisplayString();
                 var p2Name = method.Parameters[2].ToDisplayString();
-                
-                if (p1Name.StartsWith("Shiny.Mediator.IMediatorContext") && p2Name.StartsWith("System.Threading.CancellationToken"))
+
+                if (p1Name.StartsWith("Shiny.Mediator.IMediatorContext") &&
+                    p2Name.StartsWith("System.Threading.CancellationToken"))
                 {
                     handleMethods.Add(method);
                 }
@@ -101,7 +103,10 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
                 // Determine result type based on method return type
                 var resultType = "void";
-                if (method.ReturnType is INamedTypeSymbol { IsGenericType: true, TypeArguments.Length: > 0 } namedReturnType)
+                if (method.ReturnType is INamedTypeSymbol
+                    {
+                        IsGenericType: true, TypeArguments.Length: > 0
+                    } namedReturnType)
                 {
                     resultType = namedReturnType.TypeArguments[0].ToDisplayString();
                 }
@@ -119,10 +124,10 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             var groupAttribute = classSymbol
                 .GetAttributes()
                 .FirstOrDefault(attr => attr.AttributeClass?.Name == "MediatorHttpGroupAttribute");
-            
+
             if (groupAttribute == null)
                 return null;
-            
+
             // Return class info with group attribute but no HTTP attributes
             return new ClassInfo(
                 classSymbol.ToDisplayString(),
@@ -268,32 +273,32 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
     static ClassInfo MergePartialClasses(IGrouping<string, ClassInfo> group)
     {
         var first = group.First();
-        
+
         // If there's only one class, return it as-is
         if (group.Count() == 1)
             return first;
-        
+
         // Merge all HTTP attributes from all partial classes and deduplicate by operation ID and HTTP method
         var allHttpAttributes = group
             .SelectMany(c => c.HttpAttributes)
             .GroupBy(attr => new { attr.OperationId, attr.HttpMethod, attr.UriTemplate })
             .Select(g => g.First()) // Take the first occurrence of each unique attribute
             .ToList();
-        
+
         // Use the group attribute from the first class that has one
         var groupAttribute = group
             .Select(c => c.GroupAttribute)
             .FirstOrDefault(ga => ga != null);
-        
+
         // Combine the boolean flags (OR operation for handler types)
         var isRequestHandler = group.Any(c => c.IsRequestHandler);
         var isCommandHandler = group.Any(c => c.IsCommandHandler);
-        
+
         // Use the generic types from the first class that has them
         var genericTypes = group
             .Select(c => c.GenericTypes)
             .FirstOrDefault(gt => !string.IsNullOrEmpty(gt.RequestType));
-        
+
         return new ClassInfo(
             first.FullName,
             first.ClassName,
@@ -305,7 +310,8 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         );
     }
 
-    static void GenerateDependencyInjectionExtensions(SourceProductionContext context, string nameSpace, List<ClassInfo> classes)
+    static void GenerateDependencyInjectionExtensions(SourceProductionContext context, string nameSpace,
+        List<ClassInfo> classes)
     {
         var sb = new StringBuilder();
         sb.AppendLine("// <auto-generated>");
@@ -373,23 +379,20 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
                 // Create a group for classes with MediatorHttpGroupAttribute
                 sb.AppendLine();
                 sb.AppendLine($"        // Group: {groupPrefix}");
-                sb.AppendLine(
-                    $"        var group_{groupPrefix.Replace("/", "_").Replace("-", "_")} = builder.MapGroup(\"{groupPrefix}\");");
+                sb.AppendLine($"        var group_{groupPrefix.Replace("/", "_").Replace("-", "_")} = builder.MapGroup(\"{groupPrefix}\");");
 
                 // Get the first class's group attribute for group-level configuration
                 var groupAttribute = classesInGroup.First().GroupAttribute;
                 if (groupAttribute != null)
                 {
-                    ApplyGroupConfiguration(sb, $"group_{groupPrefix.Replace("/", "_").Replace("-", "_")}",
-                        groupAttribute);
+                    ApplyGroupConfiguration(sb, $"group_{groupPrefix.Replace("/", "_").Replace("-", "_")}", groupAttribute);
                 }
 
                 foreach (var classInfo in classesInGroup)
                 {
                     foreach (var attribute in classInfo.HttpAttributes)
                     {
-                        GenerateGroupedEndpointMapping(sb, $"group_{groupPrefix.Replace("/", "_").Replace("-", "_")}",
-                            classInfo, attribute);
+                        GenerateGroupedEndpointMapping(sb, $"group_{groupPrefix.Replace("/", "_").Replace("-", "_")}", classInfo, attribute);
                     }
                 }
             }
@@ -430,8 +433,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
         if (isRequest)
         {
-            GenerateRequestEndpoint(sb, httpMethod, uriTemplate, requestType, resultType, attribute,
-                classInfo.GroupAttribute);
+            GenerateRequestEndpoint(sb, httpMethod, uriTemplate, requestType, resultType, attribute, classInfo.GroupAttribute);
         }
         else
         {
@@ -495,8 +497,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine($"        ;");
     }
 
-    static void ApplyEndpointConfiguration(StringBuilder sb, AttributeInfo attribute,
-        GroupAttributeInfo? groupAttribute)
+    static void ApplyEndpointConfiguration(StringBuilder sb, AttributeInfo attribute, GroupAttributeInfo? groupAttribute)
     {
         // Apply WithName
         sb.AppendLine($"            .WithName(\"{attribute.OperationId}\")");
@@ -551,74 +552,63 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             }
         }
 
-        // Apply OpenAPI metadata - merge group and attribute settings
-        var useOpenApi = true;
-        if (groupAttribute?.Properties.TryGetValue("UseOpenApi", out var groupUseOpenApi) == true)
-            useOpenApi = (bool)groupUseOpenApi;
-        if (attribute.Properties.TryGetValue("UseOpenApi", out var attrUseOpenApi))
-            useOpenApi = (bool)attrUseOpenApi;
+        // Display name - attribute takes precedence
+        var displayName = "";
+        if (groupAttribute?.Properties.TryGetValue("DisplayName", out var groupDisplayName) == true)
+            displayName = (string)groupDisplayName;
+        if (attribute.Properties.TryGetValue("DisplayName", out var attrDisplayName) &&
+            !string.IsNullOrEmpty((string)attrDisplayName))
+            displayName = (string)attrDisplayName;
 
-        if (useOpenApi)
+        if (!string.IsNullOrEmpty(displayName))
+            sb.AppendLine($"            .WithDisplayName(\"{displayName}\")");
+
+        // Summary - attribute takes precedence
+        var summary = "";
+        if (groupAttribute?.Properties.TryGetValue("Summary", out var groupSummary) == true)
+            summary = (string)groupSummary;
+        if (attribute.Properties.TryGetValue("Summary", out var attrSummary) &&
+            !string.IsNullOrEmpty((string)attrSummary))
+            summary = (string)attrSummary;
+
+        if (!string.IsNullOrEmpty(summary))
+            sb.AppendLine($"            .WithSummary(\"{summary}\")");
+
+        // Description - attribute takes precedence
+        var description = "";
+        if (groupAttribute?.Properties.TryGetValue("Description", out var groupDescription) == true)
+            description = (string)groupDescription;
+        if (attribute.Properties.TryGetValue("Description", out var attrDescription) &&
+            !string.IsNullOrEmpty((string)attrDescription))
+            description = (string)attrDescription;
+
+        if (!string.IsNullOrEmpty(description))
+            sb.AppendLine($"            .WithDescription(\"{description}\")");
+
+        // Tags - merge group and attribute tags
+        var allTags = new List<string>();
+        if (groupAttribute?.Properties.TryGetValue("Tags", out var groupTags) == true &&
+            groupTags is string[] groupTagArray)
+            allTags.AddRange(groupTagArray);
+        if (attribute.Properties.TryGetValue("Tags", out var attrTags) && attrTags is string[] attrTagArray)
+            allTags.AddRange(attrTagArray);
+
+        if (allTags.Any())
         {
-            // Display name - attribute takes precedence
-            var displayName = "";
-            if (groupAttribute?.Properties.TryGetValue("DisplayName", out var groupDisplayName) == true)
-                displayName = (string)groupDisplayName;
-            if (attribute.Properties.TryGetValue("DisplayName", out var attrDisplayName) &&
-                !string.IsNullOrEmpty((string)attrDisplayName))
-                displayName = (string)attrDisplayName;
-
-            if (!string.IsNullOrEmpty(displayName))
-                sb.AppendLine($"            .WithDisplayName(\"{displayName}\")");
-
-            // Summary - attribute takes precedence
-            var summary = "";
-            if (groupAttribute?.Properties.TryGetValue("Summary", out var groupSummary) == true)
-                summary = (string)groupSummary;
-            if (attribute.Properties.TryGetValue("Summary", out var attrSummary) &&
-                !string.IsNullOrEmpty((string)attrSummary))
-                summary = (string)attrSummary;
-
-            if (!string.IsNullOrEmpty(summary))
-                sb.AppendLine($"            .WithSummary(\"{summary}\")");
-
-            // Description - attribute takes precedence
-            var description = "";
-            if (groupAttribute?.Properties.TryGetValue("Description", out var groupDescription) == true)
-                description = (string)groupDescription;
-            if (attribute.Properties.TryGetValue("Description", out var attrDescription) &&
-                !string.IsNullOrEmpty((string)attrDescription))
-                description = (string)attrDescription;
-
-            if (!string.IsNullOrEmpty(description))
-                sb.AppendLine($"            .WithDescription(\"{description}\")");
-
-            // Tags - merge group and attribute tags
-            var allTags = new List<string>();
-            if (groupAttribute?.Properties.TryGetValue("Tags", out var groupTags) == true &&
-                groupTags is string[] groupTagArray)
-                allTags.AddRange(groupTagArray);
-            if (attribute.Properties.TryGetValue("Tags", out var attrTags) && attrTags is string[] attrTagArray)
-                allTags.AddRange(attrTagArray);
-
-            if (allTags.Any())
-            {
-                var tagList = string.Join("\", \"", allTags.Distinct());
-                sb.AppendLine($"            .WithTags(\"{tagList}\")");
-            }
-
-            // Group name - attribute takes precedence, then group GroupName
-            var groupName = "";
-            if (groupAttribute?.Properties.TryGetValue("GroupName", out var groupGroupName) == true)
-                groupName = (string)groupGroupName;
-            if (attribute.Properties.TryGetValue("GroupName", out var attrGroupName) &&
-                !string.IsNullOrEmpty((string)attrGroupName))
-                groupName = (string)attrGroupName;
-
-            if (!string.IsNullOrEmpty(groupName))
-                sb.AppendLine(
-                    $"            .WithOpenApi(operation => {{ operation.Tags = new List<Microsoft.OpenApi.Models.OpenApiTag> {{ new() {{ Name = \"{groupName}\" }} }}; return operation; }})");
+            var tagList = string.Join("\", \"", allTags.Distinct());
+            sb.AppendLine($"            .WithTags(\"{tagList}\")");
         }
+
+        // Group name - attribute takes precedence, then group GroupName
+        var groupName = "";
+        if (groupAttribute?.Properties.TryGetValue("GroupName", out var groupGroupName) == true)
+            groupName = (string)groupGroupName;
+        if (attribute.Properties.TryGetValue("GroupName", out var attrGroupName) &&
+            !string.IsNullOrEmpty((string)attrGroupName))
+            groupName = (string)attrGroupName;
+
+        if (!string.IsNullOrEmpty(groupName))
+            sb.AppendLine($"            .WithOpenApi(operation => {{ operation.Tags = new List<Microsoft.OpenApi.Models.OpenApiTag> {{ new() {{ Name = \"{groupName}\" }} }}; return operation; }})");
 
         // Exclude from description - attribute takes precedence
         var excludeFromDesc = false;
@@ -710,16 +700,19 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         }
 
         // Apply group-level tags
-        if (groupAttribute.Properties.TryGetValue("Tags", out var tags) && tags is string[] tagArray &&
-            tagArray.Length > 0)
+        if (groupAttribute.Properties.TryGetValue("Tags", out var tags) && tags is string[] tagArray && tagArray.Length > 0)
         {
             var tagList = string.Join("\", \"", tagArray);
             sb.AppendLine($"        {groupVariableName}.WithTags(\"{tagList}\");");
         }
+        
+        if (groupAttribute.Properties.TryGetValue("ExcludeFromDescription", out var description) && (bool)description)
+        {
+            sb.AppendLine($"        {groupVariableName}.ExcludeFromDescription();");
+        }
     }
 
-    static void GenerateGroupedEndpointMapping(StringBuilder sb, string groupVariableName, ClassInfo classInfo,
-        AttributeInfo attribute)
+    static void GenerateGroupedEndpointMapping(StringBuilder sb, string groupVariableName, ClassInfo classInfo, AttributeInfo attribute)
     {
         var httpMethod = attribute.HttpMethod.ToLower();
         var operationId = attribute.OperationId;
@@ -743,20 +736,17 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         }
     }
 
-    static void GenerateGroupedRequestEndpoint(StringBuilder sb, string groupVariableName, string httpMethod,
-        string uriTemplate, string requestType, string resultType, AttributeInfo attribute)
+    static void GenerateGroupedRequestEndpoint(StringBuilder sb, string groupVariableName, string httpMethod, string uriTemplate, string requestType, string resultType, AttributeInfo attribute)
     {
         var isGetOrDelete = httpMethod == "get" || httpMethod == "delete";
         var fromClause = isGetOrDelete
             ? "[global::Microsoft.AspNetCore.Http.AsParameters]"
             : "[global::Microsoft.AspNetCore.Mvc.FromBody]";
 
-        sb.AppendLine(
-            $"        {groupVariableName}.Map{httpMethod.Substring(0, 1).ToUpper()}{httpMethod.Substring(1)}(");
+        sb.AppendLine($"        {groupVariableName}.Map{httpMethod.Substring(0, 1).ToUpper()}{httpMethod.Substring(1)}(");
         sb.AppendLine($"            \"{uriTemplate}\",");
         sb.AppendLine($"            async (");
-        sb.AppendLine(
-            $"                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,");
+        sb.AppendLine($"                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,");
         sb.AppendLine($"                {fromClause} {requestType} request,");
         sb.AppendLine($"                global::System.Threading.CancellationToken cancellationToken");
         sb.AppendLine($"            ) =>");
@@ -772,8 +762,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine($"        ;");
     }
 
-    static void GenerateGroupedCommandEndpoint(StringBuilder sb, string groupVariableName, string httpMethod,
-        string uriTemplate, string requestType, AttributeInfo attribute)
+    static void GenerateGroupedCommandEndpoint(StringBuilder sb, string groupVariableName, string httpMethod, string uriTemplate, string requestType, AttributeInfo attribute)
     {
         var isGetOrDelete = httpMethod == "get" || httpMethod == "delete";
         var fromClause = isGetOrDelete
@@ -829,38 +818,28 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         }
 
         // Apply OpenAPI metadata
-        var useOpenApi = true;
-        if (attribute.Properties.TryGetValue("UseOpenApi", out var attrUseOpenApi))
-            useOpenApi = (bool)attrUseOpenApi;
+        if (attribute.Properties.TryGetValue("DisplayName", out var displayName) && !string.IsNullOrEmpty((string)displayName))
+            sb.AppendLine($"            .WithDisplayName(\"{displayName}\")");
 
-        if (useOpenApi)
+        if (attribute.Properties.TryGetValue("Summary", out var summary) && !string.IsNullOrEmpty((string)summary))
+            sb.AppendLine($"            .WithSummary(\"{summary}\")");
+
+        if (attribute.Properties.TryGetValue("Description", out var description) &&
+            !string.IsNullOrEmpty((string)description))
+            sb.AppendLine($"            .WithDescription(\"{description}\")");
+
+        if (attribute.Properties.TryGetValue("Tags", out var tags) && tags is string[] tagArray &&
+            tagArray.Length > 0)
         {
-            if (attribute.Properties.TryGetValue("DisplayName", out var displayName) &&
-                !string.IsNullOrEmpty((string)displayName))
-                sb.AppendLine($"            .WithDisplayName(\"{displayName}\")");
-
-            if (attribute.Properties.TryGetValue("Summary", out var summary) && !string.IsNullOrEmpty((string)summary))
-                sb.AppendLine($"            .WithSummary(\"{summary}\")");
-
-            if (attribute.Properties.TryGetValue("Description", out var description) &&
-                !string.IsNullOrEmpty((string)description))
-                sb.AppendLine($"            .WithDescription(\"{description}\")");
-
-            if (attribute.Properties.TryGetValue("Tags", out var tags) && tags is string[] tagArray &&
-                tagArray.Length > 0)
-            {
-                var tagList = string.Join("\", \"", tagArray);
-                sb.AppendLine($"            .WithTags(\"{tagList}\")");
-            }
-
-            if (attribute.Properties.TryGetValue("GroupName", out var groupName) &&
-                !string.IsNullOrEmpty((string)groupName))
-                sb.AppendLine(
-                    $"            .WithOpenApi(operation => {{ operation.Tags = new List<Microsoft.OpenApi.Models.OpenApiTag> {{ new() {{ Name = \"{groupName}\" }} }}; return operation; }})");
+            var tagList = string.Join("\", \"", tagArray);
+            sb.AppendLine($"            .WithTags(\"{tagList}\")");
         }
 
-        if (attribute.Properties.TryGetValue("ExcludeFromDescription", out var excludeFromDesc) &&
-            (bool)excludeFromDesc)
+        if (attribute.Properties.TryGetValue("GroupName", out var groupName) &&
+            !string.IsNullOrEmpty((string)groupName))
+            sb.AppendLine($"            .WithOpenApi(operation => {{ operation.Tags = new List<Microsoft.OpenApi.Models.OpenApiTag> {{ new() {{ Name = \"{groupName}\" }} }}; return operation; }})");
+
+        if (attribute.Properties.TryGetValue("ExcludeFromDescription", out var excludeFromDesc) && (bool)excludeFromDesc)
             sb.AppendLine($"            .ExcludeFromDescription()");
 
         if (attribute.Properties.TryGetValue("CachePolicy", out var cachePolicy) &&
