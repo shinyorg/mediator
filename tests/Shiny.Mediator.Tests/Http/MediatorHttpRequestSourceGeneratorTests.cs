@@ -1,15 +1,12 @@
 using System.Reflection;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Shiny.Mediator.SourceGenerators;
 using Shiny.Mediator.SourceGenerators.Http;
 using Xunit.Abstractions;
 
-namespace Shiny.Mediator.Tests;
+namespace Shiny.Mediator.Tests.Http;
 
 public class MediatorHttpRequestSourceGeneratorTests(ITestOutputHelper output)
 {
@@ -26,7 +23,7 @@ public class MediatorHttpRequestSourceGeneratorTests(ITestOutputHelper output)
     public Task Generate_HttpContracts_Local()
     {
         // tests enums and timespans
-        var file = new FileInfo("testapi.json");
+        var file = new FileInfo("./Http/testapi.json");
         var generator = new OpenApiContractGenerator(
             new MediatorHttpItemConfig
             {

@@ -54,9 +54,25 @@
         </Content>
         <Content Include="Http\*.json" CopyToOutputDirectory="Always"/>
         <None Remove="testapi.json" />
-        <Content Include="testapi.json">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
+        <None Update="Http\MediatorHttpRequestSourceGeneratorTests.Generate_HttpContracts_Local.verified.txt">
+          <ParentFile>MediatorHttpRequestSourceGeneratorTests</ParentFile>
+          <DependentUpon>MediatorHttpRequestSourceGeneratorTests.cs</DependentUpon>
+        </None>
+        <None Update="Http\MediatorHttpRequestSourceGeneratorTests.Generate_HttpContracts_Remote_Yaml.verified.txt">
+          <ParentFile>MediatorHttpRequestSourceGeneratorTests</ParentFile>
+          <DependentUpon>MediatorHttpRequestSourceGeneratorTests.cs</DependentUpon>
+        </None>
+        <None Update="Http\MediatorHttpRequestSourceGeneratorTests.Generate_HttpContracts_Remote_Yaml#MyTests.g.verified.cs">
+          <ParentFile>MediatorHttpRequestSourceGeneratorTests</ParentFile>
+        </None>
+        <None Update="Http\HttpDirectRequestHandlerTests.e2e_key=Mediator-Http-Direct-BaseUrl_value=https---api.themeparks.wiki-v1_configOrRoute=-entity-66f5d97a-a530-40bf-a712-a6317c96b06d.verified.txt">
+          <ParentFile>HttpDirectRequestHandlerTests</ParentFile>
+          <DependentUpon>HttpDirectRequestHandlerTests.cs</DependentUpon>
+        </None>
+        <None Update="Http\HttpDirectRequestHandlerTests.e2e_key=Mediator-Http-Direct-Test-Url_value=https---api.themeparks.wiki-v1-entity-66f5d97a-a530-40bf-a712-a6317c96b06d_configOrRoute=Test.verified.txt">
+          <ParentFile>HttpDirectRequestHandlerTests</ParentFile>
+          <DependentUpon>HttpDirectRequestHandlerTests.cs</DependentUpon>
+        </None>
     </ItemGroup>
 
     <!--

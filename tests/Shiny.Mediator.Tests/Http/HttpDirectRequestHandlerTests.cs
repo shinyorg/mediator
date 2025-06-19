@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Shiny.Mediator.Http;
 using Xunit.Abstractions;
 
-namespace Shiny.Mediator.Tests;
+namespace Shiny.Mediator.Tests.Http;
 
 
 public class HttpDirectRequestHandlerTests(ITestOutputHelper output)

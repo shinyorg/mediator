@@ -1,7 +1,7 @@
 using Shiny.Mediator.SourceGenerators.Http;
 using Xunit.Abstractions;
 
-namespace Shiny.Mediator.Tests;
+namespace Shiny.Mediator.Tests.Http;
 
 
 public class HttpRequestGeneratorTests(ITestOutputHelper output)
