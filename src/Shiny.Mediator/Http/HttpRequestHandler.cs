@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Text;
-using System.Text.Json;
 using System.Web;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -105,7 +104,7 @@ public class HttpRequestHandler<TRequest, TResult>(
     };
     
     
-    protected virtual HttpRequestMessage ContractToHttpRequest(
+    protected internal virtual HttpRequestMessage ContractToHttpRequest(
         TRequest request, 
         HttpAttribute attribute,
         string baseUri
@@ -171,7 +170,7 @@ public class HttpRequestHandler<TRequest, TResult>(
                         if (httpRequest.Content != null)
                             throw new InvalidOperationException("Multiple body parameters not supported");
 
-                        var json = JsonSerializer.Serialize(propertyValue);
+                        var json = serializer.Serialize(propertyValue);
                         httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
                         logger.LogDebug("HTTP Body: " + json);
                         break;
