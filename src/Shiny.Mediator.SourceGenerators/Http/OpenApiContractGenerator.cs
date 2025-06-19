@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -80,7 +81,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                 var httpMethod = op.Key.ToString();
                 
                 this.contractBuilder
-                    .AppendLine(Constants.GeneratedCodeAttributeString)
+                    //.AppendLine(Constants.GeneratedCodeAttributeString)
                     .AppendLine($"[global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.{httpMethod}, \"{path.Key}\")]")
                     .AppendLine($"public partial class {contractName} : global::Shiny.Mediator.Http.IHttpRequest<{responseType}>")
                     .AppendLine("{");
@@ -292,7 +293,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         output("===GENERATING CLASS COMPONENT: " + className, DiagnosticSeverity.Info);
         var sb = new StringBuilder();
         sb
-            .AppendLine(Constants.GeneratedCodeAttributeString)
+            // .AppendLine(Constants.GeneratedCodeAttributeString)
             .Append("public partial class " + className);
 
         // TODO: this will be 2 when discriminators are present
