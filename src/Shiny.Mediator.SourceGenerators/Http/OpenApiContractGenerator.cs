@@ -105,7 +105,6 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                         if (!body.Required)
                             bodyResponseType += "?";
                         
-                        this.contractBuilder.AppendLine($"    " + Constants.GeneratedCodeAttributeString);
                         this.contractBuilder.AppendLine($"    [global::Shiny.Mediator.Http.HttpParameter(global::Shiny.Mediator.Http.HttpParameterType.Body)]");
                         this.contractBuilder.AppendLine($"    public {bodyResponseType} Body {{ get; set; }}");
                         output("BODY: " + bodyResponseType, DiagnosticSeverity.Info);
