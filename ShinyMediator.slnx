@@ -19,7 +19,6 @@
     <File Path="src\Directory.build.props" />
     <File Path="src\Directory.build.targets" />
     <File Path="src\nuget.txt" />
-    <File Path="version.json" />
     <File Path="LICENSE" />
     <File Path=".github\PULL_REQUEST_TEMPLATE.md" />
     <File Path="src\Directory.packages.props" />
