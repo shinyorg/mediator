@@ -12,8 +12,7 @@ public class StorageService(
     protected override Task WriteFile(string fileName, string content)
     {
         var path = Path.Combine(fileSystem.AppDataDirectory, fileName);
-        File.WriteAllText(path, content); 
-        return Task.CompletedTask;
+        return File.WriteAllTextAsync(path, content); 
     }
 
     
@@ -23,8 +22,7 @@ public class StorageService(
         if (!File.Exists(path))
             return Task.FromResult<string?>(null);
         
-        var content = File.ReadAllText(path);
-        return Task.FromResult<string?>(content);
+        return File.ReadAllTextAsync(path);
     }
     
 
