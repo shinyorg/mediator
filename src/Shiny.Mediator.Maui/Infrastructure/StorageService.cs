@@ -9,26 +9,25 @@ public class StorageService(
     ILogger<StorageService> logger
 ) : AbstractFileStorageService(serializer, logger)
 {
-    protected override Task WriteFile(string fileName, string content)
+    protected override Task WriteFile(string fileName, string content, CancellationToken cancellationToken)
     {
         var path = Path.Combine(fileSystem.AppDataDirectory, fileName);
-        File.WriteAllText(path, content); 
-        return Task.CompletedTask;
+        return File.WriteAllTextAsync(path, content, cancellationToken); 
     }
 
     
-    protected override Task<string?> ReadFile(string fileName)
+    protected override async Task<string?> ReadFile(string fileName, CancellationToken cancellationToken)
     {
         var path = Path.Combine(fileSystem.AppDataDirectory, fileName);
         if (!File.Exists(path))
-            return Task.FromResult<string?>(null);
+            return null;
         
-        var content = File.ReadAllText(path);
-        return Task.FromResult<string?>(content);
+        var content = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+        return content;
     }
     
 
-    protected override Task DeleteFile(string fileName)
+    protected override Task DeleteFile(string fileName, CancellationToken cancellationToken)
     {
         var path = Path.Combine(fileSystem.AppDataDirectory, fileName);
         if (!File.Exists(path))

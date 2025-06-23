@@ -8,7 +8,7 @@ public class MockStorageService : IStorageService
     public Dictionary<string, Dictionary<string, object>> Items { get; } = new();
     
     
-    public Task Set<T>(string category, string key, T value)
+    public Task Set<T>(string category, string key, T value, CancellationToken cancellationToken = default)
     {
         if (!this.Items.ContainsKey(category))
             this.Items.Add(category, new Dictionary<string, object>());
@@ -18,7 +18,7 @@ public class MockStorageService : IStorageService
     }
 
     
-    public Task<T?> Get<T>(string category, string key)
+    public Task<T?> Get<T>(string category, string key, CancellationToken cancellationToken = default)
     {
         var result = default(T);
 
@@ -34,7 +34,7 @@ public class MockStorageService : IStorageService
     }
 
     
-    public Task Remove(string category, string requestKey, bool partialMatchKey = false)
+    public Task Remove(string category, string requestKey, bool partialMatchKey = false, CancellationToken cancellationToken = default)
     {
         // TODO: implement partialMatchKey
         if (this.Items.ContainsKey(category))
@@ -45,7 +45,7 @@ public class MockStorageService : IStorageService
     }
     
 
-    public Task Clear(string category)
+    public Task Clear(string category, CancellationToken cancellationToken)
     {
         this.Items.Remove(category);
         return Task.CompletedTask;

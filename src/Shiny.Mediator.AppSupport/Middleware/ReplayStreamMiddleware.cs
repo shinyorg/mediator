@@ -68,7 +68,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         if (cache != null)
         {
             // TODO: force refresh?
-            var item = await cache.Get<TResult>(requestKey).ConfigureAwait(false);
+            var item = await cache.Get<TResult>(requestKey, ct).ConfigureAwait(false);
             if (item == null)
             {
                 logger.LogDebug("Cache Miss - {Request}", context.Message);
@@ -82,7 +82,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         }
         else if (offline != null)
         {
-            var store = await offline.Get<TResult>(request);
+            var store = await offline.Get<TResult>(request, ct).ConfigureAwait(false);
             if (store == null)
             {
                 logger.LogDebug("Offline Miss - {Request}", context.Message);
@@ -117,7 +117,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
                 if (offline != null)
                 {
                     logger.LogDebug("Updating Offline Store - {Request}", context.Message);
-                    await offline.Set(request, nxt.Current!).ConfigureAwait(false);
+                    await offline.Set(request, nxt.Current!, ct).ConfigureAwait(false);
                 }
 
                 logger.LogDebug("Yielding Final Result - {Request}", context.Message);

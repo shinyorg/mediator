@@ -10,7 +10,7 @@ public class StorageService(
     ILogger<StorageService> logger
 ) : AbstractFileStorageService(serializer, logger)
 {
-    protected override async Task WriteFile(string fileName, string content)
+    protected override async Task WriteFile(string fileName, string content, CancellationToken cancellationToken)
     {
         var local = ApplicationData.Current.LocalFolder;
         var file = await local.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
@@ -18,7 +18,7 @@ public class StorageService(
     }
 
     
-    protected override async Task<string?> ReadFile(string fileName)
+    protected override async Task<string?> ReadFile(string fileName, CancellationToken cancellationToken)
     {
         var local = ApplicationData.Current.LocalFolder;
         var fn = Path.Combine(local.Path, fileName);
@@ -31,7 +31,7 @@ public class StorageService(
     }
     
 
-    protected override async Task DeleteFile(string fileName)
+    protected override async Task DeleteFile(string fileName, CancellationToken cancellationToken)
     {
         var local = ApplicationData.Current.LocalFolder;
         var fn = Path.Combine(local.Path, fileName);

@@ -28,27 +28,27 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
             try
             {
                 result = await next().ConfigureAwait(false);
-                var requestKey = await offline.Set(context.Message!, result!);
+                var requestKey = await offline.Set(context.Message!, result!, cancellationToken);
                 logger.LogDebug("Offline: {Request} - Key: {RequestKey}", context.Message, requestKey);
             }
             catch (TimeoutException)
             {
-                result = await this.GetOffline(context).ConfigureAwait(false);
+                result = await this.GetOffline(context, cancellationToken).ConfigureAwait(false);
             }
         }
         else
         {
-            result = await this.GetOffline(context).ConfigureAwait(false);
+            result = await this.GetOffline(context, cancellationToken).ConfigureAwait(false);
         }
         return result;
     }
 
 
-    async Task<TResult?> GetOffline(IMediatorContext context)
+    async Task<TResult?> GetOffline(IMediatorContext context, CancellationToken cancellationToken)
     {
         TResult result = default;
         var offlineResult = await offline
-            .Get<TResult>(context.Message!)
+            .Get<TResult>(context.Message!, cancellationToken)
             .ConfigureAwait(false);
             
         if (offlineResult != null)

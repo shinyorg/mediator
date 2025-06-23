@@ -47,7 +47,7 @@ public abstract class BaseCacheServiceTests
         var result = await cache.Set("myobj", obj);
         result.ShouldNotBeNull();
         
-        var secondResult = await cache.Get<MyClass>("myobj");
+        var secondResult = await cache.Get<MyClass>("myobj", CancellationToken.None);
         secondResult.ShouldNotBeNull();
         result.Value.Id.ShouldBe(secondResult.Value.Id);
         result.Value.Name.ShouldBe(secondResult.Value.Name);
