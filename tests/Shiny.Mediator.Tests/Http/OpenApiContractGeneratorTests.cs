@@ -16,25 +16,27 @@ public partial class CreateTeam : global::Shiny.Mediator.Http.IHttpRequest<globa
 public class OpenApiContractGeneratorTests(ITestOutputHelper output)
 {
     [Theory]
-    [InlineData("./Http/standard.json", "HttpRequest", "TestApi")]
-    [InlineData("./Http/enums.json", null, "TestApi")]
-    [InlineData("./Http/validateresult.json", null, "TestApi")]
-    public Task Local_Tests(string path, string? contractPostfix, string nameSpace)
+    [InlineData("./Http/standard.json", "HttpRequest", "TestApi", false)]
+    [InlineData("./Http/standard.json", "HttpRequest", "TestApi", true)]
+    [InlineData("./Http/enums.json", null, "TestApi", false)]
+    [InlineData("./Http/validateresult.json", null, "TestApi", false)]
+    public Task Local_Tests(string path, string? contractPostfix, string nameSpace, bool useInternalClasses)
     { 
         using var doc = File.OpenRead(path);
         var generator = new OpenApiContractGenerator(
             new MediatorHttpItemConfig
             {
                 Namespace = nameSpace,
-                ContractPostfix = contractPostfix
+                ContractPostfix = contractPostfix,
+                UseInternalClasses = useInternalClasses
             },
             (msg, severity) => output.WriteLine($"[{severity}] {msg}")
         );
         var content = generator.Generate(doc);
         
-        return Verify(content).UseParameters(path, contractPostfix, nameSpace);
+        return Verify(content).UseParameters(path, contractPostfix, nameSpace, useInternalClasses);
     }
-
+    
     
     [Theory]
     [InlineData("https://api.themeparks.wiki/docs/v1.yaml", "ThemeParksApi")]
