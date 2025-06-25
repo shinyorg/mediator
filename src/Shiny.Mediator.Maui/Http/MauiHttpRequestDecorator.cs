@@ -13,7 +13,7 @@ public class MauiHttpRequestDecorator(
     IGeolocation geolocation
 ) : IHttpRequestDecorator
 {
-    public async Task Decorate(HttpRequestMessage httpMessage, IMediatorContext context)
+    public async Task Decorate(HttpRequestMessage httpMessage, IMediatorContext context, CancellationToken cancellationToken)
     {
         httpMessage.Headers.Add("AppId", appInfo.PackageName);
         httpMessage.Headers.Add("AppVersion", appInfo.Version.ToString());

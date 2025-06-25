@@ -28,7 +28,7 @@ public class HttpRequestHandler<TRequest, TResult>(
         logger.LogDebug("Base URI: {BaseUri}", baseUri);
         
         var httpRequest = this.ContractToHttpRequest(request, http, baseUri);
-        await this.Decorate(context, httpRequest).ConfigureAwait(false);
+        await this.Decorate(context, httpRequest, cancellationToken).ConfigureAwait(false);
 
         var timeoutSeconds = configuration.GetValue("Mediator:Http:Timeout", 20);
         var result = await this
@@ -81,13 +81,13 @@ public class HttpRequestHandler<TRequest, TResult>(
     }
     
 
-    protected virtual async Task Decorate(IMediatorContext context, HttpRequestMessage httpRequest)
+    protected virtual async Task Decorate(IMediatorContext context, HttpRequestMessage httpRequest, CancellationToken cancellationToken)
     {
         foreach (var decorator in decorators)
         {
             logger.LogDebug("Decorating {Type}", decorator.GetType().Name);
             await decorator
-                .Decorate(httpRequest, context)
+                .Decorate(httpRequest, context, cancellationToken)
                 .ConfigureAwait(false);
         }
     }
