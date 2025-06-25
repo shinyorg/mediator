@@ -13,6 +13,7 @@
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" Visible="false" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Uri" Visible="false" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="UseInternalClasses" Visible="false" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPrefix" Visible="false" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPostfix" Visible="false" />
     </ItemGroup>
@@ -20,7 +21,13 @@
     <Target Name="_InjectShinyMediatorAdditionalFiles" 
             BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
         <ItemGroup>
-            <AdditionalFiles Include="@(MediatorHttp)" Namespace="%(MediatorHttp.Namespace)" SourceItemGroup="MediatorHttp" />
+            <AdditionalFiles Include="@(MediatorHttp)"
+                             Namespace="%(MediatorHttp.Namespace)"
+                             Uri="%(MediatorHttp.Uri)"
+                             AsInternalClasses="%(MediatorHttp.AsInternalClasses)"
+                             ContractPrefix="%(MediatorHttp.ContractPrefix)"
+                             ContractPostfix="%(MediatorHttp.ContractPostfix)"
+                             SourceItemGroup="MediatorHttp" />
         </ItemGroup>
     </Target>
 </Project>
