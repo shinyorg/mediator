@@ -182,6 +182,75 @@ public class UserHandler : IRequestHandler<GetUserRequest, UserResponse>, IComma
         var result = RunGeneratorAndGetFiles(source);
         return Verify(result);
     }
+    
+    
+    [Fact]
+    public Task MultipleHttpMethods_ExcludeFromDescription_Group()
+    {
+        var source = @"
+using Shiny.Mediator;
+using System.Threading;
+
+namespace Test;
+
+public record GetUserRequest(int Id) : IRequest<UserResponse>;
+public record UpdateUserCommand(int Id, string Name) : ICommand;
+public record DeleteUserCommand(int Id) : ICommand;
+public record UserResponse(string Name);
+
+[MediatorHttpGroup(""/users"", ExcludeFromDescription = true)]
+public class UserHandler : IRequestHandler<GetUserRequest, UserResponse>, ICommandHandler<UpdateUserCommand>, ICommandHandler<DeleteUserCommand>
+{
+    [MediatorHttpGet(""GetUser"", ""/{id}"")]
+    public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(new UserResponse(""Test""));
+
+    [MediatorHttpPut(""UpdateUser"", ""/{id}"")]
+    public Task Handle(UpdateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.CompletedTask;
+
+    [MediatorHttpDelete(""DeleteUser"", ""/{id}"")]
+    public Task Handle(DeleteUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.CompletedTask;
+}";
+
+        var result = RunGeneratorAndGetFiles(source);
+        return Verify(result);
+    }
+    
+    [Fact]
+    public Task MultipleHttpMethods_ExcludeFromDescription_Method()
+    {
+        var source = @"
+using Shiny.Mediator;
+using System.Threading;
+
+namespace Test;
+
+public record GetUserRequest(int Id) : IRequest<UserResponse>;
+public record UpdateUserCommand(int Id, string Name) : ICommand;
+public record DeleteUserCommand(int Id) : ICommand;
+public record UserResponse(string Name);
+
+[MediatorHttpGroup(""/users"")]
+public class UserHandler : IRequestHandler<GetUserRequest, UserResponse>, ICommandHandler<UpdateUserCommand>, ICommandHandler<DeleteUserCommand>
+{
+    [MediatorHttpGet(""GetUser"", ""/{id}"", ExcludeFromDescription = true)]
+    public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(new UserResponse(""Test""));
+
+    [MediatorHttpPut(""UpdateUser"", ""/{id}"")]
+    public Task Handle(UpdateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.CompletedTask;
+
+    [MediatorHttpDelete(""DeleteUser"", ""/{id}"", ExcludeFromDescription = true)]
+    public Task Handle(DeleteUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.CompletedTask;
+}";
+
+        var result = RunGeneratorAndGetFiles(source);
+        return Verify(result);
+    }
 
     [Fact]
     public Task AttributeProperties_GeneratesCorrectConfiguration()

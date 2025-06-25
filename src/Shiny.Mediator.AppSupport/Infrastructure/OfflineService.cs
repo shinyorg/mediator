@@ -3,10 +3,10 @@ namespace Shiny.Mediator.Infrastructure;
 
 public interface IOfflineService
 {
-    Task<string> Set(object request, object result);
-    Task<OfflineResult<TResult>?> Get<TResult>(object request);
-    Task Remove(string requestKey, bool partialMatch);
-    Task Clear();
+    Task<string> Set(object request, object result, CancellationToken cancellationToken);
+    Task<OfflineResult<TResult>?> Get<TResult>(object request, CancellationToken cancellationToken);
+    Task Remove(string requestKey, bool partialMatch, CancellationToken cancellationToken);
+    Task Clear(CancellationToken cancellationToken);
 }
 
 public record OfflineResult<TResult>(
@@ -23,7 +23,7 @@ public class OfflineService(
 {
     public const string Category = "Offline";
     
-    public async Task<string> Set(object request, object result)
+    public async Task<string> Set(object request, object result, CancellationToken cancellationToken)
     {
         var requestKey = ContractUtils.GetRequestKey(request);
         await storage
@@ -35,18 +35,19 @@ public class OfflineService(
                     requestKey,
                     timeProvider.GetUtcNow(),
                     serializer.Serialize(result)
-                )
+                ),
+                cancellationToken
             )
             .ConfigureAwait(false);
         
         return requestKey;
     }
 
-    public async Task<OfflineResult<TResult>?> Get<TResult>(object request)
+    public async Task<OfflineResult<TResult>?> Get<TResult>(object request, CancellationToken cancellationToken)
     {
         var requestKey = ContractUtils.GetRequestKey(request);
         var store = await storage
-            .Get<OfflineStore>(Category, requestKey)
+            .Get<OfflineStore>(Category, requestKey, cancellationToken)
             .ConfigureAwait(false);
         
         if (store == null)
@@ -56,10 +57,10 @@ public class OfflineService(
         return new OfflineResult<TResult>(store.RequestKey, store.Timestamp, obj);
     }
 
-    public Task Remove(string requestKey, bool partialMatch = false)
-        => storage.Remove(Category, requestKey, partialMatch);
+    public Task Remove(string requestKey, bool partialMatch = false, CancellationToken cancellationToken = default)
+        => storage.Remove(Category, requestKey, partialMatch, cancellationToken);
 
-    public Task Clear() => storage.Clear(Category);
+    public Task Clear(CancellationToken cancellationToken) => storage.Clear(Category, cancellationToken);
 
     string GetTypeKey(Type type) => $"{type.Namespace}.{type.Name}";
 }

@@ -13,7 +13,6 @@ public class MediatorHttpGroupAttribute(string prefix) : Attribute
     public string[]? Tags { get; set; }
     public string? Description { get; set; }
     public string? Summary { get; set; }
-    public bool UseOpenApi { get; set; } = true;
     public string? CachePolicy { get; set; }
     public string? CorsPolicy { get; set; }
     public bool ExcludeFromDescription { get; set; }
@@ -49,7 +48,6 @@ public class MediatorHttpAttribute(string operationId, string uriTemplate, HttpM
     public string[]? Tags { get; set; }
     public string? Description { get; set; }
     public string? Summary { get; set; }
-    public bool UseOpenApi { get; set; } = true;
     public string? CachePolicy { get; set; }
     public string? CorsPolicy { get; set; }
     public bool ExcludeFromDescription { get; set; }

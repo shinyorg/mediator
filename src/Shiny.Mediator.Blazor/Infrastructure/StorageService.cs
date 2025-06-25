@@ -11,19 +11,26 @@ public class StorageService(
     ISerializerService serializer
 ) : IStorageService
 {
-    public async Task Set<T>(string category, string key, T value)
+    public async Task Set<T>(string category, string key, T value, CancellationToken cancellationToken)
     {
         logger.LogInformation("Storing {Category}-{key}", category, key);
         var content = serializer.Serialize(value);
         var requestKey = $"{category}_{key}";
-        await jsruntime.InvokeVoidAsync("MediatorServices.setStore", requestKey, content);
+        await jsruntime
+            .InvokeVoidAsync(
+                "MediatorServices.setStore", 
+                cancellationToken, 
+                requestKey, 
+                content
+            );
     }
 
     
-    public async Task<T?> Get<T>(string category, string key)
+    public async Task<T?> Get<T>(string category, string key, CancellationToken cancellationToken)
     {
         var content = await jsruntime.InvokeAsync<string?>(
             "MediatorServices.getStore", 
+            cancellationToken,
             this.GetKey(category, key)
         );
         if (String.IsNullOrWhiteSpace(content))
@@ -33,16 +40,16 @@ public class StorageService(
         return obj;
     }
 
-    public async Task Remove(string category, string requestKey, bool partialMatchKey = false)
+    public async Task Remove(string category, string requestKey, bool partialMatchKey = false, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Evicting {Category}-{key}", category, requestKey);
-        await jsruntime.InvokeVoidAsync("MediatorServices.removeStore", this.GetKey(category, requestKey));
+        await jsruntime.InvokeVoidAsync("MediatorServices.removeStore", cancellationToken, this.GetKey(category, requestKey));
     }
 
     
-    public Task Clear(string category)
+    public async Task Clear(string category, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        await jsruntime.InvokeVoidAsync("MediatorServices.clearStore", cancellationToken);
     }
     
     

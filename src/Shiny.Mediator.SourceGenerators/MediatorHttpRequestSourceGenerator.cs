@@ -51,7 +51,13 @@ public class MediatorHttpRequestSourceGenerator : ISourceGenerator
         {
             Namespace = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.Namespace)) ?? rootNamespace,
             ContractPrefix = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.ContractPrefix)),
-            ContractPostfix = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.ContractPostfix))
+            ContractPostfix = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.ContractPostfix)),
+            GenerateModelsOnly = context
+                .GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.GenerateModelsOnly))?
+                .Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
+            UseInternalClasses = context
+                .GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.UseInternalClasses))?
+                .Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false
         };
         
         var uri = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.Uri));

@@ -16,9 +16,13 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
 {
     readonly StringBuilder typeBuilder = new();
     readonly StringBuilder contractBuilder = new();
+    string accessorType = "public";
     
     public string Generate(Stream stream)
     {
+        if (itemConfig.UseInternalClasses)
+            this.accessorType = "internal";
+        
         this.typeBuilder.Clear();
         this.contractBuilder.Clear();
         
@@ -42,9 +46,10 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         this.typeBuilder.AppendLine($"namespace {itemConfig.Namespace};");
         this.typeBuilder.AppendLine();
         
-        GenerateComponents(document);
-        GenerateContracts(document);
-
+        this.GenerateComponents(document);
+        if (!itemConfig.GenerateModelsOnly) 
+            this.GenerateContracts(document);
+        
         var result = this.typeBuilder.ToString() + this.contractBuilder.ToString();
         return result;
     }
@@ -83,7 +88,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                 this.contractBuilder
                     //.AppendLine(Constants.GeneratedCodeAttributeString)
                     .AppendLine($"[global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.{httpMethod}, \"{path.Key}\")]")
-                    .AppendLine($"public partial class {contractName} : global::Shiny.Mediator.Http.IHttpRequest<{responseType}>")
+                    .AppendLine($"{this.accessorType} partial class {contractName} : global::Shiny.Mediator.Http.IHttpRequest<{responseType}>")
                     .AppendLine("{");
                 
                 foreach (var parameter in op.Value.Parameters)
@@ -271,8 +276,8 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
 
         var sb = new StringBuilder();
         sb
-            .AppendLine(Constants.GeneratedCodeAttributeString)
-            .AppendLine($"public enum {enumName}")
+            //.AppendLine(Constants.GeneratedCodeAttributeString)
+            .AppendLine($"{this.accessorType} enum {enumName}")
             .AppendLine("{");
         
         foreach (var ev in schema.Enum.OfType<OpenApiString>())
@@ -294,7 +299,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         var sb = new StringBuilder();
         sb
             // .AppendLine(Constants.GeneratedCodeAttributeString)
-            .Append("public partial class " + className);
+            .Append($"{this.accessorType} partial class " + className);
 
         // TODO: this will be 2 when discriminators are present
         //if (schema.Value.AllOf.Count > 1)
@@ -346,7 +351,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                 // TODO: null when OneOf setup
                 // throw new InvalidOperationException("TypeName is null");
                 sb.AppendLine($"    [global::System.Text.Json.Serialization.JsonPropertyName(\"{prop.Key}\")]");
-                sb.AppendLine("    public " + typeName + " " + propertyName + " { get; set; }");
+                sb.AppendLine($"    public {typeName} {propertyName}"+ " { get; set; }");
                 sb.AppendLine();
                 output($"PROPERTY: {propertyName} ({typeName})", DiagnosticSeverity.Info);
             }

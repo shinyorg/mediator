@@ -31,7 +31,7 @@ public class HttpDirectRequestHandler(
         foreach (var header in request.Headers)
             httpRequest.Headers.Add(header.Key, header.Value);
 
-        await this.Decorate(context, httpRequest).ConfigureAwait(false);
+        await this.Decorate(context, httpRequest, cancellationToken).ConfigureAwait(false);
 
         var cts = new CancellationTokenSource();
         await using var _ = cancellationToken.Register(() => cts.Cancel());
@@ -95,13 +95,13 @@ public class HttpDirectRequestHandler(
     }
     
     
-    async Task Decorate(IMediatorContext context, HttpRequestMessage httpRequest)
+    async Task Decorate(IMediatorContext context, HttpRequestMessage httpRequest, CancellationToken cancellationToken)
     {
         foreach (var decorator in decorators)
         {
             logger.LogDebug("Decorating {Type}", decorator.GetType().Name);
             await decorator
-                .Decorate(httpRequest, context)
+                .Decorate(httpRequest, context, cancellationToken)
                 .ConfigureAwait(false);
         }
     }

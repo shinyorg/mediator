@@ -6,7 +6,7 @@ namespace Shiny.Mediator;
 
 public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) : ICacheService
 {
-    public Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> retrieveFunc, CacheItemConfig? config = null)
+    public Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> retrieveFunc, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
         => cache.GetOrCreateAsync(
             key, 
             async _ =>
@@ -27,7 +27,7 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
         );
     
 
-    public Task<CacheEntry<T>> Set<T>(string key, T value, CacheItemConfig? config = null)
+    public Task<CacheEntry<T>> Set<T>(string key, T value, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
     {
         // TODO: what if entry already exists?
         var entryValue = new CacheEntry<T>(key, value, timeProvider.GetUtcNow());
@@ -42,7 +42,7 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
     }
 
     
-    public Task<CacheEntry<T>?> Get<T>(string key)
+    public Task<CacheEntry<T>?> Get<T>(string key, CancellationToken cancellationToken)
     {
         if (cache.TryGetValue(key, out var result) && result is CacheEntry<T> entry)
             return Task.FromResult(entry)!;
@@ -51,7 +51,7 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
     }
 
 
-    public Task Remove(string requestKey, bool partialMatch = false)
+    public Task Remove(string requestKey, bool partialMatch = false, CancellationToken cancellationToken = default)
     {
         if (!partialMatch)
         {
@@ -70,7 +70,7 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
         return Task.CompletedTask;
     }
 
-    public Task Clear()
+    public Task Clear(CancellationToken cancellationToken)
     {
         cache.Clear();
         return Task.CompletedTask;

@@ -4,11 +4,11 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Tests.Mocks;
 
 
-public class MockOfflineService : IOfflineService
+public class MockOfflineService(TimeProvider timeProvider) : IOfflineService
 {
     readonly Dictionary<string, object> data = new();
     
-    public Task<string> Set(object request, object result)
+    public Task<string> Set(object request, object result, CancellationToken cancellationToken = default)
     {
         var key = ContractUtils.GetRequestKey(request);
         var json = JsonSerializer.Serialize(result);
@@ -16,13 +16,13 @@ public class MockOfflineService : IOfflineService
         this.data[key] = new OfflineStore(
             request.GetType().FullName,
             key,
-            DateTimeOffset.UtcNow,
+            timeProvider.GetUtcNow(),
             json
         );
         return Task.FromResult(key);
     }
 
-    public Task<OfflineResult<TResult>?> Get<TResult>(object request)
+    public Task<OfflineResult<TResult>?> Get<TResult>(object request, CancellationToken cancellationToken = default)
     {
         var key = ContractUtils.GetRequestKey(request);
         if (!this.data.ContainsKey(key))
@@ -34,12 +34,12 @@ public class MockOfflineService : IOfflineService
         return Task.FromResult(new OfflineResult<TResult>(key, store.Timestamp, obj));
     }
 
-    public Task Remove(string requestKey, bool partialMatch)
+    public Task Remove(string requestKey, bool partialMatch, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
 
-    public Task Clear()
+    public Task Clear(CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
