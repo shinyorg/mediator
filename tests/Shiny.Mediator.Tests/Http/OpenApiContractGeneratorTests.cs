@@ -16,11 +16,18 @@ public partial class CreateTeam : global::Shiny.Mediator.Http.IHttpRequest<globa
 public class OpenApiContractGeneratorTests(ITestOutputHelper output)
 {
     [Theory]
-    [InlineData("./Http/standard.json", "HttpRequest", "TestApi", false)]
-    [InlineData("./Http/standard.json", "HttpRequest", "TestApi", true)]
-    [InlineData("./Http/enums.json", null, "TestApi", false)]
-    [InlineData("./Http/validateresult.json", null, "TestApi", false)]
-    public Task Local_Tests(string path, string? contractPostfix, string nameSpace, bool useInternalClasses)
+    [InlineData("./Http/standard.json", "HttpRequest", "TestApi", false, false)]
+    [InlineData("./Http/standard.json", "HttpRequest", "TestApi", true, false)]
+    [InlineData("./Http/standard.json", "HttpRequest", "TestApi", false, true)]
+    [InlineData("./Http/enums.json", null, "TestApi", false, false)]
+    [InlineData("./Http/validateresult.json", null, "TestApi", false, false)]
+    public Task Local_Tests(
+        string path, 
+        string? contractPostfix, 
+        string nameSpace, 
+        bool useInternalClasses,
+        bool generateModelsOnly
+    )
     { 
         using var doc = File.OpenRead(path);
         var generator = new OpenApiContractGenerator(
@@ -28,13 +35,21 @@ public class OpenApiContractGeneratorTests(ITestOutputHelper output)
             {
                 Namespace = nameSpace,
                 ContractPostfix = contractPostfix,
-                UseInternalClasses = useInternalClasses
+                UseInternalClasses = useInternalClasses,
+                GenerateModelsOnly = generateModelsOnly
             },
             (msg, severity) => output.WriteLine($"[{severity}] {msg}")
         );
         var content = generator.Generate(doc);
         
-        return Verify(content).UseParameters(path, contractPostfix, nameSpace, useInternalClasses);
+        return Verify(content)
+            .UseParameters(
+                path, 
+                contractPostfix, 
+                nameSpace, 
+                useInternalClasses, 
+                generateModelsOnly
+            );
     }
     
     

@@ -46,9 +46,10 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         this.typeBuilder.AppendLine($"namespace {itemConfig.Namespace};");
         this.typeBuilder.AppendLine();
         
-        GenerateComponents(document);
-        GenerateContracts(document);
-
+        this.GenerateComponents(document);
+        if (!itemConfig.GenerateModelsOnly) 
+            this.GenerateContracts(document);
+        
         var result = this.typeBuilder.ToString() + this.contractBuilder.ToString();
         return result;
     }
