@@ -1,4 +1,4 @@
-<Project Sdk="Uno.Sdk/6.0.96">
+<Project Sdk="Uno.Sdk/6.0.130">
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <UnoSingleProject>true</UnoSingleProject>
