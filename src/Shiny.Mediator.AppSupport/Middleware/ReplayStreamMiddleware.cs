@@ -46,7 +46,8 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         
         if (section == null)
         {
-            enabled = ((IStreamRequestHandler<TRequest, TResult>)requestHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, ReplayStreamAttribute>() != null;
+            // TODO: move to mediatorcontext?
+            //enabled = ((IStreamRequestHandler<TRequest, TResult>)requestHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, ReplayStreamAttribute>() != null;
         }
         else
         {

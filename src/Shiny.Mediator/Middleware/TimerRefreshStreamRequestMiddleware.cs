@@ -35,12 +35,13 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
             }
             else
             {
-                var attribute = ((IStreamRequestHandler<TRequest, TResult>)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, TimerRefreshAttribute>();
-                if (attribute != null)
-                {
-                    interval = attribute.IntervalSeconds;
-                    logger.LogDebug("Timer setting found on attribute");
-                }
+                // TODO: remove attributes - mediatorcontext arg!
+                // var attribute = ((IStreamRequestHandler<TRequest, TResult>)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, TimerRefreshAttribute>();
+                // if (attribute != null)
+                // {
+                //     interval = attribute.IntervalSeconds;
+                //     logger.LogDebug("Timer setting found on attribute");
+                // }
             }
         }
 

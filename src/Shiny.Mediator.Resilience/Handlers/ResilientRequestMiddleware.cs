@@ -27,9 +27,10 @@ public class ResilientRequestMiddleware<TRequest, TResult>(
         }
         else
         {
-            var attribute = ((IRequestHandler<TRequest, TResult>)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, ResilientAttribute>();
-            if (attribute != null)
-                pipeline = pipelineProvider.GetPipeline(attribute.ConfigurationKey.ToLower());
+            // TODO: attribute replacement
+            // var attribute = ((IRequestHandler<TRequest, TResult>)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, ResilientAttribute>();
+            // if (attribute != null)
+            //     pipeline = pipelineProvider.GetPipeline(attribute.ConfigurationKey.ToLower());
         }
         if (pipeline == null)
             return await next().ConfigureAwait(false);

@@ -9,8 +9,8 @@ public class MainTheadEventMiddleware<TEvent> : IEventMiddleware<TEvent> where T
         CancellationToken cancellationToken
     )
     {
-        var attr = ((IEventHandler<TEvent>)context.MessageHandler).GetHandlerHandleMethodAttribute<TEvent, MainThreadAttribute>();
-
+        //var attr = ((IEventHandler<TEvent>)context.MessageHandler).GetHandlerHandleMethodAttribute<TEvent, MainThreadAttribute>();
+        Attribute attr = null; // TODO: attribute replace?
         if (attr == null)
         {
             await next().ConfigureAwait(false);

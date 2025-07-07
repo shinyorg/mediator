@@ -82,70 +82,70 @@ public static class Utils
     }
     
 
-    // TODO: AOT hated
-    public static TAttribute? GetHandlerHandleMethodAttribute<TCommand, TAttribute>(this ICommandHandler<TCommand> handler) 
-            where TAttribute : Attribute 
-            where TCommand : ICommand
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TCommand), typeof(IMediatorContext), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
-    
-    
-    // TODO: AOT hated
-    public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IRequestHandler<TRequest, TResult> handler) 
-            where TAttribute : Attribute
-            where TRequest : IRequest<TResult>
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TRequest), typeof(IMediatorContext), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
-    
-    
-    // TODO: AOT hated
-    public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IStreamRequestHandler<TRequest, TResult> handler) 
-        where TAttribute : Attribute
-        where TRequest : IStreamRequest<TResult>
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TRequest), typeof(IMediatorContext), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
-   
-   
-    // TODO: AOT hated
-    public static TAttribute? GetHandlerHandleMethodAttribute<TEvent, TAttribute>(this IEventHandler<TEvent> handler) 
-        where TEvent : IEvent
-        where TAttribute : Attribute
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TEvent), typeof(IMediatorContext), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
+    // // TODO: AOT hated
+    // public static TAttribute? GetHandlerHandleMethodAttribute<TCommand, TAttribute>(this ICommandHandler<TCommand> handler) 
+    //         where TAttribute : Attribute 
+    //         where TCommand : ICommand
+    //     => handler
+    //         .GetType()
+    //         .GetMethod(
+    //             "Handle", 
+    //             BindingFlags.Public | BindingFlags.Instance, 
+    //             null,
+    //             CallingConventions.Any,
+    //             [ typeof(TCommand), typeof(IMediatorContext), typeof(CancellationToken) ],
+    //             null
+    //         )!
+    //         .GetCustomAttribute<TAttribute>();
+    //
+    //
+    // // TODO: AOT hated
+    // public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IRequestHandler<TRequest, TResult> handler) 
+    //         where TAttribute : Attribute
+    //         where TRequest : IRequest<TResult>
+    //     => handler
+    //         .GetType()
+    //         .GetMethod(
+    //             "Handle", 
+    //             BindingFlags.Public | BindingFlags.Instance, 
+    //             null,
+    //             CallingConventions.Any,
+    //             [ typeof(TRequest), typeof(IMediatorContext), typeof(CancellationToken) ],
+    //             null
+    //         )!
+    //         .GetCustomAttribute<TAttribute>();
+    //
+    //
+    // // TODO: AOT hated
+    // public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IStreamRequestHandler<TRequest, TResult> handler) 
+    //     where TAttribute : Attribute
+    //     where TRequest : IStreamRequest<TResult>
+    //     => handler
+    //         .GetType()
+    //         .GetMethod(
+    //             "Handle", 
+    //             BindingFlags.Public | BindingFlags.Instance, 
+    //             null,
+    //             CallingConventions.Any,
+    //             [ typeof(TRequest), typeof(IMediatorContext), typeof(CancellationToken) ],
+    //             null
+    //         )!
+    //         .GetCustomAttribute<TAttribute>();
+    //
+    //
+    // // TODO: AOT hated
+    // public static TAttribute? GetHandlerHandleMethodAttribute<TEvent, TAttribute>(this IEventHandler<TEvent> handler) 
+    //     where TEvent : IEvent
+    //     where TAttribute : Attribute
+    //     => handler
+    //         .GetType()
+    //         .GetMethod(
+    //             "Handle", 
+    //             BindingFlags.Public | BindingFlags.Instance, 
+    //             null,
+    //             CallingConventions.Any,
+    //             [ typeof(TEvent), typeof(IMediatorContext), typeof(CancellationToken) ],
+    //             null
+    //         )!
+    //         .GetCustomAttribute<TAttribute>();
 }

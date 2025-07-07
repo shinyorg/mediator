@@ -73,7 +73,8 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         var section = configuration.GetHandlerSection("Offline", request!, requestHandler);
         if (section == null)
         {
-            enabled = ((IRequestHandler<TRequest, TResult>)requestHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, OfflineAvailableAttribute>() != null;
+            // TODO: move to mediatorcontext?
+            // enabled = ((IRequestHandler<TRequest, TResult>)requestHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, OfflineAvailableAttribute>() != null;
         }
         else
         {

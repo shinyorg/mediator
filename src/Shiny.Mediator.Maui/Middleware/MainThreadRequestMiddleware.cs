@@ -13,7 +13,8 @@ public class MainThreadRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        var attr = ((IRequestHandler<TRequest, TResult>)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, MainThreadAttribute>();
+        // var attr = ((IRequestHandler<TRequest, TResult>)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, MainThreadAttribute>();
+        Attribute attr = null; // TODO: attribute replace?
         if (attr == null)
             return next();
 

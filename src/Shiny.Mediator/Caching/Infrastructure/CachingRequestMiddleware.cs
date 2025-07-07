@@ -77,11 +77,6 @@ public class CachingRequestMiddleware<TRequest, TResult>(
             return FromSeconds(absoluteExpirationSeconds, slidingExpirationSeconds);
         }
         
-        // handler attribute #3
-        var attribute = ((IRequestHandler<TRequest, TResult>)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, CacheAttribute>();
-        if (attribute != null)
-            return FromSeconds(attribute.AbsoluteExpirationSeconds, attribute.SlidingExpirationSeconds);
-
         return null;
     }
 

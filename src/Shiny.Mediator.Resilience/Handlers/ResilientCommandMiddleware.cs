@@ -27,9 +27,10 @@ public class ResilientCommandMiddleware<TCommand>(
         }
         else
         {
-            var attribute = ((ICommandHandler<TCommand>)context.MessageHandler).GetHandlerHandleMethodAttribute<TCommand, ResilientAttribute>();
-            if (attribute != null)
-                pipeline = pipelineProvider.GetPipeline(attribute.ConfigurationKey.ToLower());
+            // TODO: attribute replacement
+            // var attribute = ((ICommandHandler<TCommand>)context.MessageHandler).GetHandlerHandleMethodAttribute<TCommand, ResilientAttribute>();
+            // if (attribute != null)
+            //     pipeline = pipelineProvider.GetPipeline(attribute.ConfigurationKey.ToLower());
         }
 
         if (pipeline == null)
