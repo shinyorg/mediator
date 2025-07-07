@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Shiny.Mediator.SourceGenerators": {
+      "commandName": "Project"
+    },
+    "Profile 1": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\..\\..\\..\\src\\UnoApp\\UnoApp\\UnoApp.csproj"
+    }
+  }
+}
