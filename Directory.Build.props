@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="src/Directory.build.props" />
+  
+  <!-- Override parent CPM settings to use local configuration -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>
