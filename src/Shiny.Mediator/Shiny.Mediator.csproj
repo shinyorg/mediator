@@ -42,11 +42,13 @@
     <ItemGroup>
         <None Include="..\Shiny.Mediator.SourceGenerators\SourceGenerators.targets" 
               Pack="True" 
-              PackagePath="build/Shiny.Mediator.SourceGenerators.targets" />
+              PackagePath="build/Shiny.Mediator.SourceGenerators.targets" 
+              Visible="false" />
 
         <None Include="..\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"
               Pack="True"
-              PackagePath="buildTransitive/Shiny.Mediator.SourceGenerators.targets" />
+              PackagePath="buildTransitive/Shiny.Mediator.SourceGenerators.targets"
+              Visible="false" />
         
         <None Include="$(SourceGenBinDir)\Shiny.Mediator.SourceGenerators.dll" 
               Pack="true" 

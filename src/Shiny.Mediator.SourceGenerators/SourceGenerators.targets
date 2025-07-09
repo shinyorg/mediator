@@ -15,7 +15,7 @@
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPostfix" Visible="false" />
     </ItemGroup>
 
-    <Target Name="_InjectAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
+    <Target Name="_InjectShinyMediatorAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
         <ItemGroup>
             <AdditionalFiles Include="@(MediatorHttp)" 
                              Namespace="%(MediatorHttp.Namespace)" 
