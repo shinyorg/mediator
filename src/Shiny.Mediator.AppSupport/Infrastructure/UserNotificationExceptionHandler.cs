@@ -13,9 +13,17 @@ public class UserNotificationExceptionHandler(
 {
     public Task<bool> Handle(IMediatorContext context, Exception exception)
     {
+        // If this is a child context, we do not handle it with user notifications
+        if (context.Parent != null)
+            return Task.FromResult(false);
+        
         var msgType = context.Message.GetType();
         var handled = false;
-        var section = configuration.GetHandlerSection("UserErrorNotifications", context.Message, context.MessageHandler);
+        var section = configuration.GetHandlerSection(
+            "UserErrorNotifications", 
+            context.Message, 
+            context.MessageHandler
+        );
         
         if (section != null)
         {
