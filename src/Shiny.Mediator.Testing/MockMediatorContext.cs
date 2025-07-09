@@ -18,6 +18,7 @@ public class MockMediatorContext : IMediatorContext
     public void RemoveHeader(string key) => this.settableHeaders.Remove(key);
     public void ClearHeaders() => this.settableHeaders.Clear();
 
+    public Exception? Exception { get; set; }
     public IMediatorContext? Parent { get; }
     public IReadOnlyList<IMediatorContext> ChildContexts { get; }
     public DateTimeOffset CreatedAt { get; }
