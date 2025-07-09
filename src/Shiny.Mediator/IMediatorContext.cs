@@ -18,6 +18,12 @@ public interface IMediatorContext
     IServiceScope ServiceScope { get; }
     
     /// <summary>
+    /// If an exception was thrown during the request, this will be populated
+    /// It does not mean the exception was handled, just that it was thrown
+    /// </summary>
+    Exception? Exception { get; }
+    
+    /// <summary>
     /// Assigned activity source for observability
     /// </summary>
     Activity? Activity { get; }
@@ -173,6 +179,7 @@ class MediatorContext(
     public Activity? Activity { get; private set; } = activity;
     public object Message => message;
     public object? MessageHandler { get; set; }
+    public Exception? Exception { get; set; }
     
     Dictionary<string, object> store = new();
     public IReadOnlyDictionary<string, object> Headers => this.store.ToDictionary();

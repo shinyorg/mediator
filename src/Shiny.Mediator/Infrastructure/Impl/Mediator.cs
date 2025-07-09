@@ -128,6 +128,8 @@ public class Mediator(
         }
         catch (Exception exception)
         {
+            context.Exception = exception;
+            
             var handled = await this.TryHandle(context, exception).ConfigureAwait(false);
             if (!handled)
                 throw;
@@ -140,8 +142,10 @@ public class Mediator(
         => eventExecutor.Subscribe(action);
 
 
-    async Task<bool> TryHandle(IMediatorContext context, Exception exception)
+    async Task<bool> TryHandle(MediatorContext context, Exception exception)
     {
+        context.Exception = exception;
+        
         if (context.BypassExceptionHandlingEnabled)
             return false;
 
