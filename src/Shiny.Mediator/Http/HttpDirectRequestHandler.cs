@@ -77,13 +77,11 @@ public class HttpDirectRequestHandler(
                 var baseUrl = configuration.GetValue<string>("Mediator:Http:Direct:BaseUrl");
                 if (baseUrl != null)
                 {
-                    if (baseUrl.EndsWith("/"))
-                        baseUrl = baseUrl.TrimEnd('/');
-
-                    if (!routeName.StartsWith("/"))
-                        routeName = "/" + routeName;
-                    
-                    url = (baseUrl + routeName);
+                    url = baseUrl.TrimEnd('/');
+                    if (routeName.StartsWith('/'))
+                        url += routeName;
+                    else
+                        url = $"{baseUrl}/{routeName}";
                 }
             }
         } 
