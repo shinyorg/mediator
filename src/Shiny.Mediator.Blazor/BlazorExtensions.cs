@@ -40,13 +40,14 @@ public static class BlazorExtensions
     /// <returns></returns>
     public static ShinyMediatorBuilder UseBlazor(this ShinyMediatorBuilder cfg, bool includeStandardMiddleware = true)
     {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")))
+            throw new InvalidOperationException("Only supported in Blazor WebAssembly");
+        
         cfg.Services.AddSingletonAsImplementedInterfaces<BlazorEventCollector>();
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")))
-        {
-            cfg.AddBlazorInfrastructure();
-            if (includeStandardMiddleware)
-                cfg.AddStandardAppSupportMiddleware();
-        }
+        cfg.AddBlazorInfrastructure();
+        if (includeStandardMiddleware)
+            cfg.AddStandardAppSupportMiddleware();
+
         return cfg;
     }
 
