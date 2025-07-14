@@ -177,7 +177,7 @@ public class Mediator(
 
                 if (handled)
                 {
-                    logger.LogDebug(exception, "Exception handled by {HandlerType}", handlerType);
+                    logger.LogWarning(exception, "Exception handled by {HandlerType}", handlerType);
                     break;
                 }
             }
