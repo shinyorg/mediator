@@ -6,6 +6,7 @@ public class MockMediatorContext : IMediatorContext
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public IServiceScope ServiceScope { get; set; }
+    public Exception? Exception { get; set; }
     public Activity Activity { get; set; } = new("MockActivity");
     public object Message { get; set; }
     public object? MessageHandler { get; set; }
