@@ -9,6 +9,8 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
 {
+    // turn on error trapping for ALL message handlers and cultures - this is turned off to show how to specifically pick handlers which is a better design model anyhow
+    // { "Mediator:UserErrorNotifications:*:*:Message", "UserErrorNotification is emitting this message" }
     { "Mediator:UserErrorNotifications:Sample.Blazor.Handlers.SafeErrorCommand:*:Message", "UserErrorNotification is emitting this message" },
     { "Mediator:UserErrorNotifications:Sample.Blazor.Handlers.SafeErrorCommand:fr-CA:Message", "UserErrorNotification is emitting this message for French Users" },
 }!);
