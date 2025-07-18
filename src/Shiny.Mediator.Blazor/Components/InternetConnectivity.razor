@@ -1,0 +1,29 @@
+@using Shiny.Mediator.Infrastructure
+@implements IDisposable
+@inject IMediator Mediator
+@inject IInternetService Internet
+@if (!Internet.IsAvailable && !String.IsNullOrWhiteSpace(NoInternetMessage))
+{
+    @NoInternetMessage
+}
+
+@code {
+    [Parameter] public string? NoInternetMessage { get; set; }
+    
+    
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Internet.StateChanged += OnInternetStateChanged;
+    }
+
+    async void OnInternetStateChanged(object? sender, bool e)
+    {
+        await Mediator.Publish(new ConnectivityChanged(Internet.IsAvailable));
+    }
+
+    public void Dispose()
+    {
+        Internet.StateChanged -= OnInternetStateChanged;
+    }
+}
