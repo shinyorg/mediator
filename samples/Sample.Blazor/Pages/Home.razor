@@ -3,70 +3,103 @@
 @using Sample.Blazor.Handlers
 @using Shiny.Mediator
 @using Shiny.Mediator.Infrastructure
-@inject IInternetService internet
-@inject IMediator mediator
+@inject IInternetService Internet
+@inject IMediator Mediator
 @implements IEventHandler<Sample.Blazor.Contracts.TheThing> 
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Shiny Mediator Tests</PageTitle>
 
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
-
-<input type="text" @bind-value="this.text" />
+<input type="text" @bind-value="text" />
 <button @onclick="TestSend">Test Send</button>
-@if (this.resultText != null)
-{
-    <br />
-    <text>Result from Mediator: @this.resultText</text>
-}
-@if (this.eventText != null)
-{
-    <br />
-    <text>Event from Mediator: @this.eventText</text>
-}
-@if (this.offlineText != null)
-{
-    <br />
-    <text>Value is from Offline: @this.offlineText</text>
-}
-
 <button @onclick="() => TestExceptionHandling(false)">No Exception Handling</button>
 <button @onclick="() => TestExceptionHandling(true)">Test Exception Handling</button>
+
+@if (resultText != null)
+{
+    <br />
+    <text>Result from Mediator: @resultText</text>
+}
+@if (eventText != null)
+{
+    <br />
+    <text>Event from Mediator: @eventText</text>
+}
+@if (offlineText != null)
+{
+    <br />
+    <text>Value is from Offline: @offlineText</text>
+}
+@if (!hasInternet)
+{
+    <br />
+    <span style="color: red;">No Internet Connection</span>
+}
 
 @code {
     string? text;
     string? resultText;
     string? eventText;
     string? offlineText;
+    bool hasInternet = false;
 
-    Task TestExceptionHandling(bool handleIt) => mediator.Send(new ErrorCommand(handleIt));
+    protected override void OnInitialized()
+    {
+        hasInternet = Internet.IsAvailable;
+        Internet.StateChanged += async (sender, flag) =>
+        {
+            hasInternet = flag;
+            await InvokeAsync(StateHasChanged);
+        };
+        base.OnInitialized();
+    }
+
+    void Clear()
+    {
+        eventText = null;
+        resultText = null;
+        offlineText = null;
+    }
     
+    async Task TestExceptionHandling(bool handle)
+    {
+        Clear();
+        if (handle)
+        {
+            var context = await Mediator.Send(new SafeErrorCommand());
+            resultText = $"Your handler crashed with '{context.Exception}', but Mediator UserErrorNotification caught it - you should also see an alert";
+        }
+        else
+        {
+            await Mediator.Send(new ErrorCommand());
+            resultText = "You will never reach this line";
+        }
+    }
+
     async Task TestSend()
     {
-        this.eventText = null;
-        this.offlineText = null;
-        this.resultText = null;
+        Clear();
 
         try
         {
-            var response = await mediator.Request(new DoThing(this.text ?? "No Text Sent"));
-            this.resultText = response.Result.ToString();
-            var off = response.Context.Offline();
+            var result = await Mediator.Request(new DoThing(text ?? "No Text Sent"));
+            resultText = $"Content: {result.Result} - Exception - {result.Context.Exception}";
+            
+            resultText = result.Result.ToString();
+            var off = result.Context.Offline();
             if (off != null)
-                this.offlineText = $"Data From: {off.Timestamp.ToLocalTime():h:mm:ss tt} - Key: {off.RequestKey}";
+                offlineText = $"Data From: {off.Timestamp.ToLocalTime():h:mm:ss tt} - Key: {off.RequestKey}";
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
         }
-        this.text = null;
+        text = null;
     }
 
     public Task Handle(TheThing @event, IMediatorContext context, CancellationToken cancellationToken)
     {
         Console.WriteLine("Received TheThing");
-        this.eventText = @event.Text;
+        eventText = @event.Text;
         return Task.CompletedTask;
     }
 }

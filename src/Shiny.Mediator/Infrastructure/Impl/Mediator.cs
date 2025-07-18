@@ -1,10 +1,12 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
 public class Mediator(
+    ILogger<Mediator> logger,
     IServiceProvider services,
     IRequestExecutor requestExecutor, 
     IStreamRequestExecutor streamRequestExecutor,
@@ -36,6 +38,7 @@ public class Mediator(
 
             if (result is IEvent @event)
             {
+                logger.LogDebug("Event Returned by Request - Publishing: {EventType}", @event.GetType().FullName);
                 var child = context.CreateChild(@event);
                 await eventExecutor
                     .Publish(child, @event, true, cancellationToken)
@@ -128,6 +131,8 @@ public class Mediator(
         }
         catch (Exception exception)
         {
+            context.Exception = exception;
+            
             var handled = await this.TryHandle(context, exception).ConfigureAwait(false);
             if (!handled)
                 throw;
@@ -140,28 +145,48 @@ public class Mediator(
         => eventExecutor.Subscribe(action);
 
 
-    async Task<bool> TryHandle(IMediatorContext context, Exception exception)
+    async Task<bool> TryHandle(MediatorContext context, Exception exception)
     {
-        if (context.BypassExceptionHandlingEnabled)
-            return false;
-
-        var exceptionHandlers = context
-            .ServiceScope
-            .ServiceProvider
-            .GetServices<IExceptionHandler>();
+        context.Exception = exception;
         
-        var handled = false;
-        foreach (var eh in exceptionHandlers)
+        if (context.BypassExceptionHandlingEnabled)
         {
-            handled = await eh
-                .Handle(
-                    context,
-                    exception
-                )
-                .ConfigureAwait(false);
+            logger.LogDebug("Bypassing exception handling is enabled");
+            return false;
+        }
 
-            if (handled)
-                break;
+        var handled = false;
+        using (context.StartActivity("Starting Exception Handling"))
+        {
+            var exceptionHandlers = context
+                .ServiceScope
+                .ServiceProvider
+                .GetServices<IExceptionHandler>();
+            
+            foreach (var eh in exceptionHandlers)
+            {
+                var handlerType = eh.GetType().FullName ?? "Unknown";
+                logger.LogDebug("Trying to handle exception with {HandlerType}", handlerType);
+                
+                handled = await eh
+                    .Handle(
+                        context,
+                        exception
+                    )
+                    .ConfigureAwait(false);
+
+                if (handled)
+                {
+                    logger.LogWarning(exception, "Exception handled by {HandlerType}", handlerType);
+                    break;
+                }
+            }
+        }
+
+        if (!handled)
+        {
+            // we log as debug to let the exception bubble all the way out for the final app layers to decide the fate
+            logger.LogDebug(exception, "No exception handlers managed the exception");
         }
 
         return handled;

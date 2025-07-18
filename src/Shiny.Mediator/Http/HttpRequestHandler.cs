@@ -127,8 +127,12 @@ public class HttpRequestHandler<TRequest, TResult>(
         //         
         //     }
         // }
+        var uri = baseUri.TrimEnd('/');
+        if (attribute.Route.StartsWith('/'))
+            uri += attribute.Route;
+        else
+            uri = $"{uri}/{attribute.Route}";
         
-        var uri = baseUri + attribute.Route;
         foreach (var property in properties)
         {
             var parameter = property.GetCustomAttribute<HttpParameterAttribute>();

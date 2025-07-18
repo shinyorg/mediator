@@ -13,7 +13,7 @@ public class ConnectivityBroadcaster(
 {
     bool connected = false;
     
-    public async void Initialize(IServiceProvider services)
+    public void Initialize(IServiceProvider services)
     {
         this.connected = internetService.IsAvailable;
         
@@ -91,6 +91,3 @@ public class ConnectivityBroadcaster(
         }
     }
 }
-
-public record ConnectivityChanged(bool Connected) : IEvent;
-public interface IConnectivityEventHandler : IEventHandler<ConnectivityChanged>;

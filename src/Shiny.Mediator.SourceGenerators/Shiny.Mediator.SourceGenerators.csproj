@@ -25,7 +25,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="SourceGenerators.targets" Pack="True" PackagePath="build/$(AssemblyName).targets" />
         <None Update="SourceGenerators.targets" Pack="True" PackagePath="buildTransitive/$(AssemblyName).targets" />
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
