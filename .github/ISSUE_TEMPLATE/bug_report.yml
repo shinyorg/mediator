@@ -3,6 +3,15 @@ description: You have found something wrong with Shiny Mediator
 title: "[Bug]: "
 labels: [bug, unverified]
 body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: What platform is this for?
+      description: You may select more than one
+      options:
+        - .NET MAUI
+        - ASP.NET
+        - Other
   - type: textarea
     validations:
       required: true
