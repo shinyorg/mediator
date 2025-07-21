@@ -2,12 +2,13 @@
 @using Sample.Blazor.Contracts
 @using Sample.Blazor.Handlers
 @using Shiny.Mediator
-@using Shiny.Mediator.Infrastructure
-@inject IInternetService Internet
+@using Shiny.Mediator.Blazor.Components
 @inject IMediator Mediator
 @implements IEventHandler<Sample.Blazor.Contracts.TheThing> 
+@implements IConnectivityEventHandler
 
 <PageTitle>Shiny Mediator Tests</PageTitle>
+<b><InternetConnectivity NoInternetMessage="There is no internet"/></b>
 
 <input type="text" @bind-value="text" />
 <button @onclick="TestSend">Test Send</button>
@@ -29,29 +30,12 @@
     <br />
     <text>Value is from Offline: @offlineText</text>
 }
-@if (!hasInternet)
-{
-    <br />
-    <span style="color: red;">No Internet Connection</span>
-}
 
 @code {
     string? text;
     string? resultText;
     string? eventText;
     string? offlineText;
-    bool hasInternet = false;
-
-    protected override void OnInitialized()
-    {
-        hasInternet = Internet.IsAvailable;
-        Internet.StateChanged += async (sender, flag) =>
-        {
-            hasInternet = flag;
-            await InvokeAsync(StateHasChanged);
-        };
-        base.OnInitialized();
-    }
 
     void Clear()
     {
@@ -100,6 +84,13 @@
     {
         Console.WriteLine("Received TheThing");
         eventText = @event.Text;
+        return Task.CompletedTask;
+    }
+
+    
+    public Task Handle(ConnectivityChanged @event, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        Console.WriteLine("Internet Status Changed: " + @event.Connected);
         return Task.CompletedTask;
     }
 }
