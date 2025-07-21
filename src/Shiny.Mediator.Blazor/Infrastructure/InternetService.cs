@@ -4,10 +4,20 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Blazor.Infrastructure;
 
 
-public class InternetService(IJSRuntime jsruntime) : IInternetService, IDisposable
+public class InternetService : IInternetService, IDisposable
 {
+    readonly IJSInProcessRuntime jsRuntime;
+    
+    public InternetService(IJSRuntime jsRuntime)
+    {
+        this.jsRuntime = (JSInProcessRuntime)jsRuntime;
+        
+        this.dotNetRef = DotNetObjectReference.Create(this);
+        this.jsRuntime.InvokeVoid("MediatorServices.subscribe", this.dotNetRef);
+    }
+    
     public event EventHandler<bool>? StateChanged;
-    public bool IsAvailable => ((IJSInProcessRuntime)jsruntime).Invoke<bool>("MediatorServices.isOnline");
+    public bool IsAvailable => this.jsRuntime.Invoke<bool>("MediatorServices.isOnline");
 
 
     [JSInvokable("MediatorServices.OnStatusChanged")]
@@ -25,12 +35,6 @@ public class InternetService(IJSRuntime jsruntime) : IInternetService, IDisposab
     {
         if (this.IsAvailable)
             return;
-        
-        if (this.dotNetRef == null)
-        {
-            this.dotNetRef = DotNetObjectReference.Create(this);
-            ((IJSInProcessRuntime)jsruntime).InvokeVoid("MediatorServices.subscribe", this.dotNetRef);
-        }
 
         try
         {
@@ -45,5 +49,5 @@ public class InternetService(IJSRuntime jsruntime) : IInternetService, IDisposab
     }
 
 
-    public void Dispose() => ((IJSInProcessRuntime)jsruntime).InvokeVoid("MediatorServices.unsubscribe");
+    public void Dispose() => this.jsRuntime.InvokeVoid("MediatorServices.unsubscribe");
 }
