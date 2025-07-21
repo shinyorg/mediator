@@ -32,7 +32,7 @@ public class HttpRequestHandler<TRequest, TResult>(
 
         var timeoutSeconds = configuration.GetValue("Mediator:Http:Timeout", 20);
         var result = await this
-            .Send(httpRequest, TimeSpan.FromSeconds(timeoutSeconds), cancellationToken)
+            .Send(context, httpRequest, TimeSpan.FromSeconds(timeoutSeconds), cancellationToken)
             .ConfigureAwait(false);
         
         return result;
