@@ -40,14 +40,17 @@ public static class BlazorExtensions
     /// <returns></returns>
     public static ShinyMediatorBuilder UseBlazor(this ShinyMediatorBuilder cfg, bool includeStandardMiddleware = true)
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")))
-            throw new InvalidOperationException("Only supported in Blazor WebAssembly");
-        
+        // this will work for MAUI and Blazor WASM
         cfg.Services.AddSingletonAsImplementedInterfaces<BlazorEventCollector>();
-        cfg.AddBlazorInfrastructure();
-        if (includeStandardMiddleware)
-            cfg.AddStandardAppSupportMiddleware();
 
+        if (OperatingSystem.IsBrowser())
+        {
+            // these should only be used in Blazor WASM
+            // If hybrid, then these will be provided by the platform
+            cfg.AddBlazorInfrastructure();
+            if (includeStandardMiddleware)
+                cfg.AddStandardAppSupportMiddleware();
+        }
         return cfg;
     }
 
