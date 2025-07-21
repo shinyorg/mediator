@@ -41,6 +41,8 @@ public class HttpDirectRequestHandler(
         var httpResponse = await httpClient
             .SendAsync(httpRequest, cts.Token)
             .ConfigureAwait(false);
+        
+        context.SetHttp(httpRequest, httpResponse);
 
         await this.WriteDebugIfEnable(httpRequest, httpResponse, cancellationToken).ConfigureAwait(false);
         httpResponse.EnsureSuccessStatusCode();

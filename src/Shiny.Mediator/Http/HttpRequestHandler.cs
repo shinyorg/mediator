@@ -39,7 +39,12 @@ public class HttpRequestHandler<TRequest, TResult>(
     }
     
 
-    protected virtual async Task<TResult> Send(HttpRequestMessage httpRequest, TimeSpan timeout, CancellationToken cancellationToken)
+    protected virtual async Task<TResult> Send(
+        IMediatorContext context,
+        HttpRequestMessage httpRequest, 
+        TimeSpan timeout, 
+        CancellationToken cancellationToken
+    )
     {
         using var cts = new CancellationTokenSource();
         cts.CancelAfter(timeout);
@@ -55,7 +60,8 @@ public class HttpRequestHandler<TRequest, TResult>(
             await this
                 .WriteDebugIfEnable(httpRequest, response, cts.Token)
                 .ConfigureAwait(false);
-            
+
+            context.SetHttp(httpRequest, response);
             response.EnsureSuccessStatusCode();
 
             if (typeof(TResult) == typeof(HttpResponseMessage))
