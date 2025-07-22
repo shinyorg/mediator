@@ -7,17 +7,9 @@
     @ChildContent
 }
 
-<script>
-    window.addEventListener("online", function() {
-        alert('You are now online');
-    });
-    window.addEventListener("offline", function() {
-        alert('You are now offline');
-    });
-</script>
-
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool BroadcastEvent { get; set; } = true;
     
     protected override void OnInitialized()
     {
@@ -28,7 +20,8 @@
     async void OnInternetStateChanged(object? sender, bool e)
     {
         await InvokeAsync(StateHasChanged);
-        await Mediator.Publish(new ConnectivityChanged(Internet.IsAvailable));
+        if (BroadcastEvent)
+            await Mediator.Publish(new ConnectivityChanged(Internet.IsAvailable));
     }
 
     public void Dispose()

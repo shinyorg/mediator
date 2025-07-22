@@ -8,9 +8,9 @@
 @implements IConnectivityEventHandler
 
 <PageTitle>Shiny Mediator Tests</PageTitle>
-<InternetConnectivity>
+<MediatorInternetConnectivity BroadcastEvent="true">
     <b>You have no internet dude</b>
-</InternetConnectivity>
+</MediatorInternetConnectivity>
 
 <input type="text" @bind-value="text" />
 <button @onclick="TestSend">Test Send</button>
