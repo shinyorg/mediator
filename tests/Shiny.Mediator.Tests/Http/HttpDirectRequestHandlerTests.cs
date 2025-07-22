@@ -8,7 +8,7 @@ namespace Shiny.Mediator.Tests.Http;
 
 public class HttpDirectRequestHandlerTests(ITestOutputHelper output)
 {
-    [Theory]
+    [Theory(Skip = "Picking up timed headers - needs scrubbing")]
     [InlineData(
         "Mediator:Http:Direct:Test:Url", 
         "https://api.themeparks.wiki/v1/entity/66f5d97a-a530-40bf-a712-a6317c96b06d", 

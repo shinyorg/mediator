@@ -39,6 +39,7 @@ public static class RegistrationExtensions
         services.TryAddSingleton<IStreamRequestExecutor, StreamRequestExecutor>();
         services.TryAddSingleton<ICommandExecutor, CommandExecutor>();
         services.TryAddSingleton<IEventExecutor, EventExecutor>();
+        services.TryAddSingleton<IContractKeyProvider, DefaultContractKeyProvider>();
         services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();
         services.TryAddSingleton(TimeProvider.System);
         return services;

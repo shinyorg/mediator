@@ -1,3 +1,5 @@
+using Shiny.Mediator.Infrastructure.Impl;
+
 namespace Shiny.Mediator.Tests;
 
 public class RequestKeyTests
@@ -6,10 +8,9 @@ public class RequestKeyTests
     [InlineData("First1", null, "Shiny.Mediator.Tests.TestKeyCommand_FirstName_First1")]
     [InlineData("First2", "Last", "Shiny.Mediator.Tests.TestKeyCommand_FirstName_First2_LastName_Last")]
     public void ReflectKeyTests(string firstName, string? lastName, string expectedKey)
-        => new TestKeyCommand(firstName, lastName).GetKey().ShouldBe(expectedKey);
+        => new DefaultContractKeyProvider()
+            .GetContractKey(new TestKeyCommand(firstName, lastName))
+            .ShouldBe(expectedKey);
 }
 
-public record TestKeyCommand(string FirstName, string? LastName) : ICommand, IRequestKey
-{
-    public string GetKey() => this.ReflectKey();
-}
+public record TestKeyCommand(string FirstName, string? LastName) : ICommand;

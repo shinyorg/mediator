@@ -8,7 +8,8 @@ namespace Shiny.Mediator.Caching.Infrastructure;
 public class CachingRequestMiddleware<TRequest, TResult>(
     ILogger<CachingRequestMiddleware<TRequest, TResult>> logger,
     IConfiguration configuration,
-    ICacheService cacheService
+    ICacheService cacheService,
+    IContractKeyProvider contractKeyProvider
 ) 
 : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
@@ -18,7 +19,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        var cacheKey = ContractUtils.GetRequestKey(context.Message!);
+        var cacheKey = contractKeyProvider.GetContractKey(context.Message!);
         // TODO: ensure wait if key is already being requested, if item was just put in cache, don't force a flush even if one is requested?
         
         var config = this.GetItemConfig(context, (TRequest)context.Message);

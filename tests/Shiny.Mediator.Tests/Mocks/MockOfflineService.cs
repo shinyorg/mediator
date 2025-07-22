@@ -4,13 +4,13 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Tests.Mocks;
 
 
-public class MockOfflineService(TimeProvider timeProvider) : IOfflineService
+public class MockOfflineService(TimeProvider timeProvider, IContractKeyProvider contractKeyProvider) : IOfflineService
 {
     readonly Dictionary<string, object> data = new();
     
     public Task<string> Set(object request, object result, CancellationToken cancellationToken = default)
     {
-        var key = ContractUtils.GetRequestKey(request);
+        var key = contractKeyProvider.GetContractKey(request);
         var json = JsonSerializer.Serialize(result);
         
         this.data[key] = new OfflineStore(
@@ -24,7 +24,7 @@ public class MockOfflineService(TimeProvider timeProvider) : IOfflineService
 
     public Task<OfflineResult<TResult>?> Get<TResult>(object request, CancellationToken cancellationToken = default)
     {
-        var key = ContractUtils.GetRequestKey(request);
+        var key = contractKeyProvider.GetContractKey(request);
         if (!this.data.ContainsKey(key))
             return null;
 
