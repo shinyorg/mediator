@@ -96,7 +96,7 @@ public class CachingRequestMiddlewareTests(ITestOutputHelper output)
             MessageHandler = new CachingRequestMiddlewareRequestHandler()
         };
         var cache = new MockCacheService(timeProvider);
-        var contractKeyProvider = new DefaultContractKeyProvider();
+        var contractKeyProvider = new DefaultContractKeyProvider(null);
         var logger = TestHelpers.CreateLogger<CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>>(output);
         var middleware = new CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>(logger, this.config, cache, contractKeyProvider);
         

@@ -1,16 +1,27 @@
 using System.Reflection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Infrastructure.Impl;
 
-// TODO: there can only be one!
-public class DefaultContractKeyProvider : IContractKeyProvider
+
+public class DefaultContractKeyProvider(
+    ILogger<DefaultContractKeyProvider> logger
+    // IConfiguration configuration
+) : IContractKeyProvider
 {
     public string GetContractKey(object contract)
     {
         if (contract is IRequestKey key)
-            return key.GetKey();
-        
-        return GetKeyFromReflection(contract);
+        {
+            var requestKey = key.GetKey();
+            logger?.LogDebug("Using request key {RequestKey} for contract {ContractType}", requestKey, contract.GetType().FullName);
+            return requestKey;
+        }
+
+        var reflectKey = GetKeyFromReflection(contract);
+        logger?.LogDebug("Using reflection key {ReflectKey} for contract {ContractType}", reflectKey, contract.GetType().FullName);
+        return reflectKey;
         
         // var t = obj.GetType();
         // var stringKey = $"{t.Namespace}_{t.Name}";
@@ -20,6 +31,20 @@ public class DefaultContractKeyProvider : IContractKeyProvider
         // TODO: from configuration - "Namespace.ClassName": "{FirstName}-{Date1}"
         // TODO: use reflector
     }
+
+
+    // string TryGetKeyFromConfiguration(object contract)
+    // {
+    //     var type = contract.GetType();
+    //     var configKey = $"Mediator:Keys:{type.Namespace}.{type.Name}";
+    //     var parseKey = configuration?[configKey];
+    //     if (!String.IsNullOrWhiteSpace(parseKey))
+    //     {
+    //         
+    //     }
+    //
+    //     return null;
+    // }
     
 
     static string GetKeyFromReflection(object request)
