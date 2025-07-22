@@ -2,9 +2,9 @@
 @implements IDisposable
 @inject IMediator Mediator
 @inject IInternetService Internet
-@if (!Internet.IsAvailable && !String.IsNullOrWhiteSpace(NoInternetMessage))
+@if (!Internet.IsAvailable && NoInternetContent != null)
 {
-    @NoInternetMessage
+    @NoInternetContent
 }
 
 <script>
@@ -17,8 +17,7 @@
 </script>
 
 @code {
-    [Parameter] public string? NoInternetMessage { get; set; }
-    
+    [Parameter] public RenderFragment? NoInternetContent { get; set; }
     
     protected override void OnInitialized()
     {
