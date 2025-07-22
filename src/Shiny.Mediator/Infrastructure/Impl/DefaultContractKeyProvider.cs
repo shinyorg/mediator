@@ -5,10 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-public class DefaultContractKeyProvider(
-    ILogger<DefaultContractKeyProvider> logger
-    // IConfiguration configuration
-) : IContractKeyProvider
+public class DefaultContractKeyProvider(ILogger<DefaultContractKeyProvider> logger) : IContractKeyProvider
 {
     public string GetContractKey(object contract)
     {
@@ -22,35 +19,13 @@ public class DefaultContractKeyProvider(
         var reflectKey = GetKeyFromReflection(contract);
         logger?.LogDebug("Using reflection key {ReflectKey} for contract {ContractType}", reflectKey, contract.GetType().FullName);
         return reflectKey;
-        
-        // var t = obj.GetType();
-        // var stringKey = $"{t.Namespace}_{t.Name}";
-        // return stringKey;
-        
-        // TODO: source generate how it is built
-        // TODO: from configuration - "Namespace.ClassName": "{FirstName}-{Date1}"
-        // TODO: use reflector
     }
 
-
-    // string TryGetKeyFromConfiguration(object contract)
-    // {
-    //     var type = contract.GetType();
-    //     var configKey = $"Mediator:Keys:{type.Namespace}.{type.Name}";
-    //     var parseKey = configuration?[configKey];
-    //     if (!String.IsNullOrWhiteSpace(parseKey))
-    //     {
-    //         
-    //     }
-    //
-    //     return null;
-    // }
-    
 
     static string GetKeyFromReflection(object request)
     {
         var t = request.GetType();
-        var key = request.GetType().FullName!;
+        var key = t.FullName!;
         var props = t
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(x => x.CanRead)
