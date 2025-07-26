@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using Shiny.Mediator.Caching.Infrastructure;
 using Shiny.Mediator.Infrastructure;
+using Shiny.Mediator.Infrastructure.Impl;
 using Shiny.Mediator.Tests.Mocks;
 using Xunit.Abstractions;
 
@@ -95,8 +96,9 @@ public class CachingRequestMiddlewareTests(ITestOutputHelper output)
             MessageHandler = new CachingRequestMiddlewareRequestHandler()
         };
         var cache = new MockCacheService(timeProvider);
+        var contractKeyProvider = new DefaultContractKeyProvider(null);
         var logger = TestHelpers.CreateLogger<CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>>(output);
-        var middleware = new CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>(logger, this.config, cache);
+        var middleware = new CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>(logger, this.config, cache, contractKeyProvider);
         
         return (context, cache, logger, middleware);
     }

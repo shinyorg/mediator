@@ -16,6 +16,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
     ILogger<ReplayStreamMiddleware<TRequest, TResult>> logger,
     IInternetService internet,
     IConfiguration configuration,
+    IContractKeyProvider contractKeyProvider,
     IOfflineService? offline,
     ICacheService? cache
 ) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
@@ -63,7 +64,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         [EnumeratorCancellation] CancellationToken ct
     )
     {
-        var requestKey = ContractUtils.GetRequestKey(request);
+        var requestKey = contractKeyProvider.GetContractKey(request);
         
         if (cache != null)
         {

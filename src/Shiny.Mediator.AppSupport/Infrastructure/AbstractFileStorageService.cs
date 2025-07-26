@@ -125,9 +125,12 @@ public abstract class AbstractFileStorageService(
 
     protected virtual async Task WriteState(CancellationToken cancellationToken)
     {
+        var entered = false;
         try
         {
             await this.semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            entered = true;
+            
             if (this._indexes != null)
             {
                 logger.LogInformation("Writing File Index");
@@ -136,7 +139,8 @@ public abstract class AbstractFileStorageService(
         }
         finally
         {
-            this.semaphore.Release();
+            if (!entered)
+                this.semaphore.Release();
         }   
     }
 

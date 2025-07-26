@@ -7,7 +7,6 @@
         <PackageVersion Include="Microsoft.Extensions.Diagnostics" Version="9.0.0"/>
         <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0"/>
     </ItemGroup>
-    
     <!--support libs-->
     <ItemGroup>
         <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.21"/>
@@ -20,8 +19,8 @@
         <PackageVersion Include="FluentValidation" Version="12.0.0"/>
         <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0"/>
         <PackageVersion Include="Prism.Maui" Version="9.0.537"/>
+        <PackageVersion Include="Shiny.Reflector" Version="1.6.1"/>
     </ItemGroup>
-    
     <!--source generator-->
     <ItemGroup>
         <PackageVersion Include="SharpYaml" Version="2.1.3" PrivateAssets="All" GeneratePathProperty="true"/>

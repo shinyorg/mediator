@@ -10,6 +10,13 @@ public sealed class ShinyMediatorBuilder(IServiceCollection services)
     public IServiceCollection Services => services;
 
 
+    public ShinyMediatorBuilder SetContractKeyProvider<TProvider>() where TProvider : class, IContractKeyProvider
+    {
+        this.Services.AddSingleton<IContractKeyProvider, TProvider>();
+        return this;
+    }
+
+    
     public ShinyMediatorBuilder SetSerializer<TSerializer>() where TSerializer : class, ISerializerService
     {
         this.Services.AddSingleton<ISerializerService, TSerializer>();

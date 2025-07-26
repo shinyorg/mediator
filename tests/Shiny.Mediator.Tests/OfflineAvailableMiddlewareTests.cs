@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using Shiny.Mediator.Infrastructure.Impl;
 using Shiny.Mediator.Middleware;
 using Shiny.Mediator.Tests.Mocks;
 using Xunit.Abstractions;
@@ -18,7 +19,7 @@ public class OfflineAvailableRequestMiddlewareTests
     {
         this.handler = new();
         this.connectivity = new();
-        this.offline = new(TimeProvider.System);
+        this.offline = new(TimeProvider.System, new DefaultContractKeyProvider(null));
 
         this.config = new ConfigurationManager();
         // this.config.AddConfiguration(new MemoryConfigurationProvider(new MemoryConfigurationSource().InitialData))

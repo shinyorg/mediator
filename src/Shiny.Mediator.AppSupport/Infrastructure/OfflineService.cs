@@ -18,14 +18,15 @@ public record OfflineResult<TResult>(
 public class OfflineService(
     IStorageService storage, 
     ISerializerService serializer,
-    TimeProvider timeProvider
+    TimeProvider timeProvider,
+    IContractKeyProvider contractKeyProvider
 ) : IOfflineService
 {
     public const string Category = "Offline";
     
     public async Task<string> Set(object request, object result, CancellationToken cancellationToken)
     {
-        var requestKey = ContractUtils.GetRequestKey(request);
+        var requestKey = contractKeyProvider.GetContractKey(request);
         await storage
             .Set(
                 Category,
@@ -45,7 +46,7 @@ public class OfflineService(
 
     public async Task<OfflineResult<TResult>?> Get<TResult>(object request, CancellationToken cancellationToken)
     {
-        var requestKey = ContractUtils.GetRequestKey(request);
+        var requestKey = contractKeyProvider.GetContractKey(request);
         var store = await storage
             .Get<OfflineStore>(Category, requestKey, cancellationToken)
             .ConfigureAwait(false);

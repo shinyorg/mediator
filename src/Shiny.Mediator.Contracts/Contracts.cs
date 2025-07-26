@@ -18,5 +18,5 @@ public interface IRequest<out TResult>;
 /// </summary>
 public interface IRequestKey
 {
-    string GetKey() => this.ReflectKey();
+    string GetKey();
 }

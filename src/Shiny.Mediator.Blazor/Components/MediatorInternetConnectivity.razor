@@ -2,14 +2,15 @@
 @implements IDisposable
 @inject IMediator Mediator
 @inject IInternetService Internet
-@if (!Internet.IsAvailable && !String.IsNullOrWhiteSpace(NoInternetMessage))
+@if (!Internet.IsAvailable && ChildContent != null)
 {
-    @NoInternetMessage
+    @ChildContent
 }
 
 @code {
-    [Parameter] public string? NoInternetMessage { get; set; }
-    
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool BroadcastEvent { get; set; } = true;
+    public bool IsConnected { get; private set; }
     
     protected override void OnInitialized()
     {
@@ -19,7 +20,11 @@
 
     async void OnInternetStateChanged(object? sender, bool e)
     {
-        await Mediator.Publish(new ConnectivityChanged(Internet.IsAvailable));
+        await InvokeAsync(StateHasChanged);
+        if (BroadcastEvent && IsConnected != e)
+            await Mediator.Publish(new ConnectivityChanged(Internet.IsAvailable));
+
+        IsConnected = e;
     }
 
     public void Dispose()
