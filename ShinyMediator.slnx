@@ -8,6 +8,7 @@
     <Project Path="samples\Sample.Uno\Sample.Uno.csproj" />
     <Project Path="samples\Samples.Mcp\Samples.Mcp.csproj" Type="Classic C#" />
     <Project Path="samples\Sample\Sample.csproj" />
+    <Project Path="tests\Shiny.Mediator.Maui.Tests\Shiny.Mediator.Maui.Tests.csproj" Type="Classic C#" />
     <Project Path="tests\Shiny.Mediator.Tests\Shiny.Mediator.Tests.csproj" />
   </Folder>
   <Folder Name="/Solution/">
@@ -23,6 +24,7 @@
     <File Path=".github\PULL_REQUEST_TEMPLATE.md" />
     <File Path="src\Directory.packages.props" />
     <File Path="Build.slnf" />
+    <File Path="nuget.config" />
   </Folder>
   <Project Path="src\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj" />
   <Project Path="src\Shiny.Mediator.AspNet.SourceGenerators\Shiny.Mediator.AspNet.SourceGenerators.csproj" Type="Classic C#" />

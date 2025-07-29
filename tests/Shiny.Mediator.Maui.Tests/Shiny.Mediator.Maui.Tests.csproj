@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
+
+        <OutputType>Exe</OutputType>
+        <RootNamespace>Shiny.Mediator.Maui.Tests</RootNamespace>
+        <UseMaui>true</UseMaui>
+        <SingleProject>true</SingleProject>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <MauiVersion>9.0.90</MauiVersion>
+
+        <ApplicationTitle>Shiny.Mediator.Maui.Tests</ApplicationTitle>
+        <ApplicationId>org.shiny.mediator.maui.tests</ApplicationId>
+
+        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+        <ApplicationVersion>1</ApplicationVersion>
+        <WindowsPackageType>None</WindowsPackageType>
+
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+        <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4"/>
+        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128"/>
+
+        <MauiImage Include="Resources\Images\*"/>
+
+        <MauiFont Include="Resources\Fonts\*"/>
+        <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DeviceRunners.UITesting.Maui" Version="0.1.0-preview.5"/>
+        <PackageReference Include="DeviceRunners.UITesting.Xunit" Version="0.1.0-preview.5"/>
+        <PackageReference Include="DeviceRunners.VisualRunners.Maui" Version="0.1.0-preview.5"/>
+        <PackageReference Include="DeviceRunners.VisualRunners.Xunit" Version="0.1.0-preview.5"/>
+        <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Resources\Images\" />
+      <Folder Include="Resources\Raw\" />
+    </ItemGroup>
+
+    <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"/>
+</Project>
