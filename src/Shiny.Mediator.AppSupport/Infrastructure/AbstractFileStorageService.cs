@@ -139,7 +139,7 @@ public abstract class AbstractFileStorageService(
         }
         finally
         {
-            if (!entered)
+            if (entered)
                 this.semaphore.Release();
         }   
     }
@@ -151,9 +151,12 @@ public abstract class AbstractFileStorageService(
     protected async Task<ConcurrentDictionary<string, string>> GetIndexCategory(string category, CancellationToken cancellationToken)
     {
         ConcurrentDictionary<string, string> catIndex = null!;
+        var entered = false;
         try
         {
             await this.semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            entered = true;
+            
             this._indexes ??= await this
                 .GetObject<ConcurrentDictionary<string, ConcurrentDictionary<string, string>>>(IndexFile, cancellationToken)
                 .ConfigureAwait(false);
@@ -163,7 +166,8 @@ public abstract class AbstractFileStorageService(
         }
         finally
         {
-            this.semaphore.Release();
+            if (entered)
+                this.semaphore.Release();
         }
         return catIndex;
     }
