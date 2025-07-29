@@ -48,13 +48,13 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj"/>
-        <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Resources\Images\" />
-      <Folder Include="Resources\Raw\" />
+        <Folder Include="Resources\Images\"/>
+        <Folder Include="Resources\Raw\"/>
     </ItemGroup>
 
     <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"/>
