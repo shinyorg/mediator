@@ -1,4 +1,7 @@
-﻿namespace Shiny.Mediator;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Shiny.Mediator.Sentry;
+
+namespace Shiny.Mediator;
 
 
 public static class MediatorExtensions
@@ -10,11 +13,11 @@ public static class MediatorExtensions
     /// <returns></returns>
     public static ShinyMediatorBuilder UseSentry(this ShinyMediatorBuilder configurator)
     {
-        // configurator.AddExceptionHandler<SentryExceptionHandler>();
-        // configurator.AddOpenEventMiddleware(typeof(SentryEventMiddleware<>), ServiceLifetime.Singleton);
-        // configurator.AddOpenCommandMiddleware(typeof(SentryCommandMiddleware<>), ServiceLifetime.Singleton);
-        // configurator.AddOpenRequestMiddleware(typeof(SentryRequestMiddleware<,>), ServiceLifetime.Singleton);
-        // configurator.AddOpenStreamMiddleware(typeof(SentryStreamRequestMiddleware<,>), ServiceLifetime.Singleton);
+        configurator.AddExceptionHandler<SentryExceptionHandler>();
+        configurator.AddOpenEventMiddleware(typeof(SentryEventMiddleware<>), ServiceLifetime.Singleton);
+        configurator.AddOpenCommandMiddleware(typeof(SentryCommandMiddleware<>), ServiceLifetime.Singleton);
+        configurator.AddOpenRequestMiddleware(typeof(SentryRequestMiddleware<,>), ServiceLifetime.Singleton);
+        configurator.AddOpenStreamMiddleware(typeof(SentryStreamRequestMiddleware<,>), ServiceLifetime.Singleton);
         return configurator;
     }  
 }
