@@ -33,7 +33,7 @@ public static class RegistrationExtensions
             cfg.PreventEventExceptions();
             cfg.AddTimerRefreshStreamMiddleware();
         }
-        
+        services.TryAddSingleton<RuntimeEventRegister>();
         services.TryAddSingleton<ISerializerService, SysTextJsonSerializerService>();
         services.TryAddSingleton<IRequestExecutor, RequestExecutor>();
         services.TryAddSingleton<IStreamRequestExecutor, StreamRequestExecutor>();
