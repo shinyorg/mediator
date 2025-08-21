@@ -5,6 +5,7 @@
   <Folder Name="/Samples/">
     <Project Path="samples\Sample.Api\Sample.Api.csproj" />
     <Project Path="samples\Sample.Blazor\Sample.Blazor.csproj" />
+    <Project Path="samples\Sample.Console\Sample.Console.csproj" Type="Classic C#" />
     <Project Path="samples\Sample.Uno\Sample.Uno.csproj" />
     <Project Path="samples\Samples.Mcp\Samples.Mcp.csproj" Type="Classic C#" />
     <Project Path="samples\Sample\Sample.csproj" />
@@ -31,6 +32,7 @@
   <Project Path="src\Shiny.Mediator.AspNet\Shiny.Mediator.AspNet.csproj" />
   <Project Path="src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj" />
   <Project Path="src\Shiny.Mediator.Caching.MicrosoftMemoryCache\Shiny.Mediator.Caching.MicrosoftMemoryCache.csproj" />
+  <Project Path="src\Shiny.Mediator.Cli\Shiny.Mediator.Cli.csproj" Type="Classic C#" />
   <Project Path="src\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj" />
   <Project Path="src\Shiny.Mediator.DapperRequests\Shiny.Mediator.DapperRequests.csproj" />
   <Project Path="src\Shiny.Mediator.FluentValidation\Shiny.Mediator.FluentValidation.csproj" />
