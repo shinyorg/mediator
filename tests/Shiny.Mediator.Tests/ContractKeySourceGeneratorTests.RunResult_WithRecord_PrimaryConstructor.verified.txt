@@ -1,0 +1,31 @@
+﻿{
+  Generator: {},
+  GeneratedSources: [
+    {
+      HintName: Product_ContractKey.g.cs,
+      Source:
+partial record Product : global::Shiny.Mediator.IRequestKey
+{
+    public string GetKey()
+    {
+        var args = new object[3];
+        if (Id != null)
+            args[0] = Id;
+        else
+            args[0] = string.Empty;
+        if (Name != null)
+            args[1] = Name;
+        else
+            args[1] = string.Empty;
+        if (Price != null)
+            args[2] = Price.ToString("C", System.Globalization.CultureInfo.InvariantCulture);
+        else
+            args[2] = string.Empty;
+        return string.Format("Product_{0}_{1}_{2}", args);
+    }
+}
+
+    }
+  ],
+  Diagnostics: null
+}

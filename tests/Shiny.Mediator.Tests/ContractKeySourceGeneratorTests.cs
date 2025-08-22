@@ -136,7 +136,53 @@ public partial class ComplexContract
         return Verify(result);
     }
 
-    
+    [Fact]
+    public Task RunResult_WithRecord_PrimaryConstructor()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+
+[ContractKey(""Product_{Id}_{Name}_{Price:C}"")]
+public partial record Product(int Id, string Name, decimal Price);");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        result.GeneratedSources.Length.ShouldBe(1);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task RunResult_WithRecord_MixedProperties()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+
+[ContractKey(""Order_{OrderId}_{CustomerId}_{OrderDate:yyyy-MM-dd}_{Status}"")]
+public partial record Order(int OrderId, int CustomerId)
+{
+    public DateTime OrderDate { get; set; }
+    public string Status { get; set; } = ""Pending"";
+    public decimal Total { get; set; }
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        result.GeneratedSources.Length.ShouldBe(1);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task RunResult_WithRecord_NullableTypes()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+
+[ContractKey(""Event_{EventId}_{EventDate:MMM-dd}_{Description}"")]
+public partial record Event(int EventId, DateTime? EventDate, string? Description);");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        result.GeneratedSources.Length.ShouldBe(1);
+        return Verify(result);
+    }
+
     static GeneratorDriver BuildDriver(string sourceCode)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);

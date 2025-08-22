@@ -1,0 +1,35 @@
+﻿{
+  Generator: {},
+  GeneratedSources: [
+    {
+      HintName: Order_ContractKey.g.cs,
+      Source:
+partial record Order : global::Shiny.Mediator.IRequestKey
+{
+    public string GetKey()
+    {
+        var args = new object[4];
+        if (OrderId != null)
+            args[0] = OrderId;
+        else
+            args[0] = string.Empty;
+        if (CustomerId != null)
+            args[1] = CustomerId;
+        else
+            args[1] = string.Empty;
+        if (OrderDate != null)
+            args[2] = OrderDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        else
+            args[2] = string.Empty;
+        if (Status != null)
+            args[3] = Status;
+        else
+            args[3] = string.Empty;
+        return string.Format("Order_{0}_{1}_{2}_{3}", args);
+    }
+}
+
+    }
+  ],
+  Diagnostics: null
+}

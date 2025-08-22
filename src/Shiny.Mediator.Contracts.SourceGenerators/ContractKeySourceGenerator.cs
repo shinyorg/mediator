@@ -150,7 +150,8 @@ public class ContractKeySourceGenerator : IIncrementalGenerator
     }
 
     static bool IsCandidate(SyntaxNode node)
-        => node is ClassDeclarationSyntax { AttributeLists.Count: > 0 } || node is RecordDeclarationSyntax rds && rds.AttributeLists.Count > 0;
+        => node is ClassDeclarationSyntax { AttributeLists.Count: > 0 } || 
+           node is RecordDeclarationSyntax { AttributeLists.Count: > 0 };
 
     static (MemberDeclarationSyntax Decl, SemanticModel Model)? GetSemanticTarget(GeneratorSyntaxContext context)
     {
