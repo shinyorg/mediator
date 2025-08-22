@@ -1,0 +1,33 @@
+﻿{
+  Generator: {},
+  GeneratedSources: [
+    {
+      HintName: TestContractKey_ContractKey.g.cs,
+      Source:
+partial class TestContractKey : global::Shiny.Mediator.IRequestKey
+{
+    public string GetKey()
+    {
+        var args = new object[5];
+        if (Name != null)
+            args[0] = Name;
+        else
+            args[0] = string.Empty;
+        args[1] = DoubleValue;
+        args[2] = IntValue;
+        if (NullableIntValue != null)
+            args[3] = NullableIntValue;
+        else
+            args[3] = string.Empty;
+        if (Timestamp != null)
+            args[4] = Timestamp.Value.ToString("yyyyMMddHHmmss", System.Globalization.CultureInfo.InvariantCulture);
+        else
+            args[4] = string.Empty;
+        return string.Format("Test_{0}_{1}_{2}_{3}_{4}", args);
+    }
+}
+
+    }
+  ],
+  Diagnostics: null
+}

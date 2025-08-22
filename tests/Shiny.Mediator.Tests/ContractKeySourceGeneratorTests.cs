@@ -183,6 +183,27 @@ public partial record Event(int EventId, DateTime? EventDate, string? Descriptio
         return Verify(result);
     }
 
+    [Fact]
+    public Task RunResult_WithNonNullableValueTypes()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+
+[ContractKey(""Test_{Name}_{DoubleValue}_{IntValue}_{NullableIntValue}_{Timestamp:yyyyMMddHHmmss}"")]
+public partial class TestContractKey
+{
+    public string Name { get; set; }
+    public DateTime? Timestamp { get; set; }
+    public double DoubleValue { get; set; }
+    public int IntValue { get; set; }
+    public int? NullableIntValue { get; set; }
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        result.GeneratedSources.Length.ShouldBe(1);
+        return Verify(result);
+    }
+
     static GeneratorDriver BuildDriver(string sourceCode)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);

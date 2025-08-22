@@ -120,25 +120,48 @@ public class ContractKeySourceGenerator : IIncrementalGenerator
                     // Check if the property type is nullable
                     var isNullable = propSymbol.NullableAnnotation == NullableAnnotation.Annotated || 
                                    propSymbol.Type.CanBeReferencedByName && propSymbol.Type.Name.EndsWith("?") ||
-                                   propSymbol.Type.OriginalDefinition?.SpecialType == SpecialType.System_Nullable_T;
+                                   (propSymbol.Type.OriginalDefinition?.SpecialType == SpecialType.System_Nullable_T) == true;
                     
-                    sb.AppendLine($"        if ({propAccess} != null)");
-                    if (format != null)
+                    // Check if it's a non-nullable value type
+                    var isNonNullableValueType = propSymbol.Type.IsValueType && !isNullable;
+                    
+                    if (isNonNullableValueType)
                     {
-                        var valueAccess = isNullable && propSymbol.Type.IsValueType ? $"{propAccess}.Value" : propAccess;
-                        sb.AppendLine($"            args[{i}] = {valueAccess}.ToString({formatStringLiteral}, System.Globalization.CultureInfo.InvariantCulture);");
-                    }
-                    else if (propSymbol.Type.SpecialType == SpecialType.System_DateTime || 
-                             (propSymbol.Type.OriginalDefinition?.SpecialType == SpecialType.System_Nullable_T && 
-                              ((INamedTypeSymbol)propSymbol.Type).TypeArguments[0].SpecialType == SpecialType.System_DateTime))
-                    {
-                        var valueAccess = isNullable && propSymbol.Type.IsValueType ? $"{propAccess}.Value" : propAccess;
-                        sb.AppendLine($"            args[{i}] = {valueAccess}.ToString(\"{format ?? "G"}\");");
+                        // Non-nullable value types - no null check needed
+                        if (format != null)
+                        {
+                            sb.AppendLine($"        args[{i}] = {propAccess}.ToString({formatStringLiteral}, System.Globalization.CultureInfo.InvariantCulture);");
+                        }
+                        else if (propSymbol.Type.SpecialType == SpecialType.System_DateTime)
+                        {
+                            sb.AppendLine($"        args[{i}] = {propAccess}.ToString(\"G\");");
+                        }
+                        else
+                        {
+                            sb.AppendLine($"        args[{i}] = {propAccess};");
+                        }
                     }
                     else
-                        sb.AppendLine($"            args[{i}] = {propAccess};");
-                    sb.AppendLine("        else");
-                    sb.AppendLine($"            args[{i}] = string.Empty;");
+                    {
+                        // Nullable types (reference types or nullable value types) - need null check
+                        sb.AppendLine($"        if ({propAccess} != null)");
+                        if (format != null)
+                        {
+                            var valueAccess = isNullable && propSymbol.Type.IsValueType ? $"{propAccess}.Value" : propAccess;
+                            sb.AppendLine($"            args[{i}] = {valueAccess}.ToString({formatStringLiteral}, System.Globalization.CultureInfo.InvariantCulture);");
+                        }
+                        else if (propSymbol.Type.SpecialType == SpecialType.System_DateTime || 
+                                 (propSymbol.Type.OriginalDefinition?.SpecialType == SpecialType.System_Nullable_T && 
+                                  ((INamedTypeSymbol)propSymbol.Type).TypeArguments[0].SpecialType == SpecialType.System_DateTime))
+                        {
+                            var valueAccess = isNullable && propSymbol.Type.IsValueType ? $"{propAccess}.Value" : propAccess;
+                            sb.AppendLine($"            args[{i}] = {valueAccess}.ToString(\"{format ?? "G"}\");");
+                        }
+                        else
+                            sb.AppendLine($"            args[{i}] = {propAccess};");
+                        sb.AppendLine("        else");
+                        sb.AppendLine($"            args[{i}] = string.Empty;");
+                    }
                 }
                 sb.AppendLine($"        return string.Format(\"{BuildFormatString(formatString, propertyOrder)}\", args);");
                 sb.AppendLine("    }");
