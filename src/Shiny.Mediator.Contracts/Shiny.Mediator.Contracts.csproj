@@ -4,7 +4,16 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Shiny.Mediator</RootNamespace>
-
-        <!--<PublishAot>true</PublishAot>-->
     </PropertyGroup>
+
+    <PropertyGroup>
+        <SourceGenBinDir>..\Shiny.Mediator.Contracts.SourceGenerators\bin\Release\netstandard2.0</SourceGenBinDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(SourceGenBinDir)\Shiny.Mediator.Contracts.SourceGenerators.dll"
+              Pack="true"
+              PackagePath="analyzers/dotnet/cs"
+              Visible="false" />
+    </ItemGroup>
 </Project>

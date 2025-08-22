@@ -1,0 +1,27 @@
+﻿{
+  Generator: {},
+  GeneratedSources: [
+    {
+      HintName: MyRecord_ContractKey.g.cs,
+      Source:
+partial record MyRecord : global::Shiny.Mediator.IRequestKey
+{
+    public string GetKey()
+    {
+        var args = new object[2];
+        if (Id != null)
+            args[0] = Id;
+        else
+            args[0] = string.Empty;
+        if (Name != null)
+            args[1] = Name;
+        else
+            args[1] = string.Empty;
+        return string.Format("Record_{0}_{1}", args);
+    }
+}
+
+    }
+  ],
+  Diagnostics: null
+}

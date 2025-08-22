@@ -1,0 +1,25 @@
+﻿{
+  Generator: {},
+  GeneratedSources: null,
+  Diagnostics: [
+    {
+      Location: /*
+[ContractKey("NonPartial_{Id}")]
+public class NonPartialClass
+             ^^^^^^^^^^^^^^^
+{
+*/
+ : (4,13)-(4,28),
+      Message: Type 'NonPartialClass' must be partial to use [ContractKey],
+      Severity: Error,
+      Descriptor: {
+        Id: SMC001,
+        Title: Class/Record must be partial,
+        MessageFormat: Type 'NonPartialClass' must be partial to use [ContractKey],
+        Category: Shiny.Mediator.Contracts,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

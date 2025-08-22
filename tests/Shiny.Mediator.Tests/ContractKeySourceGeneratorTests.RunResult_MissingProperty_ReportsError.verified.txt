@@ -1,0 +1,25 @@
+﻿{
+  Generator: {},
+  GeneratedSources: null,
+  Diagnostics: [
+    {
+      Location: /*
+[ContractKey("Missing_{Id}_{NonExistentProperty}")]
+public partial class MissingPropertyClass
+                     ^^^^^^^^^^^^^^^^^^^^
+{
+*/
+ : (4,21)-(4,41),
+      Message: Type 'MissingPropertyClass' is missing property 'NonExistentProperty' referenced in ContractKey format string.,
+      Severity: Error,
+      Descriptor: {
+        Id: SMC002,
+        Title: Missing property,
+        MessageFormat: Type 'MissingPropertyClass' is missing property 'NonExistentProperty' referenced in ContractKey format string.,
+        Category: Shiny.Mediator.Contracts,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

@@ -14,7 +14,7 @@
     </ItemGroup>
     
     <ItemGroup>
-        <InternalsVisibleTo Include="Shiny.Mediator.Tests" PublicKey="$(ShinyMediatorPublicKey)"  />
+        <InternalsVisibleTo Include="Shiny.Mediator.Tests"/>
     </ItemGroup>
 
     <ItemGroup>

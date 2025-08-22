@@ -1,0 +1,32 @@
+﻿{
+  Generator: {},
+  GeneratedSources: [
+    {
+      HintName: ComplexContract_ContractKey.g.cs,
+      Source:
+namespace MyNamespace.SubNamespace;
+partial class ComplexContract : global::Shiny.Mediator.IRequestKey
+{
+    public string GetKey()
+    {
+        var args = new object[3];
+        if (UserId != null)
+            args[0] = UserId.ToString("000", System.Globalization.CultureInfo.InvariantCulture);
+        else
+            args[0] = string.Empty;
+        if (Action != null)
+            args[1] = Action;
+        else
+            args[1] = string.Empty;
+        if (Timestamp != null)
+            args[2] = Timestamp.ToString("yyyy-MM-dd-HH-mm-ss", System.Globalization.CultureInfo.InvariantCulture);
+        else
+            args[2] = string.Empty;
+        return string.Format("Complex_{0}_{1}_{2}", args);
+    }
+}
+
+    }
+  ],
+  Diagnostics: null
+}

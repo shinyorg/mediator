@@ -1,0 +1,27 @@
+﻿{
+  Generator: {},
+  GeneratedSources: [
+    {
+      HintName: MyClass_ContractKey.g.cs,
+      Source:
+partial class MyClass : global::Shiny.Mediator.IRequestKey
+{
+    public string GetKey()
+    {
+        var args = new object[2];
+        if (MyProperty != null)
+            args[0] = MyProperty;
+        else
+            args[0] = string.Empty;
+        if (MyDate != null)
+            args[1] = MyDate.ToString("MMM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        else
+            args[1] = string.Empty;
+        return string.Format("MyContract_{0}_{1}", args);
+    }
+}
+
+    }
+  ],
+  Diagnostics: null
+}

@@ -42,6 +42,7 @@
         <ProjectReference Include="..\..\src\Shiny.Mediator.AspNet\Shiny.Mediator.AspNet.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.Caching.MicrosoftMemoryCache\Shiny.Mediator.Caching.MicrosoftMemoryCache.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Contracts.SourceGenerators\Shiny.Mediator.Contracts.SourceGenerators.csproj" />
         <ProjectReference Include="..\..\src\Shiny.Mediator.DapperRequests\Shiny.Mediator.DapperRequests.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.FluentValidation\Shiny.Mediator.FluentValidation.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.Reflector\Shiny.Mediator.Reflector.csproj" />

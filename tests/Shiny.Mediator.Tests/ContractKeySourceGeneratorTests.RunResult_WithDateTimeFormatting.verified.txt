@@ -1,0 +1,31 @@
+﻿{
+  Generator: {},
+  GeneratedSources: [
+    {
+      HintName: EventContract_ContractKey.g.cs,
+      Source:
+partial class EventContract : global::Shiny.Mediator.IRequestKey
+{
+    public string GetKey()
+    {
+        var args = new object[3];
+        if (EventId != null)
+            args[0] = EventId;
+        else
+            args[0] = string.Empty;
+        if (EventDate != null)
+            args[1] = EventDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        else
+            args[1] = string.Empty;
+        if (Status != null)
+            args[2] = Status;
+        else
+            args[2] = string.Empty;
+        return string.Format("Event_{0}_{1}_{2}", args);
+    }
+}
+
+    }
+  ],
+  Diagnostics: null
+}
