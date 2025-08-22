@@ -116,11 +116,25 @@ public class ContractKeySourceGenerator : IIncrementalGenerator
                     var propSymbol = symbol.GetMembers().OfType<IPropertySymbol>().First(x => x.Name == prop);
                     var propAccess = prop;
                     var formatStringLiteral = format != null ? $"\"{format}\"" : null;
+                    
+                    // Check if the property type is nullable
+                    var isNullable = propSymbol.NullableAnnotation == NullableAnnotation.Annotated || 
+                                   propSymbol.Type.CanBeReferencedByName && propSymbol.Type.Name.EndsWith("?") ||
+                                   propSymbol.Type.OriginalDefinition?.SpecialType == SpecialType.System_Nullable_T;
+                    
                     sb.AppendLine($"        if ({propAccess} != null)");
                     if (format != null)
-                        sb.AppendLine($"            args[{i}] = {propAccess}.ToString({formatStringLiteral}, System.Globalization.CultureInfo.InvariantCulture);");
-                    else if (propSymbol.Type.SpecialType == SpecialType.System_DateTime)
-                        sb.AppendLine($"            args[{i}] = {propAccess}.ToString(\"{format ?? "G"}\");");
+                    {
+                        var valueAccess = isNullable && propSymbol.Type.IsValueType ? $"{propAccess}.Value" : propAccess;
+                        sb.AppendLine($"            args[{i}] = {valueAccess}.ToString({formatStringLiteral}, System.Globalization.CultureInfo.InvariantCulture);");
+                    }
+                    else if (propSymbol.Type.SpecialType == SpecialType.System_DateTime || 
+                             (propSymbol.Type.OriginalDefinition?.SpecialType == SpecialType.System_Nullable_T && 
+                              ((INamedTypeSymbol)propSymbol.Type).TypeArguments[0].SpecialType == SpecialType.System_DateTime))
+                    {
+                        var valueAccess = isNullable && propSymbol.Type.IsValueType ? $"{propAccess}.Value" : propAccess;
+                        sb.AppendLine($"            args[{i}] = {valueAccess}.ToString(\"{format ?? "G"}\");");
+                    }
                     else
                         sb.AppendLine($"            args[{i}] = {propAccess};");
                     sb.AppendLine("        else");

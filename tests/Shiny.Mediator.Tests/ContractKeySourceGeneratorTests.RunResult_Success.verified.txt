@@ -14,7 +14,7 @@ partial class MyClass : global::Shiny.Mediator.IRequestKey
         else
             args[0] = string.Empty;
         if (MyDate != null)
-            args[1] = MyDate.ToString("MMM-dd", System.Globalization.CultureInfo.InvariantCulture);
+            args[1] = MyDate.Value.ToString("MMM-dd", System.Globalization.CultureInfo.InvariantCulture);
         else
             args[1] = string.Empty;
         return string.Format("MyContract_{0}_{1}", args);
