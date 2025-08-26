@@ -9,16 +9,19 @@ public class StorageService(
     ILogger<StorageService> logger
 ) : AbstractFileStorageService(serializer, logger)
 {
+    protected virtual string StoreDirectory => fileSystem.CacheDirectory;
+    
+    
     protected override Task WriteFile(string fileName, string content, CancellationToken cancellationToken)
     {
-        var path = Path.Combine(fileSystem.AppDataDirectory, fileName);
+        var path = Path.Combine(this.StoreDirectory, fileName);
         return File.WriteAllTextAsync(path, content, cancellationToken); 
     }
 
     
     protected override async Task<string?> ReadFile(string fileName, CancellationToken cancellationToken)
     {
-        var path = Path.Combine(fileSystem.AppDataDirectory, fileName);
+        var path = Path.Combine(this.StoreDirectory, fileName);
         if (!File.Exists(path))
             return null;
         
@@ -29,7 +32,7 @@ public class StorageService(
 
     protected override Task DeleteFile(string fileName, CancellationToken cancellationToken)
     {
-        var path = Path.Combine(fileSystem.AppDataDirectory, fileName);
+        var path = Path.Combine(this.StoreDirectory, fileName);
         if (!File.Exists(path))
             File.Delete(path);
 
