@@ -9,10 +9,7 @@ partial record Event : global::Shiny.Mediator.IRequestKey
     public string GetKey()
     {
         var args = new object[3];
-        if (EventId != null)
-            args[0] = EventId;
-        else
-            args[0] = string.Empty;
+        args[0] = EventId;
         if (EventDate != null)
             args[1] = EventDate.Value.ToString("MMM-dd", System.Globalization.CultureInfo.InvariantCulture);
         else

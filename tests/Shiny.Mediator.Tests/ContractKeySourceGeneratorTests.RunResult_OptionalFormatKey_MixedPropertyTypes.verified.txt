@@ -1,0 +1,34 @@
+﻿{
+  Generator: {},
+  GeneratedSources: [
+    {
+      HintName: ComplexRequest_ContractKey.g.cs,
+      Source:
+partial class ComplexRequest : global::Shiny.Mediator.IRequestKey
+{
+    public string GetKey()
+    {
+        var args = new object[9];
+        args[0] = IsActive;
+        args[1] = Priority;
+        args[2] = Version;
+        args[3] = TransactionId;
+        args[4] = Rating;
+        args[5] = Price;
+        args[6] = Amount;
+        if (CreatedAt != null)
+            args[7] = CreatedAt;
+        else
+            args[7] = string.Empty;
+        if (Notes != null)
+            args[8] = Notes;
+        else
+            args[8] = string.Empty;
+        return string.Format("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}", args);
+    }
+}
+
+    }
+  ],
+  Diagnostics: null
+}

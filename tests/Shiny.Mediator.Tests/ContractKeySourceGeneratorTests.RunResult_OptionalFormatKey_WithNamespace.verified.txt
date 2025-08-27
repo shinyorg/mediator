@@ -1,0 +1,30 @@
+﻿{
+  Generator: {},
+  GeneratedSources: [
+    {
+      HintName: OrderRequest_ContractKey.g.cs,
+      Source:
+namespace MyCompany.Orders;
+partial class OrderRequest : global::Shiny.Mediator.IRequestKey
+{
+    public string GetKey()
+    {
+        var args = new object[4];
+        args[0] = OrderId;
+        if (CustomerEmail != null)
+            args[1] = CustomerEmail;
+        else
+            args[1] = string.Empty;
+        args[2] = TotalAmount;
+        if (OrderDate != null)
+            args[3] = OrderDate;
+        else
+            args[3] = string.Empty;
+        return string.Format("{0}|{1}|{2}|{3}", args);
+    }
+}
+
+    }
+  ],
+  Diagnostics: null
+}

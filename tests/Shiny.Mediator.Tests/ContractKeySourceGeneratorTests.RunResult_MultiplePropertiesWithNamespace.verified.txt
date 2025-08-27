@@ -10,10 +10,7 @@ partial class ComplexContract : global::Shiny.Mediator.IRequestKey
     public string GetKey()
     {
         var args = new object[3];
-        if (UserId != null)
-            args[0] = UserId.ToString("000", System.Globalization.CultureInfo.InvariantCulture);
-        else
-            args[0] = string.Empty;
+        args[0] = UserId.ToString("000", System.Globalization.CultureInfo.InvariantCulture);
         if (Action != null)
             args[1] = Action;
         else

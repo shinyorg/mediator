@@ -9,14 +9,8 @@ partial record Order : global::Shiny.Mediator.IRequestKey
     public string GetKey()
     {
         var args = new object[4];
-        if (OrderId != null)
-            args[0] = OrderId;
-        else
-            args[0] = string.Empty;
-        if (CustomerId != null)
-            args[1] = CustomerId;
-        else
-            args[1] = string.Empty;
+        args[0] = OrderId;
+        args[1] = CustomerId;
         if (OrderDate != null)
             args[2] = OrderDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
         else

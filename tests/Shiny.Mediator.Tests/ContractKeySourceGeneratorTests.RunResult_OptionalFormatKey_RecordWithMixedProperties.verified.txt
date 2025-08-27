@@ -1,0 +1,33 @@
+﻿{
+  Generator: {},
+  GeneratedSources: [
+    {
+      HintName: OrderRecord_ContractKey.g.cs,
+      Source:
+partial record OrderRecord : global::Shiny.Mediator.IRequestKey
+{
+    public string GetKey()
+    {
+        var args = new object[5];
+        args[0] = OrderId;
+        if (CustomerName != null)
+            args[1] = CustomerName;
+        else
+            args[1] = string.Empty;
+        if (OrderDate != null)
+            args[2] = OrderDate;
+        else
+            args[2] = string.Empty;
+        if (Notes != null)
+            args[3] = Notes;
+        else
+            args[3] = string.Empty;
+        args[4] = Total;
+        return string.Format("{0}|{1}|{2}|{3}|{4}", args);
+    }
+}
+
+    }
+  ],
+  Diagnostics: null
+}

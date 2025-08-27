@@ -2,9 +2,9 @@
   Generator: {},
   GeneratedSources: [
     {
-      HintName: MyRecord_ContractKey.g.cs,
+      HintName: EmptyFormatRequest_ContractKey.g.cs,
       Source:
-partial record MyRecord : global::Shiny.Mediator.IRequestKey
+partial class EmptyFormatRequest : global::Shiny.Mediator.IRequestKey
 {
     public string GetKey()
     {
@@ -14,7 +14,7 @@ partial record MyRecord : global::Shiny.Mediator.IRequestKey
             args[1] = Name;
         else
             args[1] = string.Empty;
-        return string.Format("Record_{0}_{1}", args);
+        return string.Format("{0}|{1}", args);
     }
 }
 

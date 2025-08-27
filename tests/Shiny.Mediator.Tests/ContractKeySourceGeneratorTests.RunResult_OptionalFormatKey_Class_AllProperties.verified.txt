@@ -2,9 +2,9 @@
   Generator: {},
   GeneratedSources: [
     {
-      HintName: Product_ContractKey.g.cs,
+      HintName: UserRequest_ContractKey.g.cs,
       Source:
-partial record Product : global::Shiny.Mediator.IRequestKey
+partial class UserRequest : global::Shiny.Mediator.IRequestKey
 {
     public string GetKey()
     {
@@ -14,8 +14,11 @@ partial record Product : global::Shiny.Mediator.IRequestKey
             args[1] = Name;
         else
             args[1] = string.Empty;
-        args[2] = Price.ToString("C", System.Globalization.CultureInfo.InvariantCulture);
-        return string.Format("Product_{0}_{1}_{2}", args);
+        if (CreatedAt != null)
+            args[2] = CreatedAt;
+        else
+            args[2] = string.Empty;
+        return string.Format("{0}|{1}|{2}", args);
     }
 }
 

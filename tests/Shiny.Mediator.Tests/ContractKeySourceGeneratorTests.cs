@@ -204,6 +204,161 @@ public partial class TestContractKey
         return Verify(result);
     }
 
+    [Fact]
+    public Task RunResult_OptionalFormatKey_Class_AllProperties()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+
+[ContractKey]
+public partial class UserRequest
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public DateTime CreatedAt { get; set; }
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        result.GeneratedSources.Length.ShouldBe(1);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task RunResult_OptionalFormatKey_Record_AllProperties()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+
+[ContractKey]
+public partial record ProductRecord(int Id, string Name, decimal Price);");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        result.GeneratedSources.Length.ShouldBe(1);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task RunResult_OptionalFormatKey_WithNullableTypes()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+
+[ContractKey]
+public partial class EventRequest
+{
+    public int EventId { get; set; }
+    public string? Description { get; set; }
+    public DateTime? EventDate { get; set; }
+    public int? CategoryId { get; set; }
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        result.GeneratedSources.Length.ShouldBe(1);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task RunResult_OptionalFormatKey_WithNamespace()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+
+namespace MyCompany.Orders;
+
+[ContractKey]
+public partial class OrderRequest
+{
+    public int OrderId { get; set; }
+    public string CustomerEmail { get; set; }
+    public decimal TotalAmount { get; set; }
+    public DateTime OrderDate { get; set; }
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        result.GeneratedSources.Length.ShouldBe(1);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task RunResult_OptionalFormatKey_MixedPropertyTypes()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+
+[ContractKey]
+public partial class ComplexRequest
+{
+    public bool IsActive { get; set; }
+    public byte Priority { get; set; }
+    public short Version { get; set; }
+    public long TransactionId { get; set; }
+    public float Rating { get; set; }
+    public double Price { get; set; }
+    public decimal Amount { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string? Notes { get; set; }
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        result.GeneratedSources.Length.ShouldBe(1);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task RunResult_OptionalFormatKey_RecordWithMixedProperties()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+
+[ContractKey]
+public partial record OrderRecord(int OrderId, string CustomerName)
+{
+    public DateTime OrderDate { get; set; }
+    public string? Notes { get; set; }
+    public decimal Total { get; set; }
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        result.GeneratedSources.Length.ShouldBe(1);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task RunResult_OptionalFormatKey_EmptyStringFormatKey()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+
+[ContractKey("""")]
+public partial class EmptyFormatRequest
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        result.GeneratedSources.Length.ShouldBe(1);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task RunResult_OptionalFormatKey_NullFormatKey()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+
+[ContractKey(null)]
+public partial class NullFormatRequest
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        result.GeneratedSources.Length.ShouldBe(1);
+        return Verify(result);
+    }
+
     static GeneratorDriver BuildDriver(string sourceCode)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);

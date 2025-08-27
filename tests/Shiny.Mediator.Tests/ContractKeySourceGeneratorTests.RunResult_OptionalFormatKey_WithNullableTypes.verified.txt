@@ -1,0 +1,32 @@
+﻿{
+  Generator: {},
+  GeneratedSources: [
+    {
+      HintName: EventRequest_ContractKey.g.cs,
+      Source:
+partial class EventRequest : global::Shiny.Mediator.IRequestKey
+{
+    public string GetKey()
+    {
+        var args = new object[4];
+        args[0] = EventId;
+        if (Description != null)
+            args[1] = Description;
+        else
+            args[1] = string.Empty;
+        if (EventDate != null)
+            args[2] = EventDate;
+        else
+            args[2] = string.Empty;
+        if (CategoryId != null)
+            args[3] = CategoryId;
+        else
+            args[3] = string.Empty;
+        return string.Format("{0}|{1}|{2}|{3}", args);
+    }
+}
+
+    }
+  ],
+  Diagnostics: null
+}

@@ -65,11 +65,29 @@ public class ContractKeySourceGenerator : IIncrementalGenerator
                 }
 
                 // 2. Parse format string and referenced properties
-                var formatString = attribute.ConstructorArguments[0].Value as string;
+                var formatString = attribute.ConstructorArguments.Length > 0 
+                    ? attribute.ConstructorArguments[0].Value as string 
+                    : null;
+                
+                List<(string prop, string? format)> propertyOrder;
+                
                 if (string.IsNullOrWhiteSpace(formatString))
+                {
+                    // No format string provided - use all properties in declaration order
+                    propertyOrder = symbol.GetMembers()
+                        .OfType<IPropertySymbol>()
+                        .Where(p => p.DeclaredAccessibility == Accessibility.Public && p.GetMethod != null)
+                        .Select(p => (p.Name, (string?)null))
+                        .ToList();
+                }
+                else
+                {
+                    propertyOrder = ParseFormatString(formatString!);
+                }
+
+                if (propertyOrder.Count == 0)
                     continue;
 
-                var propertyOrder = ParseFormatString(formatString!);
 
                 // 3. Validate all referenced properties exist
                 var missingProps = propertyOrder.Where(p => symbol.GetMembers().OfType<IPropertySymbol>().All(x => x.Name != p.prop)).ToList();
@@ -120,7 +138,7 @@ public class ContractKeySourceGenerator : IIncrementalGenerator
                     // Check if the property type is nullable
                     var isNullable = propSymbol.NullableAnnotation == NullableAnnotation.Annotated || 
                                    propSymbol.Type.CanBeReferencedByName && propSymbol.Type.Name.EndsWith("?") ||
-                                   (propSymbol.Type.OriginalDefinition?.SpecialType == SpecialType.System_Nullable_T) == true;
+                                   propSymbol.Type.OriginalDefinition?.SpecialType == SpecialType.System_Nullable_T;
                     
                     // Check if it's a non-nullable value type
                     var isNonNullableValueType = propSymbol.Type.IsValueType && !isNullable;
@@ -230,15 +248,26 @@ public class ContractKeySourceGenerator : IIncrementalGenerator
         return props;
     }
 
-    static string BuildFormatString(string format, List<(string prop, string? format)> _)
+    static string BuildFormatString(string? format, List<(string prop, string? format)> propertyOrder)
     {
+        if (string.IsNullOrWhiteSpace(format))
+        {
+            // No format string provided - create a default format with all properties separated by pipe
+            var formatParts = new List<string>();
+            for (int i = 0; i < propertyOrder.Count; i++)
+            {
+                formatParts.Add($"{{{i}}}");
+            }
+            return string.Join("|", formatParts);
+        }
+        
         // Replace {Prop[:Format]} with {index}
         int idx = 0;
         var sb = new StringBuilder();
         int last = 0;
         while (true)
         {
-            int open = format.IndexOf('{', last);
+            int open = format!.IndexOf('{', last);
             if (open == -1)
             {
                 sb.Append(format.Substring(last));
