@@ -133,6 +133,7 @@
                       Uri="https://api.themeparks.wiki/docs/v1.yaml" 
                       Namespace="Sample.ThemeParksApi" 
                       ContractPostfix="HttpRequest" 
+                      GenerateJsonConverters="true"
                       Visible="false" />
     </ItemGroup>
     

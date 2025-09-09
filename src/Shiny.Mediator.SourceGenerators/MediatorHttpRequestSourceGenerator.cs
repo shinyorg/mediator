@@ -57,6 +57,9 @@ public class MediatorHttpRequestSourceGenerator : ISourceGenerator
                 .Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
             UseInternalClasses = context
                 .GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.UseInternalClasses))?
+                .Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
+            GenerateJsonConverters = context
+                .GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.GenerateJsonConverters))?
                 .Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false
         };
         
