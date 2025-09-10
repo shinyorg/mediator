@@ -187,7 +187,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
             switch (schema.Type)
             {
                 case "string":
-                    if (schema.Enum.Count == 0)
+                    if ((schema.Enum?.Count ?? 0) == 0)
                     {
                         type = GetStringType(schema);
                     }
@@ -352,10 +352,10 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         //    Debugger.Launch();
         //}
         
-        if (schema.AllOf.Count == 1)
+        if ((schema.AllOf?.Count ?? 0) == 1)
         {
             // add inheritance
-            var baseType = this.GetSchemaType(schema.AllOf.Single());
+            var baseType = this.GetSchemaType(schema.AllOf!.Single());
             sb.AppendLine($" : {baseType}");
 
             output($"INHERITED: {className} ({baseType})", DiagnosticSeverity.Info);
@@ -363,42 +363,45 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         sb.AppendLine();
         sb.AppendLine("{");
         
-        foreach (var prop in schema.Properties)
+        if (schema.Properties != null)
         {
-            var propertyName = prop.Key.Pascalize();
-            string? typeName = null;
-            
-            if (prop.Value.Type == "object" && prop.Value.Properties != null && prop.Value.Reference == null)
+            foreach (var prop in schema.Properties)
             {
-                typeName = className + propertyName.Pascalize();
-                var add = this.GenerateObject(prop.Value, typeName);
-                this.typeBuilder.AppendLine(add);
-            }
-            else if (prop.Value.Enum.Count > 0 && prop.Value.Reference == null)
-            {
-                typeName = className + propertyName.Pascalize();
-                var add = this.GenerateEnum(prop.Value, typeName);
-                this.typeBuilder.AppendLine(add);
-            }
-            else
-            {
-                typeName = this.GetSchemaType(prop.Value);
-                if (typeName == null && prop.Value.Enum.Count > 0 && prop.Value.Reference != null)
-                    typeName = prop.Value.Reference.Id;
-            }
+                var propertyName = prop.Key.Pascalize();
+                string? typeName = null;
 
-            if (typeName == null)
-            {
-                output($"PROPERTY: {propertyName} - Type was not found", DiagnosticSeverity.Warning);
-            }
-            else
-            {
-                // TODO: null when OneOf setup
-                // throw new InvalidOperationException("TypeName is null");
-                sb.AppendLine($"    [global::System.Text.Json.Serialization.JsonPropertyName(\"{prop.Key}\")]");
-                sb.AppendLine($"    public {typeName} {propertyName}"+ " { get; set; }");
-                sb.AppendLine();
-                output($"PROPERTY: {propertyName} ({typeName})", DiagnosticSeverity.Info);
+                if (prop.Value.Type == "object" && prop.Value.Properties != null && prop.Value.Reference == null)
+                {
+                    typeName = className + propertyName.Pascalize();
+                    var add = this.GenerateObject(prop.Value, typeName);
+                    this.typeBuilder.AppendLine(add);
+                }
+                else if ((prop.Value.Enum?.Count ?? 0) > 0 && prop.Value.Reference == null)
+                {
+                    typeName = className + propertyName.Pascalize();
+                    var add = this.GenerateEnum(prop.Value, typeName);
+                    this.typeBuilder.AppendLine(add);
+                }
+                else
+                {
+                    typeName = this.GetSchemaType(prop.Value);
+                    if (typeName == null && (prop.Value.Enum?.Count ?? 0) > 0 && prop.Value.Reference != null)
+                        typeName = prop.Value.Reference.Id;
+                }
+
+                if (typeName == null)
+                {
+                    output($"PROPERTY: {propertyName} - Type was not found", DiagnosticSeverity.Warning);
+                }
+                else
+                {
+                    // TODO: null when OneOf setup
+                    // throw new InvalidOperationException("TypeName is null");
+                    sb.AppendLine($"    [global::System.Text.Json.Serialization.JsonPropertyName(\"{prop.Key}\")]");
+                    sb.AppendLine($"    public {typeName} {propertyName}"+ " { get; set; }");
+                    sb.AppendLine();
+                    output($"PROPERTY: {propertyName} ({typeName})", DiagnosticSeverity.Info);
+                }
             }
         }
 
@@ -452,9 +455,9 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         {
             var propType = this.GetSchemaType(prop.Value);
             var propertyName = prop.Key.Pascalize();
-            
+
             sb.AppendLine($"                case \"{prop.Key}\":");
-            
+
             if (propType != null)
             {
                 this.GenerateReadLogicForProperty(sb, propertyName, propType, prop.Value);
@@ -465,7 +468,7 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
             }
             sb.AppendLine("                    break;");
         }
-        
+
         sb
             .AppendLine("                default:")
             .AppendLine("                    reader.Skip();")
@@ -492,13 +495,13 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
         {
             var propType = this.GetSchemaType(prop.Value);
             var propertyName = prop.Key.Pascalize();
-            
+
             if (propType != null)
             {
                 this.GenerateWriteLogicForProperty(sb, prop.Key, propertyName, propType, prop.Value);
             }
         }
-        
+
         sb
             .AppendLine("        writer.WriteEndObject();")
             .AppendLine("    }")
