@@ -219,6 +219,9 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                 case "object":
                     if (schema.AdditionalProperties == null)
                     {
+                        if (schema.Reference == null)
+                            throw new InvalidOperationException("Object reference is null");
+                            
                         type = $"global::{itemConfig.Namespace}.{schema.Reference.Id}";    
                     }
                     else
