@@ -191,11 +191,8 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                     {
                         type = GetStringType(schema);
                     }
-                    else
-                    {
-                        if (schema.Reference == null)
-                            throw new InvalidOperationException("Enum reference is null");
-                            
+                    else if (schema.Reference != null)
+                    {                            
                         type = $"global::{itemConfig.Namespace}.{schema.Reference.Id}";
                     }
                     break;
@@ -219,10 +216,8 @@ public class OpenApiContractGenerator(MediatorHttpItemConfig itemConfig, Action<
                 case "object":
                     if (schema.AdditionalProperties == null)
                     {
-                        if (schema.Reference == null)
-                            throw new InvalidOperationException("Object reference is null");
-                            
-                        type = $"global::{itemConfig.Namespace}.{schema.Reference.Id}";    
+                        if (schema.Reference != null)
+                            type = $"global::{itemConfig.Namespace}.{schema.Reference.Id}";    
                     }
                     else
                     {
