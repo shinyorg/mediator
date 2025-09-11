@@ -1,20 +1,22 @@
+using System.Runtime.CompilerServices;
 using Shiny.Mediator.SourceGenerators.Http;
 using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests.Http;
 
 
-/*
-// put/post body are named the same as the overall request object when a pre/post fix is used
-[global::Shiny.Mediator.Http.HttpAttribute(global::Shiny.Mediator.Http.HttpVerb.Post, "/teams")]
-public partial class CreateTeam : global::Shiny.Mediator.Http.IHttpRequest<global::ShinyScoreboard.ValidateResult>
-{
-   [global::Shiny.Mediator.Http.HttpParameter(global::Shiny.Mediator.Http.HttpParameterType.Body)]
-   public global::ShinyScoreboard.CreateTeam Body { get; set; }
-}
- */
+public record PathAndMediatorHttpItemConfig(string Path, MediatorHttpItemConfig Config);
+
 public class OpenApiContractGeneratorTests(ITestOutputHelper output)
 {
+    [ModuleInitializer]
+    public static void Initialize()
+    {
+        VerifierSettings.NameForParameter<PathAndMediatorHttpItemConfig>(x =>
+            $"{Path.GetFileName(x.Path)}_{x.Config.Namespace}_{x.Config.ContractPostfix}_{x.Config.UseInternalClasses}_{x.Config.GenerateModelsOnly}_{x.Config.GenerateJsonConverters}"
+        );
+    }
+    
     [Theory]
     [InlineData("./Http/standard.json", "HttpRequest", "TestApi", false, false)]
     [InlineData("./Http/standard.json", "HttpRequest", "TestApi", true, false)]
@@ -28,28 +30,19 @@ public class OpenApiContractGeneratorTests(ITestOutputHelper output)
         bool useInternalClasses,
         bool generateModelsOnly
     )
-    { 
+    {
+        var args = new MediatorHttpItemConfig
+        {
+            Namespace = nameSpace,
+            ContractPostfix = contractPostfix,
+            UseInternalClasses = useInternalClasses,
+            GenerateModelsOnly = generateModelsOnly
+        };
         using var doc = File.OpenRead(path);
-        var generator = new OpenApiContractGenerator(
-            new MediatorHttpItemConfig
-            {
-                Namespace = nameSpace,
-                ContractPostfix = contractPostfix,
-                UseInternalClasses = useInternalClasses,
-                GenerateModelsOnly = generateModelsOnly
-            },
-            (msg, severity) => output.WriteLine($"[{severity}] {msg}")
-        );
+        var generator = new OpenApiContractGenerator(args, (msg, severity) => output.WriteLine($"[{severity}] {msg}"));
         var content = generator.Generate(doc);
         
-        return Verify(content)
-            .UseParameters(
-                path, 
-                contractPostfix, 
-                nameSpace, 
-                useInternalClasses, 
-                generateModelsOnly
-            );
+        return Verify(content).UseParameters(new PathAndMediatorHttpItemConfig(path, args));
     }
     
     
@@ -86,30 +79,20 @@ public class OpenApiContractGeneratorTests(ITestOutputHelper output)
         bool generateModelsOnly,
         bool generateJsonConverters
     )
-    { 
+    {
+        var args = new MediatorHttpItemConfig
+        {
+            Namespace = nameSpace,
+            ContractPostfix = contractPostfix,
+            UseInternalClasses = useInternalClasses,
+            GenerateModelsOnly = generateModelsOnly,
+            GenerateJsonConverters = generateJsonConverters
+        };
         using var doc = File.OpenRead(path);
-        var generator = new OpenApiContractGenerator(
-            new MediatorHttpItemConfig
-            {
-                Namespace = nameSpace,
-                ContractPostfix = contractPostfix,
-                UseInternalClasses = useInternalClasses,
-                GenerateModelsOnly = generateModelsOnly,
-                GenerateJsonConverters = generateJsonConverters
-            },
-            (msg, severity) => output.WriteLine($"[{severity}] {msg}")
-        );
+        var generator = new OpenApiContractGenerator(args, (msg, severity) => output.WriteLine($"[{severity}] {msg}"));
         var content = generator.Generate(doc);
         
-        return Verify(content)
-            .UseParameters(
-                path, 
-                contractPostfix, 
-                nameSpace, 
-                useInternalClasses, 
-                generateModelsOnly,
-                generateJsonConverters
-            );
+        return Verify(content).UseParameters(new PathAndMediatorHttpItemConfig(path, args));
     }
 
     [Fact]
