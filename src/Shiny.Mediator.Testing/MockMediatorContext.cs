@@ -38,7 +38,8 @@ public class MockMediatorContext(object message) : IMediatorContext
 
     public void Rebuild(IServiceScope scope, Activity? activity)
     {
-        throw new NotImplementedException();
+        this.Activity = activity;
+        this.ServiceScope = scope;
     }
 
     public Task<TResult> Request<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default, Action<IMediatorContext>? configure = null)
@@ -46,18 +47,16 @@ public class MockMediatorContext(object message) : IMediatorContext
         throw new NotImplementedException();
     }
 
-    public Task Send<TCommand>(TCommand command, CancellationToken cancellationToken = default, Action<IMediatorContext>? configure = null) where TCommand : ICommand
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task Publish<TEvent>(
-        TEvent @event, 
-        bool executeInParallel = true, 
+    public Task Send<TCommand>(
+        TCommand command, 
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
-    ) where TEvent : IEvent
-    {
-        throw new NotImplementedException();
-    }
+    ) where TCommand : ICommand => Task.CompletedTask;
+
+    public Task Publish<TEvent>(
+        TEvent @event,
+        bool executeInParallel = true,
+        CancellationToken cancellationToken = default,
+        Action<IMediatorContext>? configure = null
+    ) where TEvent : IEvent => Task.CompletedTask;
 }
