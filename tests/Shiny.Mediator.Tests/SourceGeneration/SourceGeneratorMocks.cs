@@ -2,7 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Shiny.Mediator.Tests;
+namespace Shiny.Mediator.Tests.SourceGeneration;
+
 
 public class MockAnalyzerConfigOptionsProvider(Dictionary<string, string> buildProperties) : AnalyzerConfigOptionsProvider
 {

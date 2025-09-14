@@ -3,7 +3,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shiny.Mediator.SourceGenerators;
 
-namespace Shiny.Mediator.Tests;
+namespace Shiny.Mediator.Tests.SourceGeneration;
+
 
 public class MediatorSourceGeneratorTests
 {

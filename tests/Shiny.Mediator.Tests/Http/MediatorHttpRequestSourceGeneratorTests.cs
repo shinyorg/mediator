@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Shiny.Mediator.SourceGenerators;
-using Shiny.Mediator.SourceGenerators.Http;
+using Shiny.Mediator.Tests.SourceGeneration;
 using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests.Http;
