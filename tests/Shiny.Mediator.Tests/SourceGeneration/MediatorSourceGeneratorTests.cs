@@ -72,7 +72,7 @@ public class SourceGenCommandHandler : ICommandHandler<SourceGenCommand>
         var compilation = CSharpCompilation.Create("TestAssembly", [syntaxTree], [metadataReference], options);
         // add code
 
-        var generator = new MediatorSourceGenerator();
+        var generator = new MediatorSourceGenerator().AsSourceGenerator();
         
         var dict = buildProperties.ToDictionary(x => "build_property." + x.Key, x => x.Value, comparer: StringComparer.InvariantCultureIgnoreCase);
         var provider = new MockAnalyzerConfigOptionsProvider(dict);
