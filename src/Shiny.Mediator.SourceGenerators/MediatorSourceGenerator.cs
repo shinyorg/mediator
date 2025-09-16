@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Shiny.Mediator.SourceGenerators;
 
+
 [Generator(LanguageNames.CSharp)]
 public class MediatorSourceGenerator : IIncrementalGenerator
 {
@@ -87,12 +88,12 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         return hasAttribute ? symbol : null;
     }
 
-    static bool HasAttribute(INamedTypeSymbol symbol, string attributeName)
-    {
-        return symbol.GetAttributes().Any(attr => 
-            attr.AttributeClass?.Name == attributeName ||
-            attr.AttributeClass?.ToDisplayString().EndsWith(attributeName) == true);
-    }
+    static bool HasAttribute(INamedTypeSymbol symbol, string attributeName) => symbol
+        .GetAttributes()
+        .Any(x => 
+            x.AttributeClass?.Name == attributeName ||
+            x.AttributeClass?.ToDisplayString().EndsWith(attributeName) == true
+        );
 
     static void Execute(SourceProductionContext context, ((ImmutableArray<INamedTypeSymbol?> Classes, Compilation Compilation) Left, Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider ConfigOptions) input)
     {
