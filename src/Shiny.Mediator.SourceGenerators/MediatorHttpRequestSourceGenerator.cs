@@ -163,13 +163,31 @@ public class MediatorHttpRequestSourceGenerator : IIncrementalGenerator
     )
     {
         context.AddSource(request.TypeName + ".g.cs", request.Content);
-        // if (itemConfig.GenerateJsonConverters && request.IsRemoteObject)
-        // {
-        //     var syntaxTree = CSharpSyntaxTree.ParseText(request.Content);
-        //     var newCompilation = compilation.AddSyntaxTrees(syntaxTree);
-        //     var typeSymbol = newCompilation.GetTypeByMetadataName(request.TypeName);
-        //     if (typeSymbol != null)
-        //         JsonConverterSourceGenerator.GenerateJsonConverter(context, typeSymbol);
-        // }
+        if (itemConfig.GenerateJsonConverters && request.IsRemoteObject)
+        {
+            try
+            {
+                var syntaxTree = CSharpSyntaxTree.ParseText(request.Content);
+                var newCompilation = compilation.AddSyntaxTrees(syntaxTree);
+                var typeSymbol = newCompilation.GetTypeByMetadataName(request.TypeName);
+                if (typeSymbol != null)
+                    JsonConverterSourceGenerator.GenerateJsonConverter(context, typeSymbol);
+            }
+            catch (Exception e)
+            {
+                // context.ReportDiagnostic(Diagnostic.Create(
+                //     new DiagnosticDescriptor(
+                //         "SHINYMED002",
+                //         "Error Generating JSON Converter",
+                //         "Error Generating JSON Converter: {0}",
+                //         "ShinyMediator",
+                //         DiagnosticSeverity.Error,
+                //         true
+                //     ),
+                //     Location.None,
+                //     e.ToString()
+                // ));
+            }
+        }
     }
 }
