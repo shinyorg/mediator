@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Text;
 using Shiny.Mediator.SourceGenerators.Http;
 using Xunit.Abstractions;
 
@@ -38,11 +39,22 @@ public class OpenApiContractGeneratorTests(ITestOutputHelper output)
             UseInternalClasses = useInternalClasses,
             GenerateModelsOnly = generateModelsOnly
         };
+
+        var sb = new StringBuilder();
         using var doc = File.OpenRead(path);
-        var generator = new OpenApiContractGenerator(args, (msg, severity) => output.WriteLine($"[{severity}] {msg}"));
-        var content = generator.Generate(doc);
+        var generator = new OpenApiContractGenerator(
+            args, 
+            (msg, severity) => output.WriteLine($"[{severity}] {msg}"),
+            x =>
+            {
+                output.WriteLine($"FileName: {x.FileName} - Remote Object: {x.isRemoteObject}");
+                sb.Append(x.Content);
+            }
+        );
+        generator.Generate(doc);
         
-        return Verify(content).UseParameters(new PathAndMediatorHttpItemConfig(path, args));
+        return Verify(sb.ToString())
+            .UseParameters(new PathAndMediatorHttpItemConfig(path, args));
     }
     
     
@@ -52,16 +64,23 @@ public class OpenApiContractGeneratorTests(ITestOutputHelper output)
     {
         var http = new HttpClient();
         var stream = await http.GetStreamAsync(uri);
+        var sb = new StringBuilder();
+        
         var generator = new OpenApiContractGenerator(
             new MediatorHttpItemConfig
             {
                 Namespace = nameSpace,
                 ContractPostfix = "HttpRequest"
             }, 
-            (msg, severity) => output.WriteLine($"[{severity}] {msg}")
+            (msg, severity) => output.WriteLine($"[{severity}] {msg}"),
+            x =>
+            {
+                output.WriteLine($"FileName: {x.FileName} - Remote Object: {x.isRemoteObject}");
+                sb.Append(x.Content);
+            }
         );
-        var content = generator.Generate(stream);
+        generator.Generate(stream);
     
-        await Verify(content).UseParameters(uri, nameSpace);
+        await Verify(sb.ToString()).UseParameters(uri, nameSpace);
     }
 }

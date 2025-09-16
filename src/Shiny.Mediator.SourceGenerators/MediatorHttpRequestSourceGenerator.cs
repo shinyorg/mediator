@@ -84,13 +84,22 @@ public class MediatorHttpRequestSourceGenerator : ISourceGenerator
             throw new InvalidOperationException("No code file returned for " + item.Path);
         
         var localCode = codeFile.ToString();
-        var generator = new OpenApiContractGenerator(itemConfig, (msg, level) => context.Log(msg, level));
+        var generator = new OpenApiContractGenerator(
+            itemConfig,
+            (msg, level) => context.Log(msg, level),
+            x =>
+            {
+                context.AddSource(x.FileName, x.Content);
+                if (itemConfig.GenerateJsonConverters && x.isRemoteObject)
+                {
+                    var type = context.Compilation.GetTypeByMetadataName(x.FileName);
+                    //JsonConverterSourceGenerator.GenerateJsonConverter(context, type);
+                }
+            });
         
-        var output = generator.Generate(
+        generator.Generate(
             new MemoryStream(Encoding.UTF8.GetBytes(localCode))
         );
-        
-        context.AddSource(itemConfig.Namespace + ".g.cs", output);
     }
 
 
@@ -100,9 +109,18 @@ public class MediatorHttpRequestSourceGenerator : ISourceGenerator
         context.LogInfo($"Generating for remote '{itemConfig.Uri}' with namespace '{itemConfig.Namespace}'");
         var stream = http.GetStreamAsync(itemConfig.Uri).GetAwaiter().GetResult();
 
-        var generator = new OpenApiContractGenerator(itemConfig, (msg, level) => context.Log(msg, level));
-        var output = generator.Generate(stream);
-
-        context.AddSource(itemConfig.Namespace + ".g.cs", output);
+        var generator = new OpenApiContractGenerator(
+            itemConfig, 
+            (msg, level) => context.Log(msg, level),
+            x =>
+            {
+                context.AddSource(x.FileName, x.Content);
+                if (itemConfig.GenerateJsonConverters && x.isRemoteObject)
+                {
+                    var type = context.Compilation.GetTypeByMetadataName(x.FileName);
+                    //JsonConverterSourceGenerator.GenerateJsonConverter(context, type);
+                }
+            });
+        generator.Generate(stream);
     }
 }

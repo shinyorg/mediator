@@ -215,7 +215,11 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         sb.AppendLine("{");
         sb.AppendLine("}");
 
-        context.AddSource($"{typeInfo.Name}.JsonConverterAttribute.g.cs", sb.ToString());
+        var ns = String.Empty;
+        if (!String.IsNullOrWhiteSpace(typeInfo.Namespace))
+            ns = typeInfo.Namespace + ".";
+        
+        context.AddSource($"{ns}{typeInfo.Name}.JsonConverterAttribute.g.cs", sb.ToString());
     }
     
 
@@ -339,7 +343,11 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         sb.AppendLine("    }");
         sb.AppendLine("}");
 
-        context.AddSource($"{typeInfo.Name}JsonConverter.g.cs", sb.ToString());
+        var ns = String.Empty;
+        if (!String.IsNullOrWhiteSpace(typeInfo.Namespace))
+            ns = typeInfo.Namespace + ".";
+        
+        context.AddSource($"{ns}{typeInfo.Name}JsonConverter.g.cs", sb.ToString());
     }
 
     class TypeInfo
