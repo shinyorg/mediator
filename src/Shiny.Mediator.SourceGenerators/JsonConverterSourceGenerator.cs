@@ -216,7 +216,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         sb.AppendLine("}");
 
         var ns = String.Empty;
-        if (!String.IsNullOrWhiteSpace(typeInfo.Namespace))
+        if (!String.IsNullOrWhiteSpace(typeInfo.Namespace) && !typeInfo.Namespace.Contains("<"))
             ns = typeInfo.Namespace + ".";
         
         context.AddSource($"{ns}{typeInfo.Name}.JsonConverterAttribute.g.cs", sb.ToString());
@@ -344,7 +344,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         sb.AppendLine("}");
 
         var ns = String.Empty;
-        if (!String.IsNullOrWhiteSpace(typeInfo.Namespace))
+        if (!String.IsNullOrWhiteSpace(typeInfo.Namespace) && !typeInfo.Namespace.Contains("<"))
             ns = typeInfo.Namespace + ".";
         
         context.AddSource($"{ns}{typeInfo.Name}JsonConverter.g.cs", sb.ToString());

@@ -47,7 +47,7 @@ public class OpenApiContractGeneratorTests(ITestOutputHelper output)
             (msg, severity) => output.WriteLine($"[{severity}] {msg}"),
             x =>
             {
-                output.WriteLine($"FileName: {x.FileName} - Remote Object: {x.isRemoteObject}");
+                output.WriteLine($"Type: {x.TypeName} - Remote Object: {x.IsRemoteObject}");
                 sb.Append(x.Content);
             }
         );
@@ -75,7 +75,7 @@ public class OpenApiContractGeneratorTests(ITestOutputHelper output)
             (msg, severity) => output.WriteLine($"[{severity}] {msg}"),
             x =>
             {
-                output.WriteLine($"FileName: {x.FileName} - Remote Object: {x.isRemoteObject}");
+                output.WriteLine($"Type: {x.TypeName} - Remote Object: {x.IsRemoteObject}");
                 sb.Append(x.Content);
             }
         );

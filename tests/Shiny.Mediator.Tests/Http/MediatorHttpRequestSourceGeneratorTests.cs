@@ -31,10 +31,11 @@ public class MediatorHttpRequestSourceGeneratorTests(ITestOutputHelper output)
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
         var compilation = CSharpCompilation.Create("TestAssembly", [], [metadataReference], options);
     
-        var generator = new MediatorHttpRequestSourceGenerator();
+        var generator = new MediatorHttpRequestSourceGenerator().AsSourceGenerator();
         var dict = new Dictionary<string, string>
         {
             { "build_metadata.AdditionalFiles.SourceItemGroup", "MediatorHttp" },
+            // { "build_metadata.AdditionalFiles.GenerateJsonConverters", "true" },
             { "build_metadata.AdditionalFiles.Namespace", generatedNamespace }
             // { "build_metadata.AdditionalFiles.ContractPrefix", "" },
             // { "build_metadata.AdditionalFiles.ContractPostfix", "" }

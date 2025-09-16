@@ -1,69 +1,94 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Shiny.Mediator.SourceGenerators.Http;
 
 namespace Shiny.Mediator.SourceGenerators;
 
 
 [Generator(LanguageNames.CSharp)]
-public class MediatorHttpRequestSourceGenerator : ISourceGenerator
+public class MediatorHttpRequestSourceGenerator : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-    }
+        var rootNamespace = context.AnalyzerConfigOptionsProvider
+            .Select((provider, _) => provider.GlobalOptions.TryGetValue("build_property.RootNamespace", out var value) ? value : "");
 
+        var mediatorHttpItems = context.AdditionalTextsProvider
+            .Combine(context.AnalyzerConfigOptionsProvider)
+            .Where(pair =>
+            {
+                var (text, configOptions) = pair;
+                var options = configOptions.GetOptions(text);
 
-    public void Execute(GeneratorExecutionContext context)
-    {
-        var skip = context.GetMSBuildProperty("ShinyMediatorDisableSourceGen")?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false;
-        if (skip)
-            return;
-        
-        var rootNamespace = context.GetMSBuildProperty("RootNamespace")!;
-        var items = context.GetAddtionalTexts("MediatorHttp");
-        
-        context.LogInfo("HTTP Generator - Item Count: " + items.Length);
-        foreach (var item in items)
+                if (!options.TryGetValue("build_metadata.AdditionalFiles.SourceItemGroup", out var value))
+                    return false;
+
+                var mediatorItem = value.Equals("MediatorHttp", StringComparison.InvariantCultureIgnoreCase);
+                return mediatorItem;
+            })
+            .Select((pair, _) => pair.Left)
+            .Collect();
+
+        var combined = mediatorHttpItems
+            .Combine(rootNamespace)
+            .Combine(context.AnalyzerConfigOptionsProvider)
+            .Combine(context.CompilationProvider);
+
+        context.RegisterSourceOutput(combined, (sourceContext, data) =>
         {
-            try
+            var (((texts, rootNs), configOptions), compilation) = data;
+            
+            foreach (var item in texts)
             {
-                var config = GetConfig(context, item, rootNamespace);
-                
-                if (config.Uri == null)
-                    Local(context, item, config);
-                else
-                    Remote(context, item, config);
+                try
+                {
+                    var config = GetConfig(configOptions, item, rootNs);
+                    
+                    if (config.Uri == null)
+                        Local(sourceContext, item, config, compilation);
+                    else
+                        Remote(sourceContext, item, config, compilation);
+                }
+                catch (Exception ex)
+                {
+                    sourceContext.ReportDiagnostic(Diagnostic.Create(
+                        new DiagnosticDescriptor(
+                            "SHINYMED000",
+                            "Error Generating HTTP Contracts",
+                            "Error Generating HTTP Contracts: {0}",
+                            "ShinyMediator",
+                            DiagnosticSeverity.Error,
+                            true),
+                        Location.None,
+                        ex.ToString())
+                    );
+                }
             }
-            catch (Exception ex)
-            {
-                context.LogError("Error Generating HTTP Contracts: " + ex);
-            }
-        }
+        });
     }
 
-
-    static MediatorHttpItemConfig GetConfig(GeneratorExecutionContext context, AdditionalText item, string rootNamespace)
+    static MediatorHttpItemConfig GetConfig(AnalyzerConfigOptionsProvider configProvider, AdditionalText item, string rootNamespace)
     {
         var cfg = new MediatorHttpItemConfig
         {
-            Namespace = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.Namespace)) ?? rootNamespace,
-            ContractPrefix = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.ContractPrefix)),
-            ContractPostfix = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.ContractPostfix)),
-            GenerateModelsOnly = context
-                .GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.GenerateModelsOnly))?
-                .Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
-            UseInternalClasses = context
-                .GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.UseInternalClasses))?
-                .Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
-            GenerateJsonConverters = context
-                .GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.GenerateJsonConverters))?
-                .Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false
+            Namespace = GetAdditionalTextProperty(configProvider, item, nameof(MediatorHttpItemConfig.Namespace)) ?? rootNamespace,
+            ContractPrefix = GetAdditionalTextProperty(configProvider, item, nameof(MediatorHttpItemConfig.ContractPrefix)),
+            ContractPostfix = GetAdditionalTextProperty(configProvider, item, nameof(MediatorHttpItemConfig.ContractPostfix)),
+            GenerateModelsOnly = GetAdditionalTextProperty(configProvider, item, nameof(MediatorHttpItemConfig.GenerateModelsOnly))
+                ?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
+            UseInternalClasses = GetAdditionalTextProperty(configProvider, item, nameof(MediatorHttpItemConfig.UseInternalClasses))
+                ?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
+            GenerateJsonConverters = GetAdditionalTextProperty(configProvider, item, nameof(MediatorHttpItemConfig.GenerateJsonConverters))
+                ?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false
         };
         
-        var uri = context.GetAdditionalTextProperty(item, nameof(MediatorHttpItemConfig.Uri));
+        var uri = GetAdditionalTextProperty(configProvider, item, nameof(MediatorHttpItemConfig.Uri));
         if (!String.IsNullOrWhiteSpace(uri))
         {
             if (Uri.TryCreate(uri, UriKind.Absolute, out var fullUri))
@@ -74,11 +99,15 @@ public class MediatorHttpRequestSourceGenerator : ISourceGenerator
         return cfg;
     }
 
-    
-    static void Local(GeneratorExecutionContext context, AdditionalText item, MediatorHttpItemConfig itemConfig)
+    static string? GetAdditionalTextProperty(AnalyzerConfigOptionsProvider configProvider, AdditionalText item, string propertyName)
     {
-        context.LogInfo($"Generating from local file '{item.Path}' with namespace '{itemConfig.Namespace}'");
-        
+        if (configProvider.GetOptions(item).TryGetValue($"build_metadata.AdditionalFiles.{propertyName}", out var value))
+            return value;
+        return null;
+    }
+
+    static void Local(SourceProductionContext context, AdditionalText item, MediatorHttpItemConfig itemConfig, Compilation compilation)
+    {
         var codeFile = item.GetText(context.CancellationToken);
         if (codeFile == null)
             throw new InvalidOperationException("No code file returned for " + item.Path);
@@ -86,41 +115,61 @@ public class MediatorHttpRequestSourceGenerator : ISourceGenerator
         var localCode = codeFile.ToString();
         var generator = new OpenApiContractGenerator(
             itemConfig,
-            (msg, level) => context.Log(msg, level),
-            x =>
-            {
-                context.AddSource(x.FileName, x.Content);
-                if (itemConfig.GenerateJsonConverters && x.isRemoteObject)
-                {
-                    var type = context.Compilation.GetTypeByMetadataName(x.FileName);
-                    //JsonConverterSourceGenerator.GenerateJsonConverter(context, type);
-                }
-            });
-        
+            (msg, severity) => ReportMessage(context, msg, severity),
+            x => ProcessFileRequest(context, itemConfig, compilation, x)
+        );
         generator.Generate(
             new MemoryStream(Encoding.UTF8.GetBytes(localCode))
         );
     }
 
-
-    static readonly HttpClient http = new();
-    static void Remote(GeneratorExecutionContext context, AdditionalText item, MediatorHttpItemConfig itemConfig)
+    static readonly HttpClient Http = new();
+    
+    static void Remote(SourceProductionContext context, AdditionalText _, MediatorHttpItemConfig itemConfig, Compilation compilation)
     {
-        context.LogInfo($"Generating for remote '{itemConfig.Uri}' with namespace '{itemConfig.Namespace}'");
-        var stream = http.GetStreamAsync(itemConfig.Uri).GetAwaiter().GetResult();
+        var stream = Http.GetStreamAsync(itemConfig.Uri).GetAwaiter().GetResult();
 
         var generator = new OpenApiContractGenerator(
             itemConfig, 
-            (msg, level) => context.Log(msg, level),
-            x =>
-            {
-                context.AddSource(x.FileName, x.Content);
-                if (itemConfig.GenerateJsonConverters && x.isRemoteObject)
-                {
-                    var type = context.Compilation.GetTypeByMetadataName(x.FileName);
-                    //JsonConverterSourceGenerator.GenerateJsonConverter(context, type);
-                }
-            });
+            (msg, severity) => ReportMessage(context, msg, severity),
+            x => ProcessFileRequest(context, itemConfig, compilation, x)
+        );
         generator.Generate(stream);
+    }
+
+    
+    static void ReportMessage(SourceProductionContext context, string message, DiagnosticSeverity severity)
+    {
+        context.ReportDiagnostic(Diagnostic.Create(
+            new DiagnosticDescriptor(
+                "SHINYMED001",
+                "HTTP Generator Message",
+                "{0}",
+                "ShinyMediator",
+                severity,
+                true
+            ),
+            Location.None,
+            message
+        ));
+    }
+
+
+    static void ProcessFileRequest(
+        SourceProductionContext context, 
+        MediatorHttpItemConfig itemConfig, 
+        Compilation compilation,
+        FileRequest request
+    )
+    {
+        context.AddSource(request.TypeName + ".g.cs", request.Content);
+        // if (itemConfig.GenerateJsonConverters && request.IsRemoteObject)
+        // {
+        //     var syntaxTree = CSharpSyntaxTree.ParseText(request.Content);
+        //     var newCompilation = compilation.AddSyntaxTrees(syntaxTree);
+        //     var typeSymbol = newCompilation.GetTypeByMetadataName(request.TypeName);
+        //     if (typeSymbol != null)
+        //         JsonConverterSourceGenerator.GenerateJsonConverter(context, typeSymbol);
+        // }
     }
 }

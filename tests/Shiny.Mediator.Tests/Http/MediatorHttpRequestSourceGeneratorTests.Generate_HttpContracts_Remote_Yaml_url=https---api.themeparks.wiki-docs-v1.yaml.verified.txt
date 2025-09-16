@@ -1,40 +1,14 @@
 ﻿{
   Diagnostics: [
     {
-      Message: HTTP Generator - Item Count: 1,
-      Severity: Info,
-      WarningLevel: 1,
-      Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: HTTP Generator - Item Count: 1,
-        Category: Shiny.Mediator,
-        DefaultSeverity: Info,
-        IsEnabledByDefault: true
-      }
-    },
-    {
-      Message: Generating for remote 'https://api.themeparks.wiki/docs/v1.yaml' with namespace 'MyTests',
-      Severity: Info,
-      WarningLevel: 1,
-      Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: Generating for remote 'https://api.themeparks.wiki/docs/v1.yaml' with namespace 'MyTests',
-        Category: Shiny.Mediator,
-        DefaultSeverity: Info,
-        IsEnabledByDefault: true
-      }
-    },
-    {
       Message: Generating Components for MyTests,
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: Generating Components for MyTests,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -44,10 +18,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: EntityType,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -57,10 +31,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM COMPONENT GENERATING - EntityType,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -70,10 +44,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: DESTINATION,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -83,10 +57,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: PARK,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -96,10 +70,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: ATTRACTION,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -109,10 +83,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: RESTAURANT,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -122,10 +96,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: HOTEL,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -135,10 +109,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: SHOW,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -148,10 +122,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: DONE ENUM COMPONENT GENERATING - EntityType,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -161,10 +135,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: LiveStatusType,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -174,10 +148,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM COMPONENT GENERATING - LiveStatusType,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -187,10 +161,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: OPERATING,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -200,10 +174,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: DOWN,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -213,10 +187,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: CLOSED,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -226,10 +200,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: REFURBISHMENT,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -239,10 +213,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: DONE ENUM COMPONENT GENERATING - LiveStatusType,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -252,10 +226,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: ReturnTimeState,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -265,10 +239,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM COMPONENT GENERATING - ReturnTimeState,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -278,10 +252,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: AVAILABLE,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -291,10 +265,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: TEMP_FULL,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -304,10 +278,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: FINISHED,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -317,10 +291,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: DONE ENUM COMPONENT GENERATING - ReturnTimeState,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -330,10 +304,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: BoardingGroupState,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -343,10 +317,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM COMPONENT GENERATING - BoardingGroupState,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -356,10 +330,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: AVAILABLE,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -369,10 +343,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: PAUSED,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -382,10 +356,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: CLOSED,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -395,10 +369,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: DONE ENUM COMPONENT GENERATING - BoardingGroupState,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -408,10 +382,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: PriceData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -421,10 +395,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: PriceData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -434,10 +408,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Amount (double),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -447,10 +421,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Currency (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -460,10 +434,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Formatted (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -473,10 +447,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: PriceData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -486,10 +460,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: LiveQueue,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -499,10 +473,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: LiveQueue,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -512,10 +486,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: LiveQueueStandby,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -525,10 +499,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: WaitTime (double),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -538,10 +512,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: LiveQueueStandby,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -551,10 +525,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Standby (LiveQueueStandby),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -564,10 +538,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: LiveQueueSingleRider,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -577,10 +551,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: WaitTime (double?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -590,10 +564,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: LiveQueueSingleRider,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -603,10 +577,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: SingleRider (LiveQueueSingleRider),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -616,10 +590,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: LiveQueueReturnTime,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -629,10 +603,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: State (global::MyTests.ReturnTimeState),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -642,10 +616,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: ReturnStart (System.DateTimeOffset?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -655,10 +629,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: ReturnEnd (System.DateTimeOffset?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -668,10 +642,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: LiveQueueReturnTime,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -681,10 +655,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: ReturnTime (LiveQueueReturnTime),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -694,10 +668,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: LiveQueuePaidReturnTime,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -707,10 +681,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: State (global::MyTests.ReturnTimeState),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -720,10 +694,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: ReturnStart (System.DateTimeOffset?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -733,10 +707,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: ReturnEnd (System.DateTimeOffset?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -746,10 +720,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Price (global::MyTests.PriceData),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -759,10 +733,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: LiveQueuePaidReturnTime,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -772,10 +746,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: PaidReturnTime (LiveQueuePaidReturnTime),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -785,10 +759,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: LiveQueueBoardingGroup,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -798,10 +772,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: AllocationStatus (global::MyTests.BoardingGroupState),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -811,10 +785,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: CurrentGroupStart (double?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -824,10 +798,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: CurrentGroupEnd (double?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -837,10 +811,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: NextAllocationTime (System.DateTimeOffset?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -850,10 +824,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: EstimatedWait (double?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -863,10 +837,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: LiveQueueBoardingGroup,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -876,10 +850,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: BoardingGroup (LiveQueueBoardingGroup),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -889,10 +863,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: LiveQueuePaidStandby,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -902,10 +876,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: WaitTime (double?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -915,10 +889,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: LiveQueuePaidStandby,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -928,10 +902,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: PaidStandby (LiveQueuePaidStandby),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -941,10 +915,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: LiveQueue,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -954,10 +928,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: LiveShowTime,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -967,10 +941,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: LiveShowTime,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -980,10 +954,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Type (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -993,10 +967,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: StartTime (System.DateTimeOffset?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1006,10 +980,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: EndTime (System.DateTimeOffset?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1019,10 +993,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: LiveShowTime,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1032,10 +1006,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: DiningAvailability,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1045,10 +1019,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: DiningAvailability,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1058,10 +1032,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: PartySize (double?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1071,10 +1045,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: WaitTime (double?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1084,10 +1058,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: DiningAvailability,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1097,10 +1071,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: TagData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1110,10 +1084,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: TagData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1123,10 +1097,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Tag (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1136,10 +1110,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: TagName (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1149,10 +1123,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Id (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1162,10 +1136,10 @@
       Severity: Warning,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Value - Type was not found,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Warning,
         IsEnabledByDefault: true
       }
@@ -1175,10 +1149,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: TagData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1188,10 +1162,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: EntityData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1201,10 +1175,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: EntityData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1214,10 +1188,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Id (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1227,10 +1201,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Name (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1240,10 +1214,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: EntityType (global::MyTests.EntityType),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1253,10 +1227,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: ParentId (string?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1266,10 +1240,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: DestinationId (string?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1279,10 +1253,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Timezone (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1292,10 +1266,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: EntityDataLocation,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1305,10 +1279,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Latitude (double),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1318,10 +1292,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Longitude (double),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1331,10 +1305,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: EntityDataLocation,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1344,10 +1318,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Location (EntityDataLocation),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1357,10 +1331,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Tags (global::System.Collections.Generic.List<global::MyTests.TagData>),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1370,10 +1344,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: EntityData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1383,10 +1357,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: EntityChild,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1396,10 +1370,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: EntityChild,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1409,10 +1383,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Id (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1422,10 +1396,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Name (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1435,10 +1409,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: EntityType (global::MyTests.EntityType),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1448,10 +1422,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: ExternalId (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1461,10 +1435,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: ParentId (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1474,10 +1448,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: EntityChildLocation,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1487,10 +1461,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Latitude (double?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1500,10 +1474,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Longitude (double?),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1513,10 +1487,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: EntityChildLocation,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1526,10 +1500,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Location (EntityChildLocation),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1539,10 +1513,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: EntityChild,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1552,10 +1526,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: EntityChildrenResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1565,10 +1539,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: EntityChildrenResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1578,10 +1552,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Id (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1591,10 +1565,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Name (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1604,10 +1578,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: EntityType (global::MyTests.EntityType),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1617,10 +1591,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Timezone (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1630,10 +1604,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Children (global::System.Collections.Generic.List<global::MyTests.EntityChild>),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1643,10 +1617,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: EntityChildrenResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1656,10 +1630,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: EntityLiveData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1669,10 +1643,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: EntityLiveData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1682,10 +1656,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Id (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1695,10 +1669,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Name (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1708,10 +1682,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: EntityType (global::MyTests.EntityType),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1721,10 +1695,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Status (global::MyTests.LiveStatusType),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1734,10 +1708,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: LastUpdated (System.DateTimeOffset),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1747,10 +1721,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Queue (global::MyTests.LiveQueue),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1760,10 +1734,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Showtimes (global::System.Collections.Generic.List<global::MyTests.LiveShowTime>),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1773,10 +1747,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: OperatingHours (global::System.Collections.Generic.List<global::MyTests.LiveShowTime>),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1786,10 +1760,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: DiningAvailability (global::System.Collections.Generic.List<global::MyTests.DiningAvailability>),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1799,10 +1773,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: EntityLiveData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1812,10 +1786,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: EntityLiveDataResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1825,10 +1799,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: EntityLiveDataResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1838,10 +1812,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Id (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1851,10 +1825,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Name (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1864,10 +1838,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: EntityType (global::MyTests.EntityType),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1877,10 +1851,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Timezone (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1890,10 +1864,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: LiveData (global::System.Collections.Generic.List<global::MyTests.EntityLiveData>),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1903,10 +1877,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: EntityLiveDataResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1916,10 +1890,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: SchedulePriceObject,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1929,10 +1903,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: SchedulePriceObject,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1942,10 +1916,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM COMPONENT GENERATING - SchedulePriceObjectType,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1955,10 +1929,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: ADMISSION,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1968,10 +1942,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: PACKAGE,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1981,10 +1955,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: ATTRACTION,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -1994,10 +1968,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: DONE ENUM COMPONENT GENERATING - SchedulePriceObjectType,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2007,10 +1981,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Type (SchedulePriceObjectType),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2020,10 +1994,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Id (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2033,10 +2007,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Name (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2046,10 +2020,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Price (global::MyTests.PriceData),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2059,10 +2033,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Available (bool),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2072,10 +2046,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: SchedulePriceObject,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2085,10 +2059,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: ScheduleEntry,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2098,10 +2072,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: ScheduleEntry,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2111,10 +2085,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Date (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2124,10 +2098,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: OpeningTime (System.DateTimeOffset),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2137,10 +2111,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: ClosingTime (System.DateTimeOffset),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2150,10 +2124,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM COMPONENT GENERATING - ScheduleEntryType,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2163,10 +2137,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: OPERATING,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2176,10 +2150,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: TICKETED_EVENT,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2189,10 +2163,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: PRIVATE_EVENT,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2202,10 +2176,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: EXTRA_HOURS,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2215,10 +2189,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ENUM VALUE: INFO,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2228,10 +2202,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: DONE ENUM COMPONENT GENERATING - ScheduleEntryType,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2241,10 +2215,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Type (ScheduleEntryType),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2254,10 +2228,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Purchases (global::System.Collections.Generic.List<global::MyTests.SchedulePriceObject>),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2267,10 +2241,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: ScheduleEntry,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2280,10 +2254,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: EntityScheduleResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2293,10 +2267,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: EntityScheduleResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2306,10 +2280,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Id (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2319,10 +2293,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Name (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2332,10 +2306,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: EntityType (global::MyTests.EntityType),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2345,10 +2319,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Timezone (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2358,10 +2332,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Schedule (global::System.Collections.Generic.List<global::MyTests.ScheduleEntry>),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2371,10 +2345,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Parks (global::System.Collections.Generic.List<global::MyTests.EntityScheduleResponse>),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2384,10 +2358,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: EntityScheduleResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2397,10 +2371,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: DestinationParkEntry,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2410,10 +2384,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: DestinationParkEntry,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2423,10 +2397,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Id (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2436,10 +2410,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Name (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2449,10 +2423,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: DestinationParkEntry,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2462,10 +2436,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: DestinationEntry,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2475,10 +2449,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: DestinationEntry,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2488,10 +2462,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Id (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2501,10 +2475,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Name (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2514,10 +2488,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Slug (string),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2527,10 +2501,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Parks (global::System.Collections.Generic.List<global::MyTests.DestinationParkEntry>),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2540,10 +2514,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: DestinationEntry,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2553,10 +2527,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: COMPONENT: DestinationsResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2566,10 +2540,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===GENERATING CLASS COMPONENT: DestinationsResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2579,10 +2553,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Destinations (global::System.Collections.Generic.List<global::MyTests.DestinationEntry>),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2592,10 +2566,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: ===DONE GENERATING CLASS COMPONENT: DestinationsResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2605,10 +2579,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PATH: /destinations,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2618,10 +2592,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: OPERATION: Get - ID: getDestinations,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2631,10 +2605,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: RESPONSE: global::MyTests.DestinationsResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2644,10 +2618,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PATH: /entity/{entityID},
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2657,10 +2631,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: OPERATION: Get - ID: getEntity,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2670,10 +2644,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: RESPONSE: global::MyTests.EntityData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2683,10 +2657,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: EntityID (string - Path),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2696,10 +2670,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PATH: /entity/{entityID}/children,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2709,10 +2683,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: OPERATION: Get - ID: getEntityChildren,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2722,10 +2696,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: RESPONSE: global::MyTests.EntityChildrenResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2735,10 +2709,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: EntityID (string - Path),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2748,10 +2722,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PATH: /entity/{entityID}/live,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2761,10 +2735,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: OPERATION: Get - ID: getEntityLiveData,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2774,10 +2748,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: RESPONSE: global::MyTests.EntityLiveDataResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2787,10 +2761,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: EntityID (string - Path),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2800,10 +2774,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PATH: /entity/{entityID}/schedule,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2813,10 +2787,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: OPERATION: Get - ID: getEntityScheduleUpcoming,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2826,10 +2800,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: RESPONSE: global::MyTests.EntityScheduleResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2839,10 +2813,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: EntityID (string - Path),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2852,10 +2826,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PATH: /entity/{entityID}/schedule/{year}/{month},
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2865,10 +2839,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: OPERATION: Get - ID: getEntityScheduleYearMonth,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2878,10 +2852,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: RESPONSE: global::MyTests.EntityScheduleResponse,
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2891,10 +2865,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: EntityID (string - Path),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2904,10 +2878,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Year (double - Path),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }
@@ -2917,10 +2891,10 @@
       Severity: Info,
       WarningLevel: 1,
       Descriptor: {
-        Id: SHINYMED000,
-        Title: Mediator,
-        MessageFormat: PROPERTY: Month (double - Path),
-        Category: Shiny.Mediator,
+        Id: SHINYMED001,
+        Title: HTTP Generator Message,
+        MessageFormat: {0},
+        Category: ShinyMediator,
         DefaultSeverity: Info,
         IsEnabledByDefault: true
       }

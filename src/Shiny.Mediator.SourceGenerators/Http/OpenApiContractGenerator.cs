@@ -10,11 +10,12 @@ using Microsoft.OpenApi.Readers;
 
 namespace Shiny.Mediator.SourceGenerators.Http;
 
+public record FileRequest(string TypeName, bool IsRemoteObject, string Content);
 
 public class OpenApiContractGenerator(
     MediatorHttpItemConfig itemConfig, 
     Action<string, DiagnosticSeverity> output,
-    Action<(string FileName, bool isRemoteObject, string Content)> addFile
+    Action<FileRequest> addFile
 )
 {
     string accessorType = "public";
@@ -55,7 +56,7 @@ public class OpenApiContractGenerator(
             .AppendLine()
             .Append(sb);
         
-        addFile(($"{itemConfig.Namespace}.{objectName}.g.cs", isRemoteObject, fullSb.ToString()));
+        addFile(new($"{itemConfig.Namespace}.{objectName}", isRemoteObject, fullSb.ToString()));
     }
 
     
