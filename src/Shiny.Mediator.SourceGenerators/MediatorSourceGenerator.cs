@@ -149,3 +149,56 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         context.AddSource("__MediatorHandlersRegistration.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
     }
 }
+
+/*
+Given
+   
+   [MediatorHandler]
+   public class MyRequestHandler : IRequestHandler<MyRequestHandler, MyResponse>
+   {
+   public Task<MyResponse> Handle(MyRequest request, CancellationToken cancellationToken)
+   {
+   // Handle the request and return a response
+   var response = new MyResponse
+   {
+   Message = $"Hello, {request.Name}!"
+   };
+   return Task.FromResult(response);
+   }
+   }
+   
+   
+   [MediatorMiddleware(1)]
+   public class MyRequestMiddleware : IRequestMiddleware<MyResponse, MyResponse>
+   {
+   public string Name { get; set; }
+   }
+   
+   [MediatorMiddleware(2)]
+   public class GenericRequestMiddleware<TRequest, TResponse> : IRequestMiddleware<MyResponse, TResponse>
+   {
+   public string Name { get; set; }
+   }
+   
+   
+   
+   GENERATES:
+   
+   public class RequestExecutor : IRequestExecutor
+   {
+   
+       public Task<MyResponse> Execute(MyRequest request, CancellationToken cancellationToken = default)
+       {
+           var middleware1 = new MyRequestMiddleware { Name = "MyRequestMiddleware" };
+           var middleware2 = new GenericRequestMiddleware<MyRequest, MyResponse> { Name = "GenericRequestMiddleware" };
+           var handler = new MyRequestHandler();
+           
+           Func<Task<MyResponse>> handlerFunc = () => handler.Handle(request, cancellationToken);
+           
+           Func<Task<MyResponse>> pipeline = () => middleware2.Invoke(() => middleware1.Invoke(handlerFunc), request, cancellationToken);
+           
+           return pipeline();
+       }
+   }
+   
+ */
