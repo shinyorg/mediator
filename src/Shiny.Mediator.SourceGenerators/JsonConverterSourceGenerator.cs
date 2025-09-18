@@ -91,7 +91,8 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
                 x.Name,
                 x.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 x.Type.CanBeReferencedByName,
-                IsNullableType(x.Type)
+                IsNullableType(x.Type),
+                GetJsonPropertyName(x)
             ))
             .ToArray();
 
@@ -149,7 +150,8 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
                 x.Name,
                 x.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 x.Type.CanBeReferencedByName,
-                IsNullableType(x.Type)
+                IsNullableType(x.Type),
+                GetJsonPropertyName(x)
             ))
             .ToArray();
 
@@ -261,7 +263,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         
         foreach (var prop in typeInfo.Properties)
         {
-            sb.AppendLine($"        writer.WritePropertyName(\"{prop.Name}\");");
+            sb.AppendLine($"        writer.WritePropertyName(\"{prop.JsonPropertyName}\");");
             
             var writerMethod = GetWriterMethodForType(prop.TypeName, $"value.{prop.Name}", prop.IsNullable);
             
@@ -334,7 +336,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
 
         foreach (var prop in typeInfo.Properties)
         {
-            sb.AppendLine($"                case \"{prop.Name}\":");
+            sb.AppendLine($"                case \"{prop.JsonPropertyName}\":");
             
             var readerMethod = GetReaderMethodForType(prop.TypeName, prop.IsNullable);
             
@@ -447,6 +449,23 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         string Name, 
         string TypeName, 
         bool CanBeReferenced, 
-        bool IsNullable
+        bool IsNullable,
+        string JsonPropertyName
     );
+
+    private static string GetJsonPropertyName(IPropertySymbol property)
+    {
+        // Check if the property has the JsonPropertyName attribute
+        var jsonPropertyNameAttribute = property.GetAttributes()
+            .FirstOrDefault(attr => attr.AttributeClass?.ToDisplayString() == "System.Text.Json.Serialization.JsonPropertyNameAttribute");
+
+        // If the attribute is present, return the value of its constructor (the JSON property name)
+        if (jsonPropertyNameAttribute != null && jsonPropertyNameAttribute.ConstructorArguments.Length > 0)
+        {
+            return jsonPropertyNameAttribute.ConstructorArguments[0].Value?.ToString() ?? property.Name;
+        }
+
+        // If the attribute is not present, return the default property name
+        return property.Name;
+    }
 }
