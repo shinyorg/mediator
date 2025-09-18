@@ -263,7 +263,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         {
             sb.AppendLine($"        writer.WritePropertyName(\"{prop.Name}\");");
             
-            var writerMethod = GetWriterMethodForType(prop.TypeName, $"value.{prop.Name}");
+            var writerMethod = GetWriterMethodForType(prop.TypeName, $"value.{prop.Name}", prop.IsNullable);
             
             if (prop.IsNullable)
             {
@@ -401,27 +401,34 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         return readerMethod;
     }
 
-    static string? GetWriterMethodForType(string typeName, string valueExpression)
+    static string? GetWriterMethodForType(string typeName, string valueExpression, bool isNullable)
     {
         // Remove global:: prefix and nullable annotations for type matching
         var cleanTypeName = typeName.Replace("global::", "").Replace("?", "");
         
+        // For nullable value types, we need to use .Value
+        var needsValue = isNullable &&
+            cleanTypeName != "System.String" &&
+            cleanTypeName != "string";
+
+        var expr = needsValue ? $"{valueExpression}.Value" : valueExpression;
+        
         return cleanTypeName switch
         {
-            "System.Boolean" or "bool" => $"writer.WriteBooleanValue({valueExpression})",
-            "System.String" or "string" => $"writer.WriteStringValue({valueExpression})",
-            "System.DateTime" => $"writer.WriteStringValue({valueExpression}.ToString(\"O\"))",
-            "System.DateTimeOffset" => $"writer.WriteStringValue({valueExpression}.ToString(\"O\"))",
-            "System.Single" or "float" => $"writer.WriteNumberValue({valueExpression})",
-            "System.UInt16" or "ushort" => $"writer.WriteNumberValue({valueExpression})",
-            "System.UInt32" or "uint" => $"writer.WriteNumberValue({valueExpression})",
-            "System.UInt64" or "ulong" => $"writer.WriteNumberValue({valueExpression})",
-            "System.Double" or "double" => $"writer.WriteNumberValue({valueExpression})",
-            "System.Decimal" or "decimal" => $"writer.WriteNumberValue({valueExpression})",
-            "System.Int16" or "short" => $"writer.WriteNumberValue({valueExpression})",
-            "System.Int32" or "int" => $"writer.WriteNumberValue({valueExpression})",
-            "System.Int64" or "long" => $"writer.WriteNumberValue({valueExpression})",
-            "System.Guid" => $"writer.WriteStringValue({valueExpression}.ToString())",
+            "System.Boolean" or "bool" => $"writer.WriteBooleanValue({expr})",
+            "System.String" or "string" => $"writer.WriteStringValue({expr})",
+            "System.DateTime" => $"writer.WriteStringValue({expr}.ToString(\"O\"))",
+            "System.DateTimeOffset" => $"writer.WriteStringValue({expr}.ToString(\"O\"))",
+            "System.Single" or "float" => $"writer.WriteNumberValue({expr})",
+            "System.UInt16" or "ushort" => $"writer.WriteNumberValue({expr})",
+            "System.UInt32" or "uint" => $"writer.WriteNumberValue({expr})",
+            "System.UInt64" or "ulong" => $"writer.WriteNumberValue({expr})",
+            "System.Double" or "double" => $"writer.WriteNumberValue({expr})",
+            "System.Decimal" or "decimal" => $"writer.WriteNumberValue({expr})",
+            "System.Int16" or "short" => $"writer.WriteNumberValue({expr})",
+            "System.Int32" or "int" => $"writer.WriteNumberValue({expr})",
+            "System.Int64" or "long" => $"writer.WriteNumberValue({expr})",
+            "System.Guid" => $"writer.WriteStringValue({expr}.ToString())",
             _ => null
         };
     }
