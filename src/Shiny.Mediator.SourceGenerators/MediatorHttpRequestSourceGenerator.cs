@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -164,7 +165,11 @@ public class MediatorHttpRequestSourceGenerator : IIncrementalGenerator
         {
             try
             {
-                var syntaxTree = CSharpSyntaxTree.ParseText(request.Content);
+                var syntaxTree = CSharpSyntaxTree.ParseText(
+                    request.Content, 
+                    CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest),
+                    cancellationToken: context.CancellationToken
+                );
                 compilation = compilation.AddSyntaxTrees(syntaxTree);
             }
             catch (Exception ex)
