@@ -134,18 +134,20 @@ public class MediatorHttpRequestSourceGenerator : IIncrementalGenerator
         Exception? ex = null
     )
     {
+        var message = title + ex;
+        
         context.ReportDiagnostic(Diagnostic.Create(
             new DiagnosticDescriptor(
                 "SHINYMED001",
                 title,
-                null,
+                "{0}",
                 nameof(MediatorHttpRequestSourceGenerator),
                 severity,
                 true,
-                ex?.Message ?? title
+                message
             ),
             Location.None,
-            String.Empty
+            message
         ));
     }
 
