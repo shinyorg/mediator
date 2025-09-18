@@ -262,16 +262,34 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         foreach (var prop in typeInfo.Properties)
         {
             sb.AppendLine($"        writer.WritePropertyName(\"{prop.Name}\");");
+            
+            var writerMethod = GetWriterMethodForType(prop.TypeName, $"value.{prop.Name}");
+            
             if (prop.IsNullable)
             {
                 sb.AppendLine($"        if (value.{prop.Name} == null)");
                 sb.AppendLine("            writer.WriteNullValue();");
                 sb.AppendLine("        else");
-                sb.AppendLine($"            JsonSerializer.Serialize(writer, value.{prop.Name}, options);");
+                
+                if (writerMethod != null)
+                {
+                    sb.AppendLine($"            {writerMethod};");
+                }
+                else
+                {
+                    sb.AppendLine($"            JsonSerializer.Serialize(writer, value.{prop.Name}, options);");
+                }
             }
             else
             {
-                sb.AppendLine($"        JsonSerializer.Serialize(writer, value.{prop.Name}, options);");
+                if (writerMethod != null)
+                {
+                    sb.AppendLine($"        {writerMethod};");
+                }
+                else
+                {
+                    sb.AppendLine($"        JsonSerializer.Serialize(writer, value.{prop.Name}, options);");
+                }
             }
         }
         
@@ -381,6 +399,31 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         }
 
         return readerMethod;
+    }
+
+    static string? GetWriterMethodForType(string typeName, string valueExpression)
+    {
+        // Remove global:: prefix and nullable annotations for type matching
+        var cleanTypeName = typeName.Replace("global::", "").Replace("?", "");
+        
+        return cleanTypeName switch
+        {
+            "System.Boolean" or "bool" => $"writer.WriteBooleanValue({valueExpression})",
+            "System.String" or "string" => $"writer.WriteStringValue({valueExpression})",
+            "System.DateTime" => $"writer.WriteStringValue({valueExpression}.ToString(\"O\"))",
+            "System.DateTimeOffset" => $"writer.WriteStringValue({valueExpression}.ToString(\"O\"))",
+            "System.Single" or "float" => $"writer.WriteNumberValue({valueExpression})",
+            "System.UInt16" or "ushort" => $"writer.WriteNumberValue({valueExpression})",
+            "System.UInt32" or "uint" => $"writer.WriteNumberValue({valueExpression})",
+            "System.UInt64" or "ulong" => $"writer.WriteNumberValue({valueExpression})",
+            "System.Double" or "double" => $"writer.WriteNumberValue({valueExpression})",
+            "System.Decimal" or "decimal" => $"writer.WriteNumberValue({valueExpression})",
+            "System.Int16" or "short" => $"writer.WriteNumberValue({valueExpression})",
+            "System.Int32" or "int" => $"writer.WriteNumberValue({valueExpression})",
+            "System.Int64" or "long" => $"writer.WriteNumberValue({valueExpression})",
+            "System.Guid" => $"writer.WriteStringValue({valueExpression}.ToString())",
+            _ => null
+        };
     }
 
     record TypeInfo(
