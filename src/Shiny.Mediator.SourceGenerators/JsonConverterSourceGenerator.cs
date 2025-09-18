@@ -319,9 +319,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
             sb.AppendLine($"                case \"{prop.Name}\":");
             if (prop.IsNullable)
             {
-                sb.AppendLine("                    if (reader.TokenType == JsonTokenType.Null)");
-                sb.AppendLine($"                        result.{prop.Name} = null;");
-                sb.AppendLine("                    else");
+                sb.AppendLine("                    if (reader.TokenType != JsonTokenType.Null)");
                 sb.AppendLine($"                        result.{prop.Name} = JsonSerializer.Deserialize<{prop.TypeName}>(ref reader, options);");
             }
             else

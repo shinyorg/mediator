@@ -165,12 +165,32 @@ public class MediatorHttpRequestSourceGenerator : IIncrementalGenerator
         {
             try
             {
+                var parseOptions = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions ?? CSharpParseOptions.Default;
                 var syntaxTree = CSharpSyntaxTree.ParseText(
                     request.Content, 
-                    CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest),
+                    parseOptions,
                     cancellationToken: context.CancellationToken
                 );
                 compilation = compilation.AddSyntaxTrees(syntaxTree);
+                
+                var typeSymbol = compilation.GetTypeByMetadataName(request.TypeName);
+                if (typeSymbol == null)
+                {
+                    ReportMessage(
+                        context, 
+                        $"Missing Type '{request.TypeName}' for JSON Converter", 
+                        DiagnosticSeverity.Warning
+                    );
+                }
+                else
+                {
+                    ReportMessage(
+                        context, 
+                        $"Generating JSON Converter for {request.TypeName}", 
+                        DiagnosticSeverity.Info
+                    );
+                    JsonConverterSourceGenerator.GenerateJsonConverter(context, typeSymbol);
+                }
             }
             catch (Exception ex)
             {
@@ -182,24 +202,6 @@ public class MediatorHttpRequestSourceGenerator : IIncrementalGenerator
                 );
             }
             
-            var typeSymbol = compilation.GetTypeByMetadataName(request.TypeName);
-            if (typeSymbol == null)
-            {
-                ReportMessage(
-                    context, 
-                    $"Missing Type '{request.TypeName}' for JSON Converter", 
-                    DiagnosticSeverity.Warning
-                );
-            }
-            else
-            {
-                ReportMessage(
-                    context, 
-                    $"Generating JSON Converter for {request.TypeName}", 
-                    DiagnosticSeverity.Info
-                );
-                JsonConverterSourceGenerator.GenerateJsonConverter(context, typeSymbol);
-            }
         }
     }
 }
