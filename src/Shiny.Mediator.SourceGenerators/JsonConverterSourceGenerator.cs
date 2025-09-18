@@ -200,7 +200,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         sb.AppendLine("// </auto-generated>");
         sb.AppendLine("using System.Text.Json.Serialization;");
         sb.AppendLine();
-
+        
         if (!String.IsNullOrEmpty(typeInfo.Namespace))
         {
             sb.AppendLine($"namespace {typeInfo.Namespace};");
@@ -317,16 +317,17 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         foreach (var prop in typeInfo.Properties)
         {
             sb.AppendLine($"                case \"{prop.Name}\":");
-            if (prop.IsNullable)
+            
+            var readerMethod = GetReaderMethodForType(prop.TypeName, prop.IsNullable);
+            
+            sb.AppendLine("                    if (reader.TokenType != JsonTokenType.Null)");
+            if (readerMethod != null)
             {
-                sb.AppendLine("                    if (reader.TokenType != JsonTokenType.Null)");
-                sb.AppendLine($"                        result.{prop.Name} = JsonSerializer.Deserialize<{prop.TypeName}>(ref reader, options);");
+                sb.AppendLine($"                        result.{prop.Name} = {readerMethod};");
             }
             else
             {
-                sb.AppendLine("                    if (reader.TokenType == JsonTokenType.Null)");
-                sb.AppendLine($"                        throw new JsonException(\"Cannot assign null to non-nullable property '{prop.Name}'\");");
-                sb.AppendLine($"                    result.{prop.Name} = JsonSerializer.Deserialize<{prop.TypeName}>(ref reader, options)!;");
+                sb.AppendLine($"                        result.{prop.Name} = JsonSerializer.Deserialize<{prop.TypeName}>(ref reader, options);");
             }
             sb.AppendLine("                    break;");
         }
@@ -348,39 +349,54 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         context.AddSource($"{ns}{typeInfo.Name}JsonConverter.g.cs", sb.ToString());
     }
 
-    class TypeInfo
+    static string? GetReaderMethodForType(string typeName, bool isNullable)
     {
-        public TypeInfo(string name, string @namespace, bool isClass, bool isPartial, PropertyInfo[] properties, Location location)
+        // Remove global:: prefix and nullable annotations for type matching
+        var cleanTypeName = typeName.Replace("global::", "").Replace("?", "");
+        
+        var readerMethod = cleanTypeName switch
         {
-            Name = name;
-            Namespace = @namespace;
-            IsClass = isClass;
-            IsPartial = isPartial;
-            Properties = properties;
-            Location = location;
+            "System.Boolean" or "bool" => "reader.GetBoolean()",
+            "System.String" or "string" => "reader.GetString()",
+            "System.DateTime" => "reader.GetDateTime()",
+            "System.DateTimeOffset" => "reader.GetDateTimeOffset()",
+            "System.Single" or "float" => "reader.GetSingle()",
+            "System.UInt16" or "ushort" => "reader.GetUInt16()",
+            "System.UInt32" or "uint" => "reader.GetUInt32()",
+            "System.UInt64" or "ulong" => "reader.GetUInt64()",
+            "System.Double" or "double" => "reader.GetDouble()",
+            "System.Decimal" or "decimal" => "reader.GetDecimal()",
+            "System.Int16" or "short" => "reader.GetInt16()",
+            "System.Int32" or "int" => "reader.GetInt32()",
+            "System.Int64" or "long" => "reader.GetInt64()",
+            "System.Guid" => "reader.GetGuid()",
+            _ => null
+        };
+
+        // For nullable value types, we need to cast the result to nullable
+        if (readerMethod != null && isNullable && !cleanTypeName.Equals("System.String", StringComparison.Ordinal) && !cleanTypeName.Equals("string", StringComparison.Ordinal))
+        {
+            // String is already nullable (reference type), but value types need explicit nullable casting
+            return $"({cleanTypeName}?){readerMethod}";
         }
 
-        public string Name { get; }
-        public string Namespace { get; }
-        public bool IsClass { get; }
-        public bool IsPartial { get; }
-        public PropertyInfo[] Properties { get; }
-        public Location Location { get; }
+        return readerMethod;
     }
 
-    class PropertyInfo
-    {
-        public PropertyInfo(string name, string typeName, bool canBeReferenced, bool isNullable)
-        {
-            Name = name;
-            TypeName = typeName;
-            CanBeReferenced = canBeReferenced;
-            IsNullable = isNullable;
-        }
+    record TypeInfo(
+        string Name,
+        string Namespace,
+        bool IsClass,
+        bool IsPartial,
+        PropertyInfo[] Properties,
+        Location Location
+    );
 
-        public string Name { get; }
-        public string TypeName { get; }
-        public bool CanBeReferenced { get; }
-        public bool IsNullable { get; }
-    }
+
+    record PropertyInfo(
+        string Name, 
+        string TypeName, 
+        bool CanBeReferenced, 
+        bool IsNullable
+    );
 }

@@ -17,6 +17,28 @@ namespace Shiny.Mediator.Tests
         [Fact]
         public void FoundAttributeOnlyOnOneHandleMethod()
         {
+            
+            var writer = new System.Text.Json.Utf8JsonWriter(Stream.Null);
+            writer.WriteBooleanValue(true);
+            writer.WriteNumberValue(0);
+            writer.WriteStringValue("");
+            
+            var reader = new System.Text.Json.Utf8JsonReader();
+            reader.GetBoolean();
+            reader.GetString();
+            reader.GetDateTime();
+            reader.GetDateTimeOffset();
+            reader.GetSingle();
+            reader.GetUInt16();
+            reader.GetUInt32();
+            reader.GetUInt64();
+            reader.GetDouble();
+            reader.GetDecimal();
+            reader.GetInt16();
+            reader.GetInt32();
+            reader.GetInt64();
+            reader.GetGuid();
+            
             var handler = new MyAttributeCommandHandler();
             handler    
                 .GetHandlerHandleMethodAttribute<MyAttribute1Command, MyAttributeAttribute>()

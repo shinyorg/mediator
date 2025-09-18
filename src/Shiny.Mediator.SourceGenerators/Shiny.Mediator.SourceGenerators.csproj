@@ -21,7 +21,6 @@
         <PackageReference Include="Microsoft.OpenApi.Readers" PrivateAssets="All" GeneratePathProperty="true" />
         
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
