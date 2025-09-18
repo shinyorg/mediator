@@ -92,7 +92,8 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
                 x.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 x.Type.CanBeReferencedByName,
                 IsNullableType(x.Type),
-                GetJsonPropertyName(x)
+                GetJsonPropertyName(x),
+                x.Type
             ))
             .ToArray();
 
@@ -151,7 +152,8 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
                 x.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 x.Type.CanBeReferencedByName,
                 IsNullableType(x.Type),
-                GetJsonPropertyName(x)
+                GetJsonPropertyName(x),
+                x.Type
             ))
             .ToArray();
 
@@ -265,7 +267,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         {
             sb.AppendLine($"        writer.WritePropertyName(\"{prop.JsonPropertyName}\");");
             
-            var writerMethod = GetWriterMethodForType(prop.TypeName, $"value.{prop.Name}", prop.IsNullable);
+            var writerMethod = GetWriterMethodForType(prop.TypeName, $"value.{prop.Name}", prop.IsNullable, prop.TypeSymbol);
             
             if (prop.IsNullable)
             {
@@ -338,7 +340,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         {
             sb.AppendLine($"                case \"{prop.JsonPropertyName}\":");
             
-            var readerMethod = GetReaderMethodForType(prop.TypeName, prop.IsNullable);
+            var readerMethod = GetReaderMethodForType(prop.TypeName, prop.IsNullable, prop.TypeSymbol);
             
             sb.AppendLine("                    if (reader.TokenType != JsonTokenType.Null)");
             if (readerMethod != null)
@@ -369,10 +371,29 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         context.AddSource($"{ns}{typeInfo.Name}JsonConverter.g.cs", sb.ToString());
     }
 
-    static string? GetReaderMethodForType(string typeName, bool isNullable)
+    static string? GetReaderMethodForType(string typeName, bool isNullable, ITypeSymbol? typeSymbol = null)
     {
         // Remove global:: prefix and nullable annotations for type matching
         var cleanTypeName = typeName.Replace("global::", "").Replace("?", "");
+        
+        // Check if it's an enum type
+        if (typeSymbol != null && typeSymbol.TypeKind == TypeKind.Enum)
+        {
+            // Check if the enum has a JsonConverter attribute
+            var hasJsonConverter = typeSymbol.GetAttributes()
+                .Any(attr => attr.AttributeClass?.ToDisplayString().Contains("JsonConverter") == true);
+            
+            if (!hasJsonConverter)
+            {
+                // Treat enum as string by default
+                var enumParseMethod = $"System.Enum.Parse<{cleanTypeName}>(reader.GetString()!)";
+                if (isNullable)
+                {
+                    return $"({cleanTypeName}?){enumParseMethod}";
+                }
+                return enumParseMethod;
+            }
+        }
         
         var readerMethod = cleanTypeName switch
         {
@@ -403,10 +424,25 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         return readerMethod;
     }
 
-    static string? GetWriterMethodForType(string typeName, string valueExpression, bool isNullable)
+    static string? GetWriterMethodForType(string typeName, string valueExpression, bool isNullable, ITypeSymbol? typeSymbol = null)
     {
         // Remove global:: prefix and nullable annotations for type matching
         var cleanTypeName = typeName.Replace("global::", "").Replace("?", "");
+        
+        // Check if it's an enum type
+        if (typeSymbol != null && typeSymbol.TypeKind == TypeKind.Enum)
+        {
+            // Check if the enum has a JsonConverter attribute
+            var hasJsonConverter = typeSymbol.GetAttributes()
+                .Any(attr => attr.AttributeClass?.ToDisplayString().Contains("JsonConverter") == true);
+            
+            if (!hasJsonConverter)
+            {
+                // Treat enum as string by default
+                var enumExpr = isNullable ? $"{valueExpression}?.ToString()" : $"{valueExpression}.ToString()";
+                return $"writer.WriteStringValue({enumExpr})";
+            }
+        }
         
         // For nullable value types, we need to use .Value
         var needsValue = isNullable &&
@@ -450,7 +486,8 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         string TypeName, 
         bool CanBeReferenced, 
         bool IsNullable,
-        string JsonPropertyName
+        string JsonPropertyName,
+        ITypeSymbol TypeSymbol
     );
 
     private static string GetJsonPropertyName(IPropertySymbol property)
