@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -57,17 +56,7 @@ public class MediatorHttpRequestSourceGenerator : IIncrementalGenerator
                 }
                 catch (Exception ex)
                 {
-                    sourceContext.ReportDiagnostic(Diagnostic.Create(
-                        new DiagnosticDescriptor(
-                            "SHINYMED000",
-                            "Error Generating HTTP Contracts",
-                            "Error Generating HTTP Contracts: {0}",
-                            "ShinyMediator",
-                            DiagnosticSeverity.Error,
-                            true),
-                        Location.None,
-                        ex.ToString())
-                    );
+                    ReportMessage(sourceContext, "Error Generating HTTP Contracts", DiagnosticSeverity.Error, ex);
                 }
             }
         });
@@ -138,19 +127,25 @@ public class MediatorHttpRequestSourceGenerator : IIncrementalGenerator
     }
 
     
-    static void ReportMessage(SourceProductionContext context, string message, DiagnosticSeverity severity)
+    static void ReportMessage(
+        SourceProductionContext context, 
+        string title, 
+        DiagnosticSeverity severity, 
+        Exception? ex = null
+    )
     {
         context.ReportDiagnostic(Diagnostic.Create(
             new DiagnosticDescriptor(
                 "SHINYMED001",
-                "HTTP Generator Message",
-                "{0}",
-                "ShinyMediator",
+                title,
+                null,
+                nameof(MediatorHttpRequestSourceGenerator),
                 severity,
-                true
+                true,
+                ex?.Message ?? title
             ),
             Location.None,
-            message
+            String.Empty
         ));
     }
 
@@ -168,25 +163,30 @@ public class MediatorHttpRequestSourceGenerator : IIncrementalGenerator
             try
             {
                 var syntaxTree = CSharpSyntaxTree.ParseText(request.Content);
-                var newCompilation = compilation.AddSyntaxTrees(syntaxTree);
-                var typeSymbol = newCompilation.GetTypeByMetadataName(request.TypeName);
-                if (typeSymbol != null)
-                    JsonConverterSourceGenerator.GenerateJsonConverter(context, typeSymbol);
+                compilation = compilation.AddSyntaxTrees(syntaxTree);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                // context.ReportDiagnostic(Diagnostic.Create(
-                //     new DiagnosticDescriptor(
-                //         "SHINYMED002",
-                //         "Error Generating JSON Converter",
-                //         "Error Generating JSON Converter: {0}",
-                //         "ShinyMediator",
-                //         DiagnosticSeverity.Error,
-                //         true
-                //     ),
-                //     Location.None,
-                //     e.ToString()
-                // ));
+                ReportMessage(
+                    context, 
+                    "Error in Parsing Generated Code for JSON Converter", 
+                    DiagnosticSeverity.Warning, 
+                    ex
+                );
+            }
+            
+            var typeSymbol = compilation.GetTypeByMetadataName(request.TypeName);
+            if (typeSymbol == null)
+            {
+                ReportMessage(
+                    context, 
+                    "Error Adding Missing Type for JSON Converter", 
+                    DiagnosticSeverity.Warning
+                );
+            }
+            else
+            {
+                JsonConverterSourceGenerator.GenerateJsonConverter(context, typeSymbol);
             }
         }
     }

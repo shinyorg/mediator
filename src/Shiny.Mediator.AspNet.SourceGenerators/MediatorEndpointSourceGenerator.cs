@@ -857,81 +857,31 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 }
 
 // Supporting data classes
-public class ClassInfo
-{
-    public string FullName { get; }
-    public string ClassName { get; }
-    public List<AttributeInfo> HttpAttributes { get; }
-    public bool IsRequestHandler { get; }
-    public bool IsCommandHandler { get; }
-    public GenericTypeInfo GenericTypes { get; }
-    public GroupAttributeInfo? GroupAttribute { get; }
+public record ClassInfo(
+    string FullName,
+    string ClassName,
+    List < AttributeInfo > HttpAttributes,
+    bool IsRequestHandler,
+    bool IsCommandHandler,
+    GenericTypeInfo GenericTypes,
+    GroupAttributeInfo ? GroupAttribute = null
+);
 
-    public ClassInfo(
-        string fullName,
-        string className,
-        List<AttributeInfo> httpAttributes,
-        bool isRequestHandler,
-        bool isCommandHandler,
-        GenericTypeInfo genericTypes,
-        GroupAttributeInfo? groupAttribute = null)
-    {
-        FullName = fullName;
-        ClassName = className;
-        HttpAttributes = httpAttributes;
-        IsRequestHandler = isRequestHandler;
-        IsCommandHandler = isCommandHandler;
-        GenericTypes = genericTypes;
-        GroupAttribute = groupAttribute;
-    }
-}
+public record AttributeInfo(
+    string OperationId,
+    string UriTemplate,
+    string HttpMethod,
+    Dictionary<string, object> Properties,
+    string ParameterType,
+    string ResultType
+);
 
-public class AttributeInfo
-{
-    public string OperationId { get; }
-    public string UriTemplate { get; }
-    public string HttpMethod { get; }
-    public Dictionary<string, object> Properties { get; }
-    public string ParameterType { get; }
-    public string ResultType { get; }
+public record GroupAttributeInfo(
+    string Prefix,
+    Dictionary<string, object> Properties
+);
 
-    public AttributeInfo(
-        string operationId,
-        string uriTemplate,
-        string httpMethod,
-        Dictionary<string, object> properties,
-        string parameterType,
-        string resultType)
-    {
-        OperationId = operationId;
-        UriTemplate = uriTemplate;
-        HttpMethod = httpMethod;
-        Properties = properties;
-        ParameterType = parameterType;
-        ResultType = resultType;
-    }
-}
-
-public class GroupAttributeInfo
-{
-    public string Prefix { get; }
-    public Dictionary<string, object> Properties { get; }
-
-    public GroupAttributeInfo(string prefix, Dictionary<string, object> properties)
-    {
-        Prefix = prefix;
-        Properties = properties;
-    }
-}
-
-public class GenericTypeInfo
-{
-    public string RequestType { get; }
-    public string ResultType { get; }
-
-    public GenericTypeInfo(string requestType, string resultType)
-    {
-        RequestType = requestType;
-        ResultType = resultType;
-    }
-}
+public record GenericTypeInfo(
+    string RequestType,
+    string ResultType
+);
