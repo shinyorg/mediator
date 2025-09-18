@@ -134,7 +134,7 @@ public class MediatorHttpRequestSourceGenerator : IIncrementalGenerator
         Exception? ex = null
     )
     {
-        var message = title + ex;
+        var message = ex == null ? title : $"{title} - Exception: {ex}";
         
         context.ReportDiagnostic(Diagnostic.Create(
             new DiagnosticDescriptor(
@@ -182,12 +182,17 @@ public class MediatorHttpRequestSourceGenerator : IIncrementalGenerator
             {
                 ReportMessage(
                     context, 
-                    "Error Adding Missing Type for JSON Converter", 
+                    $"Missing Type '{request.TypeName}' for JSON Converter", 
                     DiagnosticSeverity.Warning
                 );
             }
             else
             {
+                ReportMessage(
+                    context, 
+                    $"Generating JSON Converter for {request.TypeName}", 
+                    DiagnosticSeverity.Info
+                );
                 JsonConverterSourceGenerator.GenerateJsonConverter(context, typeSymbol);
             }
         }
