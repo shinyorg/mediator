@@ -225,8 +225,8 @@ class MediatorContext(
             {
                 Parent = this,
                 BypassExceptionHandlingEnabled = this.BypassExceptionHandlingEnabled,
-                BypassMiddlewareEnabled = this.BypassMiddlewareEnabled,
-                store = this.store.ToDictionary() // copy over
+                BypassMiddlewareEnabled = this.BypassMiddlewareEnabled
+                // store = this.store.ToDictionary() // DO NOT pass headers down to child contexts - crashes cache
             };
             this.children.Add(newContext);
             return newContext;

@@ -26,14 +26,14 @@ public sealed class PointJsonConverter : JsonConverter<Point>
     {
         writer.WriteStartObject();
         writer.WritePropertyName("X");
-        JsonSerializer.Serialize(writer, value.X, options);
+        writer.WriteNumberValue(value.X);
         writer.WritePropertyName("Y");
-        JsonSerializer.Serialize(writer, value.Y, options);
+        writer.WriteNumberValue(value.Y);
         writer.WritePropertyName("Label");
         if (value.Label == null)
             writer.WriteNullValue();
         else
-            JsonSerializer.Serialize(writer, value.Label, options);
+            writer.WriteStringValue(value.Label);
         writer.WriteEndObject();
     }
 
@@ -61,20 +61,16 @@ public sealed class PointJsonConverter : JsonConverter<Point>
             switch (propertyName)
             {
                 case "X":
-                    if (reader.TokenType == JsonTokenType.Null)
-                        throw new JsonException("Cannot assign null to non-nullable property 'X'");
-                    result.X = JsonSerializer.Deserialize<double>(ref reader, options)!;
+                    if (reader.TokenType != JsonTokenType.Null)
+                        result.X = reader.GetDouble();
                     break;
                 case "Y":
-                    if (reader.TokenType == JsonTokenType.Null)
-                        throw new JsonException("Cannot assign null to non-nullable property 'Y'");
-                    result.Y = JsonSerializer.Deserialize<double>(ref reader, options)!;
+                    if (reader.TokenType != JsonTokenType.Null)
+                        result.Y = reader.GetDouble();
                     break;
                 case "Label":
-                    if (reader.TokenType == JsonTokenType.Null)
-                        result.Label = null;
-                    else
-                        result.Label = JsonSerializer.Deserialize<string>(ref reader, options);
+                    if (reader.TokenType != JsonTokenType.Null)
+                        result.Label = reader.GetString();
                     break;
                 default:
                     reader.Skip();

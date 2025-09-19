@@ -4,7 +4,7 @@
         <Owners>aritchie;shinylib</Owners>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
-        <PackageVersion>4.10.0-beta-0019</PackageVersion>
+        <PackageVersion>4.10.0-beta-0020</PackageVersion>
         <DisableExtraReferences>False</DisableExtraReferences>
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
         <Description>Shiny Mediator - A mediator pattern for all .NET Apps</Description>

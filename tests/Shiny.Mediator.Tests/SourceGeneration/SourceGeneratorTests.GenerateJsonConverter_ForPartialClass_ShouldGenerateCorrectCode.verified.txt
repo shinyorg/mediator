@@ -35,19 +35,19 @@ public sealed class TestModelJsonConverter : JsonConverter<TestModel>
         if (value.Name == null)
             writer.WriteNullValue();
         else
-            JsonSerializer.Serialize(writer, value.Name, options);
+            writer.WriteStringValue(value.Name);
         writer.WritePropertyName("Age");
-        JsonSerializer.Serialize(writer, value.Age, options);
+        writer.WriteNumberValue(value.Age);
         writer.WritePropertyName("Email");
         if (value.Email == null)
             writer.WriteNullValue();
         else
-            JsonSerializer.Serialize(writer, value.Email, options);
+            writer.WriteStringValue(value.Email);
         writer.WritePropertyName("BirthDate");
         if (value.BirthDate == null)
             writer.WriteNullValue();
         else
-            JsonSerializer.Serialize(writer, value.BirthDate, options);
+            writer.WriteStringValue(value.BirthDate.Value.ToString("O"));
         writer.WriteEndObject();
     }
 
@@ -75,27 +75,20 @@ public sealed class TestModelJsonConverter : JsonConverter<TestModel>
             switch (propertyName)
             {
                 case "Name":
-                    if (reader.TokenType == JsonTokenType.Null)
-                        result.Name = null;
-                    else
-                        result.Name = JsonSerializer.Deserialize<string>(ref reader, options);
+                    if (reader.TokenType != JsonTokenType.Null)
+                        result.Name = reader.GetString();
                     break;
                 case "Age":
-                    if (reader.TokenType == JsonTokenType.Null)
-                        throw new JsonException("Cannot assign null to non-nullable property 'Age'");
-                    result.Age = JsonSerializer.Deserialize<int>(ref reader, options)!;
+                    if (reader.TokenType != JsonTokenType.Null)
+                        result.Age = reader.GetInt32();
                     break;
                 case "Email":
-                    if (reader.TokenType == JsonTokenType.Null)
-                        result.Email = null;
-                    else
-                        result.Email = JsonSerializer.Deserialize<string>(ref reader, options);
+                    if (reader.TokenType != JsonTokenType.Null)
+                        result.Email = reader.GetString();
                     break;
                 case "BirthDate":
-                    if (reader.TokenType == JsonTokenType.Null)
-                        result.BirthDate = null;
-                    else
-                        result.BirthDate = JsonSerializer.Deserialize<global::System.DateTime?>(ref reader, options);
+                    if (reader.TokenType != JsonTokenType.Null)
+                        result.BirthDate = (System.DateTime?)reader.GetDateTime();
                     break;
                 default:
                     reader.Skip();
