@@ -14,16 +14,20 @@ public class OpenTelemetryRequestMiddleware<TRequest, TResult>(IContractKeyProvi
         CancellationToken cancellationToken
     )
     {
-        using var activity = ActivitySource.StartActivity("mediator.request", ActivityKind.Internal);
+        var transaction = ActivitySource.StartActivity("mediator", ActivityKind.Internal);
+        var span = transaction != null ? ActivitySource.StartActivity(context.MessageHandler!.GetType().FullName!, ActivityKind.Internal, transaction.Context) : null;
         
         var requestKey = contractKeyProvider.GetContractKey(context.Message!);
-        activity?.SetTag("RequestKey", requestKey);
+        span?.SetTag("RequestKey", requestKey);
 
         var result = await next().ConfigureAwait(false);
 
-        // tap headers on to activity AFTER request - do we care if this changed before vs after? can I denote this in opentelemetry?
+        // tap headers on to span AFTER request - do we care if this changed before vs after? can I denote this in opentelemetry?
         foreach (var header in context.Headers)
-            activity?.SetTag(header.Key, header.Value);
+            span?.SetTag(header.Key, header.Value);
+
+        span?.Dispose();
+        transaction?.Dispose();
         
         return result;
     }

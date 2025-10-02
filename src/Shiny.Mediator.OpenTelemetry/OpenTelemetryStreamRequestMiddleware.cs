@@ -14,19 +14,21 @@ public class OpenTelemetryStreamRequestMiddleware<TRequest, TResult>(IContractKe
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken
     )
     {
-        using var activity = ActivitySource.StartActivity("mediator.stream", ActivityKind.Internal);
-        activity?.SetTag("handler.type", context.MessageHandler!.GetType().FullName!);
+        var transaction = ActivitySource.StartActivity("mediator", ActivityKind.Internal);
+        var span = transaction != null ? ActivitySource.StartActivity(context.MessageHandler!.GetType().FullName!, ActivityKind.Internal, transaction.Context) : null;
         var nxt = next().GetAsyncEnumerator(cancellationToken);
         
         var requestKey = contractKeyProvider.GetContractKey(context.Message!);
-        activity?.SetTag("RequestKey", requestKey);
+        span?.SetTag("RequestKey", requestKey);
         
-        var moveActivity = activity != null ? ActivitySource.StartActivity("initial_movenext", ActivityKind.Internal, activity.Context) : null;
+        var moveSpan = span != null ? ActivitySource.StartActivity("initial_movenext", ActivityKind.Internal, span.Context) : null;
         while (await nxt.MoveNextAsync() && !cancellationToken.IsCancellationRequested)
         {
             yield return nxt.Current;
-            moveActivity?.Dispose();
-            moveActivity = activity != null ? ActivitySource.StartActivity("movenext", ActivityKind.Internal, activity.Context) : null;
+            moveSpan?.Dispose();
+            moveSpan = span != null ? ActivitySource.StartActivity("movenext", ActivityKind.Internal, span.Context) : null;
         }
+        span?.Dispose();
+        transaction?.Dispose();
     }
 }

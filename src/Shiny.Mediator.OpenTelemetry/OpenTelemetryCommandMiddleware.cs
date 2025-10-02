@@ -13,10 +13,13 @@ public class OpenTelemetryCommandMiddleware<TCommand> : ICommandMiddleware<TComm
         CancellationToken cancellationToken
     )
     {
-        using var activity = ActivitySource.StartActivity("mediator.command", ActivityKind.Internal);
-        activity?.SetTag("handler.type", context.MessageHandler!.GetType().FullName!);
+        var transaction = ActivitySource.StartActivity("mediator", ActivityKind.Internal);
+        var span = transaction != null ? ActivitySource.StartActivity(context.MessageHandler!.GetType().FullName!, ActivityKind.Internal, transaction.Context) : null;
         await next().ConfigureAwait(false);
         foreach (var header in context.Headers)
-            activity?.SetTag(header.Key, header.Value);
+            span?.SetTag(header.Key, header.Value);
+        
+        span?.Dispose();
+        transaction?.Dispose();
     }
 }
