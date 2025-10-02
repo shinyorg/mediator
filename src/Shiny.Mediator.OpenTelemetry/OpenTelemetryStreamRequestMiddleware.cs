@@ -3,16 +3,10 @@ using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator.OpenTelemetry;
 
-public class OpenTelemetryStreamRequestMiddleware<TRequest, TResult> : IStreamRequestMiddleware<TRequest, TResult> 
+public class OpenTelemetryStreamRequestMiddleware<TRequest, TResult>(IContractKeyProvider contractKeyProvider) : IStreamRequestMiddleware<TRequest, TResult> 
     where TRequest : IStreamRequest<TResult>
 {
-    private static readonly ActivitySource ActivitySource = new("Shiny.Mediator", "1.0.0");
-    private readonly IContractKeyProvider _contractKeyProvider;
-
-    public OpenTelemetryStreamRequestMiddleware(IContractKeyProvider contractKeyProvider)
-    {
-        _contractKeyProvider = contractKeyProvider;
-    }
+    private static readonly ActivitySource ActivitySource = new("Shiny.Mediator");
 
     public async IAsyncEnumerable<TResult> Process(
         IMediatorContext context, 
@@ -21,47 +15,18 @@ public class OpenTelemetryStreamRequestMiddleware<TRequest, TResult> : IStreamRe
     )
     {
         using var activity = ActivitySource.StartActivity("mediator.stream", ActivityKind.Internal);
+        activity?.SetTag("handler.type", context.MessageHandler!.GetType().FullName!);
+        var nxt = next().GetAsyncEnumerator(cancellationToken);
         
-        if (activity != null)
+        var requestKey = contractKeyProvider.GetContractKey(context.Message!);
+        activity?.SetTag("RequestKey", requestKey);
+        
+        var moveActivity = activity != null ? ActivitySource.StartActivity("initial_movenext", ActivityKind.Internal, activity.Context) : null;
+        while (await nxt.MoveNextAsync() && !cancellationToken.IsCancellationRequested)
         {
-            activity.SetTag("handler.type", context.MessageHandler?.GetType().FullName);
-            
-            var requestKey = _contractKeyProvider.GetContractKey(context.Message!);
-            activity.SetTag("request.key", requestKey);
-            
-            foreach (var header in context.Headers)
-            {
-                activity.SetTag($"context.header.{header.Key}", header.Value);
-            }
-        }
-
-        var itemCount = 0;
-        Activity? itemActivity = null;
-
-        try
-        {
-            var nxt = next();
-            await foreach (var item in nxt.WithCancellation(cancellationToken))
-            {
-                itemActivity?.Dispose();
-                itemActivity = ActivitySource.StartActivity("mediator.stream.item", ActivityKind.Internal, activity?.Context ?? default);
-                itemActivity?.SetTag("item.index", itemCount++);
-                
-                yield return item;
-            }
-            
-            activity?.SetTag("stream.item_count", itemCount);
-            activity?.SetStatus(ActivityStatusCode.Ok);
-        }
-        catch (Exception ex)
-        {
-            activity?.RecordException(ex);
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            throw;
-        }
-        finally
-        {
-            itemActivity?.Dispose();
+            yield return nxt.Current;
+            moveActivity?.Dispose();
+            moveActivity = activity != null ? ActivitySource.StartActivity("movenext", ActivityKind.Internal, activity.Context) : null;
         }
     }
 }
