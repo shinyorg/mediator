@@ -7,6 +7,8 @@
         <PackageVersion Include="Microsoft.Extensions.Diagnostics" Version="9.0.0"/>
         <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0"/>
         <PackageVersion Include="Sentry" Version="5.14.1"/>
+        <PackageVersion Include="OpenTelemetry.Api" Version="1.10.0"/>
+        <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="9.0.0"/>
     </ItemGroup>
     
     <!--support libs-->
