@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-public class EventExecutor(
+public class LocalEventExecutor(
     IEnumerable<IEventCollector> collectors
 ) : IEventExecutor
 {
@@ -69,8 +69,11 @@ public class EventExecutor(
         handler.OnHandle = action;
         return handler;
     }
-    
-    
+
+    public bool CanPublish<TEvent>(TEvent @event) where TEvent : IEvent => true;
+    public bool CanPublish(Type eventType) => true;
+
+
     async Task PublishCore<TEvent>(
         IMediatorContext context,
         TEvent @event,

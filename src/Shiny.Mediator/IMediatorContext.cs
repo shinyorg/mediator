@@ -169,9 +169,7 @@ class MediatorContext(
     IServiceScope scope, 
     object message,
     Activity? activity,
-    IRequestExecutor requestExecutor,
-    ICommandExecutor commandExecutor,
-    IEventExecutor eventExecutor
+    IMediatorDirector director
 ) : IMediatorContext
 {
     public Guid Id { get; } = Guid.NewGuid();
@@ -218,9 +216,7 @@ class MediatorContext(
                 ServiceScope, 
                 msg,
                 act,
-                requestExecutor, 
-                commandExecutor,
-                eventExecutor
+                director
             )
             {
                 Parent = this,
@@ -271,7 +267,9 @@ class MediatorContext(
     {
         var newContext = this.CreateChild(request);
         configure?.Invoke(newContext);
-        return requestExecutor.Request(newContext, request, cancellationToken);
+        return director
+            .GetRequestExecutor(request)
+            .Request(newContext, request, cancellationToken);
     }
 
     
@@ -283,7 +281,9 @@ class MediatorContext(
     {
         var newContext = this.CreateChild(command);
         configure?.Invoke(newContext);
-        return commandExecutor.Send(newContext, command, cancellationToken);
+        return director
+            .GetCommandExecutor(command)
+            .Send(newContext, command, cancellationToken);
     }
     
 
@@ -296,6 +296,8 @@ class MediatorContext(
     {
         var newContext = this.CreateChild(@event);
         configure?.Invoke(newContext);
-        return eventExecutor.Publish(newContext, @event, executeInParallel, cancellationToken);
+        return director
+            .GetEventExecutor(@event)
+            .Publish(newContext, @event, executeInParallel, cancellationToken);
     }
 }

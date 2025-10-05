@@ -2,6 +2,9 @@
   <Configurations>
     <Platform Name="Any CPU" />
   </Configurations>
+  <Folder Name="/Prototypes/">
+    <Project Path="src\Shiny.Mediator.RabbitMq\Shiny.Mediator.RabbitMq.csproj" Type="Classic C#" />
+  </Folder>
   <Folder Name="/Samples/">
     <Project Path="samples\Sample.Api\Sample.Api.csproj" />
     <Project Path="samples\Sample.Blazor\Sample.Blazor.csproj" />

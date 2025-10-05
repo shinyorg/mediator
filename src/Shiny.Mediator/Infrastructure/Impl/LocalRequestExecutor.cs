@@ -4,9 +4,9 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-public class RequestExecutor : IRequestExecutor
+public class LocalRequestExecutor : RequestExecutor
 {
-    public virtual async Task<TResult> Request<TResult>(
+    public override async Task<TResult> Request<TResult>(
         IMediatorContext context,
         IRequest<TResult> request,
         CancellationToken cancellationToken
@@ -22,6 +22,8 @@ public class RequestExecutor : IRequestExecutor
         
         return execution;
     }
+
+    public override bool CanHandle<TResult>(IRequest<TResult> request) => true;
 }
 
 
@@ -29,6 +31,7 @@ public interface IRequestResultWrapper<TResult>
 {
     Task<TResult> Handle();
 }
+
 public class RequestResultWrapper<TRequest, TResult>(
     IMediatorContext context, 
     TRequest request,

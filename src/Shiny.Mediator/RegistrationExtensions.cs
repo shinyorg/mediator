@@ -35,12 +35,9 @@ public static class RegistrationExtensions
         }
         services.TryAddSingleton<RuntimeEventRegister>();
         services.TryAddSingleton<ISerializerService, SysTextJsonSerializerService>();
-        services.TryAddSingleton<IRequestExecutor, RequestExecutor>();
-        services.TryAddSingleton<IStreamRequestExecutor, StreamRequestExecutor>();
-        services.TryAddSingleton<ICommandExecutor, CommandExecutor>();
-        services.TryAddSingleton<IEventExecutor, EventExecutor>();
+        services.TryAddSingleton<IMediatorDirector, MediatorDirector>();
         services.TryAddSingleton<IContractKeyProvider, DefaultContractKeyProvider>();
-        services.TryAddSingleton<IMediator, Infrastructure.Impl.Mediator>();
+        services.TryAddSingleton<IMediator, MediatorImpl>();
         services.TryAddSingleton(TimeProvider.System);
         return services;
     }

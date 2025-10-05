@@ -1,41 +1,25 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Shiny.Mediator.Infrastructure.Impl;
+namespace Shiny.Mediator.Infrastructure;
 
 
-public class StreamRequestExecutor : IStreamRequestExecutor
+public abstract class StreamRequestExecutor : IStreamRequestExecutor
 {
-    public virtual IAsyncEnumerable<TResult> Request<TResult>(
+    public abstract IAsyncEnumerable<TResult> Request<TResult>(
         IMediatorContext context,
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken
-    )
-    {
-        var wrapperType = typeof(StreamRequestWrapper<,>).MakeGenericType([request.GetType(), typeof(TResult)]);
+    );
+    
+    public abstract bool CanRequest<TResult>(IStreamRequest<TResult> request);
 
-        var wrapper = (IStreamRequestWrapper<TResult>)ActivatorUtilities.CreateInstance(
-            context.ServiceScope.ServiceProvider,
-            wrapperType,
-            [context, request, cancellationToken]
-        );
-        var execution = wrapper.Handle();
-        return execution;
-    }
-}
 
-public interface IStreamRequestWrapper<TResult>
-{
-    IAsyncEnumerable<TResult> Handle();
-}
-
-public class StreamRequestWrapper<TRequest, TResult>(
-    IMediatorContext context,
-    TRequest request,
-    CancellationToken cancellationToken
-) : IStreamRequestWrapper<TResult> where TRequest : IStreamRequest<TResult>
-{
-    public IAsyncEnumerable<TResult> Handle()
+    public virtual IAsyncEnumerable<TResult> Execute<TRequest, TResult>(
+        IMediatorContext context,
+        TRequest request,
+        CancellationToken cancellationToken
+    ) where TRequest : IStreamRequest<TResult>
     {
         var services = context.ServiceScope.ServiceProvider;
         var requestHandler = services.GetService<IStreamRequestHandler<TRequest, TResult>>();

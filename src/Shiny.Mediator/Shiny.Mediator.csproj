@@ -6,7 +6,9 @@
         <Nullable>enable</Nullable>
         <Description>The main Shiny Mediator library where all the infrastructure lives</Description>
 
-        <!--<PublishAot>true</PublishAot>-->
+        <EnableAotAnalyzer>true</EnableAotAnalyzer>
+        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+        <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
     </PropertyGroup>
 
     <ItemGroup>

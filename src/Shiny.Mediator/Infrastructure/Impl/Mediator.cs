@@ -5,13 +5,10 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-public class Mediator(
-    ILogger<Mediator> logger,
+public class MediatorImpl(
+    ILogger<MediatorImpl> logger,
     IServiceProvider services,
-    IRequestExecutor requestExecutor, 
-    IStreamRequestExecutor streamRequestExecutor,
-    ICommandExecutor commandExecutor, 
-    IEventExecutor eventExecutor
+    IMediatorDirector director
 ) : IMediator
 {
     public async Task<(IMediatorContext Context, TResult Result)> Request<TResult>(
@@ -24,11 +21,12 @@ public class Mediator(
         
         var scope = services.CreateScope();
         using var activity = MediatorActivitySource.Value.StartActivity()!;
-        var context = new MediatorContext(scope, request, activity, requestExecutor, commandExecutor, eventExecutor);
+        var context = new MediatorContext(scope, request, activity, director);
         configure?.Invoke(context);        
         try
         {
-            result = await requestExecutor
+            result = await director
+                .GetRequestExecutor(request)
                 .Request(
                     context,
                     request,
@@ -40,7 +38,8 @@ public class Mediator(
             {
                 logger.LogDebug("Event Returned by Request - Publishing: {EventType}", @event.GetType().FullName);
                 var child = context.CreateChild(@event);
-                await eventExecutor
+                await director
+                    .GetEventExecutor(@event)
                     .Publish(child, @event, true, cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -67,9 +66,11 @@ public class Mediator(
         using var scope = services.CreateScope();
         using var activity = MediatorActivitySource.Value.StartActivity()!;
         
-        var context = new MediatorContext(scope, request, activity, requestExecutor, commandExecutor, eventExecutor);
+        var context = new MediatorContext(scope, request, activity, director);
         configure?.Invoke(context);
-        var enumerable = streamRequestExecutor.Request(context, request, cancellationToken);
+        var enumerable = director
+            .GetStreamRequestExecutor(request)
+            .Request(context, request, cancellationToken);
 
         await foreach (var result in enumerable)
         {
@@ -87,12 +88,13 @@ public class Mediator(
         using var scope = services.CreateScope();
         using var activity = MediatorActivitySource.Value.StartActivity()!;
         
-        var context = new MediatorContext(scope, command, activity, requestExecutor, commandExecutor, eventExecutor);
+        var context = new MediatorContext(scope, command, activity, director);
         configure?.Invoke(context);
         
         try
         {
-            await commandExecutor
+            await director
+                .GetCommandExecutor(command)
                 .Send(context, command, cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -120,12 +122,13 @@ public class Mediator(
         using var scope = services.CreateScope();
         using var activity = MediatorActivitySource.Value.StartActivity()!;
         
-        var context = new MediatorContext(scope, @event, activity, requestExecutor, commandExecutor, eventExecutor);
+        var context = new MediatorContext(scope, @event, activity, director);
         configure?.Invoke(context);
         
         try
         {
-            await eventExecutor
+            await director
+                .GetEventExecutor(@event)
                 .Publish(context, @event, executeInParallel, cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -142,7 +145,7 @@ public class Mediator(
 
 
     public IDisposable Subscribe<TEvent>(Func<TEvent, IMediatorContext, CancellationToken, Task> action) where TEvent : IEvent
-        => eventExecutor.Subscribe(action);
+        => director.GetEventExecutor<TEvent>().Subscribe(action);
 
 
     async Task<bool> TryHandle(MediatorContext context, Exception exception)

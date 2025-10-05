@@ -15,4 +15,12 @@ public interface ICommandExecutor
         TCommand command,
         CancellationToken cancellationToken
     ) where TCommand : ICommand;
+    
+    /// <summary>
+    /// Can send the command type
+    /// </summary>
+    /// <param name="command"></param> 
+    /// <typeparam name="TCommand"></typeparam>
+    /// <returns></returns>
+    bool CanSend<TCommand>(TCommand command) where TCommand : ICommand;
 }

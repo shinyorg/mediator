@@ -16,4 +16,12 @@ public interface IStreamRequestExecutor
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken
     );
+    
+    /// <summary>
+    /// Can request the request type
+    /// </summary>
+    /// <param name="request"></param>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    bool CanRequest<TResult>(IStreamRequest<TResult> request);
 }

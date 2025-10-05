@@ -16,4 +16,13 @@ public interface IRequestExecutor
         IRequest<TResult> request,
         CancellationToken cancellationToken
     );
+    
+    
+    /// <summary>
+    /// Can handle the request type
+    /// </summary>
+    /// <param name="request"></param>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    bool CanHandle<TResult>(IRequest<TResult> request);
 }

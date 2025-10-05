@@ -1,4 +1,5 @@
 <Project>
+    
     <!--core project-->
     <ItemGroup>
         <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0"/>
@@ -6,7 +7,8 @@
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0"/>
         <PackageVersion Include="Microsoft.Extensions.Diagnostics" Version="9.0.0"/>
         <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0"/>
-        <PackageVersion Include="Sentry" Version="5.14.1"/>
+        <PackageVersion Include="RabbitMQ.Client" Version="7.1.2"/>
+        <PackageVersion Include="Sentry" Version="5.15.1"/>
     </ItemGroup>
     
     <!--support libs-->
@@ -21,7 +23,7 @@
         <PackageVersion Include="FluentValidation" Version="12.0.0"/>
         <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0"/>
         <PackageVersion Include="Prism.Maui" Version="9.0.537"/>
-        <PackageVersion Include="Shiny.Reflector" Version="1.6.1"/>
+        <PackageVersion Include="Shiny.Reflector" Version="1.7.0"/>
     </ItemGroup>
     
     <!--source generator-->

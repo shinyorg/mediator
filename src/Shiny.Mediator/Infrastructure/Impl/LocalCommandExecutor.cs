@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
-public class CommandExecutor : ICommandExecutor
+public class LocalCommandExecutor : ICommandExecutor
 {
     public async Task Send<TCommand>(
         IMediatorContext context,
@@ -60,4 +60,6 @@ public class CommandExecutor : ICommandExecutor
             .Invoke()
             .ConfigureAwait(false);
     }
+
+    public bool CanSend<TCommand>(TCommand command) where TCommand : ICommand => true;
 }
