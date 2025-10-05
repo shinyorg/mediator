@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Shiny.Mediator.Infrastructure;
+
 namespace Shiny.Mediator;
 
 public record FlushAllStoresEvent : IEvent;
@@ -45,4 +48,18 @@ public static class FlushStoreExtensions
     /// <returns></returns>
     public static Task FlushStores(this IMediatorContext context, string requestKey, bool partialMatch = false, CancellationToken cancellationToken = default)
         => context.Publish(new FlushStoresEvent(requestKey, partialMatch), true, cancellationToken);
+    
+    
+    /// <summary>
+    /// Clears cache for current request object
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="partialKeyMatch"></param>
+    public static Task ClearCache(this IMediatorContext context, bool partialKeyMatch = false)
+    {
+        var contractKeyProvider = context.ServiceScope.ServiceProvider.GetRequiredService<IContractKeyProvider>();
+        var contractKey = contractKeyProvider.GetContractKey(context.Message);
+        
+        return context.FlushStores(contractKey, partialKeyMatch);
+    }
 }
