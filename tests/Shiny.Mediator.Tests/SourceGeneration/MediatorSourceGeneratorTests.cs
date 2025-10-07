@@ -437,6 +437,225 @@ public class DataUpdatedEventHandler : IEventHandler<DataUpdatedEvent>
         return Verify(result);
     }
 
+    [Fact]
+    public Task ClosedCommandMiddleware_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.Middleware;
+
+public record MyCommand(string Data) : ICommand;
+
+[ScopedMediatorMiddleware]
+public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
+{
+    public Task Handle(MyCommand command, IMediatorContext context, CommandMiddlewareDelegate<MyCommand> next, CancellationToken cancellationToken)
+    {
+        return next(command, context, cancellationToken);
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task OpenGenericCommandMiddleware_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.Middleware;
+
+[SingletonMediatorMiddleware]
+public class ValidationCommandMiddleware<TCommand> : ICommandMiddleware<TCommand> where TCommand : ICommand
+{
+    public Task Handle(TCommand command, IMediatorContext context, CommandMiddlewareDelegate<TCommand> next, CancellationToken cancellationToken)
+    {
+        // Validation logic
+        return next(command, context, cancellationToken);
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task ClosedRequestMiddleware_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.Middleware;
+
+public record MyRequest(int Id) : IRequest<MyResponse>;
+public record MyResponse(string Data);
+
+[ScopedMediatorMiddleware]
+public class MyRequestMiddleware : IRequestMiddleware<MyRequest, MyResponse>
+{
+    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, RequestMiddlewareDelegate<MyRequest, MyResponse> next, CancellationToken cancellationToken)
+    {
+        return next(request, context, cancellationToken);
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task OpenGenericRequestMiddleware_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.Middleware;
+
+[SingletonMediatorMiddleware]
+public class LoggingRequestMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse> 
+    where TRequest : IRequest<TResponse>
+{
+    public Task<TResponse> Handle(TRequest request, IMediatorContext context, RequestMiddlewareDelegate<TRequest, TResponse> next, CancellationToken cancellationToken)
+    {
+        // Logging logic
+        return next(request, context, cancellationToken);
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task ClosedEventMiddleware_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.Middleware;
+
+public record MyEvent(string Message) : IEvent;
+
+[ScopedMediatorMiddleware]
+public class MyEventMiddleware : IEventMiddleware<MyEvent>
+{
+    public Task Handle(MyEvent @event, IMediatorContext context, EventMiddlewareDelegate<MyEvent> next, CancellationToken cancellationToken)
+    {
+        return next(@event, context, cancellationToken);
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task OpenGenericEventMiddleware_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.Middleware;
+
+[SingletonMediatorMiddleware]
+public class AuditEventMiddleware<TEvent> : IEventMiddleware<TEvent> where TEvent : IEvent
+{
+    public Task Handle(TEvent @event, IMediatorContext context, EventMiddlewareDelegate<TEvent> next, CancellationToken cancellationToken)
+    {
+        // Audit logic
+        return next(@event, context, cancellationToken);
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task MixedHandlersAndMiddleware_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp;
+
+public record MyRequest(int Id) : IRequest<MyResponse>;
+public record MyResponse(string Data);
+
+public record MyCommand(string Action) : ICommand;
+
+[SingletonMediatorHandler]
+public class MyRequestHandler : IRequestHandler<MyRequest, MyResponse>
+{
+    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new MyResponse(""Data""));
+    }
+}
+
+[ScopedMediatorHandler]
+public class MyCommandHandler : ICommandHandler<MyCommand>
+{
+    public Task Handle(MyCommand command, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+}
+
+[SingletonMediatorMiddleware]
+public class LoggingRequestMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
+{
+    public Task<TResponse> Handle(TRequest request, IMediatorContext context, RequestMiddlewareDelegate<TRequest, TResponse> next, CancellationToken cancellationToken)
+    {
+        return next(request, context, cancellationToken);
+    }
+}
+
+[ScopedMediatorMiddleware]
+public class ValidationCommandMiddleware<TCommand> : ICommandMiddleware<TCommand> where TCommand : ICommand
+{
+    public Task Handle(TCommand command, IMediatorContext context, CommandMiddlewareDelegate<TCommand> next, CancellationToken cancellationToken)
+    {
+        return next(command, context, cancellationToken);
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        return Verify(result);
+    }
+
     static GeneratorDriver BuildDriver(string sourceCode)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);

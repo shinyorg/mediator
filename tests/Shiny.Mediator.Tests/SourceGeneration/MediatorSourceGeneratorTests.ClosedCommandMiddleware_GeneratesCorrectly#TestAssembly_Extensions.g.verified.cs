@@ -13,7 +13,7 @@ public static class __ShinyMediatorSourceGenExtensions
 {
     public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFromTestAssembly(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
     {
-        services.AddSingletonAsImplementedInterfaces<global::MyApp.Commands.CreateUserCommandHandler>();
+        services.AddScoped<global::Shiny.Mediator.ICommandMiddleware<global::MyApp.Middleware.MyCommand>, global::MyApp.Middleware.MyCommandMiddleware>();
 
         return services;
     }

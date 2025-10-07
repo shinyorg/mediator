@@ -18,9 +18,9 @@ internal class TestAssemblyRequestExecutor : global::Shiny.Mediator.Infrastructu
         global::Shiny.Mediator.IRequest<TResult> request,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        if (request is global::MyCompany.MyProduct.Features.Users.Handlers.CreateUserRequest p0)
+        if (request is global::MyApp.MyRequest p0)
         {
-            object result = await this.Execute<global::MyCompany.MyProduct.Features.Users.Handlers.CreateUserRequest, global::MyCompany.MyProduct.Features.Users.Handlers.CreateUserResponse>(p0, context, cancellationToken);
+            object result = await this.Execute<global::MyApp.MyRequest, global::MyApp.MyResponse>(p0, context, cancellationToken);
             return (TResult)result;
         }
 
@@ -29,7 +29,7 @@ internal class TestAssemblyRequestExecutor : global::Shiny.Mediator.Infrastructu
 
     public override bool CanHandle<TResult>(global::Shiny.Mediator.IRequest<TResult> request)
     {
-        if (request is global::MyCompany.MyProduct.Features.Users.Handlers.CreateUserRequest)
+        if (request is global::MyApp.MyRequest)
             return true;
 
         return false;

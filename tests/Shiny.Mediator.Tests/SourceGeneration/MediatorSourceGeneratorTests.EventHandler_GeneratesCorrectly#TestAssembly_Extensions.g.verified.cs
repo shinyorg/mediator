@@ -8,13 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace TestAssembly;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
 public static class __ShinyMediatorSourceGenExtensions
 {
     public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFromTestAssembly(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
     {
         services.AddScopedAsImplementedInterfaces<global::MyApp.Events.UserCreatedEventHandler>();
-
 
         return services;
     }

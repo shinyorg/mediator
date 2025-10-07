@@ -160,8 +160,8 @@ public static class RegistrationExtensions
         [DynamicallyAccessedMembers(
             DynamicallyAccessedMemberTypes.PublicConstructors | 
             DynamicallyAccessedMemberTypes.NonPublicConstructors | 
-            DynamicallyAccessedMemberTypes.Interfaces)
-        ] TImplementation
+            DynamicallyAccessedMemberTypes.Interfaces
+        )] TImplementation
     >(this IServiceCollection services) where TImplementation : class
     {
         // check if implementation is already registered and ignore if it is

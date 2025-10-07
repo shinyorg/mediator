@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace TestAssembly;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
 internal class TestAssemblyRequestExecutor : global::Shiny.Mediator.Infrastructure.RequestExecutor
 {
     public override async global::System.Threading.Tasks.Task<TResult> Request<TResult>(

@@ -6,13 +6,25 @@
 // </auto-generated>
 #nullable disable
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
+internal sealed class SingletonMediatorMiddlewareAttribute : global::System.Attribute
+{
+}
+
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
+internal sealed class ScopedMediatorMiddlewareAttribute : global::System.Attribute
+{
+}
+
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
 internal sealed class SingletonMediatorHandlerAttribute : global::System.Attribute
 {
 }
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
 internal sealed class ScopedMediatorHandlerAttribute : global::System.Attribute
 {

@@ -3,7 +3,7 @@ using Shiny.Mediator;
 
 namespace Sample.Blazor.Handlers;
 
-[SingletonHandler]
+[SingletonMediatorHandler]
 public class DoThingRequestHandler(IMediator mediator) : IRequestHandler<DoThing, int>
 {
     [OfflineAvailable]
