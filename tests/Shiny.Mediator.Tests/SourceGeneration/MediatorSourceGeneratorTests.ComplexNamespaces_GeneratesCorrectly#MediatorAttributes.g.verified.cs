@@ -8,12 +8,12 @@
 
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
-internal sealed class SingletonHandlerAttribute : global::System.Attribute
+internal sealed class SingletonMediatorHandlerAttribute : global::System.Attribute
 {
 }
 
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "4.0.0")]
 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
-internal sealed class ScopedHandlerAttribute : global::System.Attribute
+internal sealed class ScopedMediatorHandlerAttribute : global::System.Attribute
 {
 }

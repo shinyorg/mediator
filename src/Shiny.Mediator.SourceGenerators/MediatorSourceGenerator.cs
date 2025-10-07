@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -29,13 +30,13 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                 
                 $GENCODEATTRIBUTE$
                 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class SingletonHandlerAttribute : global::System.Attribute
+                internal sealed class SingletonMediatorHandlerAttribute : global::System.Attribute
                 {
                 }
                 
                 $GENCODEATTRIBUTE$
                 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class ScopedHandlerAttribute : global::System.Attribute
+                internal sealed class ScopedMediatorHandlerAttribute : global::System.Attribute
                 {
                 }
                 """.Replace("$GENCODEATTRIBUTE$", Constants.GeneratedCodeAttributeString),
@@ -43,162 +44,287 @@ public class MediatorSourceGenerator : IIncrementalGenerator
             )
         ));
 
-        // Create provider for classes with handler attributes
-        var classesProvider = context.SyntaxProvider
-            .CreateSyntaxProvider<INamedTypeSymbol?>(
-                predicate: static (s, _) => IsCandidateNode(s),
-                transform: static (ctx, _) => GetSemanticTargetForGeneration(ctx))
-            .Where(static m => m is not null)
-            .Collect();
+        // Find all classes with SingletonMediatorHandler or ScopedMediatorHandler attributes
+        var handlerClasses = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: static (s, _) => IsCandidateClass(s),
+                transform: static (ctx, _) => GetHandlerInfo(ctx))
+            .Where(static m => m is not null);
 
-        // Create provider for MSBuild properties
-        var configProvider = context.AnalyzerConfigOptionsProvider;
+        // Combine with compilation and generate output
+        var combined = context.CompilationProvider.Combine(handlerClasses.Collect());
 
-        // Combine providers
-        var combined = classesProvider
-            .Combine(context.CompilationProvider)
-            .Combine(configProvider);
-
-        // Register source output
-        context.RegisterSourceOutput(combined, static (spc, source) => Execute(spc, source));
+        context.RegisterSourceOutput(combined, static (spc, source) => Execute(source.Left, source.Right, spc));
     }
 
-    static bool IsCandidateNode(SyntaxNode node)
+    static bool IsCandidateClass(SyntaxNode node)
     {
-        return node is ClassDeclarationSyntax classDeclaration && 
-               classDeclaration.AttributeLists.Count > 0;
+        return node is ClassDeclarationSyntax classDecl 
+            && classDecl.AttributeLists.Count > 0;
     }
 
-    static INamedTypeSymbol? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
+    static HandlerInfo? GetHandlerInfo(GeneratorSyntaxContext context)
     {
-        var classDeclaration = (ClassDeclarationSyntax)context.Node;
-        var symbol = context.SemanticModel.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
+        var classDecl = (ClassDeclarationSyntax)context.Node;
+        var symbol = context.SemanticModel.GetDeclaredSymbol(classDecl);
         
-        if (symbol == null)
+        if (symbol is not INamedTypeSymbol classSymbol)
             return null;
 
-        // Skip Shiny.Mediator assembly classes
-        if (symbol.ContainingAssembly.Name.StartsWith("Shiny.Mediator", StringComparison.CurrentCultureIgnoreCase))
+        // Check for SingletonMediatorHandler or ScopedMediatorHandler attribute
+        var singletonAttr = classSymbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Name == "SingletonMediatorHandlerAttribute");
+        var scopedAttr = classSymbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Name == "ScopedMediatorHandlerAttribute");
+
+        if (singletonAttr is null && scopedAttr is null)
             return null;
-        
-        // Check if class has handler attributes
-        var hasAttribute = HasAttribute(symbol, "SingletonHandlerAttribute") ||
-                          HasAttribute(symbol, "ScopedHandlerAttribute");
-        
-        return hasAttribute ? symbol : null;
-    }
 
-    static bool HasAttribute(INamedTypeSymbol symbol, string attributeName) => symbol
-        .GetAttributes()
-        .Any(x => 
-            x.AttributeClass?.Name == attributeName ||
-            x.AttributeClass?.ToDisplayString().EndsWith(attributeName) == true
-        );
+        var lifetime = singletonAttr is not null ? "Singleton" : "Scoped";
 
-    static void Execute(SourceProductionContext context, ((ImmutableArray<INamedTypeSymbol?> Classes, Compilation Compilation) Left, Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider ConfigOptions) input)
-    {
-        var ((classes, compilation), configOptions) = input;
-
-        // Check if source generation is disabled
-        var globalOptions = configOptions.GlobalOptions;
-        if (globalOptions.TryGetValue("build_property.ShinyMediatorDisableSourceGen", out var skipValue) &&
-            skipValue.Equals("true", StringComparison.InvariantCultureIgnoreCase))
-            return;
-
-        // Filter out null values and deduplicate
-        var validClasses = classes
-            .Where(c => c is not null)
-            .GroupBy(x => x!.ToDisplayString())
-            .Select(x => x.First()!)
-            .ToList();
-
-        if (!validClasses.Any())
-            return;
-
-        // Get namespace and assembly name
-        globalOptions.TryGetValue("build_property.RootNamespace", out var nameSpace);
-        nameSpace ??= compilation.AssemblyName;
-        
-        var assName = compilation.AssemblyName?.Replace(".", "_");
-        
-        var sb = new StringBuilder();
-        sb
-            .AppendLine("using Shiny.Mediator;")
-            .AppendLine()
-            .AppendLine($"namespace {nameSpace};")
-            .AppendLine()
-            .AppendLine(Constants.GeneratedCodeAttributeString)
-            .AppendLine("public static class __ShinyMediatorSourceGenExtensions {")
-            .AppendLine($"\tpublic static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFrom{assName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)")
-            .AppendLine("\t{");
-
-        foreach (var clazz in validClasses)
+        // Check if implements IRequestHandler<TRequest, TResult>
+        foreach (var iface in classSymbol.AllInterfaces)
         {
-            var cls = clazz.ToDisplayString();
-            if (HasAttribute(clazz, "ScopedHandlerAttribute") || HasAttribute(clazz, "ScopedMiddlewareAttribute"))
-                sb.AppendLine($"\t\tservices.AddScopedAsImplementedInterfaces<{cls}>();");
-            else
-                sb.AppendLine($"\t\tservices.AddSingletonAsImplementedInterfaces<{cls}>();");
+            if (iface.Name == "IRequestHandler" && iface.TypeArguments.Length == 2)
+            {
+                return new HandlerInfo(
+                    ClassSymbol: classSymbol,
+                    HandlerType: "Request",
+                    RequestType: iface.TypeArguments[0],
+                    ResultType: iface.TypeArguments[1],
+                    Lifetime: lifetime
+                );
+            }
+
+            if (iface.Name == "IStreamRequestHandler" && iface.TypeArguments.Length == 2)
+            {
+                return new HandlerInfo(
+                    ClassSymbol: classSymbol,
+                    HandlerType: "Stream",
+                    RequestType: iface.TypeArguments[0],
+                    ResultType: iface.TypeArguments[1],
+                    Lifetime: lifetime
+                );
+            }
         }
 
-        sb
-            .AppendLine("\t\treturn services;")
-            .AppendLine("\t}")
-            .AppendLine("}");
-
-        context.AddSource("__MediatorHandlersRegistration.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
+        return null;
     }
-}
 
-/*
-Given
-   
-   [MediatorHandler]
-   public class MyRequestHandler : IRequestHandler<MyRequestHandler, MyResponse>
-   {
-   public Task<MyResponse> Handle(MyRequest request, CancellationToken cancellationToken)
-   {
-   // Handle the request and return a response
-   var response = new MyResponse
-   {
-   Message = $"Hello, {request.Name}!"
-   };
-   return Task.FromResult(response);
-   }
-   }
-   
-   
-   [MediatorMiddleware(1)]
-   public class MyRequestMiddleware : IRequestMiddleware<MyResponse, MyResponse>
-   {
-   public string Name { get; set; }
-   }
-   
-   [MediatorMiddleware(2)]
-   public class GenericRequestMiddleware<TRequest, TResponse> : IRequestMiddleware<MyResponse, TResponse>
-   {
-   public string Name { get; set; }
-   }
-   
-   
-   
-   GENERATES:
-   
-   public class RequestExecutor : IRequestExecutor
-   {
-   
-       public Task<MyResponse> Execute(MyRequest request, CancellationToken cancellationToken = default)
-       {
-           var middleware1 = new MyRequestMiddleware { Name = "MyRequestMiddleware" };
-           var middleware2 = new GenericRequestMiddleware<MyRequest, MyResponse> { Name = "GenericRequestMiddleware" };
-           var handler = new MyRequestHandler();
-           
-           Func<Task<MyResponse>> handlerFunc = () => handler.Handle(request, cancellationToken);
-           
-           Func<Task<MyResponse>> pipeline = () => middleware2.Invoke(() => middleware1.Invoke(handlerFunc), request, cancellationToken);
-           
-           return pipeline();
-       }
-   }
-   
- */
+    static void Execute(Compilation compilation, ImmutableArray<HandlerInfo?> handlers, SourceProductionContext context)
+    {
+        if (handlers.IsDefaultOrEmpty)
+            return;
+
+        var validHandlers = handlers.Where(h => h is not null).Select(h => h!.Value).ToList();
+        if (validHandlers.Count == 0)
+            return;
+
+        var requestHandlers = validHandlers.Where(h => h.HandlerType == "Request").ToList();
+        var streamHandlers = validHandlers.Where(h => h.HandlerType == "Stream").ToList();
+
+        var assemblyName = compilation.AssemblyName?.Replace(".", "") ?? "Generated";
+
+        // Generate RequestExecutor
+        if (requestHandlers.Count > 0)
+        {
+            var requestExecutorCode = GenerateRequestExecutor(requestHandlers, assemblyName);
+            context.AddSource($"{assemblyName}_RequestExecutor.g.cs", SourceText.From(requestExecutorCode, Encoding.UTF8));
+        }
+
+        // Generate StreamRequestExecutor
+        if (streamHandlers.Count > 0)
+        {
+            var streamExecutorCode = GenerateStreamRequestExecutor(streamHandlers, assemblyName);
+            context.AddSource($"{assemblyName}_StreamRequestExecutor.g.cs", SourceText.From(streamExecutorCode, Encoding.UTF8));
+        }
+
+        // Generate extension method
+        var extensionCode = GenerateExtensionMethod(validHandlers, assemblyName, requestHandlers.Count > 0, streamHandlers.Count > 0);
+        context.AddSource($"{assemblyName}_Extensions.g.cs", SourceText.From(extensionCode, Encoding.UTF8));
+    }
+
+    static string GenerateRequestExecutor(List<HandlerInfo> handlers, string assemblyName)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated>");
+        sb.AppendLine("// Code generated by Shiny Mediator Source Generator.");
+        sb.AppendLine("// </auto-generated>");
+        sb.AppendLine("#nullable disable");
+        sb.AppendLine();
+        sb.AppendLine("using System;");
+        sb.AppendLine("using System.Threading;");
+        sb.AppendLine("using System.Threading.Tasks;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {assemblyName};");
+        sb.AppendLine();
+        sb.AppendLine(Constants.GeneratedCodeAttributeString);
+        sb.AppendLine($"internal class {assemblyName}RequestExecutor : global::Shiny.Mediator.Infrastructure.RequestExecutor");
+        sb.AppendLine("{");
+        
+        // Request method
+        sb.AppendLine("    public override async global::System.Threading.Tasks.Task<TResult> Request<TResult>(");
+        sb.AppendLine("        global::Shiny.Mediator.IMediatorContext context,");
+        sb.AppendLine("        global::Shiny.Mediator.IRequest<TResult> request,");
+        sb.AppendLine("        global::System.Threading.CancellationToken cancellationToken)");
+        sb.AppendLine("    {");
+        
+        for (int i = 0; i < handlers.Count; i++)
+        {
+            var handler = handlers[i];
+            var requestTypeFull = GetFullTypeName(handler.RequestType);
+            var resultTypeFull = GetFullTypeName(handler.ResultType);
+            
+            sb.AppendLine($"        if (request is {requestTypeFull} p{i})");
+            sb.AppendLine("        {");
+            sb.AppendLine($"            object result = await this.Execute<{requestTypeFull}, {resultTypeFull}>(p{i}, context, cancellationToken);");
+            sb.AppendLine("            return (TResult)result;");
+            sb.AppendLine("        }");
+            sb.AppendLine();
+        }
+        
+        sb.AppendLine("        throw new global::System.InvalidOperationException(\"Unknown request type\");");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        
+        // CanHandle method
+        sb.AppendLine("    public override bool CanHandle<TResult>(global::Shiny.Mediator.IRequest<TResult> request)");
+        sb.AppendLine("    {");
+        
+        for (int i = 0; i < handlers.Count; i++)
+        {
+            var handler = handlers[i];
+            var requestTypeFull = GetFullTypeName(handler.RequestType);
+            sb.AppendLine($"        if (request is {requestTypeFull})");
+            sb.AppendLine("            return true;");
+            sb.AppendLine();
+        }
+        
+        sb.AppendLine("        return false;");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+        
+        return sb.ToString();
+    }
+
+    static string GenerateStreamRequestExecutor(List<HandlerInfo> handlers, string assemblyName)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated>");
+        sb.AppendLine("// Code generated by Shiny Mediator Source Generator.");
+        sb.AppendLine("// </auto-generated>");
+        sb.AppendLine("#nullable disable");
+        sb.AppendLine();
+        sb.AppendLine("using System;");
+        sb.AppendLine("using System.Collections.Generic;");
+        sb.AppendLine("using System.Threading;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {assemblyName};");
+        sb.AppendLine();
+        sb.AppendLine(Constants.GeneratedCodeAttributeString);
+        sb.AppendLine($"internal class {assemblyName}StreamRequestExecutor : global::Shiny.Mediator.Infrastructure.StreamRequestExecutor");
+        sb.AppendLine("{");
+        
+        // Request method
+        sb.AppendLine("    public override global::System.Collections.Generic.IAsyncEnumerable<TResult> Request<TResult>(");
+        sb.AppendLine("        global::Shiny.Mediator.IMediatorContext context,");
+        sb.AppendLine("        global::Shiny.Mediator.IStreamRequest<TResult> request,");
+        sb.AppendLine("        global::System.Threading.CancellationToken cancellationToken)");
+        sb.AppendLine("    {");
+        
+        for (int i = 0; i < handlers.Count; i++)
+        {
+            var handler = handlers[i];
+            var requestTypeFull = GetFullTypeName(handler.RequestType);
+            var resultTypeFull = GetFullTypeName(handler.ResultType);
+            
+            sb.AppendLine($"        if (request is {requestTypeFull} p{i})");
+            sb.AppendLine("        {");
+            sb.AppendLine($"            var handle = this.Execute<{requestTypeFull}, {resultTypeFull}>(context, p{i}, cancellationToken);");
+            sb.AppendLine("            return (global::System.Collections.Generic.IAsyncEnumerable<TResult>)handle;");
+            sb.AppendLine("        }");
+            sb.AppendLine();
+        }
+        
+        sb.AppendLine("        throw new global::System.InvalidOperationException(\"Unknown request type\");");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        
+        // CanRequest method
+        sb.AppendLine("    public override bool CanRequest<TResult>(global::Shiny.Mediator.IStreamRequest<TResult> request)");
+        sb.AppendLine("    {");
+        
+        for (int i = 0; i < handlers.Count; i++)
+        {
+            var handler = handlers[i];
+            var requestTypeFull = GetFullTypeName(handler.RequestType);
+            sb.AppendLine($"        if (request is {requestTypeFull})");
+            sb.AppendLine("            return true;");
+            sb.AppendLine();
+        }
+        
+        sb.AppendLine("        return false;");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+        
+        return sb.ToString();
+    }
+
+    static string GenerateExtensionMethod(List<HandlerInfo> handlers, string assemblyName, bool hasRequestHandlers, bool hasStreamHandlers)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated>");
+        sb.AppendLine("// Code generated by Shiny Mediator Source Generator.");
+        sb.AppendLine("// </auto-generated>");
+        sb.AppendLine("#nullable disable");
+        sb.AppendLine();
+        sb.AppendLine("using Microsoft.Extensions.DependencyInjection;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {assemblyName};");
+        sb.AppendLine();
+        sb.AppendLine(Constants.GeneratedCodeAttributeString);
+        sb.AppendLine($"public static class __ShinyMediatorSourceGenExtensions");
+        sb.AppendLine("{");
+        sb.AppendLine($"    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFrom{assemblyName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)");
+        sb.AppendLine("    {");
+        
+        // Register handlers
+        foreach (var handler in handlers)
+        {
+            var handlerTypeFull = GetFullTypeName(handler.ClassSymbol);
+            var methodName = handler.Lifetime == "Singleton" ? "AddSingletonAsImplementedInterfaces" : "AddScopedAsImplementedInterfaces";
+            sb.AppendLine($"        services.{methodName}<{handlerTypeFull}>();");
+        }
+        
+        sb.AppendLine();
+        
+        // Register executors
+        if (hasRequestHandlers)
+        {
+            sb.AppendLine($"        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, {assemblyName}.{assemblyName}RequestExecutor>();");
+        }
+        
+        if (hasStreamHandlers)
+        {
+            sb.AppendLine($"        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IStreamRequestExecutor, {assemblyName}.{assemblyName}StreamRequestExecutor>();");
+        }
+        
+        sb.AppendLine();
+        sb.AppendLine("        return services;");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+        
+        return sb.ToString();
+    }
+
+    static string GetFullTypeName(ITypeSymbol typeSymbol) 
+        => typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included));
+
+    record struct HandlerInfo(
+        INamedTypeSymbol ClassSymbol,
+        string HandlerType,
+        ITypeSymbol RequestType,
+        ITypeSymbol ResultType,
+        string Lifetime
+    );
+}

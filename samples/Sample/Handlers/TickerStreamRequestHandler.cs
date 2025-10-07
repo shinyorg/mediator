@@ -4,7 +4,7 @@ using Sample.Contracts;
 namespace Sample.Handlers;
 
 
-[SingletonHandler]
+[SingletonMediatorHandler]
 public class TickerStreamRequestHandler : IStreamRequestHandler<TickerRequest, string>
 {
     public async IAsyncEnumerable<string> Handle(

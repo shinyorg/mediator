@@ -3,7 +3,7 @@ using Sample.Contracts;
 
 namespace Sample.Handlers;
 
-[SingletonHandler]
+[SingletonMediatorHandler]
 public class AutoRefreshStreamRequestHandler : IStreamRequestHandler<AutoRefreshRequest, string>
 {
     [TimerRefresh(3000)]

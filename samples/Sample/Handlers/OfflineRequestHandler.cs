@@ -3,7 +3,7 @@ using Sample.Contracts;
 namespace Sample.Handlers;
 
 
-[SingletonHandler]
+[SingletonMediatorHandler]
 public class OfflineRequestHandler : IRequestHandler<OfflineRequest, string>
 {
     [OfflineAvailable]

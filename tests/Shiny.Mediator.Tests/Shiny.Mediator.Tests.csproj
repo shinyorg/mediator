@@ -59,16 +59,6 @@
         <None Remove="Http\*.json"/>
         <Content Include="Http\*.json" CopyToOutputDirectory="Always"/>
         <None Remove="testapi.json"/>
-        <None Update="SourceGeneration\MediatorSourceGeneratorTests.Driver_Success#MediatorAttributes.g.verified.cs">
-          <ParentExtension>.cs</ParentExtension>
-          <ParentFile>MediatorSourceGeneratorTests</ParentFile>
-          <DependentUpon>MediatorSourceGeneratorTests.cs</DependentUpon>
-        </None>
-        <None Update="SourceGeneration\MediatorSourceGeneratorTests.Driver_Success#__MediatorHandlersRegistration.g.verified.cs">
-          <ParentExtension>.cs</ParentExtension>
-          <ParentFile>MediatorSourceGeneratorTests</ParentFile>
-          <DependentUpon>MediatorSourceGeneratorTests.cs</DependentUpon>
-        </None>
         <None Update="SourceGeneration\MediatorSourceGeneratorTests.Driver_Success#__MediatorHandlersRegistration.g.received.cs">
           <ParentExtension>.cs</ParentExtension>
           <ParentFile>MediatorSourceGeneratorTests</ParentFile>

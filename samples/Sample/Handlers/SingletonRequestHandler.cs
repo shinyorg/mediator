@@ -3,7 +3,7 @@ using Sample.Contracts;
 namespace Sample.Handlers;
 
 
-[SingletonHandler]
+[SingletonMediatorHandler]
 public class SingletonRequestHandler(AppSqliteConnection data) : IRequestHandler<MyMessageRequest, MyMessageResponse>
 {
     // [Cache(Storage = StoreType.File, MaxAgeSeconds = 30, OnlyForOffline = true)]
