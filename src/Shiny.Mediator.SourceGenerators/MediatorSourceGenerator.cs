@@ -106,6 +106,29 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                     Lifetime: lifetime
                 );
             }
+            
+            // ICommandHandler and IEventHandler - just register with DI, no executors
+            if (iface.Name == "ICommandHandler" && iface.TypeArguments.Length == 1)
+            {
+                return new HandlerInfo(
+                    ClassSymbol: classSymbol,
+                    HandlerType: "Command",
+                    RequestType: iface.TypeArguments[0],
+                    ResultType: null,
+                    Lifetime: lifetime
+                );
+            }
+            
+            if (iface.Name == "IEventHandler" && iface.TypeArguments.Length == 1)
+            {
+                return new HandlerInfo(
+                    ClassSymbol: classSymbol,
+                    HandlerType: "Event",
+                    RequestType: iface.TypeArguments[0],
+                    ResultType: null,
+                    Lifetime: lifetime
+                );
+            }
         }
 
         return null;
@@ -317,14 +340,19 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         return sb.ToString();
     }
 
-    static string GetFullTypeName(ITypeSymbol typeSymbol) 
-        => typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included));
+    static string GetFullTypeName(ITypeSymbol? typeSymbol)
+    {
+        if (typeSymbol is null)
+            return string.Empty;
+        
+        return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included));
+    }
 
     record struct HandlerInfo(
         INamedTypeSymbol ClassSymbol,
         string HandlerType,
         ITypeSymbol RequestType,
-        ITypeSymbol ResultType,
+        ITypeSymbol? ResultType,
         string Lifetime
     );
 }

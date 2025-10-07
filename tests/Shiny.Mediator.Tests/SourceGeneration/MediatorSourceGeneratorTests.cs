@@ -325,6 +325,118 @@ public class GetOrderHandler : IRequestHandler<GetOrderRequest, OrderDto>
         return Verify(result);
     }
 
+    [Fact]
+    public Task CommandHandler_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.Commands;
+
+public record CreateUserCommand(string Name, string Email) : ICommand;
+
+[SingletonMediatorHandler]
+public class CreateUserCommandHandler : ICommandHandler<CreateUserCommand>
+{
+    public Task Handle(CreateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        // Create user logic here
+        return Task.CompletedTask;
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        // Should generate attributes and extensions, but NO executors
+        result.GeneratedTrees.Length.ShouldBe(2);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task EventHandler_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.Events;
+
+public record UserCreatedEvent(int UserId, string Name) : IEvent;
+
+[ScopedMediatorHandler]
+public class UserCreatedEventHandler : IEventHandler<UserCreatedEvent>
+{
+    public Task Handle(UserCreatedEvent @event, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        // Handle event logic here
+        return Task.CompletedTask;
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        // Should generate attributes and extensions, but NO executors
+        result.GeneratedTrees.Length.ShouldBe(2);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task MixedHandlers_RequestCommandEvent_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp;
+
+public record GetDataRequest(int Id) : IRequest<DataResponse>;
+public record DataResponse(int Id, string Data);
+
+public record UpdateDataCommand(int Id, string NewData) : ICommand;
+
+public record DataUpdatedEvent(int Id, string Data) : IEvent;
+
+[SingletonMediatorHandler]
+public class GetDataHandler : IRequestHandler<GetDataRequest, DataResponse>
+{
+    public Task<DataResponse> Handle(GetDataRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new DataResponse(request.Id, ""Data""));
+    }
+}
+
+[ScopedMediatorHandler]
+public class UpdateDataCommandHandler : ICommandHandler<UpdateDataCommand>
+{
+    public Task Handle(UpdateDataCommand command, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+}
+
+[SingletonMediatorHandler]
+public class DataUpdatedEventHandler : IEventHandler<DataUpdatedEvent>
+{
+    public Task Handle(DataUpdatedEvent @event, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        // Should generate attributes, request executor, and extensions (no stream executor)
+        result.GeneratedTrees.Length.ShouldBe(3);
+        return Verify(result);
+    }
+
     static GeneratorDriver BuildDriver(string sourceCode)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
@@ -350,3 +462,4 @@ public class GetOrderHandler : IRequestHandler<GetOrderRequest, OrderDto>
         return driver.RunGenerators(compilation);
     }
 }
+
