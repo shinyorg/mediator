@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace Sample.Contracts;
 
 public record MyMessageRequest(string Arg, bool FireAndForgetEvents) : IRequest<MyMessageResponse>;

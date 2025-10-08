@@ -5,6 +5,7 @@
 #nullable disable
 
 using Microsoft.Extensions.DependencyInjection;
+using Shiny.Mediator;
 
 namespace TestAssembly;
 

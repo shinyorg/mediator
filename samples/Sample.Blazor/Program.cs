@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Sample.Blazor;
+using SampleBlazor;
 using Shiny.Mediator;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -18,6 +19,6 @@ builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
 builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
 builder.Services.AddShinyMediator(x => x.UseBlazor());
-builder.Services.AddDiscoveredMediatorHandlersFromSample_Blazor();
+builder.Services.AddDiscoveredMediatorHandlersFromSampleBlazor();
 
 await builder.Build().RunAsync();

@@ -79,7 +79,7 @@ public static class MauiProgram
         builder.Services.RegisterForNavigation<EventPage, EventViewModel>();
         builder.Services.RegisterForNavigation<BlazorPage, BlazorViewModel>();
         builder.Services.RegisterForNavigation<AnotherPage, AnotherViewModel>();
-
+        
         var app = builder.Build();
         return app;
     }
