@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -82,70 +83,97 @@ public static class Utils
     }
     
 
-    // TODO: AOT hated
     public static TAttribute? GetHandlerHandleMethodAttribute<TCommand, TAttribute>(this ICommandHandler<TCommand> handler) 
-            where TAttribute : Attribute 
-            where TCommand : ICommand
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TCommand), typeof(IMediatorContext), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
+        where TAttribute : Attribute 
+        where TCommand : ICommand
+        => GetMethodInfo<ICommandHandler<TCommand>>(x => x.Handle(default!, null!, default!)).GetCustomAttribute<TAttribute>();
+
     
-    
-    // TODO: AOT hated
     public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IRequestHandler<TRequest, TResult> handler) 
             where TAttribute : Attribute
             where TRequest : IRequest<TResult>
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TRequest), typeof(IMediatorContext), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
+        => GetMethodInfo<IRequestHandler<TRequest, TResult>>(x => x.Handle(default!, null!, default!)).GetCustomAttribute<TAttribute>();
     
     
-    // TODO: AOT hated
     public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IStreamRequestHandler<TRequest, TResult> handler) 
         where TAttribute : Attribute
         where TRequest : IStreamRequest<TResult>
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TRequest), typeof(IMediatorContext), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
+        => GetMethodInfo<IStreamRequestHandler<TRequest, TResult>>(x => x.Handle(default!, null!, default!)).GetCustomAttribute<TAttribute>();
    
    
-    // TODO: AOT hated
-    public static TAttribute? GetHandlerHandleMethodAttribute<TEvent, TAttribute>(this IEventHandler<TEvent> handler) 
+    public static TAttribute? GetHandlerHandleMethodAttribute<TEvent, TAttribute>(this IEventHandler<TEvent> handler)
         where TEvent : IEvent
         where TAttribute : Attribute
-        => handler
-            .GetType()
-            .GetMethod(
-                "Handle", 
-                BindingFlags.Public | BindingFlags.Instance, 
-                null,
-                CallingConventions.Any,
-                [ typeof(TEvent), typeof(IMediatorContext), typeof(CancellationToken) ],
-                null
-            )!
-            .GetCustomAttribute<TAttribute>();
+        => GetMethodInfo<IEventHandler<TEvent>>(x => x.Handle(default!, null!, default)).GetCustomAttribute<TAttribute>();
+    
+    
+    static MethodInfo GetMethodInfo<TResult>(Expression<Func<TResult>> expression)
+    {
+        if (expression.Body is MethodCallExpression methodCall)
+            return methodCall.Method;
+
+        throw new ArgumentException("Expression must be a method call.", nameof(expression));
+    }
+    
+    static MethodInfo GetMethodInfo<T>(Expression<Action<T>> expression)
+    {
+        if (expression.Body is MethodCallExpression methodCall)
+            return methodCall.Method;
+
+        throw new ArgumentException("Expression must be a method call.", nameof(expression));
+    }
 }
+
+/*
+ 
+   using System;
+   using System.Linq.Expressions;
+   using System.Reflection;
+   
+   public class MyClass
+   {
+       public void MyMethod(int value)
+       {
+           Console.WriteLine($"MyMethod called with: {value}");
+       }
+   
+       public static MethodInfo GetMethodInfo<T>(Expression<Action<T>> expression)
+       {
+           if (expression.Body is MethodCallExpression methodCall)
+           {
+               return methodCall.Method;
+           }
+           throw new ArgumentException("Expression must be a method call.", nameof(expression));
+       }
+   
+       public static MethodInfo GetMethodInfo(Expression<Action> expression)
+       {
+           if (expression.Body is MethodCallExpression methodCall)
+           {
+               return methodCall.Method;
+           }
+           throw new ArgumentException("Expression must be a method call.", nameof(expression));
+       }
+   
+       public static MethodInfo GetMethodInfo<TResult>(Expression<Func<TResult>> expression)
+       {
+           if (expression.Body is MethodCallExpression methodCall)
+           {
+               return methodCall.Method;
+           }
+           throw new ArgumentException("Expression must be a method call.", nameof(expression));
+       }
+   
+       public static void Main(string[] args)
+       {
+           // For an instance method
+           var instance = new MyClass();
+           MethodInfo methodInfo1 = GetMethodInfo<MyClass>(x => x.MyMethod(default));
+           Console.WriteLine($"Method Name (instance): {methodInfo1.Name}");
+   
+           // For a static method (if you had one)
+           // MethodInfo methodInfo2 = GetMethodInfo(() => StaticMethod());
+           // Console.WriteLine($"Method Name (static): {methodInfo2.Name}");
+       }
+   }
+ */
