@@ -60,8 +60,9 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         var handlerClasses = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => IsCandidateClass(s),
-                transform: static (ctx, _) => GetHandlerInfo(ctx))
-            .Where(static m => m is not null);
+                transform: static (ctx, _) => GetHandlerInfos(ctx))
+            .Where(static m => m is not null)
+            .SelectMany(static (infos, _) => infos!);
 
         // Find all classes with middleware attributes
         var middlewareClasses = context.SyntaxProvider
@@ -86,7 +87,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
             && classDecl.AttributeLists.Count > 0;
     }
 
-    static HandlerInfo? GetHandlerInfo(GeneratorSyntaxContext context)
+    static IEnumerable<HandlerInfo>? GetHandlerInfos(GeneratorSyntaxContext context)
     {
         var classDecl = (ClassDeclarationSyntax)context.Node;
         var symbol = context.SemanticModel.GetDeclaredSymbol(classDecl);
@@ -105,56 +106,58 @@ public class MediatorSourceGenerator : IIncrementalGenerator
 
         var lifetime = singletonAttr is not null ? "Singleton" : "Scoped";
 
+        var handlerInfos = new List<HandlerInfo>();
+
         // Check if implements IRequestHandler<TRequest, TResult>
         foreach (var iface in classSymbol.AllInterfaces)
         {
-            if (iface.Name == "IRequestHandler" && iface.TypeArguments.Length == 2)
+            if (iface is { Name: "IRequestHandler", TypeArguments.Length: 2 })
             {
-                return new HandlerInfo(
+                handlerInfos.Add(new HandlerInfo(
                     ClassSymbol: classSymbol,
                     HandlerType: "Request",
                     RequestType: iface.TypeArguments[0],
                     ResultType: iface.TypeArguments[1],
                     Lifetime: lifetime
-                );
+                ));
             }
 
-            if (iface.Name == "IStreamRequestHandler" && iface.TypeArguments.Length == 2)
+            if (iface is { Name: "IStreamRequestHandler", TypeArguments.Length: 2 })
             {
-                return new HandlerInfo(
+                handlerInfos.Add(new HandlerInfo(
                     ClassSymbol: classSymbol,
                     HandlerType: "Stream",
                     RequestType: iface.TypeArguments[0],
                     ResultType: iface.TypeArguments[1],
                     Lifetime: lifetime
-                );
+                ));
             }
             
             // ICommandHandler and IEventHandler - just register with DI, no executors
-            if (iface.Name == "ICommandHandler" && iface.TypeArguments.Length == 1)
+            if (iface is { Name: "ICommandHandler", TypeArguments.Length: 1 })
             {
-                return new HandlerInfo(
+                handlerInfos.Add(new HandlerInfo(
                     ClassSymbol: classSymbol,
                     HandlerType: "Command",
                     RequestType: iface.TypeArguments[0],
                     ResultType: null,
                     Lifetime: lifetime
-                );
+                ));
             }
             
-            if (iface.Name == "IEventHandler" && iface.TypeArguments.Length == 1)
+            if (iface is { Name: "IEventHandler", TypeArguments.Length: 1 })
             {
-                return new HandlerInfo(
+                handlerInfos.Add(new HandlerInfo(
                     ClassSymbol: classSymbol,
                     HandlerType: "Event",
                     RequestType: iface.TypeArguments[0],
                     ResultType: null,
                     Lifetime: lifetime
-                );
+                ));
             }
         }
 
-        return null;
+        return handlerInfos;
     }
 
     static MiddlewareInfo? GetMiddlewareInfo(GeneratorSyntaxContext context)
@@ -166,9 +169,12 @@ public class MediatorSourceGenerator : IIncrementalGenerator
             return null;
 
         // Check for SingletonMediatorMiddleware or ScopedMediatorMiddleware attribute
-        var singletonAttr = classSymbol.GetAttributes()
+        var singletonAttr = classSymbol
+            .GetAttributes()
             .FirstOrDefault(a => a.AttributeClass?.Name == "SingletonMediatorMiddlewareAttribute");
-        var scopedAttr = classSymbol.GetAttributes()
+        
+        var scopedAttr = classSymbol
+            .GetAttributes()
             .FirstOrDefault(a => a.AttributeClass?.Name == "ScopedMediatorMiddlewareAttribute");
 
         if (singletonAttr is null && scopedAttr is null)
@@ -179,7 +185,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         // Check if implements IRequestMiddleware<TRequest, TResult>
         foreach (var iface in classSymbol.AllInterfaces)
         {
-            if (iface.Name == "IRequestMiddleware" && iface.TypeArguments.Length == 2)
+            if (iface.Name == "IRequestHandler" && iface.TypeArguments.Length == 2)
             {
                 return new MiddlewareInfo(
                     ClassSymbol: classSymbol,
@@ -190,7 +196,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                 );
             }
 
-            if (iface.Name == "IStreamRequestMiddleware" && iface.TypeArguments.Length == 2)
+            if (iface is { Name: "IStreamRequestMiddleware", TypeArguments.Length: 2 })
             {
                 return new MiddlewareInfo(
                     ClassSymbol: classSymbol,
@@ -202,7 +208,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
             }
             
             // ICommandMiddleware and IEventMiddleware - just register with DI, no executors
-            if (iface.Name == "ICommandMiddleware" && iface.TypeArguments.Length == 1)
+            if (iface is { Name: "ICommandMiddleware", TypeArguments.Length: 1 })
             {
                 return new MiddlewareInfo(
                     ClassSymbol: classSymbol,
@@ -213,7 +219,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                 );
             }
             
-            if (iface.Name == "IEventMiddleware" && iface.TypeArguments.Length == 1)
+            if (iface is { Name: "IEventMiddleware", TypeArguments.Length: 1 })
             {
                 return new MiddlewareInfo(
                     ClassSymbol: classSymbol,
@@ -228,12 +234,12 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         return null;
     }
 
-    static void Execute(Compilation compilation, ImmutableArray<HandlerInfo?> handlers, ImmutableArray<MiddlewareInfo?> middleware, SourceProductionContext context)
+    static void Execute(Compilation compilation, ImmutableArray<HandlerInfo> handlers, ImmutableArray<MiddlewareInfo?> middleware, SourceProductionContext context)
     {
         if (handlers.IsDefaultOrEmpty && middleware.IsDefaultOrEmpty)
             return;
 
-        var validHandlers = handlers.Where(h => h is not null).Select(h => h!.Value).ToList();
+        var validHandlers = handlers.ToList();
         var validMiddleware = middleware.Where(m => m is not null).Select(m => m!.Value).ToList();
         
         if (validHandlers.Count == 0 && validMiddleware.Count == 0)
@@ -408,15 +414,20 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         sb.AppendLine($"    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFrom{assemblyName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)");
         sb.AppendLine("    {");
         
-        // Register handlers
-        foreach (var handler in handlers)
+        // Register handlers - deduplicate by class symbol to avoid registering the same handler multiple times
+        var uniqueHandlers = handlers
+            .GroupBy(h => h.ClassSymbol, SymbolEqualityComparer.Default)
+            .Select(g => g.First())
+            .ToList();
+        
+        foreach (var handler in uniqueHandlers)
         {
             var handlerTypeFull = GetFullTypeName(handler.ClassSymbol);
             var methodName = handler.Lifetime == "Singleton" ? "AddSingletonAsImplementedInterfaces" : "AddScopedAsImplementedInterfaces";
             sb.AppendLine($"        services.{methodName}<{handlerTypeFull}>();");
         }
         
-        if (handlers.Count > 0 && middleware.Count > 0)
+        if (uniqueHandlers.Count > 0 && middleware.Count > 0)
         {
             sb.AppendLine();
         }
@@ -424,7 +435,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         // Register middleware
         foreach (var mw in middleware)
         {
-            var isOpenGeneric = mw.ClassSymbol.IsGenericType && mw.ClassSymbol.TypeParameters.Length > 0;
+            var isOpenGeneric = mw.ClassSymbol is { IsGenericType: true, TypeParameters.Length: > 0 };
             var methodName = mw.Lifetime == "Singleton" ? "AddSingleton" : "AddScoped";
             
             if (isOpenGeneric)
@@ -443,7 +454,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                 var interfaceName = GetMiddlewareInterfaceName(mw.MiddlewareType);
                 var classTypeFull = GetFullTypeName(mw.ClassSymbol);
                 
-                if (mw.MiddlewareType == "Request" || mw.MiddlewareType == "Stream")
+                if (mw.MiddlewareType is "Request" or "Stream")
                 {
                     var requestTypeFull = GetFullTypeName(mw.RequestType);
                     var resultTypeFull = GetFullTypeName(mw.ResultType);
@@ -457,21 +468,15 @@ public class MediatorSourceGenerator : IIncrementalGenerator
             }
         }
         
-        if ((handlers.Count > 0 || middleware.Count > 0) && (hasRequestHandlers || hasStreamHandlers))
-        {
+        if ((uniqueHandlers.Count > 0 || middleware.Count > 0) && (hasRequestHandlers || hasStreamHandlers))
             sb.AppendLine();
-        }
         
         // Register executors
         if (hasRequestHandlers)
-        {
             sb.AppendLine($"        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, {assemblyName}.{assemblyName}RequestExecutor>();");
-        }
         
         if (hasStreamHandlers)
-        {
             sb.AppendLine($"        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IStreamRequestExecutor, {assemblyName}.{assemblyName}StreamRequestExecutor>();");
-        }
         
         sb.AppendLine();
         sb.AppendLine("        return services;");
@@ -481,35 +486,30 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         return sb.ToString();
     }
 
-    static string GetMiddlewareInterfaceName(string middlewareType)
+    static string GetMiddlewareInterfaceName(string middlewareType) => middlewareType switch
     {
-        return middlewareType switch
-        {
-            "Request" => "global::Shiny.Mediator.IRequestMiddleware",
-            "Stream" => "global::Shiny.Mediator.IStreamRequestMiddleware",
-            "Command" => "global::Shiny.Mediator.ICommandMiddleware",
-            "Event" => "global::Shiny.Mediator.IEventMiddleware",
-            _ => throw new InvalidOperationException($"Unknown middleware type: {middlewareType}")
-        };
-    }
-
+        "Request" => "global::Shiny.Mediator.IRequestMiddleware",
+        "Stream" => "global::Shiny.Mediator.IStreamRequestMiddleware",
+        "Command" => "global::Shiny.Mediator.ICommandMiddleware",
+        "Event" => "global::Shiny.Mediator.IEventMiddleware",
+        _ => throw new InvalidOperationException($"Unknown middleware type: {middlewareType}")
+    };
+    
     static string GetOpenGenericTypeName(INamedTypeSymbol typeSymbol)
     {
         var namespaceName = typeSymbol.ContainingNamespace?.ToDisplayString();
         var typeName = typeSymbol.Name;
         
         if (string.IsNullOrEmpty(namespaceName) || namespaceName == "<global namespace>")
-        {
             return $"global::{typeName}";
-        }
         
         return $"global::{namespaceName}.{typeName}";
     }
 
     static string GetFullTypeName(ITypeSymbol? typeSymbol)
     {
-        if (typeSymbol is null)
-            return string.Empty;
+        if (typeSymbol == null)
+            return String.Empty;
         
         return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included));
     }
@@ -530,23 +530,3 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         string Lifetime
     );
 }
-/*
-I want to add middleware registration, but slightly different from handlers
-
-GIVEN middleware classes marked with [SingletonMediatorMiddleware] or [ScopedMediatorMiddleware] and implementing
-ICommandMiddleware, IEventMiddleware, IRequestMiddleware, or IStreamRequestMiddleware, register them with the same dependency injection file, BUT the following:
-
-NOTE: if the middleware class uses generics, you need to register them OPEN
-public class MyCommandMiddleware<TCommand> : AbstractValidationCommandMiddleware<TCommand> where TCommand : ICommand
-
-would register as 
-services.AddScoped(typeof(ICommandMiddleware<>), typeof(MyCommandMiddleware<>));
-
-Request handlers with generics (Use AddSingleton for [SingletonMediatorMiddleware])
-services.AddScoped(typeof(IRequestMiddleware<,>), typeof(MyRequestMiddleware<,>));
-
-OR straight up closed (Use AddSingleton for [SingletonMediatorMiddleware])
-services.AddScoped<IRequestHandler<MyRequest, MyResponse>, MyRequestHandler>();
-
-same for event middleware and stream request middleware
- */

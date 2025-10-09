@@ -656,6 +656,284 @@ public class ValidationCommandMiddleware<TCommand> : ICommandMiddleware<TCommand
         return Verify(result);
     }
 
+    [Fact]
+    public Task SingleHandler_MultipleRequestInterfaces_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.MultiHandlers;
+
+public record Request1(string Name) : IRequest<Response1>;
+public record Response1(string Message);
+
+public record Request2(int Value) : IRequest<Response2>;
+public record Response2(int Result);
+
+[SingletonMediatorHandler]
+public class MultiRequestHandler : IRequestHandler<Request1, Response1>, IRequestHandler<Request2, Response2>
+{
+    public Task<Response1> Handle(Request1 request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new Response1($""Hello, {request.Name}!""));
+    }
+
+    public Task<Response2> Handle(Request2 request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new Response2(request.Value * 2));
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task SingleHandler_MultipleStreamInterfaces_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.MultiStreamHandlers;
+
+public record StreamRequest1(int Count) : IStreamRequest<string>;
+public record StreamRequest2(int Max) : IStreamRequest<int>;
+
+[ScopedMediatorHandler]
+public class MultiStreamHandler : IStreamRequestHandler<StreamRequest1, string>, IStreamRequestHandler<StreamRequest2, int>
+{
+    public async IAsyncEnumerable<string> Handle(StreamRequest1 request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        for (int i = 0; i < request.Count; i++)
+        {
+            yield return $""Item {i}"";
+            await Task.Delay(10, cancellationToken);
+        }
+    }
+
+    public async IAsyncEnumerable<int> Handle(StreamRequest2 request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        for (int i = 0; i < request.Max; i++)
+        {
+            yield return i;
+            await Task.Delay(10, cancellationToken);
+        }
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task SingleHandler_MixedRequestAndStreamInterfaces_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.MixedHandlers;
+
+public record GetDataRequest(int Id) : IRequest<DataResponse>;
+public record DataResponse(int Id, string Data);
+
+public record StreamDataRequest(int StartId) : IStreamRequest<DataItem>;
+public record DataItem(int Id, string Value);
+
+[SingletonMediatorHandler]
+public class DataHandler : IRequestHandler<GetDataRequest, DataResponse>, IStreamRequestHandler<StreamDataRequest, DataItem>
+{
+    public Task<DataResponse> Handle(GetDataRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new DataResponse(request.Id, $""Data for {request.Id}""));
+    }
+
+    public async IAsyncEnumerable<DataItem> Handle(StreamDataRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        for (int i = request.StartId; i < request.StartId + 5; i++)
+        {
+            yield return new DataItem(i, $""Value {i}"");
+            await Task.Delay(10, cancellationToken);
+        }
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task SingleHandler_RequestStreamAndCommandInterfaces_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.ComplexHandlers;
+
+public record GetUserRequest(int UserId) : IRequest<UserDto>;
+public record UserDto(int Id, string Name);
+
+public record StreamUsersRequest : IStreamRequest<UserDto>;
+
+public record UpdateUserCommand(int UserId, string NewName) : ICommand;
+
+[ScopedMediatorHandler]
+public class UserHandler : IRequestHandler<GetUserRequest, UserDto>, 
+                           IStreamRequestHandler<StreamUsersRequest, UserDto>,
+                           ICommandHandler<UpdateUserCommand>
+{
+    public Task<UserDto> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new UserDto(request.UserId, ""John Doe""));
+    }
+
+    public async IAsyncEnumerable<UserDto> Handle(StreamUsersRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        yield return new UserDto(1, ""User 1"");
+        await Task.Delay(10, cancellationToken);
+        yield return new UserDto(2, ""User 2"");
+    }
+
+    public Task Handle(UpdateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task MultipleHandlers_SomeWithMultipleInterfaces_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.Combined;
+
+public record Request1(string Data) : IRequest<Response1>;
+public record Response1(string Result);
+
+public record Request2(int Value) : IRequest<Response2>;
+public record Response2(int Result);
+
+public record Request3(bool Flag) : IRequest<Response3>;
+public record Response3(bool Success);
+
+public record StreamRequest1(int Count) : IStreamRequest<string>;
+
+// Single interface handler
+[SingletonMediatorHandler]
+public class Handler1 : IRequestHandler<Request1, Response1>
+{
+    public Task<Response1> Handle(Request1 request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new Response1(request.Data));
+    }
+}
+
+// Multiple interface handler
+[ScopedMediatorHandler]
+public class Handler2 : IRequestHandler<Request2, Response2>, IRequestHandler<Request3, Response3>
+{
+    public Task<Response2> Handle(Request2 request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new Response2(request.Value * 2));
+    }
+
+    public Task<Response3> Handle(Request3 request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new Response3(request.Flag));
+    }
+}
+
+// Stream handler
+[SingletonMediatorHandler]
+public class StreamHandler : IStreamRequestHandler<StreamRequest1, string>
+{
+    public async IAsyncEnumerable<string> Handle(StreamRequest1 request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        for (int i = 0; i < request.Count; i++)
+        {
+            yield return $""Item {i}"";
+            await Task.Delay(10, cancellationToken);
+        }
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task SingleHandler_ThreeRequestInterfaces_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp.TripleHandlers;
+
+public record Request1(string A) : IRequest<string>;
+public record Request2(int B) : IRequest<int>;
+public record Request3(bool C) : IRequest<bool>;
+
+[SingletonMediatorHandler]
+public class TripleHandler : IRequestHandler<Request1, string>, 
+                              IRequestHandler<Request2, int>, 
+                              IRequestHandler<Request3, bool>
+{
+    public Task<string> Handle(Request1 request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(request.A.ToUpper());
+    }
+
+    public Task<int> Handle(Request2 request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(request.B * 10);
+    }
+
+    public Task<bool> Handle(Request3 request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(!request.C);
+    }
+}
+");
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        return Verify(result);
+    }
+
     static GeneratorDriver BuildDriver(string sourceCode)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
@@ -681,4 +959,3 @@ public class ValidationCommandMiddleware<TCommand> : ICommandMiddleware<TCommand
         return driver.RunGenerators(compilation);
     }
 }
-
