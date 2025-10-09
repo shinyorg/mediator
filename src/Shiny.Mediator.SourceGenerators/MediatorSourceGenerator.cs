@@ -30,13 +30,25 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                 
                 $GENCODEATTRIBUTE$
                 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class SingletonHandlerAttribute : global::System.Attribute
+                internal sealed class SingletonMediatorMiddlewareAttribute : global::System.Attribute
                 {
                 }
                 
                 $GENCODEATTRIBUTE$
                 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class ScopedHandlerAttribute : global::System.Attribute
+                internal sealed class ScopedMediatorMiddlewareAttribute : global::System.Attribute
+                {
+                }
+                
+                $GENCODEATTRIBUTE$
+                [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
+                internal sealed class SingletonMediatorHandlerAttribute : global::System.Attribute
+                {
+                }
+                
+                $GENCODEATTRIBUTE$
+                [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
+                internal sealed class ScopedMediatorHandlerAttribute : global::System.Attribute
                 {
                 }
                 """.Replace("$GENCODEATTRIBUTE$", Constants.GeneratedCodeAttributeString),
@@ -44,57 +56,489 @@ public class MediatorSourceGenerator : IIncrementalGenerator
             )
         ));
 
-        // Create provider for classes with handler attributes
-        var classesProvider = context.SyntaxProvider
-            .CreateSyntaxProvider<INamedTypeSymbol?>(
-                predicate: static (s, _) => IsCandidateNode(s),
-                transform: static (ctx, _) => GetSemanticTargetForGeneration(ctx))
+        // Find all classes with handler attributes
+        var handlerClasses = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: static (s, _) => IsCandidateClass(s),
+                transform: static (ctx, _) => GetHandlerInfos(ctx))
             .Where(static m => m is not null)
-            .Collect();
+            .SelectMany(static (infos, _) => infos!);
 
-        // Create provider for MSBuild properties
-        var configProvider = context.AnalyzerConfigOptionsProvider;
+        // Find all classes with middleware attributes
+        var middlewareClasses = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: static (s, _) => IsCandidateClass(s),
+                transform: static (ctx, _) => GetMiddlewareInfo(ctx))
+            .Where(static m => m is not null);
 
-        // Combine providers
-        var combined = classesProvider
-            .Combine(context.CompilationProvider)
-            .Combine(configProvider);
-
-        // Register source output
-        context.RegisterSourceOutput(combined, static (spc, source) => Execute(spc, source));
-    }
-
-    static bool IsCandidateNode(SyntaxNode node)
-    {
-        return node is ClassDeclarationSyntax classDeclaration && 
-               classDeclaration.AttributeLists.Count > 0;
-    }
-
-    static INamedTypeSymbol? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
-    {
-        var classDeclaration = (ClassDeclarationSyntax)context.Node;
-        var symbol = context.SemanticModel.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
+        // Combine with compilation and generate output
+        var handlersAndMiddleware = handlerClasses.Collect()
+            .Combine(middlewareClasses.Collect());
         
-        if (symbol == null)
+        var combined = context.CompilationProvider.Combine(handlersAndMiddleware);
+
+        context.RegisterSourceOutput(combined, static (spc, source) => 
+            Execute(source.Left, source.Right.Left, source.Right.Right, spc));
+    }
+
+    static bool IsCandidateClass(SyntaxNode node)
+    {
+        return node is ClassDeclarationSyntax classDecl 
+            && classDecl.AttributeLists.Count > 0;
+    }
+
+    static IEnumerable<HandlerInfo>? GetHandlerInfos(GeneratorSyntaxContext context)
+    {
+        var classDecl = (ClassDeclarationSyntax)context.Node;
+        var symbol = context.SemanticModel.GetDeclaredSymbol(classDecl);
+        
+        if (symbol is not INamedTypeSymbol classSymbol)
             return null;
 
-        // Skip Shiny.Mediator assembly classes
-        if (symbol.ContainingAssembly.Name.StartsWith("Shiny.Mediator", StringComparison.CurrentCultureIgnoreCase))
+        // Check for SingletonMediatorHandler or ScopedMediatorHandler attribute
+        var singletonAttr = classSymbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Name == "SingletonMediatorHandlerAttribute");
+        var scopedAttr = classSymbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Name == "ScopedMediatorHandlerAttribute");
+
+        if (singletonAttr is null && scopedAttr is null)
             return null;
-        
-        // Check if class has handler attributes
-        var hasAttribute = HasAttribute(symbol, "SingletonHandlerAttribute") ||
-                          HasAttribute(symbol, "ScopedHandlerAttribute");
-        
-        return hasAttribute ? symbol : null;
+
+        var lifetime = singletonAttr is not null ? "Singleton" : "Scoped";
+
+        var handlerInfos = new List<HandlerInfo>();
+
+        // Check if implements IRequestHandler<TRequest, TResult>
+        foreach (var iface in classSymbol.AllInterfaces)
+        {
+            if (iface is { Name: "IRequestHandler", TypeArguments.Length: 2 })
+            {
+                handlerInfos.Add(new HandlerInfo(
+                    ClassSymbol: classSymbol,
+                    HandlerType: "Request",
+                    RequestType: iface.TypeArguments[0],
+                    ResultType: iface.TypeArguments[1],
+                    Lifetime: lifetime
+                ));
+            }
+
+            if (iface is { Name: "IStreamRequestHandler", TypeArguments.Length: 2 })
+            {
+                handlerInfos.Add(new HandlerInfo(
+                    ClassSymbol: classSymbol,
+                    HandlerType: "Stream",
+                    RequestType: iface.TypeArguments[0],
+                    ResultType: iface.TypeArguments[1],
+                    Lifetime: lifetime
+                ));
+            }
+            
+            // ICommandHandler and IEventHandler - just register with DI, no executors
+            if (iface is { Name: "ICommandHandler", TypeArguments.Length: 1 })
+            {
+                handlerInfos.Add(new HandlerInfo(
+                    ClassSymbol: classSymbol,
+                    HandlerType: "Command",
+                    RequestType: iface.TypeArguments[0],
+                    ResultType: null,
+                    Lifetime: lifetime
+                ));
+            }
+            
+            if (iface is { Name: "IEventHandler", TypeArguments.Length: 1 })
+            {
+                handlerInfos.Add(new HandlerInfo(
+                    ClassSymbol: classSymbol,
+                    HandlerType: "Event",
+                    RequestType: iface.TypeArguments[0],
+                    ResultType: null,
+                    Lifetime: lifetime
+                ));
+            }
+        }
+
+        return handlerInfos;
     }
 
-    static bool HasAttribute(INamedTypeSymbol symbol, string attributeName) => symbol
-        .GetAttributes()
-        .Any(x => 
-            x.AttributeClass?.Name == attributeName ||
-            x.AttributeClass?.ToDisplayString().EndsWith(attributeName) == true
-        );
+    static MiddlewareInfo? GetMiddlewareInfo(GeneratorSyntaxContext context)
+    {
+        var classDecl = (ClassDeclarationSyntax)context.Node;
+        var symbol = context.SemanticModel.GetDeclaredSymbol(classDecl);
+        
+        if (symbol is not INamedTypeSymbol classSymbol)
+            return null;
+
+        // Check for SingletonMediatorMiddleware or ScopedMediatorMiddleware attribute
+        var singletonAttr = classSymbol
+            .GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Name == "SingletonMediatorMiddlewareAttribute");
+        
+        var scopedAttr = classSymbol
+            .GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Name == "ScopedMediatorMiddlewareAttribute");
+
+        if (singletonAttr is null && scopedAttr is null)
+            return null;
+
+        var lifetime = singletonAttr is not null ? "Singleton" : "Scoped";
+
+        // Check if implements IRequestMiddleware<TRequest, TResult>
+        foreach (var iface in classSymbol.AllInterfaces)
+        {
+            if (iface.Name == "IRequestHandler" && iface.TypeArguments.Length == 2)
+            {
+                return new MiddlewareInfo(
+                    ClassSymbol: classSymbol,
+                    MiddlewareType: "Request",
+                    RequestType: iface.TypeArguments[0],
+                    ResultType: iface.TypeArguments[1],
+                    Lifetime: lifetime
+                );
+            }
+
+            if (iface is { Name: "IStreamRequestMiddleware", TypeArguments.Length: 2 })
+            {
+                return new MiddlewareInfo(
+                    ClassSymbol: classSymbol,
+                    MiddlewareType: "Stream",
+                    RequestType: iface.TypeArguments[0],
+                    ResultType: iface.TypeArguments[1],
+                    Lifetime: lifetime
+                );
+            }
+            
+            // ICommandMiddleware and IEventMiddleware - just register with DI, no executors
+            if (iface is { Name: "ICommandMiddleware", TypeArguments.Length: 1 })
+            {
+                return new MiddlewareInfo(
+                    ClassSymbol: classSymbol,
+                    MiddlewareType: "Command",
+                    RequestType: iface.TypeArguments[0],
+                    ResultType: null,
+                    Lifetime: lifetime
+                );
+            }
+            
+            if (iface is { Name: "IEventMiddleware", TypeArguments.Length: 1 })
+            {
+                return new MiddlewareInfo(
+                    ClassSymbol: classSymbol,
+                    MiddlewareType: "Event",
+                    RequestType: iface.TypeArguments[0],
+                    ResultType: null,
+                    Lifetime: lifetime
+                );
+            }
+        }
+
+        return null;
+    }
+
+    static void Execute(Compilation compilation, ImmutableArray<HandlerInfo> handlers, ImmutableArray<MiddlewareInfo?> middleware, SourceProductionContext context)
+    {
+        if (handlers.IsDefaultOrEmpty && middleware.IsDefaultOrEmpty)
+            return;
+
+        var validHandlers = handlers.ToList();
+        var validMiddleware = middleware.Where(m => m is not null).Select(m => m!.Value).ToList();
+        
+        if (validHandlers.Count == 0 && validMiddleware.Count == 0)
+            return;
+
+        var requestHandlers = validHandlers.Where(h => h.HandlerType == "Request").ToList();
+        var streamHandlers = validHandlers.Where(h => h.HandlerType == "Stream").ToList();
+
+        // Determine namespace - try to infer from handlers if not assembly name
+        var nameSpace = GetNamespaceForGeneration(compilation, validHandlers);
+        var assemblyName = compilation.AssemblyName?.Replace(".", "") ?? "Generated";
+
+        // Generate RequestExecutor
+        if (requestHandlers.Count > 0)
+        {
+            var requestExecutorCode = GenerateRequestExecutor(requestHandlers, assemblyName, nameSpace);
+            context.AddSource($"{assemblyName}_RequestExecutor.g.cs", SourceText.From(requestExecutorCode, Encoding.UTF8));
+        }
+
+        // Generate StreamRequestExecutor
+        if (streamHandlers.Count > 0)
+        {
+            var streamExecutorCode = GenerateStreamRequestExecutor(streamHandlers, assemblyName, nameSpace);
+            context.AddSource($"{assemblyName}_StreamRequestExecutor.g.cs", SourceText.From(streamExecutorCode, Encoding.UTF8));
+        }
+
+        // Generate extension method
+        var extensionCode = GenerateExtensionMethod(validHandlers, validMiddleware, assemblyName, nameSpace, requestHandlers.Count > 0, streamHandlers.Count > 0);
+        context.AddSource($"{assemblyName}_Extensions.g.cs", SourceText.From(extensionCode, Encoding.UTF8));
+    }
+
+    static string GenerateRequestExecutor(List<HandlerInfo> handlers, string assemblyName, string nameSpace)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated>");
+        sb.AppendLine("// Code generated by Shiny Mediator Source Generator.");
+        sb.AppendLine("// </auto-generated>");
+        sb.AppendLine("#nullable disable");
+        sb.AppendLine();
+        sb.AppendLine("using System;");
+        sb.AppendLine("using System.Threading;");
+        sb.AppendLine("using System.Threading.Tasks;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {nameSpace};");
+        sb.AppendLine();
+        sb.AppendLine(Constants.GeneratedCodeAttributeString);
+        sb.AppendLine($"internal class {assemblyName}RequestExecutor : global::Shiny.Mediator.Infrastructure.RequestExecutor");
+        sb.AppendLine("{");
+        
+        // Request method
+        sb.AppendLine("    public override async global::System.Threading.Tasks.Task<TResult> Request<TResult>(");
+        sb.AppendLine("        global::Shiny.Mediator.IMediatorContext context,");
+        sb.AppendLine("        global::Shiny.Mediator.IRequest<TResult> request,");
+        sb.AppendLine("        global::System.Threading.CancellationToken cancellationToken)");
+        sb.AppendLine("    {");
+        
+        for (int i = 0; i < handlers.Count; i++)
+        {
+            var handler = handlers[i];
+            var requestTypeFull = GetFullTypeName(handler.RequestType);
+            var resultTypeFull = GetFullTypeName(handler.ResultType);
+            
+            sb.AppendLine($"        if (request is {requestTypeFull} p{i})");
+            sb.AppendLine("        {");
+            sb.AppendLine($"            object result = await this.Execute<{requestTypeFull}, {resultTypeFull}>(p{i}, context, cancellationToken);");
+            sb.AppendLine("            return (TResult)result;");
+            sb.AppendLine("        }");
+            sb.AppendLine();
+        }
+        
+        sb.AppendLine("        throw new global::System.InvalidOperationException(\"Unknown request type\");");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        
+        // CanHandle method
+        sb.AppendLine("    public override bool CanHandle<TResult>(global::Shiny.Mediator.IRequest<TResult> request)");
+        sb.AppendLine("    {");
+        
+        for (int i = 0; i < handlers.Count; i++)
+        {
+            var handler = handlers[i];
+            var requestTypeFull = GetFullTypeName(handler.RequestType);
+            sb.AppendLine($"        if (request is {requestTypeFull})");
+            sb.AppendLine("            return true;");
+            sb.AppendLine();
+        }
+        
+        sb.AppendLine("        return false;");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+        
+        return sb.ToString();
+    }
+
+    static string GenerateStreamRequestExecutor(List<HandlerInfo> handlers, string assemblyName, string nameSpace)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated>");
+        sb.AppendLine("// Code generated by Shiny Mediator Source Generator.");
+        sb.AppendLine("// </auto-generated>");
+        sb.AppendLine("#nullable disable");
+        sb.AppendLine();
+        sb.AppendLine("using System;");
+        sb.AppendLine("using System.Collections.Generic;");
+        sb.AppendLine("using System.Threading;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {nameSpace};");
+        sb.AppendLine();
+        sb.AppendLine(Constants.GeneratedCodeAttributeString);
+        sb.AppendLine($"internal class {assemblyName}StreamRequestExecutor : global::Shiny.Mediator.Infrastructure.StreamRequestExecutor");
+        sb.AppendLine("{");
+        
+        // Request method
+        sb.AppendLine("    public override global::System.Collections.Generic.IAsyncEnumerable<TResult> Request<TResult>(");
+        sb.AppendLine("        global::Shiny.Mediator.IMediatorContext context,");
+        sb.AppendLine("        global::Shiny.Mediator.IStreamRequest<TResult> request,");
+        sb.AppendLine("        global::System.Threading.CancellationToken cancellationToken)");
+        sb.AppendLine("    {");
+        
+        for (int i = 0; i < handlers.Count; i++)
+        {
+            var handler = handlers[i];
+            var requestTypeFull = GetFullTypeName(handler.RequestType);
+            var resultTypeFull = GetFullTypeName(handler.ResultType);
+            
+            sb.AppendLine($"        if (request is {requestTypeFull} p{i})");
+            sb.AppendLine("        {");
+            sb.AppendLine($"            var handle = this.Execute<{requestTypeFull}, {resultTypeFull}>(context, p{i}, cancellationToken);");
+            sb.AppendLine("            return (global::System.Collections.Generic.IAsyncEnumerable<TResult>)handle;");
+            sb.AppendLine("        }");
+            sb.AppendLine();
+        }
+        
+        sb.AppendLine("        throw new global::System.InvalidOperationException(\"Unknown request type\");");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        
+        // CanRequest method
+        sb.AppendLine("    public override bool CanRequest<TResult>(global::Shiny.Mediator.IStreamRequest<TResult> request)");
+        sb.AppendLine("    {");
+        
+        for (int i = 0; i < handlers.Count; i++)
+        {
+            var handler = handlers[i];
+            var requestTypeFull = GetFullTypeName(handler.RequestType);
+            sb.AppendLine($"        if (request is {requestTypeFull})");
+            sb.AppendLine("            return true;");
+            sb.AppendLine();
+        }
+        
+        sb.AppendLine("        return false;");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+        
+        return sb.ToString();
+    }
+
+    static string GenerateExtensionMethod(List<HandlerInfo> handlers, List<MiddlewareInfo> middleware, string assemblyName, string nameSpace, bool hasRequestHandlers, bool hasStreamHandlers)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated>");
+        sb.AppendLine("// Code generated by Shiny Mediator Source Generator.");
+        sb.AppendLine("// </auto-generated>");
+        sb.AppendLine("#nullable disable");
+        sb.AppendLine();
+        sb.AppendLine("using Microsoft.Extensions.DependencyInjection;");
+        sb.AppendLine("using Shiny.Mediator;");
+        sb.AppendLine();
+        sb.AppendLine($"namespace {nameSpace};");
+        sb.AppendLine();
+        sb.AppendLine(Constants.GeneratedCodeAttributeString);
+        sb.AppendLine($"public static class __ShinyMediatorSourceGenExtensions");
+        sb.AppendLine("{");
+        sb.AppendLine($"    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFrom{assemblyName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)");
+        sb.AppendLine("    {");
+        
+        // Register handlers - deduplicate by class symbol to avoid registering the same handler multiple times
+        var uniqueHandlers = handlers
+            .GroupBy(h => h.ClassSymbol, SymbolEqualityComparer.Default)
+            .Select(g => g.First())
+            .ToList();
+        
+        foreach (var handler in uniqueHandlers)
+        {
+            var handlerTypeFull = GetFullTypeName(handler.ClassSymbol);
+            var methodName = handler.Lifetime == "Singleton" ? "AddSingletonAsImplementedInterfaces" : "AddScopedAsImplementedInterfaces";
+            sb.AppendLine($"        services.{methodName}<{handlerTypeFull}>();");
+        }
+        
+        if (uniqueHandlers.Count > 0 && middleware.Count > 0)
+        {
+            sb.AppendLine();
+        }
+        
+        // Register middleware
+        foreach (var mw in middleware)
+        {
+            var isOpenGeneric = mw.ClassSymbol is { IsGenericType: true, TypeParameters.Length: > 0 };
+            var methodName = mw.Lifetime == "Singleton" ? "AddSingleton" : "AddScoped";
+            
+            if (isOpenGeneric)
+            {
+                // Open generic registration
+                var interfaceName = GetMiddlewareInterfaceName(mw.MiddlewareType);
+                var typeParamCount = mw.MiddlewareType == "Request" || mw.MiddlewareType == "Stream" ? 2 : 1;
+                var typeParams = new string(Enumerable.Repeat(',', typeParamCount - 1).ToArray());
+                
+                var classTypeName = GetOpenGenericTypeName(mw.ClassSymbol);
+                sb.AppendLine($"        services.{methodName}(typeof({interfaceName}<{typeParams}>), typeof({classTypeName}<{typeParams}>));");
+            }
+            else
+            {
+                // Closed generic or non-generic registration
+                var interfaceName = GetMiddlewareInterfaceName(mw.MiddlewareType);
+                var classTypeFull = GetFullTypeName(mw.ClassSymbol);
+                
+                if (mw.MiddlewareType is "Request" or "Stream")
+                {
+                    var requestTypeFull = GetFullTypeName(mw.RequestType);
+                    var resultTypeFull = GetFullTypeName(mw.ResultType);
+                    sb.AppendLine($"        services.{methodName}<{interfaceName}<{requestTypeFull}, {resultTypeFull}>, {classTypeFull}>();");
+                }
+                else
+                {
+                    var requestTypeFull = GetFullTypeName(mw.RequestType);
+                    sb.AppendLine($"        services.{methodName}<{interfaceName}<{requestTypeFull}>, {classTypeFull}>();");
+                }
+            }
+        }
+        
+        if ((uniqueHandlers.Count > 0 || middleware.Count > 0) && (hasRequestHandlers || hasStreamHandlers))
+            sb.AppendLine();
+        
+        // Register executors
+        if (hasRequestHandlers)
+            sb.AppendLine($"        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, {nameSpace}.{assemblyName}RequestExecutor>();");
+        
+        if (hasStreamHandlers)
+            sb.AppendLine($"        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IStreamRequestExecutor, {nameSpace}.{assemblyName}StreamRequestExecutor>();");
+        
+        sb.AppendLine();
+        sb.AppendLine("        return services;");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+        
+        return sb.ToString();
+    }
+
+    static string GetMiddlewareInterfaceName(string middlewareType) => middlewareType switch
+    {
+        "Request" => "global::Shiny.Mediator.IRequestMiddleware",
+        "Stream" => "global::Shiny.Mediator.IStreamRequestMiddleware",
+        "Command" => "global::Shiny.Mediator.ICommandMiddleware",
+        "Event" => "global::Shiny.Mediator.IEventMiddleware",
+        _ => throw new InvalidOperationException($"Unknown middleware type: {middlewareType}")
+    };
+    
+    static string GetOpenGenericTypeName(INamedTypeSymbol typeSymbol)
+    {
+        var namespaceName = typeSymbol.ContainingNamespace?.ToDisplayString();
+        var typeName = typeSymbol.Name;
+        
+        if (string.IsNullOrEmpty(namespaceName) || namespaceName == "<global namespace>")
+            return $"global::{typeName}";
+        
+        return $"global::{namespaceName}.{typeName}";
+    }
+
+    static string GetFullTypeName(ITypeSymbol? typeSymbol)
+    {
+        if (typeSymbol == null)
+            return String.Empty;
+        
+        return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included));
+    }
+
+    static string GetNamespaceForGeneration(Compilation compilation, List<HandlerInfo> handlers)
+    {
+        // Try to infer namespace from handler classes
+        var namespaces = handlers
+            .Select(h => h.ClassSymbol.ContainingNamespace?.ToDisplayString())
+            .Where(ns => !string.IsNullOrEmpty(ns) && ns != "<global namespace>")
+            .Distinct()
+            .ToList();
+
+        if (namespaces.Count == 1)
+        {
+            // All handlers in same namespace
+            return namespaces[0];
+        }
+        else if (namespaces.Count > 1)
+        {
+            // Find common root namespace
+            return FindCommonNamespace(namespaces) ?? compilation.AssemblyName ?? "Generated";
+        }
+        
+        // Fallback to assembly name
+        return compilation.AssemblyName ?? "Generated";
+    }
 
     static string? FindCommonNamespace(List<string> namespaces)
     {
@@ -129,134 +573,19 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         return commonParts.Count > 0 ? string.Join(".", commonParts) : null;
     }
 
-    static void Execute(SourceProductionContext context, ((ImmutableArray<INamedTypeSymbol?> Classes, Compilation Compilation) Left, Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider ConfigOptions) input)
-    {
-        var ((classes, compilation), configOptions) = input;
+    record struct HandlerInfo(
+        INamedTypeSymbol ClassSymbol,
+        string HandlerType,
+        ITypeSymbol RequestType,
+        ITypeSymbol? ResultType,
+        string Lifetime
+    );
 
-        // Check if source generation is disabled
-        var globalOptions = configOptions.GlobalOptions;
-        if (globalOptions.TryGetValue("build_property.ShinyMediatorDisableSourceGen", out var skipValue) &&
-            skipValue.Equals("true", StringComparison.InvariantCultureIgnoreCase))
-            return;
-
-        // Filter out null values and deduplicate
-        var validClasses = classes
-            .Where(c => c is not null)
-            .GroupBy(x => x!.ToDisplayString())
-            .Select(x => x.First()!)
-            .ToList();
-
-        if (!validClasses.Any())
-            return;
-
-        // Get namespace and assembly name
-        globalOptions.TryGetValue("build_property.RootNamespace", out var nameSpace);
-        
-        // If RootNamespace is not provided, try to infer from handler namespaces
-        if (string.IsNullOrEmpty(nameSpace))
-        {
-            // Try to find a common namespace from the handlers
-            var namespaces = validClasses
-                .Select(c => c.ContainingNamespace?.ToDisplayString())
-                .Where(ns => !string.IsNullOrEmpty(ns))
-                .Distinct()
-                .ToList();
-            
-            if (namespaces.Count == 1)
-            {
-                // If all handlers are in the same namespace, use that
-                nameSpace = namespaces[0];
-            }
-            else if (namespaces.Count > 1)
-            {
-                // Find the common root namespace
-                nameSpace = FindCommonNamespace(namespaces);
-            }
-        }
-        
-        // Final fallback to assembly name
-        nameSpace ??= compilation.AssemblyName;
-        
-        var assName = compilation.AssemblyName?.Replace(".", "_");
-        
-        var sb = new StringBuilder();
-        sb
-            .AppendLine("using Shiny.Mediator;")
-            .AppendLine()
-            .AppendLine($"namespace {nameSpace};")
-            .AppendLine()
-            .AppendLine(Constants.GeneratedCodeAttributeString)
-            .AppendLine("public static class __ShinyMediatorSourceGenExtensions {")
-            .AppendLine($"\tpublic static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFrom{assName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)")
-            .AppendLine("\t{");
-
-        foreach (var clazz in validClasses)
-        {
-            var cls = clazz.ToDisplayString();
-            if (HasAttribute(clazz, "ScopedHandlerAttribute") || HasAttribute(clazz, "ScopedMiddlewareAttribute"))
-                sb.AppendLine($"\t\tservices.AddScopedAsImplementedInterfaces<{cls}>();");
-            else
-                sb.AppendLine($"\t\tservices.AddSingletonAsImplementedInterfaces<{cls}>();");
-        }
-
-        sb
-            .AppendLine("\t\treturn services;")
-            .AppendLine("\t}")
-            .AppendLine("}");
-
-        context.AddSource("__MediatorHandlersRegistration.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
-    }
+    record struct MiddlewareInfo(
+        INamedTypeSymbol ClassSymbol,
+        string MiddlewareType,
+        ITypeSymbol RequestType,
+        ITypeSymbol? ResultType,
+        string Lifetime
+    );
 }
-
-/*
-Given
-   
-   [MediatorHandler]
-   public class MyRequestHandler : IRequestHandler<MyRequestHandler, MyResponse>
-   {
-   public Task<MyResponse> Handle(MyRequest request, CancellationToken cancellationToken)
-   {
-   // Handle the request and return a response
-   var response = new MyResponse
-   {
-   Message = $"Hello, {request.Name}!"
-   };
-   return Task.FromResult(response);
-   }
-   }
-   
-   
-   [MediatorMiddleware(1)]
-   public class MyRequestMiddleware : IRequestMiddleware<MyResponse, MyResponse>
-   {
-   public string Name { get; set; }
-   }
-   
-   [MediatorMiddleware(2)]
-   public class GenericRequestMiddleware<TRequest, TResponse> : IRequestMiddleware<MyResponse, TResponse>
-   {
-   public string Name { get; set; }
-   }
-   
-   
-   
-   GENERATES:
-   
-   public class RequestExecutor : IRequestExecutor
-   {
-   
-       public Task<MyResponse> Execute(MyRequest request, CancellationToken cancellationToken = default)
-       {
-           var middleware1 = new MyRequestMiddleware { Name = "MyRequestMiddleware" };
-           var middleware2 = new GenericRequestMiddleware<MyRequest, MyResponse> { Name = "GenericRequestMiddleware" };
-           var handler = new MyRequestHandler();
-           
-           Func<Task<MyResponse>> handlerFunc = () => handler.Handle(request, cancellationToken);
-           
-           Func<Task<MyResponse>> pipeline = () => middleware2.Invoke(() => middleware1.Invoke(handlerFunc), request, cancellationToken);
-           
-           return pipeline();
-       }
-   }
-   
- */
