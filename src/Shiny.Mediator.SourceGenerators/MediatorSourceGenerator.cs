@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -95,6 +96,39 @@ public class MediatorSourceGenerator : IIncrementalGenerator
             x.AttributeClass?.ToDisplayString().EndsWith(attributeName) == true
         );
 
+    static string? FindCommonNamespace(List<string> namespaces)
+    {
+        if (namespaces.Count == 0)
+            return null;
+            
+        if (namespaces.Count == 1)
+            return namespaces[0];
+            
+        // Split namespaces into parts
+        var namespaceParts = namespaces
+            .Select(ns => ns.Split('.'))
+            .ToList();
+            
+        // Find common prefix
+        var minLength = namespaceParts.Min(parts => parts.Length);
+        var commonParts = new List<string>();
+        
+        for (int i = 0; i < minLength; i++)
+        {
+            var part = namespaceParts[0][i];
+            if (namespaceParts.All(parts => parts[i] == part))
+            {
+                commonParts.Add(part);
+            }
+            else
+            {
+                break;
+            }
+        }
+        
+        return commonParts.Count > 0 ? string.Join(".", commonParts) : null;
+    }
+
     static void Execute(SourceProductionContext context, ((ImmutableArray<INamedTypeSymbol?> Classes, Compilation Compilation) Left, Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider ConfigOptions) input)
     {
         var ((classes, compilation), configOptions) = input;
@@ -117,6 +151,30 @@ public class MediatorSourceGenerator : IIncrementalGenerator
 
         // Get namespace and assembly name
         globalOptions.TryGetValue("build_property.RootNamespace", out var nameSpace);
+        
+        // If RootNamespace is not provided, try to infer from handler namespaces
+        if (string.IsNullOrEmpty(nameSpace))
+        {
+            // Try to find a common namespace from the handlers
+            var namespaces = validClasses
+                .Select(c => c.ContainingNamespace?.ToDisplayString())
+                .Where(ns => !string.IsNullOrEmpty(ns))
+                .Distinct()
+                .ToList();
+            
+            if (namespaces.Count == 1)
+            {
+                // If all handlers are in the same namespace, use that
+                nameSpace = namespaces[0];
+            }
+            else if (namespaces.Count > 1)
+            {
+                // Find the common root namespace
+                nameSpace = FindCommonNamespace(namespaces);
+            }
+        }
+        
+        // Final fallback to assembly name
         nameSpace ??= compilation.AssemblyName;
         
         var assName = compilation.AssemblyName?.Replace(".", "_");
