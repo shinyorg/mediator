@@ -4,7 +4,7 @@ using Sample.Contracts;
 namespace Sample.Handlers;
 
 
-[SingletonMediatorMiddleware]
+[MediatorSingleton]
 public class MyRequestMiddleware(AppSqliteConnection conn) : IRequestMiddleware<MyMessageRequest, MyMessageResponse>
 {
     public async Task<MyMessageResponse> Process(

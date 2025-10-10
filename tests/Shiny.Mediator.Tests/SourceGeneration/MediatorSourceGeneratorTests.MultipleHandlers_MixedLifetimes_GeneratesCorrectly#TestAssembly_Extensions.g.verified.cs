@@ -18,8 +18,8 @@ public static class __ShinyMediatorSourceGenExtensions
         services.AddScopedAsImplementedInterfaces<global::MyApp.Handler2>();
         services.AddSingletonAsImplementedInterfaces<global::MyApp.StreamHandler1>();
 
-        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, TestAssembly.TestAssemblyRequestExecutor>();
-        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IStreamRequestExecutor, TestAssembly.TestAssemblyStreamRequestExecutor>();
+        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, global::TestAssembly.TestAssemblyRequestExecutor>();
+        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IStreamRequestExecutor, global::TestAssembly.TestAssemblyStreamRequestExecutor>();
 
         return services;
     }

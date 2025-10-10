@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 using Polly;
+using Sample.Contracts;
 using Sample.Handlers;
 using Shiny.Mediator.Infrastructure;
 
@@ -69,7 +70,6 @@ public static class MauiProgram
             //     y.ExpirationScanFrequency = TimeSpan.FromSeconds(5);
             // })
         );
-        builder.Services.AddSingletonAsImplementedInterfaces<MyRequestMiddleware>();
         builder.Services.AddDiscoveredMediatorHandlersFromSample();
         
         builder.Services.AddSingleton<AppSqliteConnection>();

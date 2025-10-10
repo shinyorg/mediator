@@ -1,6 +1,6 @@
 namespace Sample.Handlers;
 
-[SingletonMediatorMiddleware]
+[MediatorSingleton]
 public class MyStreamRequestMiddleware<TRequest, TResult>(ILogger<MyStreamRequestMiddleware<TRequest, TResult>> logger) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     public IAsyncEnumerable<TResult> Process(

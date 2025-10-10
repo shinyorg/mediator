@@ -3,7 +3,7 @@ using Sample.Contracts;
 namespace Sample.Handlers;
 
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class ResilientRequestHandler : IRequestHandler<ResilientRequest, string>
 {
     static bool timeoutRequest;

@@ -20,7 +20,7 @@ public static class __ShinyMediatorSourceGenExtensions
         services.AddSingleton(typeof(global::Shiny.Mediator.IRequestMiddleware<,>), typeof(global::MyApp.LoggingRequestMiddleware<,>));
         services.AddScoped(typeof(global::Shiny.Mediator.ICommandMiddleware<>), typeof(global::MyApp.ValidationCommandMiddleware<>));
 
-        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, TestAssembly.TestAssemblyRequestExecutor>();
+        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, global::TestAssembly.TestAssemblyRequestExecutor>();
 
         return services;
     }

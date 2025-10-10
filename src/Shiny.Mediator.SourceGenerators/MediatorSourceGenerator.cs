@@ -30,25 +30,13 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                 
                 $GENCODEATTRIBUTE$
                 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class SingletonMediatorMiddlewareAttribute : global::System.Attribute
+                internal sealed class MediatorSingletonAttribute : global::System.Attribute
                 {
                 }
                 
                 $GENCODEATTRIBUTE$
                 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class ScopedMediatorMiddlewareAttribute : global::System.Attribute
-                {
-                }
-                
-                $GENCODEATTRIBUTE$
-                [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class SingletonMediatorHandlerAttribute : global::System.Attribute
-                {
-                }
-                
-                $GENCODEATTRIBUTE$
-                [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
-                internal sealed class ScopedMediatorHandlerAttribute : global::System.Attribute
+                internal sealed class MediatorScopedAttribute : global::System.Attribute
                 {
                 }
                 """.Replace("$GENCODEATTRIBUTE$", Constants.GeneratedCodeAttributeString),
@@ -56,11 +44,15 @@ public class MediatorSourceGenerator : IIncrementalGenerator
             )
         ));
 
+        var rootNamespace = context.AnalyzerConfigOptionsProvider
+            .Select((provider, _) => provider.GlobalOptions.TryGetValue("build_property.RootNamespace", out var value) ? value : "");
+
         // Find all classes with handler attributes
         var handlerClasses = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => IsCandidateClass(s),
-                transform: static (ctx, _) => GetHandlerInfos(ctx))
+                transform: static (ctx, _) => GetHandlerInfos(ctx)
+            )
             .Where(static m => m is not null)
             .SelectMany(static (infos, _) => infos!);
 
@@ -68,17 +60,20 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         var middlewareClasses = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => IsCandidateClass(s),
-                transform: static (ctx, _) => GetMiddlewareInfo(ctx))
+                transform: static (ctx, _) => GetMiddlewareInfo(ctx)
+            )
             .Where(static m => m is not null);
 
         // Combine with compilation and generate output
-        var handlersAndMiddleware = handlerClasses.Collect()
+        var handlersAndMiddleware = handlerClasses
+            .Collect()
             .Combine(middlewareClasses.Collect());
         
-        var combined = context.CompilationProvider.Combine(handlersAndMiddleware);
+        var combined = handlersAndMiddleware
+            .Combine(rootNamespace);
 
         context.RegisterSourceOutput(combined, static (spc, source) => 
-            Execute(source.Left, source.Right.Left, source.Right.Right, spc));
+            Execute(source.Left.Left, source.Left.Right, source.Right, spc));
     }
 
     static bool IsCandidateClass(SyntaxNode node)
@@ -95,11 +90,14 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         if (symbol is not INamedTypeSymbol classSymbol)
             return null;
 
-        // Check for SingletonMediatorHandler or ScopedMediatorHandler attribute
-        var singletonAttr = classSymbol.GetAttributes()
-            .FirstOrDefault(a => a.AttributeClass?.Name == "SingletonMediatorHandlerAttribute");
-        var scopedAttr = classSymbol.GetAttributes()
-            .FirstOrDefault(a => a.AttributeClass?.Name == "ScopedMediatorHandlerAttribute");
+        // Check for MediatorSingleton or MediatorScoped attribute
+        var singletonAttr = classSymbol
+            .GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Name == "MediatorSingletonAttribute");
+        
+        var scopedAttr = classSymbol
+            .GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Name == "MediatorScopedAttribute");
 
         if (singletonAttr is null && scopedAttr is null)
             return null;
@@ -168,14 +166,14 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         if (symbol is not INamedTypeSymbol classSymbol)
             return null;
 
-        // Check for SingletonMediatorMiddleware or ScopedMediatorMiddleware attribute
+        // Check for MediatorSingleton or MediatorScoped attribute
         var singletonAttr = classSymbol
             .GetAttributes()
-            .FirstOrDefault(a => a.AttributeClass?.Name == "SingletonMediatorMiddlewareAttribute");
+            .FirstOrDefault(a => a.AttributeClass?.Name == "MediatorSingletonAttribute");
         
         var scopedAttr = classSymbol
             .GetAttributes()
-            .FirstOrDefault(a => a.AttributeClass?.Name == "ScopedMediatorMiddlewareAttribute");
+            .FirstOrDefault(a => a.AttributeClass?.Name == "MediatorScopedAttribute");
 
         if (singletonAttr is null && scopedAttr is null)
             return null;
@@ -185,7 +183,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         // Check if implements IRequestMiddleware<TRequest, TResult>
         foreach (var iface in classSymbol.AllInterfaces)
         {
-            if (iface.Name == "IRequestHandler" && iface.TypeArguments.Length == 2)
+            if (iface is { Name: "IRequestMiddleware", TypeArguments.Length: 2 })
             {
                 return new MiddlewareInfo(
                     ClassSymbol: classSymbol,
@@ -234,7 +232,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         return null;
     }
 
-    static void Execute(Compilation compilation, ImmutableArray<HandlerInfo> handlers, ImmutableArray<MiddlewareInfo?> middleware, SourceProductionContext context)
+    static void Execute(ImmutableArray<HandlerInfo> handlers, ImmutableArray<MiddlewareInfo?> middleware, string rootNamespace, SourceProductionContext context)
     {
         if (handlers.IsDefaultOrEmpty && middleware.IsDefaultOrEmpty)
             return;
@@ -248,28 +246,29 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         var requestHandlers = validHandlers.Where(h => h.HandlerType == "Request").ToList();
         var streamHandlers = validHandlers.Where(h => h.HandlerType == "Stream").ToList();
 
-        var assemblyName = compilation.AssemblyName?.Replace(".", "") ?? "Generated";
+        var namespaceName = string.IsNullOrWhiteSpace(rootNamespace) ? null : rootNamespace;
+        var safeNamespaceName = namespaceName?.Replace(".", "") ?? "Generated";
 
         // Generate RequestExecutor
         if (requestHandlers.Count > 0)
         {
-            var requestExecutorCode = GenerateRequestExecutor(requestHandlers, assemblyName);
-            context.AddSource($"{assemblyName}_RequestExecutor.g.cs", SourceText.From(requestExecutorCode, Encoding.UTF8));
+            var requestExecutorCode = GenerateRequestExecutor(requestHandlers, namespaceName, safeNamespaceName);
+            context.AddSource($"{safeNamespaceName}_RequestExecutor.g.cs", SourceText.From(requestExecutorCode, Encoding.UTF8));
         }
 
         // Generate StreamRequestExecutor
         if (streamHandlers.Count > 0)
         {
-            var streamExecutorCode = GenerateStreamRequestExecutor(streamHandlers, assemblyName);
-            context.AddSource($"{assemblyName}_StreamRequestExecutor.g.cs", SourceText.From(streamExecutorCode, Encoding.UTF8));
+            var streamExecutorCode = GenerateStreamRequestExecutor(streamHandlers, namespaceName, safeNamespaceName);
+            context.AddSource($"{safeNamespaceName}_StreamRequestExecutor.g.cs", SourceText.From(streamExecutorCode, Encoding.UTF8));
         }
 
         // Generate extension method
-        var extensionCode = GenerateExtensionMethod(validHandlers, validMiddleware, assemblyName, requestHandlers.Count > 0, streamHandlers.Count > 0);
-        context.AddSource($"{assemblyName}_Extensions.g.cs", SourceText.From(extensionCode, Encoding.UTF8));
+        var extensionCode = GenerateExtensionMethod(validHandlers, validMiddleware, namespaceName, safeNamespaceName, requestHandlers.Count > 0, streamHandlers.Count > 0);
+        context.AddSource($"{safeNamespaceName}_Extensions.g.cs", SourceText.From(extensionCode, Encoding.UTF8));
     }
 
-    static string GenerateRequestExecutor(List<HandlerInfo> handlers, string assemblyName)
+    static string GenerateRequestExecutor(List<HandlerInfo> handlers, string? namespaceName, string safeNamespaceName)
     {
         var sb = new StringBuilder();
         sb.AppendLine("// <auto-generated>");
@@ -281,10 +280,15 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         sb.AppendLine("using System.Threading;");
         sb.AppendLine("using System.Threading.Tasks;");
         sb.AppendLine();
-        sb.AppendLine($"namespace {assemblyName};");
-        sb.AppendLine();
+        
+        if (namespaceName is not null)
+        {
+            sb.AppendLine($"namespace {namespaceName};");
+            sb.AppendLine();
+        }
+        
         sb.AppendLine(Constants.GeneratedCodeAttributeString);
-        sb.AppendLine($"internal class {assemblyName}RequestExecutor : global::Shiny.Mediator.Infrastructure.RequestExecutor");
+        sb.AppendLine($"internal class {safeNamespaceName}RequestExecutor : global::Shiny.Mediator.Infrastructure.RequestExecutor");
         sb.AppendLine("{");
         
         // Request method
@@ -332,7 +336,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         return sb.ToString();
     }
 
-    static string GenerateStreamRequestExecutor(List<HandlerInfo> handlers, string assemblyName)
+    static string GenerateStreamRequestExecutor(List<HandlerInfo> handlers, string? namespaceName, string safeNamespaceName)
     {
         var sb = new StringBuilder();
         sb.AppendLine("// <auto-generated>");
@@ -344,10 +348,15 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         sb.AppendLine("using System.Collections.Generic;");
         sb.AppendLine("using System.Threading;");
         sb.AppendLine();
-        sb.AppendLine($"namespace {assemblyName};");
-        sb.AppendLine();
+        
+        if (namespaceName is not null)
+        {
+            sb.AppendLine($"namespace {namespaceName};");
+            sb.AppendLine();
+        }
+        
         sb.AppendLine(Constants.GeneratedCodeAttributeString);
-        sb.AppendLine($"internal class {assemblyName}StreamRequestExecutor : global::Shiny.Mediator.Infrastructure.StreamRequestExecutor");
+        sb.AppendLine($"internal class {safeNamespaceName}StreamRequestExecutor : global::Shiny.Mediator.Infrastructure.StreamRequestExecutor");
         sb.AppendLine("{");
         
         // Request method
@@ -395,7 +404,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         return sb.ToString();
     }
 
-    static string GenerateExtensionMethod(List<HandlerInfo> handlers, List<MiddlewareInfo> middleware, string assemblyName, bool hasRequestHandlers, bool hasStreamHandlers)
+    static string GenerateExtensionMethod(List<HandlerInfo> handlers, List<MiddlewareInfo> middleware, string? namespaceName, string safeNamespaceName, bool hasRequestHandlers, bool hasStreamHandlers)
     {
         var sb = new StringBuilder();
         sb.AppendLine("// <auto-generated>");
@@ -406,12 +415,17 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         sb.AppendLine("using Microsoft.Extensions.DependencyInjection;");
         sb.AppendLine("using Shiny.Mediator;");
         sb.AppendLine();
-        sb.AppendLine($"namespace {assemblyName};");
-        sb.AppendLine();
+        
+        if (namespaceName is not null)
+        {
+            sb.AppendLine($"namespace {namespaceName};");
+            sb.AppendLine();
+        }
+        
         sb.AppendLine(Constants.GeneratedCodeAttributeString);
         sb.AppendLine($"public static class __ShinyMediatorSourceGenExtensions");
         sb.AppendLine("{");
-        sb.AppendLine($"    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFrom{assemblyName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)");
+        sb.AppendLine($"    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddDiscoveredMediatorHandlersFrom{safeNamespaceName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)");
         sb.AppendLine("    {");
         
         // Register handlers - deduplicate by class symbol to avoid registering the same handler multiple times
@@ -471,12 +485,14 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         if ((uniqueHandlers.Count > 0 || middleware.Count > 0) && (hasRequestHandlers || hasStreamHandlers))
             sb.AppendLine();
         
-        // Register executors
+        // Register executors - use fully qualified type names
+        var executorNamespace = namespaceName is not null ? $"{namespaceName}." : "";
+        
         if (hasRequestHandlers)
-            sb.AppendLine($"        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, {assemblyName}.{assemblyName}RequestExecutor>();");
+            sb.AppendLine($"        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, global::{executorNamespace}{safeNamespaceName}RequestExecutor>();");
         
         if (hasStreamHandlers)
-            sb.AppendLine($"        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IStreamRequestExecutor, {assemblyName}.{assemblyName}StreamRequestExecutor>();");
+            sb.AppendLine($"        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IStreamRequestExecutor, global::{executorNamespace}{safeNamespaceName}StreamRequestExecutor>();");
         
         sb.AppendLine();
         sb.AppendLine("        return services;");

@@ -7,7 +7,7 @@ public record ErrorCommand : ICommand;
 public record SafeErrorCommand : ICommand;
 
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class ErrorCommandHandler : ICommandHandler<ErrorCommand>, ICommandHandler<SafeErrorCommand>
 {
     public Task Handle(ErrorCommand command, IMediatorContext context, CancellationToken cancellationToken)

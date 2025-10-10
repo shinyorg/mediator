@@ -18,7 +18,7 @@ public static class __ShinyMediatorSourceGenExtensions
         services.AddScopedAsImplementedInterfaces<global::MyApp.UpdateDataCommandHandler>();
         services.AddSingletonAsImplementedInterfaces<global::MyApp.DataUpdatedEventHandler>();
 
-        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, TestAssembly.TestAssemblyRequestExecutor>();
+        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, global::TestAssembly.TestAssemblyRequestExecutor>();
 
         return services;
     }

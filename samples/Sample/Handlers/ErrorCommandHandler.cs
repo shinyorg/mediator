@@ -3,7 +3,7 @@ using Sample.Contracts;
 namespace Sample.Handlers;
 
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class ErrorCommandHandler : ICommandHandler<ErrorCommand>
 {
     public Task Handle(ErrorCommand command, IMediatorContext context, CancellationToken cancellationToken)

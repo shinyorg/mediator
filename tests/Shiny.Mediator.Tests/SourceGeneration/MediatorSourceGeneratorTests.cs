@@ -25,7 +25,7 @@ public record MyResponse
     public string Message { get; set; }
 }
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class MyRequestHandler : IRequestHandler<MyRequest, MyResponse>
 {
     public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
@@ -55,7 +55,7 @@ public record GetUserRequest(int UserId) : IRequest<UserResponse>;
 
 public record UserResponse(int Id, string Name, string Email);
 
-[ScopedMediatorHandler]
+[MediatorScoped]
 public class GetUserRequestHandler : IRequestHandler<GetUserRequest, UserResponse>
 {
     public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
@@ -84,7 +84,7 @@ namespace MyApp.Streams;
 
 public record TickerRequest(int Count, int Interval) : IStreamRequest<string>;
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class TickerRequestHandler : IStreamRequestHandler<TickerRequest, string>
 {
     public async IAsyncEnumerable<string> Handle(TickerRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -119,7 +119,7 @@ public record EventStreamRequest(string EventType) : IStreamRequest<EventData>;
 
 public record EventData(string Type, string Payload, System.DateTime Timestamp);
 
-[ScopedMediatorHandler]
+[MediatorScoped]
 public class EventStreamHandler : IStreamRequestHandler<EventStreamRequest, EventData>
 {
     public async IAsyncEnumerable<EventData> Handle(EventStreamRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -155,7 +155,7 @@ public record Response2(int Result);
 
 public record StreamRequest1(int Count) : IStreamRequest<string>;
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class Handler1 : IRequestHandler<Request1, Response1>
 {
     public Task<Response1> Handle(Request1 request, IMediatorContext context, CancellationToken cancellationToken)
@@ -164,7 +164,7 @@ public class Handler1 : IRequestHandler<Request1, Response1>
     }
 }
 
-[ScopedMediatorHandler]
+[MediatorScoped]
 public class Handler2 : IRequestHandler<Request2, Response2>
 {
     public Task<Response2> Handle(Request2 request, IMediatorContext context, CancellationToken cancellationToken)
@@ -173,7 +173,7 @@ public class Handler2 : IRequestHandler<Request2, Response2>
     }
 }
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class StreamHandler1 : IStreamRequestHandler<StreamRequest1, string>
 {
     public async IAsyncEnumerable<string> Handle(StreamRequest1 request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -235,7 +235,7 @@ namespace MyCompany.MyProduct.Features.Users.Handlers;
 public record CreateUserRequest(string Name, string Email) : IRequest<CreateUserResponse>;
 public record CreateUserResponse(int UserId, string Name);
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class CreateUserRequestHandler : IRequestHandler<CreateUserRequest, CreateUserResponse>
 {
     public Task<CreateUserResponse> Handle(CreateUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
@@ -263,7 +263,7 @@ namespace MyApp;
 
 public record GetListRequest(int Count) : IRequest<List<string>>;
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class GetListRequestHandler : IRequestHandler<GetListRequest, List<string>>
 {
     public Task<List<string>> Handle(GetListRequest request, IMediatorContext context, CancellationToken cancellationToken)
@@ -296,7 +296,7 @@ namespace MyApp.Features.Users;
 public record GetUserRequest(int Id) : IRequest<UserDto>;
 public record UserDto(int Id, string Name);
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class GetUserHandler : IRequestHandler<GetUserRequest, UserDto>
 {
     public Task<UserDto> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
@@ -310,7 +310,7 @@ namespace MyApp.Features.Orders;
 public record GetOrderRequest(int Id) : IRequest<OrderDto>;
 public record OrderDto(int Id, decimal Total);
 
-[ScopedMediatorHandler]
+[MediatorScoped]
 public class GetOrderHandler : IRequestHandler<GetOrderRequest, OrderDto>
 {
     public Task<OrderDto> Handle(GetOrderRequest request, IMediatorContext context, CancellationToken cancellationToken)
@@ -337,7 +337,7 @@ namespace MyApp.Commands;
 
 public record CreateUserCommand(string Name, string Email) : ICommand;
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class CreateUserCommandHandler : ICommandHandler<CreateUserCommand>
 {
     public Task Handle(CreateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
@@ -367,7 +367,7 @@ namespace MyApp.Events;
 
 public record UserCreatedEvent(int UserId, string Name) : IEvent;
 
-[ScopedMediatorHandler]
+[MediatorScoped]
 public class UserCreatedEventHandler : IEventHandler<UserCreatedEvent>
 {
     public Task Handle(UserCreatedEvent @event, IMediatorContext context, CancellationToken cancellationToken)
@@ -402,7 +402,7 @@ public record UpdateDataCommand(int Id, string NewData) : ICommand;
 
 public record DataUpdatedEvent(int Id, string Data) : IEvent;
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class GetDataHandler : IRequestHandler<GetDataRequest, DataResponse>
 {
     public Task<DataResponse> Handle(GetDataRequest request, IMediatorContext context, CancellationToken cancellationToken)
@@ -411,7 +411,7 @@ public class GetDataHandler : IRequestHandler<GetDataRequest, DataResponse>
     }
 }
 
-[ScopedMediatorHandler]
+[MediatorScoped]
 public class UpdateDataCommandHandler : ICommandHandler<UpdateDataCommand>
 {
     public Task Handle(UpdateDataCommand command, IMediatorContext context, CancellationToken cancellationToken)
@@ -420,7 +420,7 @@ public class UpdateDataCommandHandler : ICommandHandler<UpdateDataCommand>
     }
 }
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class DataUpdatedEventHandler : IEventHandler<DataUpdatedEvent>
 {
     public Task Handle(DataUpdatedEvent @event, IMediatorContext context, CancellationToken cancellationToken)
@@ -449,7 +449,7 @@ namespace MyApp.Middleware;
 
 public record MyCommand(string Data) : ICommand;
 
-[ScopedMediatorMiddleware]
+[MediatorScoped]
 public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
 {
     public Task Handle(MyCommand command, IMediatorContext context, CommandMiddlewareDelegate<MyCommand> next, CancellationToken cancellationToken)
@@ -474,7 +474,7 @@ using System.Threading.Tasks;
 
 namespace MyApp.Middleware;
 
-[SingletonMediatorMiddleware]
+[MediatorSingleton]
 public class ValidationCommandMiddleware<TCommand> : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     public Task Handle(TCommand command, IMediatorContext context, CommandMiddlewareDelegate<TCommand> next, CancellationToken cancellationToken)
@@ -503,7 +503,7 @@ namespace MyApp.Middleware;
 public record MyRequest(int Id) : IRequest<MyResponse>;
 public record MyResponse(string Data);
 
-[ScopedMediatorMiddleware]
+[MediatorScoped]
 public class MyRequestMiddleware : IRequestMiddleware<MyRequest, MyResponse>
 {
     public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, RequestMiddlewareDelegate<MyRequest, MyResponse> next, CancellationToken cancellationToken)
@@ -528,7 +528,7 @@ using System.Threading.Tasks;
 
 namespace MyApp.Middleware;
 
-[SingletonMediatorMiddleware]
+[MediatorSingleton]
 public class LoggingRequestMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse> 
     where TRequest : IRequest<TResponse>
 {
@@ -557,7 +557,7 @@ namespace MyApp.Middleware;
 
 public record MyEvent(string Message) : IEvent;
 
-[ScopedMediatorMiddleware]
+[MediatorScoped]
 public class MyEventMiddleware : IEventMiddleware<MyEvent>
 {
     public Task Handle(MyEvent @event, IMediatorContext context, EventMiddlewareDelegate<MyEvent> next, CancellationToken cancellationToken)
@@ -582,7 +582,7 @@ using System.Threading.Tasks;
 
 namespace MyApp.Middleware;
 
-[SingletonMediatorMiddleware]
+[MediatorSingleton]
 public class AuditEventMiddleware<TEvent> : IEventMiddleware<TEvent> where TEvent : IEvent
 {
     public Task Handle(TEvent @event, IMediatorContext context, EventMiddlewareDelegate<TEvent> next, CancellationToken cancellationToken)
@@ -613,7 +613,7 @@ public record MyResponse(string Data);
 
 public record MyCommand(string Action) : ICommand;
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class MyRequestHandler : IRequestHandler<MyRequest, MyResponse>
 {
     public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
@@ -622,7 +622,7 @@ public class MyRequestHandler : IRequestHandler<MyRequest, MyResponse>
     }
 }
 
-[ScopedMediatorHandler]
+[MediatorScoped]
 public class MyCommandHandler : ICommandHandler<MyCommand>
 {
     public Task Handle(MyCommand command, IMediatorContext context, CancellationToken cancellationToken)
@@ -631,7 +631,7 @@ public class MyCommandHandler : ICommandHandler<MyCommand>
     }
 }
 
-[SingletonMediatorMiddleware]
+[MediatorSingleton]
 public class LoggingRequestMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
@@ -641,7 +641,7 @@ public class LoggingRequestMiddleware<TRequest, TResponse> : IRequestMiddleware<
     }
 }
 
-[ScopedMediatorMiddleware]
+[MediatorScoped]
 public class ValidationCommandMiddleware<TCommand> : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     public Task Handle(TCommand command, IMediatorContext context, CommandMiddlewareDelegate<TCommand> next, CancellationToken cancellationToken)
@@ -672,7 +672,7 @@ public record Response1(string Message);
 public record Request2(int Value) : IRequest<Response2>;
 public record Response2(int Result);
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class MultiRequestHandler : IRequestHandler<Request1, Response1>, IRequestHandler<Request2, Response2>
 {
     public Task<Response1> Handle(Request1 request, IMediatorContext context, CancellationToken cancellationToken)
@@ -707,7 +707,7 @@ namespace MyApp.MultiStreamHandlers;
 public record StreamRequest1(int Count) : IStreamRequest<string>;
 public record StreamRequest2(int Max) : IStreamRequest<int>;
 
-[ScopedMediatorHandler]
+[MediatorScoped]
 public class MultiStreamHandler : IStreamRequestHandler<StreamRequest1, string>, IStreamRequestHandler<StreamRequest2, int>
 {
     public async IAsyncEnumerable<string> Handle(StreamRequest1 request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -753,7 +753,7 @@ public record DataResponse(int Id, string Data);
 public record StreamDataRequest(int StartId) : IStreamRequest<DataItem>;
 public record DataItem(int Id, string Value);
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class DataHandler : IRequestHandler<GetDataRequest, DataResponse>, IStreamRequestHandler<StreamDataRequest, DataItem>
 {
     public Task<DataResponse> Handle(GetDataRequest request, IMediatorContext context, CancellationToken cancellationToken)
@@ -796,7 +796,7 @@ public record StreamUsersRequest : IStreamRequest<UserDto>;
 
 public record UpdateUserCommand(int UserId, string NewName) : ICommand;
 
-[ScopedMediatorHandler]
+[MediatorScoped]
 public class UserHandler : IRequestHandler<GetUserRequest, UserDto>, 
                            IStreamRequestHandler<StreamUsersRequest, UserDto>,
                            ICommandHandler<UpdateUserCommand>
@@ -849,7 +849,7 @@ public record Response3(bool Success);
 public record StreamRequest1(int Count) : IStreamRequest<string>;
 
 // Single interface handler
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class Handler1 : IRequestHandler<Request1, Response1>
 {
     public Task<Response1> Handle(Request1 request, IMediatorContext context, CancellationToken cancellationToken)
@@ -859,7 +859,7 @@ public class Handler1 : IRequestHandler<Request1, Response1>
 }
 
 // Multiple interface handler
-[ScopedMediatorHandler]
+[MediatorScoped]
 public class Handler2 : IRequestHandler<Request2, Response2>, IRequestHandler<Request3, Response3>
 {
     public Task<Response2> Handle(Request2 request, IMediatorContext context, CancellationToken cancellationToken)
@@ -874,7 +874,7 @@ public class Handler2 : IRequestHandler<Request2, Response2>, IRequestHandler<Re
 }
 
 // Stream handler
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class StreamHandler : IStreamRequestHandler<StreamRequest1, string>
 {
     public async IAsyncEnumerable<string> Handle(StreamRequest1 request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -907,7 +907,7 @@ public record Request1(string A) : IRequest<string>;
 public record Request2(int B) : IRequest<int>;
 public record Request3(bool C) : IRequest<bool>;
 
-[SingletonMediatorHandler]
+[MediatorSingleton]
 public class TripleHandler : IRequestHandler<Request1, string>, 
                               IRequestHandler<Request2, int>, 
                               IRequestHandler<Request3, bool>
@@ -934,7 +934,7 @@ public class TripleHandler : IRequestHandler<Request1, string>,
         return Verify(result);
     }
 
-    static GeneratorDriver BuildDriver(string sourceCode)
+    static GeneratorDriver BuildDriver(string sourceCode, string? rootNamespace = "TestAssembly")
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
         
@@ -955,7 +955,19 @@ public class TripleHandler : IRequestHandler<Request1, string>,
         var compilation = CSharpCompilation.Create("TestAssembly", [syntaxTree], references, options);
 
         var generator = new MediatorSourceGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        
+        // Setup analyzer config options with RootNamespace
+        var optionsProvider = rootNamespace != null 
+            ? new MockAnalyzerConfigOptionsProvider(new Dictionary<string, string> 
+            { 
+                ["build_property.RootNamespace"] = rootNamespace 
+            })
+            : new MockAnalyzerConfigOptionsProvider(new Dictionary<string, string>());
+        
+        var driver = CSharpGeneratorDriver.Create(
+            generators: [generator.AsSourceGenerator()],
+            optionsProvider: optionsProvider);
+            
         return driver.RunGenerators(compilation);
     }
 }
