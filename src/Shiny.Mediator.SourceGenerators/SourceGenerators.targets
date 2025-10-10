@@ -1,18 +1,21 @@
 <Project>
     <ItemGroup>
-        <AvailableItemName Include="MediatorHttp" />
+        <AvailableItemName Include="MediatorHttp"/>
     </ItemGroup>
 
     <ItemGroup>
-        <CompilerVisibleProperty Include="RootNamespace" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Uri" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="UseInternalClasses" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateModelsOnly" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateJsonConverters" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPrefix" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPostfix" Visible="false" />
+        <CompilerVisibleProperty Include="RootNamespace"/>
+        <CompilerVisibleProperty Include="ShinyRegistrationClassName"/>
+        <CompilerVisibleProperty Include="ShinyRequestExecutorClassName"/>
+        <CompilerVisibleProperty Include="ShinyStreamRequestExecutorClassName"/>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false"/>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" Visible="false"/>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Uri" Visible="false"/>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="UseInternalClasses" Visible="false"/>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateModelsOnly" Visible="false"/>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateJsonConverters" Visible="false"/>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPrefix" Visible="false"/>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPostfix" Visible="false"/>
     </ItemGroup>
 
     <Target Name="_InjectShinyMediatorAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
@@ -25,7 +28,7 @@
                              GenerateJsonConverters="%(MediatorHttp.GenerateJsonConverters)"
                              ContractPrefix="%(MediatorHttp.ContractPrefix)"
                              ContractPostfix="%(MediatorHttp.ContractPostfix)"
-                             SourceItemGroup="MediatorHttp" />
+                             SourceItemGroup="MediatorHttp"/>
         </ItemGroup>
     </Target>
 </Project>

@@ -934,7 +934,304 @@ public class TripleHandler : IRequestHandler<Request1, string>,
         return Verify(result);
     }
 
-    static GeneratorDriver BuildDriver(string sourceCode, string? rootNamespace = "TestAssembly")
+    #region MSBuild Variable Tests
+
+    [Fact]
+    public Task CustomRegistrationClassName_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp;
+
+public record MyRequest(string Data) : IRequest<MyResponse>;
+public record MyResponse(string Result);
+
+[MediatorSingleton]
+public class MyHandler : IRequestHandler<MyRequest, MyResponse>
+{
+    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new MyResponse(request.Data));
+    }
+}
+", registrationClassName: "MyCustomExtensions");
+        
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        
+        // Verify the custom registration class name is used
+        var extensionFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Extensions.g.cs"));
+        extensionFile.ShouldNotBeNull();
+        extensionFile.ToString().ShouldContain("public static class MyCustomExtensions");
+        
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task CustomRequestExecutorClassName_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp;
+
+public record MyRequest(string Data) : IRequest<MyResponse>;
+public record MyResponse(string Result);
+
+[MediatorSingleton]
+public class MyHandler : IRequestHandler<MyRequest, MyResponse>
+{
+    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new MyResponse(request.Data));
+    }
+}
+", 
+            rootNamespace: "MyApp",
+            requestExecutorClassName: "MyCustomRequestExecutor");
+        
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        
+        // Verify the custom executor class name is used
+        var executorFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_RequestExecutor.g.cs"));
+        executorFile.ShouldNotBeNull();
+        executorFile.ToString().ShouldContain("internal class MyCustomRequestExecutor");
+        
+        // Verify it's registered with the custom name
+        var extensionFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Extensions.g.cs"));
+        extensionFile.ShouldNotBeNull();
+        extensionFile.ToString().ShouldContain("global::MyApp.MyCustomRequestExecutor");
+        
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task CustomStreamRequestExecutorClassName_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp;
+
+public record MyStreamRequest(int Count) : IStreamRequest<string>;
+
+[MediatorSingleton]
+public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
+{
+    public async IAsyncEnumerable<string> Handle(MyStreamRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        for (int i = 0; i < request.Count; i++)
+        {
+            yield return $""Item {i}"";
+            await Task.Delay(10, cancellationToken);
+        }
+    }
+}
+", 
+            rootNamespace: "MyApp",
+            streamRequestExecutorClassName: "MyCustomStreamExecutor");
+        
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        
+        // Verify the custom stream executor class name is used
+        var streamExecutorFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_StreamRequestExecutor.g.cs"));
+        streamExecutorFile.ShouldNotBeNull();
+        streamExecutorFile.ToString().ShouldContain("internal class MyCustomStreamExecutor");
+        
+        // Verify it's registered with the custom name
+        var extensionFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Extensions.g.cs"));
+        extensionFile.ShouldNotBeNull();
+        extensionFile.ToString().ShouldContain("global::MyApp.MyCustomStreamExecutor");
+        
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task AllThreeCustomClassNames_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp;
+
+public record MyRequest(string Data) : IRequest<MyResponse>;
+public record MyResponse(string Result);
+
+public record MyStreamRequest(int Count) : IStreamRequest<string>;
+
+[MediatorSingleton]
+public class MyRequestHandler : IRequestHandler<MyRequest, MyResponse>
+{
+    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new MyResponse(request.Data));
+    }
+}
+
+[MediatorSingleton]
+public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
+{
+    public async IAsyncEnumerable<string> Handle(MyStreamRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        for (int i = 0; i < request.Count; i++)
+        {
+            yield return $""Item {i}"";
+            await Task.Delay(10, cancellationToken);
+        }
+    }
+}
+", 
+            rootNamespace: "MyApp",
+            registrationClassName: "MyCustomExtensions",
+            requestExecutorClassName: "MyCustomRequestExecutor",
+            streamRequestExecutorClassName: "MyCustomStreamExecutor");
+        
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        
+        // Verify all three custom class names are used
+        var extensionFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Extensions.g.cs"));
+        extensionFile.ShouldNotBeNull();
+        var extensionCode = extensionFile.ToString();
+        extensionCode.ShouldContain("public static class MyCustomExtensions");
+        extensionCode.ShouldContain("global::MyApp.MyCustomRequestExecutor");
+        extensionCode.ShouldContain("global::MyApp.MyCustomStreamExecutor");
+        
+        var executorFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_RequestExecutor.g.cs"));
+        executorFile.ShouldNotBeNull();
+        executorFile.ToString().ShouldContain("internal class MyCustomRequestExecutor");
+        
+        var streamExecutorFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_StreamRequestExecutor.g.cs"));
+        streamExecutorFile.ShouldNotBeNull();
+        streamExecutorFile.ToString().ShouldContain("internal class MyCustomStreamExecutor");
+        
+        return Verify(result);
+    }
+
+    [Fact]
+    public void CustomClassNames_WithNullOrEmpty_UsesDefaults()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp;
+
+public record MyRequest(string Data) : IRequest<MyResponse>;
+public record MyResponse(string Result);
+
+[MediatorSingleton]
+public class MyHandler : IRequestHandler<MyRequest, MyResponse>
+{
+    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new MyResponse(request.Data));
+    }
+}
+", 
+            rootNamespace: "MyApp",
+            registrationClassName: "",  // Empty string should use default
+            requestExecutorClassName: "",  // Empty string should use default
+            streamRequestExecutorClassName: "");  // Empty string should use default
+        
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        
+        // Verify default names are used when empty strings are provided
+        var extensionFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Extensions.g.cs"));
+        extensionFile.ShouldNotBeNull();
+        var extensionCode = extensionFile.ToString();
+        extensionCode.ShouldContain("public static class __ShinyMediatorSourceGenExtensions");  // Default registration class name
+        extensionCode.ShouldContain("global::MyApp.MyAppRequestExecutor");  // Default request executor
+        
+        var executorFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_RequestExecutor.g.cs"));
+        executorFile.ShouldNotBeNull();
+        executorFile.ToString().ShouldContain("internal class MyAppRequestExecutor");  // Default based on namespace
+    }
+
+    [Fact]
+    public Task CustomClassNames_WithDifferentNamespace_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyCompany.MyProduct.Features;
+
+public record MyRequest(string Data) : IRequest<MyResponse>;
+public record MyResponse(string Result);
+
+public record MyStreamRequest(int Count) : IStreamRequest<string>;
+
+[MediatorSingleton]
+public class MyRequestHandler : IRequestHandler<MyRequest, MyResponse>
+{
+    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new MyResponse(request.Data));
+    }
+}
+
+[MediatorSingleton]
+public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
+{
+    public async IAsyncEnumerable<string> Handle(MyStreamRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        for (int i = 0; i < request.Count; i++)
+        {
+            yield return $""Item {i}"";
+            await Task.Delay(10, cancellationToken);
+        }
+    }
+}
+", 
+            rootNamespace: "MyCompany.MyProduct.Features",
+            registrationClassName: "MediatorServiceExtensions",
+            requestExecutorClassName: "CustomRequestExec",
+            streamRequestExecutorClassName: "CustomStreamExec");
+        
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        
+        // Verify custom names work with different namespace
+        var extensionFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Extensions.g.cs"));
+        extensionFile.ShouldNotBeNull();
+        var extensionCode = extensionFile.ToString();
+        extensionCode.ShouldContain("namespace MyCompany.MyProduct.Features;");
+        extensionCode.ShouldContain("public static class MediatorServiceExtensions");
+        extensionCode.ShouldContain("global::MyCompany.MyProduct.Features.CustomRequestExec");
+        extensionCode.ShouldContain("global::MyCompany.MyProduct.Features.CustomStreamExec");
+        
+        return Verify(result);
+    }
+
+    #endregion
+
+    static GeneratorDriver BuildDriver(
+        string sourceCode, 
+        string? rootNamespace = "TestAssembly",
+        string? registrationClassName = null,
+        string? requestExecutorClassName = null,
+        string? streamRequestExecutorClassName = null)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
         
@@ -956,13 +1253,22 @@ public class TripleHandler : IRequestHandler<Request1, string>,
 
         var generator = new MediatorSourceGenerator();
         
-        // Setup analyzer config options with RootNamespace
-        var optionsProvider = rootNamespace != null 
-            ? new MockAnalyzerConfigOptionsProvider(new Dictionary<string, string> 
-            { 
-                ["build_property.RootNamespace"] = rootNamespace 
-            })
-            : new MockAnalyzerConfigOptionsProvider(new Dictionary<string, string>());
+        // Setup analyzer config options with MSBuild properties
+        var buildProperties = new Dictionary<string, string>();
+        
+        if (rootNamespace != null)
+            buildProperties["build_property.RootNamespace"] = rootNamespace;
+            
+        if (registrationClassName != null)
+            buildProperties["build_property.ShinyRegistrationClassName"] = registrationClassName;
+            
+        if (requestExecutorClassName != null)
+            buildProperties["build_property.ShinyRequestExecutorClassName"] = requestExecutorClassName;
+            
+        if (streamRequestExecutorClassName != null)
+            buildProperties["build_property.ShinyStreamRequestExecutorClassName"] = streamRequestExecutorClassName;
+        
+        var optionsProvider = new MockAnalyzerConfigOptionsProvider(buildProperties);
         
         var driver = CSharpGeneratorDriver.Create(
             generators: [generator.AsSourceGenerator()],

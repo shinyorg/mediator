@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Sample.Blazor;
-using SampleBlazor;
 using Shiny.Mediator;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
