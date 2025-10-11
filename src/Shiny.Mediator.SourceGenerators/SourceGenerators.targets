@@ -13,6 +13,7 @@
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Uri" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="UseInternalClasses" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateModelsOnly" Visible="false"/>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateRequestsOnly" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateJsonConverters" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPrefix" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPostfix" Visible="false"/>
@@ -25,6 +26,7 @@
                              Uri="%(MediatorHttp.Uri)"
                              UseInternalClasses="%(MediatorHttp.UseInternalClasses)"
                              GenerateModelsOnly="%(MediatorHttp.GenerateModelsOnly)"
+                             GenerateRequestsOnly="%(MediatorHttp.GenerateRequestsOnly)"
                              GenerateJsonConverters="%(MediatorHttp.GenerateJsonConverters)"
                              ContractPrefix="%(MediatorHttp.ContractPrefix)"
                              ContractPostfix="%(MediatorHttp.ContractPostfix)"

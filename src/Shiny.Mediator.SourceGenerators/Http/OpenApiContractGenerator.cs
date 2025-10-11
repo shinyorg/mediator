@@ -37,8 +37,10 @@ public class OpenApiContractGenerator(
             throw new InvalidOperationException($"OpenApi Error: {e.Message} - {e.Pointer}");
         }
 
-        this.GenerateComponents(document);
-        if (!itemConfig.GenerateModelsOnly) 
+        if (!itemConfig.GenerateRequestsOnly)
+            this.GenerateComponents(document);
+
+        if (!itemConfig.GenerateModelsOnly)
             this.GenerateContracts(document);
     }
 
