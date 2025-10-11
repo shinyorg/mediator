@@ -41,7 +41,7 @@ public class OpenApiContractGenerator(
             this.GenerateComponents(document);
 
         if (!itemConfig.GenerateModelsOnly)
-            this.GenerateContracts(document);
+            this.GenerateContracts(document, itemConfig.GenerateRequestsOnly);
     }
 
 
@@ -72,7 +72,7 @@ public class OpenApiContractGenerator(
     }
 
 
-    void GenerateContracts(OpenApiDocument document)
+    void GenerateContracts(OpenApiDocument document, bool generateRequestsOnly)
     {
         foreach (var path in document.Paths)
         {
@@ -102,7 +102,7 @@ public class OpenApiContractGenerator(
                 foreach (var parameter in op.Value.Parameters)
                 {
                     var argType = parameter.In == ParameterLocation.Path ? "Path" : "Query";
-                    var typeName = this.GetSchemaType(parameter.Schema);
+                    var typeName = this.GetSchemaType(parameter.Schema, !generateRequestsOnly);
                     var propertyName = parameter.Name.Pascalize();
                     sb.AppendLine($"    [global::Shiny.Mediator.Http.HttpParameterAttribute(global::Shiny.Mediator.Http.HttpParameterType.{argType}, \"{parameter.Name}\")]");
                     sb.AppendLine($"    public {typeName} {propertyName} {{ get; set; }}");
@@ -157,7 +157,7 @@ public class OpenApiContractGenerator(
     }
 
 
-    string? GetSchemaType(OpenApiSchema schema)
+    string? GetSchemaType(OpenApiSchema schema, bool includeNameSpacePrefix = true)
     {
         string type = null!;
         if (schema.Type != null)
@@ -171,7 +171,7 @@ public class OpenApiContractGenerator(
                     }
                     else if (schema.Reference != null)
                     {                            
-                        type = $"global::{itemConfig.Namespace}.{schema.Reference.Id}";
+                        type = includeNameSpacePrefix ? $"global::{itemConfig.Namespace}.{schema.Reference.Id}" : schema.Reference.Id;
                     }
                     break;
 
@@ -185,7 +185,7 @@ public class OpenApiContractGenerator(
                     break;
 
                 case "array":
-                    var listType = this.GetSchemaType(schema.Items);
+                    var listType = this.GetSchemaType(schema.Items, includeNameSpacePrefix);
                     return $"global::System.Collections.Generic.List<{listType}>";
 
                 case "file":
@@ -199,7 +199,7 @@ public class OpenApiContractGenerator(
                     }
                     else
                     {
-                        var dictionaryValueType = this.GetSchemaType(schema.AdditionalProperties);
+                        var dictionaryValueType = this.GetSchemaType(schema.AdditionalProperties, includeNameSpacePrefix);
                         type = $"global::System.Collections.Generic.Dictionary<string, {dictionaryValueType}>";
                     }
                     break;
@@ -213,7 +213,7 @@ public class OpenApiContractGenerator(
         {
             // if discriminator is present, 2 will come through which means the following will error
             // we want to return null instead
-            type = this.GetSchemaType(schema.AllOf!.Single()!)!;
+            type = this.GetSchemaType(schema.AllOf!.Single()!, includeNameSpacePrefix)!;
         }
         else
         {
