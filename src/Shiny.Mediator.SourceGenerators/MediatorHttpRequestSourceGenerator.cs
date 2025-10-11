@@ -72,6 +72,8 @@ public class MediatorHttpRequestSourceGenerator : IIncrementalGenerator
             ContractPostfix = GetAdditionalTextProperty(configProvider, item, nameof(MediatorHttpItemConfig.ContractPostfix)),
             GenerateModelsOnly = GetAdditionalTextProperty(configProvider, item, nameof(MediatorHttpItemConfig.GenerateModelsOnly))
                 ?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
+            GenerateRequestsOnly = GetAdditionalTextProperty(configProvider, item, nameof(MediatorHttpItemConfig.GenerateRequestsOnly))
+                ?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
             UseInternalClasses = GetAdditionalTextProperty(configProvider, item, nameof(MediatorHttpItemConfig.UseInternalClasses))
                 ?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
             GenerateJsonConverters = GetAdditionalTextProperty(configProvider, item, nameof(MediatorHttpItemConfig.GenerateJsonConverters))

@@ -37,9 +37,11 @@ public class OpenApiContractGenerator(
             throw new InvalidOperationException($"OpenApi Error: {e.Message} - {e.Pointer}");
         }
 
-        this.GenerateComponents(document);
-        if (!itemConfig.GenerateModelsOnly) 
-            this.GenerateContracts(document);
+        if (!itemConfig.GenerateRequestsOnly)
+            this.GenerateComponents(document);
+
+        if (!itemConfig.GenerateModelsOnly)
+            this.GenerateContracts(document, !itemConfig.GenerateRequestsOnly);
     }
 
 
@@ -70,7 +72,7 @@ public class OpenApiContractGenerator(
     }
 
 
-    void GenerateContracts(OpenApiDocument document)
+    void GenerateContracts(OpenApiDocument document, bool includeNamespacePrefix)
     {
         foreach (var path in document.Paths)
         {
@@ -84,7 +86,7 @@ public class OpenApiContractGenerator(
                     continue;
                 }
                 output($"OPERATION: {op.Key} - ID: {op.Value.OperationId}", DiagnosticSeverity.Info);
-                var responseType = this.GetResponseType(op.Value);
+                var responseType = this.GetResponseType(op.Value, includeNamespacePrefix);
                 output($"RESPONSE: {responseType}", DiagnosticSeverity.Info);
                 
                 var contractName = $"{itemConfig.ContractPrefix}{op.Value.OperationId.Pascalize()}{itemConfig.ContractPostfix}";
@@ -100,7 +102,7 @@ public class OpenApiContractGenerator(
                 foreach (var parameter in op.Value.Parameters)
                 {
                     var argType = parameter.In == ParameterLocation.Path ? "Path" : "Query";
-                    var typeName = this.GetSchemaType(parameter.Schema);
+                    var typeName = this.GetSchemaType(parameter.Schema, includeNamespacePrefix);
                     var propertyName = parameter.Name.Pascalize();
                     sb.AppendLine($"    [global::Shiny.Mediator.Http.HttpParameterAttribute(global::Shiny.Mediator.Http.HttpParameterType.{argType}, \"{parameter.Name}\")]");
                     sb.AppendLine($"    public {typeName} {propertyName} {{ get; set; }}");
@@ -111,7 +113,7 @@ public class OpenApiContractGenerator(
                 if (op.Value.RequestBody != null)
                 {
                     var body = op.Value.RequestBody;
-                    var bodyResponseType = this.GetApplicationJsonResponse(body.Content);
+                    var bodyResponseType = this.GetApplicationJsonResponse(body.Content, includeNamespacePrefix);
                     if (bodyResponseType != null)
                     {
                         if (!body.Required)
@@ -131,12 +133,12 @@ public class OpenApiContractGenerator(
     }
     
 
-    string GetResponseType(OpenApiOperation op)
+    string GetResponseType(OpenApiOperation op, bool includeNameSpacePrefix = true)
     {
         var responseType = "global::System.Net.Http.HttpResponseMessage";
         if (op.Responses.TryGetValue("200", out var response200))
         {
-            var appJsonType = this.GetApplicationJsonResponse(response200.Content);
+            var appJsonType = this.GetApplicationJsonResponse(response200.Content, includeNameSpacePrefix);
             if (appJsonType != null)
                 responseType = appJsonType;
         }
@@ -145,17 +147,17 @@ public class OpenApiContractGenerator(
     }
     
 
-    string? GetApplicationJsonResponse(IDictionary<string, OpenApiMediaType> response)
+    string? GetApplicationJsonResponse(IDictionary<string, OpenApiMediaType> response, bool includeNameSpacePrefix = true)
     {
         string? responseType = null;
         if (response.TryGetValue("application/json", out var responseContent))
-            responseType = this.GetSchemaType(responseContent.Schema);
+            responseType = this.GetSchemaType(responseContent.Schema, includeNameSpacePrefix);
 
         return responseType;
     }
 
 
-    string? GetSchemaType(OpenApiSchema schema)
+    string? GetSchemaType(OpenApiSchema schema, bool includeNameSpacePrefix = true)
     {
         string type = null!;
         if (schema.Type != null)
@@ -169,7 +171,7 @@ public class OpenApiContractGenerator(
                     }
                     else if (schema.Reference != null)
                     {                            
-                        type = $"global::{itemConfig.Namespace}.{schema.Reference.Id}";
+                        type = includeNameSpacePrefix ? $"global::{itemConfig.Namespace}.{schema.Reference.Id}" : schema.Reference.Id;
                     }
                     break;
 
@@ -183,7 +185,7 @@ public class OpenApiContractGenerator(
                     break;
 
                 case "array":
-                    var listType = this.GetSchemaType(schema.Items);
+                    var listType = this.GetSchemaType(schema.Items, includeNameSpacePrefix);
                     return $"global::System.Collections.Generic.List<{listType}>";
 
                 case "file":
@@ -193,11 +195,11 @@ public class OpenApiContractGenerator(
                     if (schema.AdditionalProperties == null)
                     {
                         if (schema.Reference != null)
-                            type = $"global::{itemConfig.Namespace}.{schema.Reference.Id}";    
+                            type = includeNameSpacePrefix ? $"global::{itemConfig.Namespace}.{schema.Reference.Id}" : schema.Reference.Id;    
                     }
                     else
                     {
-                        var dictionaryValueType = this.GetSchemaType(schema.AdditionalProperties);
+                        var dictionaryValueType = this.GetSchemaType(schema.AdditionalProperties, includeNameSpacePrefix);
                         type = $"global::System.Collections.Generic.Dictionary<string, {dictionaryValueType}>";
                     }
                     break;
@@ -211,7 +213,7 @@ public class OpenApiContractGenerator(
         {
             // if discriminator is present, 2 will come through which means the following will error
             // we want to return null instead
-            type = this.GetSchemaType(schema.AllOf!.Single()!)!;
+            type = this.GetSchemaType(schema.AllOf!.Single()!, includeNameSpacePrefix)!;
         }
         else
         {

@@ -14,22 +14,23 @@ public class OpenApiContractGeneratorTests(ITestOutputHelper output)
     public static void Initialize()
     {
         VerifierSettings.NameForParameter<PathAndMediatorHttpItemConfig>(x =>
-            $"{Path.GetFileName(x.Path)}_{x.Config.Namespace}_{x.Config.ContractPostfix}_{x.Config.UseInternalClasses}_{x.Config.GenerateModelsOnly}_{x.Config.GenerateJsonConverters}"
+            $"{Path.GetFileName(x.Path)}_{x.Config.Namespace}_{x.Config.ContractPostfix}_{x.Config.UseInternalClasses}_{x.Config.GenerateModelsOnly}_{x.Config.GenerateJsonConverters}_{x.Config.GenerateRequestsOnly}"
         );
     }
     
     [Theory]
-    [InlineData("./Http/standard.json", "HttpRequest", "TestApi", false, false)]
-    [InlineData("./Http/standard.json", "HttpRequest", "TestApi", true, false)]
-    [InlineData("./Http/standard.json", "HttpRequest", "TestApi", false, true)]
-    [InlineData("./Http/enums.json", null, "TestApi", false, false)]
-    [InlineData("./Http/validateresult.json", null, "TestApi", false, false)]
+    [InlineData("./Http/standard.json", "HttpRequest", "TestApi", false, false, false)]
+    [InlineData("./Http/standard.json", "HttpRequest", "TestApi", true, false, false)]
+    [InlineData("./Http/standard.json", "HttpRequest", "TestApi", false, true, false)]
+    [InlineData("./Http/enums.json", null, "TestApi", false, false, false)]
+    [InlineData("./Http/validateresult.json", null, "TestApi", false, false, false)]
     public Task Local_Tests(
         string path, 
         string? contractPostfix, 
         string nameSpace, 
         bool useInternalClasses,
-        bool generateModelsOnly
+        bool generateModelsOnly,
+        bool generateRequestsOnly
     )
     {
         var args = new MediatorHttpItemConfig
@@ -37,7 +38,8 @@ public class OpenApiContractGeneratorTests(ITestOutputHelper output)
             Namespace = nameSpace,
             ContractPostfix = contractPostfix,
             UseInternalClasses = useInternalClasses,
-            GenerateModelsOnly = generateModelsOnly
+            GenerateModelsOnly = generateModelsOnly,
+            GenerateRequestsOnly = generateRequestsOnly
         };
 
         var sb = new StringBuilder();
