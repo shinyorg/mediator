@@ -26,6 +26,7 @@
     <File Path="src\Directory.packages.props" />
     <File Path="Build.slnf" />
     <File Path="nuget.config" />
+    <File Path="global.json" />
   </Folder>
   <Folder Name="/sourcegen/">
     <Project Path="src\Shiny.Mediator.AspNet.SourceGenerators\Shiny.Mediator.AspNet.SourceGenerators.csproj" Type="Classic C#" />

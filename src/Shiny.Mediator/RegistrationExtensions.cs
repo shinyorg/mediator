@@ -62,7 +62,7 @@ public static class RegistrationExtensions
     /// <param name="mediatorBuilder"></param>
     /// <typeparam name="TScheduler">The scheduler/execution type for deferred/scheduled commands</typeparam>
     /// <returns></returns>
-    public static ShinyMediatorBuilder AddCommandScheduling<TScheduler>(this ShinyMediatorBuilder mediatorBuilder)
+    public static ShinyMediatorBuilder AddCommandScheduling<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TScheduler>(this ShinyMediatorBuilder mediatorBuilder)
         where TScheduler : class, ICommandScheduler
     {
         mediatorBuilder.Services.TryAddSingleton<ICommandScheduler, TScheduler>();

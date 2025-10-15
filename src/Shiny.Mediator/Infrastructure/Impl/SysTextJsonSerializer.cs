@@ -6,13 +6,7 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 
 public class SysTextJsonSerializerService : ISerializerService
 {
-    public JsonSerializerOptions JsonOptions { get; set; } = new JsonSerializerOptions
-    {
-        Converters =
-        {
-            new JsonStringEnumConverter()
-        }
-    };
+    public JsonSerializerOptions JsonOptions { get; set; } = new();
     
     public string Serialize<T>(T obj)
     {

@@ -1,13 +1,10 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Shiny.Mediator;
 
 namespace Sample.Handlers;
 
 public record OfflineRequest : IRequest<string>;
 
-[SingletonHandler]
+[MediatorSingleton]
 public class OfflineRequestHandler : IRequestHandler<OfflineRequest, string>
 {
     [OfflineAvailable]

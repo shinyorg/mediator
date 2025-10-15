@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
@@ -10,22 +11,23 @@ public sealed class ShinyMediatorBuilder(IServiceCollection services)
     public IServiceCollection Services => services;
 
 
-    public ShinyMediatorBuilder SetContractKeyProvider<TProvider>() where TProvider : class, IContractKeyProvider
+    public ShinyMediatorBuilder SetContractKeyProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>() where TProvider : class, IContractKeyProvider
     {
         this.Services.AddSingleton<IContractKeyProvider, TProvider>();
         return this;
     }
 
     
-    public ShinyMediatorBuilder SetSerializer<TSerializer>() where TSerializer : class, ISerializerService
+    public ShinyMediatorBuilder SetSerializer<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSerializer>() where TSerializer : class, ISerializerService
     {
         this.Services.AddSingleton<ISerializerService, TSerializer>();
         return this;
     }
 
     
-    public ShinyMediatorBuilder AddRequestMiddleware<TRequest, TResult, TImpl>(
-        ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    public ShinyMediatorBuilder AddRequestMiddleware<TRequest, TResult, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImpl>(
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    )
         where TRequest : IRequest<TResult>
         where TImpl : class, IRequestMiddleware<TRequest, TResult>
     {
@@ -48,35 +50,35 @@ public sealed class ShinyMediatorBuilder(IServiceCollection services)
     }
 
 
-    public ShinyMediatorBuilder AddOpenCommandMiddleware(Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    public ShinyMediatorBuilder AddOpenCommandMiddleware([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
         services.Add(new ServiceDescriptor(typeof(ICommandMiddleware<>), null, implementationType, lifetime));
         return this;
     }
     
     
-    public ShinyMediatorBuilder AddOpenRequestMiddleware(Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped) 
+    public ShinyMediatorBuilder AddOpenRequestMiddleware([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped) 
     {
         services.Add(new ServiceDescriptor(typeof(IRequestMiddleware<,>), null, implementationType, lifetime));
         return this;
     }
     
     
-    public ShinyMediatorBuilder AddOpenStreamMiddleware(Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped) 
+    public ShinyMediatorBuilder AddOpenStreamMiddleware([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped) 
     {
         services.Add(new ServiceDescriptor(typeof(IStreamRequestMiddleware<,>), null, implementationType, lifetime));
         return this;
     }
     
 
-    public ShinyMediatorBuilder AddOpenEventMiddleware(Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    public ShinyMediatorBuilder AddOpenEventMiddleware([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
         services.Add(new ServiceDescriptor(typeof(IEventMiddleware<>), null, implementationType, lifetime));
         return this;
     }
     
 
-    public ShinyMediatorBuilder AddEventCollector<TImpl>() where TImpl : class, IEventCollector
+    public ShinyMediatorBuilder AddEventCollector<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImpl>() where TImpl : class, IEventCollector
     {
         if (!services.Any(x => x.ServiceType == typeof(TImpl)))
             services.AddSingleton<IEventCollector, TImpl>();

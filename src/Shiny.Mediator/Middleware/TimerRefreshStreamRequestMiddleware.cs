@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,7 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
 ) : IStreamRequestMiddleware<TRequest, TResult> 
     where TRequest : IStreamRequest<TResult>
 {
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue<int> is safe for trimming")]
     public IAsyncEnumerable<TResult> Process(
         IMediatorContext context, 
         StreamRequestHandlerDelegate<TResult> next,
@@ -35,7 +37,7 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
             }
             else
             {
-                var attribute = ((IStreamRequestHandler<TRequest, TResult>)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, TimerRefreshAttribute>();
+                var attribute = ((IStreamRequestHandler<TRequest, TResult>)context.MessageHandler!).GetHandlerHandleMethodAttribute<TRequest, TResult, TimerRefreshAttribute>();
                 if (attribute != null)
                 {
                     interval = attribute.IntervalSeconds;

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -159,8 +160,13 @@ public class HttpDirectRequestHandler(
     }
     
     
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue<int> is safe for trimming")]
     async ValueTask WriteDebugIfEnable(HttpRequestMessage request, HttpResponseMessage response, CancellationToken cancellationToken)
     {
+        if (configuration == null)
+            return;
+        
         var debug = configuration.GetValue<bool>("Mediator:Http:Debug");
         if (!debug)
             return;
