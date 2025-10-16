@@ -63,7 +63,7 @@ public partial class App : Application
                 .AddShinyMediator(x => x
                     .AddUnoPersistentCache()
                 )
-                .ConfigureServices(s => s.AddDiscoveredMediatorHandlersFromSample_Uno())
+                .ConfigureServices(s => s.AddDiscoveredMediatorHandlersFromSampleUno())
             );
         
         MainWindow = builder.Window;
