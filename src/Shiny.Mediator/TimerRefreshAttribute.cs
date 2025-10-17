@@ -1,7 +1,7 @@
 namespace Shiny.Mediator;
 
-[AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-public class TimerRefreshAttribute(int intervalSeconds) : Attribute
+[AttributeUsage(AttributeTargets.Method, Inherited = false)]
+public class TimerRefreshAttribute(int intervalSeconds) : MediatorMiddlewareAttribute
 {
     public int IntervalSeconds => intervalSeconds;
 }

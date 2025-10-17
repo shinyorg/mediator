@@ -1,4 +1,4 @@
 namespace Shiny.Mediator;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-public class MainThreadAttribute : Attribute;
+public class MainThreadAttribute : MediatorMiddlewareAttribute;

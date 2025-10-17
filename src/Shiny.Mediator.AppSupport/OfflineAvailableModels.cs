@@ -1,8 +1,8 @@
 namespace Shiny.Mediator;
 
 
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public class OfflineAvailableAttribute : Attribute;
+[AttributeUsage(AttributeTargets.Method, Inherited = false)]
+public class OfflineAvailableAttribute : MediatorMiddlewareAttribute;
 
 public record OfflineAvailableContext(
     string RequestKey,
