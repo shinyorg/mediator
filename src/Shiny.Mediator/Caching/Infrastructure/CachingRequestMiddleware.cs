@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Infrastructure;
 
@@ -61,6 +62,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
     }
 
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     protected virtual CacheItemConfig? GetItemConfig(IMediatorContext context, TRequest request)
     {
         // context #1
@@ -79,7 +81,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
         }
         
         // handler attribute #3
-        var attribute = ((IRequestHandler<TRequest, TResult>)context.MessageHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, CacheAttribute>();
+        var attribute = ((IRequestHandler<TRequest, TResult>)context.MessageHandler!).GetHandlerHandleMethodAttribute<TRequest, TResult, CacheAttribute>();
         if (attribute != null)
             return FromSeconds(attribute.AbsoluteExpirationSeconds, attribute.SlidingExpirationSeconds);
 

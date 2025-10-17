@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 using System.Web;
@@ -18,6 +19,7 @@ public class HttpRequestHandler<TRequest, TResult>(
     readonly HttpClient httpClient = new();
     
     
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     public async Task<TResult> Handle(TRequest request, IMediatorContext context, CancellationToken cancellationToken)
     {
         var http = request.GetType().GetCustomAttribute<HttpAttribute>();
@@ -197,9 +199,10 @@ public class HttpRequestHandler<TRequest, TResult>(
     }
 
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     protected virtual async ValueTask WriteDebugIfEnable(HttpRequestMessage request, HttpResponseMessage response, CancellationToken cancellationToken)
     {
-        var debug = configuration.GetValue<bool>("Mediator:Http:Debug");
+        var debug = configuration.GetValue<bool>("Mediator:Http:Debug", false);
         if (!debug)
             return;
 

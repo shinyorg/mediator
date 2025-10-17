@@ -5,10 +5,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Description>The main Shiny Mediator library where all the infrastructure lives</Description>
-
-        <EnableAotAnalyzer>true</EnableAotAnalyzer>
-        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-        <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
     </PropertyGroup>
 
     <ItemGroup>

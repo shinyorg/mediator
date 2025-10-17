@@ -101,7 +101,9 @@ public static class RegistrationExtensions
     /// <param name="lifetime"></param>
     /// <typeparam name="THandler"></typeparam>
     /// <returns></returns>
-    public static ShinyMediatorBuilder AddExceptionHandler<THandler>(
+    public static ShinyMediatorBuilder AddExceptionHandler<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler
+    >(
         this ShinyMediatorBuilder mediatorBuilder,
         ServiceLifetime lifetime = ServiceLifetime.Singleton
     ) where THandler : class, IExceptionHandler

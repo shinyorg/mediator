@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Shiny.Mediator.Caching;
 using Shiny.Mediator.Caching.Infrastructure;
 using Shiny.Mediator.Infrastructure;
@@ -7,7 +8,13 @@ namespace Shiny.Mediator;
 
 public static class CacheExtensions
 {
-    public static ShinyMediatorBuilder AddCaching<TCache>(this ShinyMediatorBuilder cfg) where TCache : class, ICacheService
+    public static ShinyMediatorBuilder AddCaching<
+        [DynamicallyAccessedMembers(
+            DynamicallyAccessedMemberTypes.PublicConstructors |
+            DynamicallyAccessedMemberTypes.NonPublicConstructors |
+            DynamicallyAccessedMemberTypes.Interfaces
+        )] TCache
+    >(this ShinyMediatorBuilder cfg) where TCache : class, ICacheService
     {
         if (cfg.Services.Any(x => x.ServiceType == typeof(ICacheService)))
             throw new InvalidOperationException("You can only have one mediator cache service registered");

@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Shiny.Mediator;
 
 public static class TypeExtensions
 {
-    public static bool IsRequestHandler(this Type type) => type
+    public static bool IsRequestHandler([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]this Type type) => type
         .GetInterfaces()
         .Any(x => 
             x.IsGenericType && 
@@ -10,14 +12,14 @@ public static class TypeExtensions
         );
     
     
-    public static bool IsCommandHandler(this Type type) => type
+    public static bool IsCommandHandler([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type) => type
         .GetInterfaces()
         .Any(x => 
             x.IsGenericType && 
             x.GetGenericTypeDefinition() == typeof(ICommandHandler<>)
         );
 
-    public static bool IsEventHandler(this Type type) => type
+    public static bool IsEventHandler([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type) => type
         .GetInterfaces()
         .Any(x => 
             x.IsGenericType && 
@@ -25,7 +27,7 @@ public static class TypeExtensions
         );
     
     
-    public static bool IsStreamRequestHandler(this Type type) => type
+    public static bool IsStreamRequestHandler([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type) => type
         .GetInterfaces()
         .Any(x => 
             x.IsGenericType && 
@@ -33,7 +35,7 @@ public static class TypeExtensions
         );
     
     
-    public static bool IsCommandContract(this Type type) => type
+    public static bool IsCommandContract([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type) => type
         .GetInterfaces()
         .Any(x => 
             x.IsGenericType && 
@@ -41,7 +43,7 @@ public static class TypeExtensions
         );
     
     
-    public static bool IsRequestContract(this Type type) => type
+    public static bool IsRequestContract([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type) => type
         .GetInterfaces()
         .Any(x => 
             x.IsGenericType && 
@@ -49,7 +51,7 @@ public static class TypeExtensions
         );
 
 
-    public static bool IsEventContract(this Type type) => type
+    public static bool IsEventContract([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type) => type
         .GetInterfaces()
         .Any(x => 
             x.IsGenericType && 

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,7 @@ public class UserNotificationExceptionHandler(
     IAlertDialogService alerts
 ) : IExceptionHandler
 {
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Get will not be trimmed")]
     public Task<bool> Handle(IMediatorContext context, Exception exception)
     {
         // If this is a child context, we do not handle it with user notifications

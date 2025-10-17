@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -27,7 +28,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        if (!this.IsEnabled(context.Message, context.MessageHandler))
+        if (!this.IsEnabled(context.Message, context.MessageHandler!))
             return next();
 
         logger.LogDebug("Enabled - {Request}", context.Message);
@@ -40,6 +41,8 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
     }
 
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Get will not be trimmed")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Get will not be trimmed")]
     protected bool IsEnabled(object request, object requestHandler)
     {
         var section = configuration.GetHandlerSection("ReplayStream", request, requestHandler);

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Infrastructure;
@@ -19,7 +20,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        if (!this.IsEnabled(context.MessageHandler, context.Message))
+        if (!this.IsEnabled(context.MessageHandler!, context.Message))
             return await next().ConfigureAwait(false);
         
         var result = default(TResult);
@@ -40,13 +41,13 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         {
             result = await this.GetOffline(context, cancellationToken).ConfigureAwait(false);
         }
-        return result;
+        return result!;
     }
 
 
     async Task<TResult?> GetOffline(IMediatorContext context, CancellationToken cancellationToken)
     {
-        TResult result = default;
+        TResult result = default!;
         var offlineResult = await offline
             .Get<TResult>(context.Message!, cancellationToken)
             .ConfigureAwait(false);
@@ -67,6 +68,9 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         return result;
     }
 
+    
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Get will not be trimmed")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Get will not be trimmed")]
     bool IsEnabled(object requestHandler, object request)
     {
         var enabled = false;

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Infrastructure;
@@ -11,6 +12,7 @@ public class PerformanceLoggingCommandMiddleware<TCommand>(
     ILogger<TCommand> logger
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     public async Task Process(
         IMediatorContext context, 
         CommandHandlerDelegate next,

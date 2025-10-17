@@ -17,6 +17,7 @@ public class HttpDirectRequestHandler(
     static readonly HttpClient httpClient = new();
     
     
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     public async Task<object?> Handle(HttpDirectRequest request, IMediatorContext context, CancellationToken cancellationToken)
     {
         var url = this.GetUrl(request.ConfigNameOrRoute);
@@ -59,6 +60,7 @@ public class HttpDirectRequestHandler(
     }
 
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     string GetUrl(string routeName)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(routeName);
