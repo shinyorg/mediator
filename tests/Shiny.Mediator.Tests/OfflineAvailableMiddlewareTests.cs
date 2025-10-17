@@ -69,7 +69,7 @@ public class OfflineAvailableRequestMiddlewareTests
 
 public record OfflineRequest : IRequest<long>;
 
-public class OfflineRequestHandler : IRequestHandler<OfflineRequest, long>
+public partial class OfflineRequestHandler : IRequestHandler<OfflineRequest, long>
 {
     public bool WasHit { get; set; }
     public long ReturnValue { get; set; }
@@ -81,4 +81,3 @@ public class OfflineRequestHandler : IRequestHandler<OfflineRequest, long>
         return Task.FromResult(this.ReturnValue);
     }
 }
-

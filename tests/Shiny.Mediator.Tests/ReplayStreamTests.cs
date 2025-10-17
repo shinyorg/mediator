@@ -52,7 +52,7 @@ public class ReplayStreamTests(ITestOutputHelper output)
 
 public class ReplayStreamRequest : IStreamRequest<string>;
 
-public class ReplayStreamRequestHandler : IStreamRequestHandler<ReplayStreamRequest, string>
+public partial class ReplayStreamRequestHandler : IStreamRequestHandler<ReplayStreamRequest, string>
 {
     [ReplayStream]
     public async IAsyncEnumerable<string> Handle(ReplayStreamRequest request, IMediatorContext context, CancellationToken cancellationToken)

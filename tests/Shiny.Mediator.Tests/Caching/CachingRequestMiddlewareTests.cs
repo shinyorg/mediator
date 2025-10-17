@@ -180,7 +180,7 @@ file record AttributedTestRequest(string Value) : IRequest<string>, IRequestKey
 {
     public string GetKey() => "Test";
 };
-file class AttributedTestHandler : IRequestHandler<AttributedTestRequest, string>
+file partial class AttributedTestHandler : IRequestHandler<AttributedTestRequest, string>
 {
     [Cache(SlidingExpirationSeconds = 99)]
     public Task<string> Handle(AttributedTestRequest request, IMediatorContext context, CancellationToken cancellationToken)
