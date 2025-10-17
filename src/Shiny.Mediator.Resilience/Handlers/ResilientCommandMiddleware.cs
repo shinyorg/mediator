@@ -27,7 +27,7 @@ public class ResilientCommandMiddleware<TCommand>(
         }
         else
         {
-            var attribute = ((ICommandHandler<TCommand>)context.MessageHandler!).GetHandlerHandleMethodAttribute<TCommand, ResilientAttribute>();
+            var attribute = context.GetHandlerAttribute<ResilientAttribute>();
             if (attribute != null)
                 pipeline = pipelineProvider.GetPipeline(attribute.ConfigurationKey.ToLower());
         }

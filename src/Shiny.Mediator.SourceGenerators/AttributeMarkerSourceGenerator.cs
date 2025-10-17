@@ -200,13 +200,13 @@ public class AttributeMarkerSourceGenerator : IIncrementalGenerator
         sb.AppendLine();
         
         // Generate GetAttribute method
-        sb.AppendLine("        public T GetAttribute<T>(object message)");
+        sb.AppendLine("        public T? GetAttribute<T>(object message) where T : global::Shiny.Mediator.MediatorMiddlewareAttribute");
         sb.AppendLine("        {");
         sb.AppendLine("            var key = message.GetType().FullName!;");
         sb.AppendLine("            if (this.__attributeMarkers.TryGetValue(key, out var attributes))");
         sb.AppendLine("                return attributes.OfType<T>().FirstOrDefault()!;");
         sb.AppendLine();
-        sb.AppendLine("            return default!;");
+        sb.AppendLine("            return null;");
         sb.AppendLine("        }");
         
         sb.AppendLine("    }");

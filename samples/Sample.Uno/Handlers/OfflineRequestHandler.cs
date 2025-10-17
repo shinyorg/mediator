@@ -5,7 +5,7 @@ namespace Sample.Handlers;
 public record OfflineRequest : IRequest<string>;
 
 [MediatorSingleton]
-public class OfflineRequestHandler : IRequestHandler<OfflineRequest, string>
+public partial class OfflineRequestHandler : IRequestHandler<OfflineRequest, string>
 {
     [OfflineAvailable]
     public Task<string> Handle(OfflineRequest request, IMediatorContext context, CancellationToken cancellationToken)

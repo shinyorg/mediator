@@ -1,8 +1,8 @@
 namespace Shiny.Mediator;
 
 
-[AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
-public class ResilientAttribute(string configurationKey) : Attribute
+[AttributeUsage(AttributeTargets.Method)]
+public class ResilientAttribute(string configurationKey) : MediatorMiddlewareAttribute
 {
     public string ConfigurationKey => configurationKey;
 }

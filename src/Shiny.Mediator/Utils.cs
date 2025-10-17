@@ -31,7 +31,13 @@ public static class Utils
             if (x.Exception != null)
                 errorLogger.LogError(x.Exception, "Fire & Forget trapped error");
         }, TaskContinuationOptions.OnlyOnFaulted);
-    
+
+
+    public static IConfigurationSection? GetHandlerSection(
+        this IMediatorContext context,
+        IConfiguration config,
+        string module
+    ) => config.GetHandlerSection(module, context.Message, context.MessageHandler);
     
     public static IConfigurationSection? GetHandlerSection(
         this IConfiguration config, 
@@ -81,99 +87,17 @@ public static class Utils
         }
         return result;
     }
-    
 
-    public static TAttribute? GetHandlerHandleMethodAttribute<TCommand, TAttribute>(this ICommandHandler<TCommand> handler) 
-        where TAttribute : Attribute 
-        where TCommand : ICommand
-        => GetMethodInfo<ICommandHandler<TCommand>>(x => x.Handle(default!, null!, default!)).GetCustomAttribute<TAttribute>();
 
-    
-    public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IRequestHandler<TRequest, TResult> handler) 
-            where TAttribute : Attribute
-            where TRequest : IRequest<TResult>
-        => GetMethodInfo<IRequestHandler<TRequest, TResult>>(x => x.Handle(default!, null!, default!)).GetCustomAttribute<TAttribute>();
-    
-    
-    public static TAttribute? GetHandlerHandleMethodAttribute<TRequest, TResult, TAttribute>(this IStreamRequestHandler<TRequest, TResult> handler) 
-        where TAttribute : Attribute
-        where TRequest : IStreamRequest<TResult>
-        => GetMethodInfo<IStreamRequestHandler<TRequest, TResult>>(x => x.Handle(default!, null!, default!)).GetCustomAttribute<TAttribute>();
-   
-   
-    public static TAttribute? GetHandlerHandleMethodAttribute<TEvent, TAttribute>(this IEventHandler<TEvent> handler)
-        where TEvent : IEvent
-        where TAttribute : Attribute
-        => GetMethodInfo<IEventHandler<TEvent>>(x => x.Handle(default!, null!, default)).GetCustomAttribute<TAttribute>();
-    
-    
-    static MethodInfo GetMethodInfo<TResult>(Expression<Func<TResult>> expression)
+    public static T? GetHandlerAttribute<T>(object handler, object message) where T : MediatorMiddlewareAttribute
     {
-        if (expression.Body is MethodCallExpression methodCall)
-            return methodCall.Method;
+        if (handler is IHandlerAttributeMarker marker)
+            return marker.GetAttribute<T>(message);
 
-        throw new ArgumentException("Expression must be a method call.", nameof(expression));
+        return null;
     }
-    
-    static MethodInfo GetMethodInfo<T>(Expression<Action<T>> expression)
-    {
-        if (expression.Body is MethodCallExpression methodCall)
-            return methodCall.Method;
 
-        throw new ArgumentException("Expression must be a method call.", nameof(expression));
-    }
+
+    public static T? GetHandlerAttribute<T>(this IMediatorContext context) where T : MediatorMiddlewareAttribute =>
+        Utils.GetHandlerAttribute<T>(context.MessageHandler!, context.Message!);
 }
-
-/*
- 
-   using System;
-   using System.Linq.Expressions;
-   using System.Reflection;
-   
-   public class MyClass
-   {
-       public void MyMethod(int value)
-       {
-           Console.WriteLine($"MyMethod called with: {value}");
-       }
-   
-       public static MethodInfo GetMethodInfo<T>(Expression<Action<T>> expression)
-       {
-           if (expression.Body is MethodCallExpression methodCall)
-           {
-               return methodCall.Method;
-           }
-           throw new ArgumentException("Expression must be a method call.", nameof(expression));
-       }
-   
-       public static MethodInfo GetMethodInfo(Expression<Action> expression)
-       {
-           if (expression.Body is MethodCallExpression methodCall)
-           {
-               return methodCall.Method;
-           }
-           throw new ArgumentException("Expression must be a method call.", nameof(expression));
-       }
-   
-       public static MethodInfo GetMethodInfo<TResult>(Expression<Func<TResult>> expression)
-       {
-           if (expression.Body is MethodCallExpression methodCall)
-           {
-               return methodCall.Method;
-           }
-           throw new ArgumentException("Expression must be a method call.", nameof(expression));
-       }
-   
-       public static void Main(string[] args)
-       {
-           // For an instance method
-           var instance = new MyClass();
-           MethodInfo methodInfo1 = GetMethodInfo<MyClass>(x => x.MyMethod(default));
-           Console.WriteLine($"Method Name (instance): {methodInfo1.Name}");
-   
-           // For a static method (if you had one)
-           // MethodInfo methodInfo2 = GetMethodInfo(() => StaticMethod());
-           // Console.WriteLine($"Method Name (static): {methodInfo2.Name}");
-       }
-   }
- */

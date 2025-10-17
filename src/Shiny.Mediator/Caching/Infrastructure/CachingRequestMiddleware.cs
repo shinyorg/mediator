@@ -81,7 +81,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
         }
         
         // handler attribute #3
-        var attribute = ((IRequestHandler<TRequest, TResult>)context.MessageHandler!).GetHandlerHandleMethodAttribute<TRequest, TResult, CacheAttribute>();
+        var attribute = context.GetHandlerAttribute<CacheAttribute>();
         if (attribute != null)
             return FromSeconds(attribute.AbsoluteExpirationSeconds, attribute.SlidingExpirationSeconds);
 

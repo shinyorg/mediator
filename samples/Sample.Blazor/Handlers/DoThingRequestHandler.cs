@@ -3,8 +3,9 @@ using Shiny.Mediator;
 
 namespace Sample.Blazor.Handlers;
 
+
 [MediatorSingleton]
-public class DoThingRequestHandler(IMediator mediator) : IRequestHandler<DoThing, int>
+public partial class DoThingRequestHandler(IMediator mediator) : IRequestHandler<DoThing, int>
 {
     [OfflineAvailable]
     public async Task<int> Handle(DoThing request, IMediatorContext context, CancellationToken cancellationToken)

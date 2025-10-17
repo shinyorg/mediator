@@ -20,7 +20,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        if (!this.IsEnabled(context.MessageHandler!, context.Message))
+        if (!this.IsEnabled(context))
             return await next().ConfigureAwait(false);
         
         var result = default(TResult);
@@ -71,13 +71,13 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
     
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Get will not be trimmed")]
     [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Get will not be trimmed")]
-    bool IsEnabled(object requestHandler, object request)
+    bool IsEnabled(IMediatorContext context)
     {
         var enabled = false;
-        var section = configuration.GetHandlerSection("Offline", request!, requestHandler);
+        var section = context.GetHandlerSection(configuration, "Offline");
         if (section == null)
         {
-            enabled = ((IRequestHandler<TRequest, TResult>)requestHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, OfflineAvailableAttribute>() != null;
+            enabled = context.GetHandlerAttribute<OfflineAvailableAttribute>() != null;
         }
         else
         {

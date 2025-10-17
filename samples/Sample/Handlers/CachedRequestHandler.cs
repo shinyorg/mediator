@@ -4,7 +4,7 @@ namespace Sample.Handlers;
 
 
 [MediatorSingleton]
-public class CachedRequestHandler : IRequestHandler<CacheRequest, string>
+public partial class CachedRequestHandler : IRequestHandler<CacheRequest, string>
 {
     [Cache(AbsoluteExpirationSeconds = 20)]
     public Task<string> Handle(CacheRequest request, IMediatorContext context, CancellationToken cancellationToken)

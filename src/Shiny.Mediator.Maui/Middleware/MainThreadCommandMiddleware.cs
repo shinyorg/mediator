@@ -13,7 +13,7 @@ public class MainThreadCommandMiddleware<TCommand>(
         CancellationToken cancellationToken
     )
     {
-        var attr = ((ICommandHandler<TCommand>)context.MessageHandler).GetHandlerHandleMethodAttribute<TCommand, MainThreadAttribute>();
+        var attr = context.GetHandlerAttribute<MainThreadAttribute>();
         if (attr == null)
             return next();
 

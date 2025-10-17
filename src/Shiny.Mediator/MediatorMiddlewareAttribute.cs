@@ -6,5 +6,5 @@ public abstract class MediatorMiddlewareAttribute : Attribute;
 
 public interface IHandlerAttributeMarker
 {
-    T GetAttribute<T>(object message);
+    T? GetAttribute<T>(object message) where T : MediatorMiddlewareAttribute;
 }

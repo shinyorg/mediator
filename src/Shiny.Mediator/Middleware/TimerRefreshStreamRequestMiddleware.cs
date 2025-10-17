@@ -37,7 +37,7 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
             }
             else
             {
-                var attribute = ((IStreamRequestHandler<TRequest, TResult>)context.MessageHandler!).GetHandlerHandleMethodAttribute<TRequest, TResult, TimerRefreshAttribute>();
+                var attribute = context.GetHandlerAttribute<TimerRefreshAttribute>();
                 if (attribute != null)
                 {
                     interval = attribute.IntervalSeconds;

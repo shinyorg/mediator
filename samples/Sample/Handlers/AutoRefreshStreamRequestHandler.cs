@@ -4,7 +4,7 @@ using Sample.Contracts;
 namespace Sample.Handlers;
 
 [MediatorSingleton]
-public class AutoRefreshStreamRequestHandler : IStreamRequestHandler<AutoRefreshRequest, string>
+public partial class AutoRefreshStreamRequestHandler : IStreamRequestHandler<AutoRefreshRequest, string>
 {
     [TimerRefresh(3000)]
     public async IAsyncEnumerable<string> Handle(

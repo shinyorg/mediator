@@ -4,7 +4,7 @@ namespace Sample.Handlers;
 
 
 [MediatorSingleton]
-public class SingletonRequestHandler(AppSqliteConnection data) : IRequestHandler<MyMessageRequest, MyMessageResponse>
+public partial class SingletonRequestHandler(AppSqliteConnection data) : IRequestHandler<MyMessageRequest, MyMessageResponse>
 {
     // [Cache(Storage = StoreType.File, MaxAgeSeconds = 30, OnlyForOffline = true)]
     [OfflineAvailable]

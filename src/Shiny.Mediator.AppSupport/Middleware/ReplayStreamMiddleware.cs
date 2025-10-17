@@ -28,7 +28,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        if (!this.IsEnabled(context.Message, context.MessageHandler!))
+        if (!this.IsEnabled(context))
             return next();
 
         logger.LogDebug("Enabled - {Request}", context.Message);
@@ -43,14 +43,14 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Get will not be trimmed")]
     [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Get will not be trimmed")]
-    protected bool IsEnabled(object request, object requestHandler)
+    protected bool IsEnabled(IMediatorContext context)
     {
-        var section = configuration.GetHandlerSection("ReplayStream", request, requestHandler);
+        var section = context.GetHandlerSection(configuration, "ReplayStream");
         var enabled = false;
         
         if (section == null)
         {
-            enabled = ((IStreamRequestHandler<TRequest, TResult>)requestHandler).GetHandlerHandleMethodAttribute<TRequest, TResult, ReplayStreamAttribute>() != null;
+            enabled = context.GetHandlerAttribute<ReplayStreamAttribute>() != null;
         }
         else
         {
