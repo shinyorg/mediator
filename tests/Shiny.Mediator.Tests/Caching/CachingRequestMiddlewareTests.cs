@@ -168,7 +168,7 @@ public record CachingRequestMiddlewareRequest(string Value) : IRequest<string>, 
     public string GetKey() => "Test";
 };
 
-file class CachingRequestMiddlewareRequestHandler : IRequestHandler<CachingRequestMiddlewareRequest, string>
+public class CachingRequestMiddlewareRequestHandler : IRequestHandler<CachingRequestMiddlewareRequest, string>
 {
     public Task<string> Handle(CachingRequestMiddlewareRequest request, IMediatorContext context, CancellationToken cancellationToken)
     {
@@ -176,11 +176,11 @@ file class CachingRequestMiddlewareRequestHandler : IRequestHandler<CachingReque
     }
 }
 
-file record AttributedTestRequest(string Value) : IRequest<string>, IRequestKey
+public record AttributedTestRequest(string Value) : IRequest<string>, IRequestKey
 {
     public string GetKey() => "Test";
 };
-file partial class AttributedTestHandler : IRequestHandler<AttributedTestRequest, string>
+public partial class AttributedTestHandler : IRequestHandler<AttributedTestRequest, string>
 {
     [Cache(SlidingExpirationSeconds = 99)]
     public Task<string> Handle(AttributedTestRequest request, IMediatorContext context, CancellationToken cancellationToken)
