@@ -6,6 +6,7 @@
 
 namespace ThemeParksApi;
 
+[global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::ThemeParksApi.EntityType>))]
 public enum EntityType
 {
     DESTINATION,
@@ -23,6 +24,7 @@ public enum EntityType
 
 namespace ThemeParksApi;
 
+[global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::ThemeParksApi.LiveStatusType>))]
 public enum LiveStatusType
 {
     OPERATING,
@@ -38,6 +40,7 @@ public enum LiveStatusType
 
 namespace ThemeParksApi;
 
+[global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::ThemeParksApi.ReturnTimeState>))]
 public enum ReturnTimeState
 {
     AVAILABLE,
@@ -52,6 +55,7 @@ public enum ReturnTimeState
 
 namespace ThemeParksApi;
 
+[global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::ThemeParksApi.BoardingGroupState>))]
 public enum BoardingGroupState
 {
     AVAILABLE,
@@ -471,6 +475,7 @@ public partial class EntityLiveDataResponse
 
 namespace ThemeParksApi;
 
+[global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::ThemeParksApi.SchedulePriceObjectType>))]
 public enum SchedulePriceObjectType
 {
     ADMISSION,
@@ -511,6 +516,7 @@ public partial class SchedulePriceObject
 
 namespace ThemeParksApi;
 
+[global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::ThemeParksApi.ScheduleEntryType>))]
 public enum ScheduleEntryType
 {
     OPERATING,

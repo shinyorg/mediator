@@ -12,7 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all"/>
         <PackageReference Include="DryIoc.Microsoft.DependencyInjection" Version="6.2.0"/>
         <PackageReference Include="GitHubActionsTestLogger" Version="2.4.1">
             <PrivateAssets>all</PrivateAssets>
@@ -22,12 +22,12 @@
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0"/>
         <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.6.0"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1"/>
         <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.6.0"/>
         <PackageReference Include="Npgsql" Version="9.0.2"/>
         <PackageReference Include="Shouldly" Version="4.3.0"/>
         <PackageReference Include="Verify.SourceGenerators" Version="2.5.0"/>
-        <PackageReference Include="Verify.Xunit" Version="31.0.0" />
+        <PackageReference Include="Verify.Xunit" Version="31.0.0"/>
         <PackageReference Include="xunit" Version="2.9.3"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -41,16 +41,16 @@
         <ProjectReference Include="..\..\src\Shiny.Mediator.Caching.MicrosoftMemoryCache\Shiny.Mediator.Caching.MicrosoftMemoryCache.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.DapperRequests\Shiny.Mediator.DapperRequests.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.FluentValidation\Shiny.Mediator.FluentValidation.csproj"/>
-        <ProjectReference Include="..\..\src\Shiny.Mediator.Reflector\Shiny.Mediator.Reflector.csproj" />
+        <ProjectReference Include="..\..\src\Shiny.Mediator.Reflector\Shiny.Mediator.Reflector.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj"/>
 
         <ProjectReference Include="..\..\src\Shiny.Mediator.Contracts.SourceGenerators\Shiny.Mediator.Contracts.SourceGenerators.csproj"
                           OutputItemType="Analyzer"/>
-        
+
         <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
                           OutputItemType="Analyzer"/>
-        
+
         <ProjectReference Include="..\..\src\Shiny.Mediator.AspNet.SourceGenerators\Shiny.Mediator.AspNet.SourceGenerators.csproj"
                           OutputItemType="Analyzer"/>
     </ItemGroup>
@@ -60,25 +60,30 @@
         <Content Include="Http\*.json" CopyToOutputDirectory="Always"/>
         <None Remove="testapi.json"/>
         <None Update="SourceGeneration\MediatorSourceGeneratorTests.Driver_Success#__MediatorHandlersRegistration.g.received.cs">
-          <ParentExtension>.cs</ParentExtension>
-          <ParentFile>MediatorSourceGeneratorTests</ParentFile>
-          <DependentUpon>MediatorSourceGeneratorTests.cs</DependentUpon>
+            <ParentExtension>.cs</ParentExtension>
+            <ParentFile>MediatorSourceGeneratorTests</ParentFile>
+            <DependentUpon>MediatorSourceGeneratorTests.cs</DependentUpon>
         </None>
-        <None Remove="SourceGeneration\serialization.json" />
+        <None Remove="SourceGeneration\serialization.json"/>
         <Content Include="SourceGeneration\serialization.json">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
-
-    <!--
     <ItemGroup>
-        <MediatorHttp Include="This" 
-                      Uri="https://localhost:7192/swagger/v1/swagger.json" 
-                      ContractPostfix="HttpRequest" 
-                      Namespace="Http.TheActual" 
-                      Visible="false" />
+        <MediatorHttp Include="OpenApiRemote"
+                      Uri="https://api.themeparks.wiki/docs/v1.yaml"
+                      Namespace="ThemeParksApi"
+                      ContractPostfix="HttpRequest"
+                      GenerateJsonConverters="false"
+                      Visible="false"/>
+
+        <MediatorHttp Include="OpenApiRemoteGenerated"
+                      Uri="https://api.themeparks.wiki/docs/v1.yaml"
+                      Namespace="ThemeParksApiGenerated"
+                      ContractPostfix="HttpRequest"
+                      GenerateJsonConverters="true"
+                      Visible="false"/>
     </ItemGroup>
-    -->
 
     <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"/>
 </Project>

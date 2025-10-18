@@ -273,22 +273,43 @@ public class OpenApiContractGenerator(
 
     void GenerateEnum(OpenApiSchema schema, string enumName)
     {
-        // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/customize-properties?pivots=dotnet-8-0
-        //[JsonConverter(typeof(JsonStringEnumConverter<TYPE>))]        
         output("ENUM COMPONENT GENERATING - " + enumName, DiagnosticSeverity.Info);
-
+        
+        // Check if this is a string-based enum
+        var isStringEnum = schema.Enum.OfType<OpenApiString>().Any();
+        
         var sb = new StringBuilder();
+        
+        // Add JsonConverter attribute for string-based enums
+        if (isStringEnum)
+        {
+            sb.AppendLine($"[global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::{itemConfig.Namespace}.{enumName}>))]");
+        }
+        
         sb
             //.AppendLine(Constants.GeneratedCodeAttributeString)
             .AppendLine($"{this.accessorType} enum {enumName}")
             .AppendLine("{");
         
-        foreach (var ev in schema.Enum.OfType<OpenApiString>())
+        if (isStringEnum)
         {
-            // TODO: pascal case the value - need custom serialization fix though
-            output("ENUM VALUE: " + ev.Value, DiagnosticSeverity.Info);
-            sb.AppendLine($"    {ev.Value},");
+            foreach (var ev in schema.Enum.OfType<OpenApiString>())
+            {
+                // TODO: pascal case the value - need custom serialization fix though
+                output("ENUM VALUE: " + ev.Value, DiagnosticSeverity.Info);
+                sb.AppendLine($"    {ev.Value},");
+            }
         }
+        else
+        {
+            // Handle numeric enums
+            foreach (var ev in schema.Enum.OfType<OpenApiInteger>())
+            {
+                output("ENUM VALUE: " + ev.Value, DiagnosticSeverity.Info);
+                sb.AppendLine($"    Value{ev.Value} = {ev.Value},");
+            }
+        }
+        
         sb.AppendLine("}");
         output("DONE ENUM COMPONENT GENERATING - " + enumName, DiagnosticSeverity.Info);
         

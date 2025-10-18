@@ -1,0 +1,461 @@
+﻿{
+  Id: Guid_1,
+  Name: Canada's Wonderland,
+  EntityType: PARK,
+  Timezone: America/Toronto,
+  LiveData: [
+    {
+      Id: Guid_2,
+      Name: Yukon Striker,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_1
+    },
+    {
+      Id: Guid_3,
+      Name: Woodstock Whirlybirds,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_2
+    },
+    {
+      Id: Guid_4,
+      Name: Jumpin' Jet,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_3
+    },
+    {
+      Id: Guid_5,
+      Name: Jokey's Jalopies,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_3
+    },
+    {
+      Id: Guid_6,
+      Name: Speed City Raceway,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_4
+    },
+    {
+      Id: Guid_7,
+      Name: SlingShot,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_5
+    },
+    {
+      Id: Guid_8,
+      Name: Dragon Fyre,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_6
+    },
+    {
+      Id: Guid_9,
+      Name: Spinovator,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_4
+    },
+    {
+      Id: Guid_10,
+      Name: Swan Lake,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_7
+    },
+    {
+      Id: Guid_11,
+      Name: Frequent Flyers,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_8
+    },
+    {
+      Id: Guid_12,
+      Name: Swing Time,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_9
+    },
+    {
+      Id: Guid_13,
+      Name: Flying Eagles,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_10
+    },
+    {
+      Id: Guid_14,
+      Name: Silver Streak,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_11
+    },
+    {
+      Id: Guid_15,
+      Name: Krachenwagen,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_12
+    },
+    {
+      Id: Guid_16,
+      Name: Treetop Adventure,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_13
+    },
+    {
+      Id: Guid_17,
+      Name: Sugar Shack,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_7
+    },
+    {
+      Id: Guid_18,
+      Name: Maple Park Tree House,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_14
+    },
+    {
+      Id: Guid_19,
+      Name: Skyhawk,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_15
+    },
+    {
+      Id: Guid_20,
+      Name: Sally's Love Buggies,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_16
+    },
+    {
+      Id: Guid_21,
+      Name: WindSeeker,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_1
+    },
+    {
+      Id: Guid_22,
+      Name: Snoopy's Racing Railway,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_17
+    },
+    {
+      Id: Guid_23,
+      Name: Wonder Mountain's Guardian,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_18
+    },
+    {
+      Id: Guid_24,
+      Name: Lucy's Tugboat,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_10
+    },
+    {
+      Id: Guid_25,
+      Name: Blast Off!,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_19
+    },
+    {
+      Id: Guid_26,
+      Name: KidZville Station,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_20
+    },
+    {
+      Id: Guid_27,
+      Name: Snoopy's Revolution,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_10
+    },
+    {
+      Id: Guid_28,
+      Name: Character Carrousel,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_21
+    },
+    {
+      Id: Guid_29,
+      Name: Shockwave,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_11
+    },
+    {
+      Id: Guid_30,
+      Name: The Pumpkin Patch,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_10
+    },
+    {
+      Id: Guid_31,
+      Name: The Bat,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_22
+    },
+    {
+      Id: Guid_32,
+      Name: Soaring Timbers,
+      EntityType: ATTRACTION,
+      LastUpdated: DateTimeOffset_23,
+      Queue: {
+        Standby: {
+          WaitTime: 15.0
+        },
+        PaidStandby: {
+          WaitTime: 4.0
+        }
+      }
+    },
+    {
+      Id: Guid_33,
+      Name: Thunder Run,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_24
+    },
+    {
+      Id: Guid_34,
+      Name: Flying Canoes,
+      EntityType: ATTRACTION,
+      LastUpdated: DateTimeOffset_25,
+      Queue: {
+        Standby: {
+          WaitTime: 10.0
+        }
+      }
+    },
+    {
+      Id: Guid_35,
+      Name: Beagle Brigade Airfield,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_21
+    },
+    {
+      Id: Guid_36,
+      Name: PEANUTS 500,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_9
+    },
+    {
+      Id: Guid_37,
+      Name: Snoopy vs. Red Baron,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_9
+    },
+    {
+      Id: Guid_38,
+      Name: Klockwerks,
+      EntityType: ATTRACTION,
+      LastUpdated: DateTimeOffset_26,
+      Queue: {
+        Standby: {
+          WaitTime: 15.0
+        },
+        PaidStandby: {
+          WaitTime: 5.0
+        }
+      }
+    },
+    {
+      Id: Guid_39,
+      Name: Taxi Jam,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_9
+    },
+    {
+      Id: Guid_40,
+      Name: Snoopy's Space Race,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_9
+    },
+    {
+      Id: Guid_41,
+      Name: Swing of the Century,
+      EntityType: ATTRACTION,
+      LastUpdated: DateTimeOffset_27,
+      Queue: {
+        Standby: {
+          WaitTime: 10.0
+        }
+      }
+    },
+    {
+      Id: Guid_42,
+      Name: Viking's Rage,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_9
+    },
+    {
+      Id: Guid_43,
+      Name: Ghoster Coaster,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_28
+    },
+    {
+      Id: Guid_44,
+      Name: Lumberjack,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_28
+    },
+    {
+      Id: Guid_45,
+      Name: Psyclone,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_28
+    },
+    {
+      Id: Guid_46,
+      Name: Wilde Knight Mares,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_2
+    },
+    {
+      Id: Guid_47,
+      Name: Wilde Beast,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_1
+    },
+    {
+      Id: Guid_48,
+      Name: Vortex,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_1
+    },
+    {
+      Id: Guid_49,
+      Name: AlpenFury,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_28
+    },
+    {
+      Id: Guid_50,
+      Name: Flight Deck,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_28
+    },
+    {
+      Id: Guid_51,
+      Name: The Fly,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_28
+    },
+    {
+      Id: Guid_52,
+      Name: Antique Carrousel,
+      EntityType: ATTRACTION,
+      LastUpdated: DateTimeOffset_27,
+      Queue: {
+        Standby: {
+          WaitTime: 5.0
+        }
+      }
+    },
+    {
+      Id: Guid_53,
+      Name: Drop Tower,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_28
+    },
+    {
+      Id: Guid_54,
+      Name: Riptide,
+      EntityType: ATTRACTION,
+      LastUpdated: DateTimeOffset_29,
+      Queue: {
+        Standby: {
+          WaitTime: 10.0
+        },
+        PaidStandby: {
+          WaitTime: 5.0
+        }
+      }
+    },
+    {
+      Id: Guid_55,
+      Name: Boo Blasters on Boo Hill,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_28
+    },
+    {
+      Id: Guid_56,
+      Name: Sledge Hammer,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_15
+    },
+    {
+      Id: Guid_57,
+      Name: Mighty Canadian Minebuster,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_28
+    },
+    {
+      Id: Guid_58,
+      Name: Backlot Stunt Coaster,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_28
+    },
+    {
+      Id: Guid_59,
+      Name: Tundra Twister,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_15
+    },
+    {
+      Id: Guid_60,
+      Name: Leviathan,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_28
+    },
+    {
+      Id: Guid_61,
+      Name: Behemoth,
+      EntityType: ATTRACTION,
+      Status: CLOSED,
+      LastUpdated: DateTimeOffset_28
+    }
+  ]
+}

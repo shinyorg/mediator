@@ -377,7 +377,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         var cleanTypeName = typeName.Replace("global::", "").Replace("?", "");
         
         // Check if it's an enum type
-        if (typeSymbol != null && typeSymbol.TypeKind == TypeKind.Enum)
+        if (typeSymbol is { TypeKind: TypeKind.Enum })
         {
             // Check if the enum has a JsonConverter attribute
             var hasJsonConverter = typeSymbol.GetAttributes()

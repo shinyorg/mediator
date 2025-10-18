@@ -41,6 +41,7 @@ public partial class Ad
 
 namespace TestApi;
 
+[global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.AdVisualType>))]
 public enum AdVisualType
 {
     Lottie,
