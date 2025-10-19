@@ -350,7 +350,7 @@ public class CreateUserCommandHandler : ICommandHandler<CreateUserCommand>
         var result = driver.GetRunResult();
         result.Diagnostics.ShouldBeEmpty();
         result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        // Should generate attributes and extensions, but NO executors
+        // Should generate attributes and registry, but NO executors
         result.GeneratedTrees.Length.ShouldBe(2);
         return Verify(result);
     }
@@ -380,7 +380,7 @@ public class UserCreatedEventHandler : IEventHandler<UserCreatedEvent>
         var result = driver.GetRunResult();
         result.Diagnostics.ShouldBeEmpty();
         result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        // Should generate attributes and extensions, but NO executors
+        // Should generate attributes and registry, but NO executors
         result.GeneratedTrees.Length.ShouldBe(2);
         return Verify(result);
     }
@@ -432,7 +432,7 @@ public class DataUpdatedEventHandler : IEventHandler<DataUpdatedEvent>
         var result = driver.GetRunResult();
         result.Diagnostics.ShouldBeEmpty();
         result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        // Should generate attributes, request executor, and extensions (no stream executor)
+        // Should generate attributes, request executor, and registry (no stream executor)
         result.GeneratedTrees.Length.ShouldBe(3);
         return Verify(result);
     }
@@ -937,40 +937,6 @@ public class TripleHandler : IRequestHandler<Request1, string>,
     #region MSBuild Variable Tests
 
     [Fact]
-    public Task CustomRegistrationClassName_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp;
-
-public record MyRequest(string Data) : IRequest<MyResponse>;
-public record MyResponse(string Result);
-
-[MediatorSingleton]
-public class MyHandler : IRequestHandler<MyRequest, MyResponse>
-{
-    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new MyResponse(request.Data));
-    }
-}
-", registrationClassName: "MyCustomExtensions");
-        
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        
-        // Verify the custom registration class name is used
-        var extensionFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Extensions.g.cs"));
-        extensionFile.ShouldNotBeNull();
-        extensionFile.ToString().ShouldContain("public static class MyCustomExtensions");
-        
-        return Verify(result);
-    }
-
-    [Fact]
     public Task CustomRequestExecutorClassName_GeneratesCorrectly()
     {
         var driver = BuildDriver(@"
@@ -1003,10 +969,10 @@ public class MyHandler : IRequestHandler<MyRequest, MyResponse>
         executorFile.ShouldNotBeNull();
         executorFile.ToString().ShouldContain("internal class MyCustomRequestExecutor");
         
-        // Verify it's registered with the custom name
-        var extensionFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Extensions.g.cs"));
-        extensionFile.ShouldNotBeNull();
-        extensionFile.ToString().ShouldContain("global::MyApp.MyCustomRequestExecutor");
+        // Verify it's registered with the custom name in the registry
+        var registryFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Registry.g.cs"));
+        registryFile.ShouldNotBeNull();
+        registryFile.ToString().ShouldContain("global::MyApp.MyCustomRequestExecutor");
         
         return Verify(result);
     }
@@ -1049,16 +1015,16 @@ public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
         streamExecutorFile.ShouldNotBeNull();
         streamExecutorFile.ToString().ShouldContain("internal class MyCustomStreamExecutor");
         
-        // Verify it's registered with the custom name
-        var extensionFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Extensions.g.cs"));
-        extensionFile.ShouldNotBeNull();
-        extensionFile.ToString().ShouldContain("global::MyApp.MyCustomStreamExecutor");
+        // Verify it's registered with the custom name in the registry
+        var registryFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Registry.g.cs"));
+        registryFile.ShouldNotBeNull();
+        registryFile.ToString().ShouldContain("global::MyApp.MyCustomStreamExecutor");
         
         return Verify(result);
     }
 
     [Fact]
-    public Task AllThreeCustomClassNames_GeneratesCorrectly()
+    public Task BothCustomExecutorClassNames_GeneratesCorrectly()
     {
         var driver = BuildDriver(@"
 using Shiny.Mediator;
@@ -1097,20 +1063,21 @@ public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
 }
 ", 
             rootNamespace: "MyApp",
-            registrationClassName: "MyCustomExtensions",
             requestExecutorClassName: "MyCustomRequestExecutor",
             streamRequestExecutorClassName: "MyCustomStreamExecutor");
         
         var result = driver.GetRunResult();
         result.Diagnostics.ShouldBeEmpty();
         
-        // Verify all three custom class names are used
-        var extensionFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Extensions.g.cs"));
-        extensionFile.ShouldNotBeNull();
-        var extensionCode = extensionFile.ToString();
-        extensionCode.ShouldContain("public static class MyCustomExtensions");
-        extensionCode.ShouldContain("global::MyApp.MyCustomRequestExecutor");
-        extensionCode.ShouldContain("global::MyApp.MyCustomStreamExecutor");
+        // Verify both custom class names are used
+        var registryFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Registry.g.cs"));
+        registryFile.ShouldNotBeNull();
+        var registryCode = registryFile.ToString();
+        registryCode.ShouldContain("internal static class __ShinyMediatorRegistry");
+        registryCode.ShouldContain("[global::System.Runtime.CompilerServices.ModuleInitializer]");
+        registryCode.ShouldContain("global::Shiny.Mediator.Infrastructure.MediatorRegistry.RegisterCallback");
+        registryCode.ShouldContain("global::MyApp.MyCustomRequestExecutor");
+        registryCode.ShouldContain("global::MyApp.MyCustomStreamExecutor");
         
         var executorFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_RequestExecutor.g.cs"));
         executorFile.ShouldNotBeNull();
@@ -1146,7 +1113,6 @@ public class MyHandler : IRequestHandler<MyRequest, MyResponse>
 }
 ", 
             rootNamespace: "MyApp",
-            registrationClassName: "",  // Empty string should use default
             requestExecutorClassName: "",  // Empty string should use default
             streamRequestExecutorClassName: "");  // Empty string should use default
         
@@ -1154,11 +1120,11 @@ public class MyHandler : IRequestHandler<MyRequest, MyResponse>
         result.Diagnostics.ShouldBeEmpty();
         
         // Verify default names are used when empty strings are provided
-        var extensionFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Extensions.g.cs"));
-        extensionFile.ShouldNotBeNull();
-        var extensionCode = extensionFile.ToString();
-        extensionCode.ShouldContain("public static class __ShinyMediatorSourceGenExtensions");  // Default registration class name
-        extensionCode.ShouldContain("global::MyApp.MyAppRequestExecutor");  // Default request executor
+        var registryFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Registry.g.cs"));
+        registryFile.ShouldNotBeNull();
+        var registryCode = registryFile.ToString();
+        registryCode.ShouldContain("internal static class __ShinyMediatorRegistry");  // Always uses fixed name
+        registryCode.ShouldContain("global::MyApp.MyAppRequestExecutor");  // Default request executor
         
         var executorFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_RequestExecutor.g.cs"));
         executorFile.ShouldNotBeNull();
@@ -1205,7 +1171,6 @@ public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
 }
 ", 
             rootNamespace: "MyCompany.MyProduct.Features",
-            registrationClassName: "MediatorServiceExtensions",
             requestExecutorClassName: "CustomRequestExec",
             streamRequestExecutorClassName: "CustomStreamExec");
         
@@ -1213,13 +1178,54 @@ public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
         result.Diagnostics.ShouldBeEmpty();
         
         // Verify custom names work with different namespace
-        var extensionFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Extensions.g.cs"));
-        extensionFile.ShouldNotBeNull();
-        var extensionCode = extensionFile.ToString();
-        extensionCode.ShouldContain("namespace MyCompany.MyProduct.Features;");
-        extensionCode.ShouldContain("public static class MediatorServiceExtensions");
-        extensionCode.ShouldContain("global::MyCompany.MyProduct.Features.CustomRequestExec");
-        extensionCode.ShouldContain("global::MyCompany.MyProduct.Features.CustomStreamExec");
+        var registryFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Registry.g.cs"));
+        registryFile.ShouldNotBeNull();
+        var registryCode = registryFile.ToString();
+        registryCode.ShouldContain("internal static class __ShinyMediatorRegistry");
+        registryCode.ShouldContain("[global::System.Runtime.CompilerServices.ModuleInitializer]");
+        registryCode.ShouldContain("global::MyCompany.MyProduct.Features.CustomRequestExec");
+        registryCode.ShouldContain("global::MyCompany.MyProduct.Features.CustomStreamExec");
+        
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task ModuleInitializer_GeneratesCorrectStructure()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp;
+
+public record MyRequest(string Data) : IRequest<MyResponse>;
+public record MyResponse(string Result);
+
+[MediatorSingleton]
+public class MyHandler : IRequestHandler<MyRequest, MyResponse>
+{
+    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new MyResponse(request.Data));
+    }
+}
+", rootNamespace: "MyApp");
+        
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        
+        // Verify module initializer structure
+        var registryFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Registry.g.cs"));
+        registryFile.ShouldNotBeNull();
+        var registryCode = registryFile.ToString();
+        
+        // Check for module initializer attributes and structure
+        registryCode.ShouldContain("internal static class __ShinyMediatorRegistry");
+        registryCode.ShouldContain("[global::System.Runtime.CompilerServices.ModuleInitializer]");
+        registryCode.ShouldContain("public static void Run()");
+        registryCode.ShouldContain("global::Shiny.Mediator.Infrastructure.MediatorRegistry.RegisterCallback");
+        registryCode.ShouldContain("builder.Services.AddSingletonAsImplementedInterfaces<global::MyApp.MyHandler>();");
         
         return Verify(result);
     }
@@ -1229,7 +1235,6 @@ public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
     static GeneratorDriver BuildDriver(
         string sourceCode, 
         string? rootNamespace = "TestAssembly",
-        string? registrationClassName = null,
         string? requestExecutorClassName = null,
         string? streamRequestExecutorClassName = null)
     {
@@ -1259,9 +1264,6 @@ public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
         if (rootNamespace != null)
             buildProperties["build_property.RootNamespace"] = rootNamespace;
             
-        if (registrationClassName != null)
-            buildProperties["build_property.ShinyRegistrationClassName"] = registrationClassName;
-            
         if (requestExecutorClassName != null)
             buildProperties["build_property.ShinyRequestExecutorClassName"] = requestExecutorClassName;
             
@@ -1277,3 +1279,4 @@ public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
         return driver.RunGenerators(compilation);
     }
 }
+

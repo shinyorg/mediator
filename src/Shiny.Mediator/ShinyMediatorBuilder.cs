@@ -11,6 +11,13 @@ public sealed class ShinyMediatorBuilder(IServiceCollection services)
     public IServiceCollection Services => services;
 
 
+    public ShinyMediatorBuilder AddRegistry()
+    {
+        // TODO: should I clear registrations after to prevent double registration if method is recalledrecalling
+        MediatorRegistry.RunCallbacks(this);
+        return this;
+    }
+
     public ShinyMediatorBuilder SetContractKeyProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>() where TProvider : class, IContractKeyProvider
     {
         this.Services.AddSingleton<IContractKeyProvider, TProvider>();

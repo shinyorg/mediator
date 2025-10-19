@@ -50,6 +50,7 @@ public static class MauiProgram
         
         // builder.Services.AddSingleton<IRequestExecutor, AotRequestExecutor>();
         builder.AddShinyMediator(x => x
+            .AddRegistry()
             .UseMaui()
             .UseBlazor()
             .PreventEventExceptions()
@@ -70,7 +71,6 @@ public static class MauiProgram
             //     y.ExpirationScanFrequency = TimeSpan.FromSeconds(5);
             // })
         );
-        builder.Services.AddDiscoveredMediatorHandlersFromSample();
         
         builder.Services.AddSingleton<AppSqliteConnection>();
         builder.Services.AddMauiBlazorWebView();

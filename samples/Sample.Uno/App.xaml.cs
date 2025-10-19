@@ -61,9 +61,9 @@ public partial class App : Application
                 )
                 .UseNavigation(RegisterRoutes)
                 .AddShinyMediator(x => x
+                    .AddRegistry()
                     .AddUnoPersistentCache()
                 )
-                .ConfigureServices(s => s.AddDiscoveredMediatorHandlersFromSampleUno())
             );
         
         MainWindow = builder.Window;
