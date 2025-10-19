@@ -140,7 +140,7 @@ public class AttributeMarkerSourceGenerator : IIncrementalGenerator
                 new DiagnosticDescriptor(
                     id: "SHINY001",
                     title: "Handler must be partial",
-                    messageFormat: "Handler class '{0}' must be declared as partial to use MediatorMiddlewareAttribute on methods",
+                    messageFormat: "Handler class '{0}' must be declared as partial to use middleware attribute marker on methods",
                     category: "ShinyMediator",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true),
