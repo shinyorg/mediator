@@ -34,6 +34,7 @@
     <Project Path="src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests\Shiny.Mediator.Benchmarks\Shiny.Mediator.Benchmarks.csproj" Type="Classic C#" />
     <Project Path="tests\Shiny.Mediator.Maui.Tests\Shiny.Mediator.Maui.Tests.csproj" Type="Classic C#" />
     <Project Path="tests\Shiny.Mediator.Tests\Shiny.Mediator.Tests.csproj" />
   </Folder>
