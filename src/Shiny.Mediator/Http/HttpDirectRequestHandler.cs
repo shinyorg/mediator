@@ -10,11 +10,11 @@ namespace Shiny.Mediator.Http;
 public class HttpDirectRequestHandler(
     ILogger<HttpDirectRequestHandler> logger,
     ISerializerService serializer,
+    IHttpClientFactory httpClientFactory,
     IEnumerable<IHttpRequestDecorator> decorators,
     IConfiguration? configuration = null
 ) : IRequestHandler<HttpDirectRequest, object?>
 {
-    static readonly HttpClient httpClient = new();
     
     
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
@@ -40,6 +40,7 @@ public class HttpDirectRequestHandler(
         if (request.Timeout != null)
             cts.CancelAfter(request.Timeout.Value);
 
+        var httpClient = httpClientFactory.CreateClient();
         var httpResponse = await httpClient
             .SendAsync(httpRequest, cts.Token)
             .ConfigureAwait(false);
@@ -160,7 +161,6 @@ public class HttpDirectRequestHandler(
 
         return null;
     }
-    
     
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue<int> is safe for trimming")]

@@ -20,14 +20,13 @@ public class CachingRequestMiddleware<TRequest, TResult>(
         CancellationToken cancellationToken
     )
     {
-        var cacheKey = contractKeyProvider.GetContractKey(context.Message!);
-        // TODO: ensure wait if key is already being requested, if item was just put in cache, don't force a flush even if one is requested?
-        
         var config = this.GetItemConfig(context, (TRequest)context.Message);
         if (config == null)
             return await next().ConfigureAwait(false);
 
+        var cacheKey = contractKeyProvider.GetContractKey(context.Message!);
         TResult result = default!;
+        
         if (context.HasForceCacheRefresh())
         {
             logger.LogDebug("Cache Forced Refresh - {Request}", context.Message);

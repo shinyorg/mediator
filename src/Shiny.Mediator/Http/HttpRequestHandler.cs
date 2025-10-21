@@ -13,12 +13,10 @@ public class HttpRequestHandler<TRequest, TResult>(
     ILogger<HttpRequestHandler<TRequest, TResult>> logger,
     IConfiguration configuration,
     ISerializerService serializer,
+    IHttpClientFactory httpClientFactory,
     IEnumerable<IHttpRequestDecorator> decorators
 ) : IRequestHandler<TRequest, TResult> where TRequest : IHttpRequest<TResult>
 {
-    readonly HttpClient httpClient = new();
-    
-    
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     public async Task<TResult> Handle(TRequest request, IMediatorContext context, CancellationToken cancellationToken)
     {
@@ -55,7 +53,8 @@ public class HttpRequestHandler<TRequest, TResult>(
         TResult finalResult = default!;
         try
         {
-            var response = await this.httpClient
+            var httpClient = httpClientFactory.CreateClient();
+            var response = await httpClient
                 .SendAsync(httpRequest, cts.Token)
                 .ConfigureAwait(false);
 
