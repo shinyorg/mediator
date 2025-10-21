@@ -1,7 +1,7 @@
 namespace Shiny.Mediator.Http;
 
 
-public class HttpDirectRequest : IRequest<object?>, IRequestKey
+public class HttpDirectRequest : IRequest<object?>, IContractKey
 {
     /// <summary>
     /// This value either needs to be in the configuration Mediator:Http:Direct:{Route}:Url

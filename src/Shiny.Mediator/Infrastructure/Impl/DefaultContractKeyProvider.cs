@@ -9,7 +9,7 @@ public class DefaultContractKeyProvider(ILogger<DefaultContractKeyProvider> logg
 {
     public string GetContractKey(object contract)
     {
-        if (contract is IRequestKey key)
+        if (contract is IContractKey key)
         {
             var requestKey = key.GetKey();
             logger?.LogDebug("Using request key {RequestKey} for contract {ContractType}", requestKey, contract.GetType().FullName);

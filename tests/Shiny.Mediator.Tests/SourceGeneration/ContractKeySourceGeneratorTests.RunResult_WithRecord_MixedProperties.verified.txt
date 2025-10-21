@@ -4,7 +4,7 @@
     {
       HintName: Order_ContractKey.g.cs,
       Source:
-partial record Order : global::Shiny.Mediator.IRequestKey
+partial record Order : global::Shiny.Mediator.IContractKey
 {
     public string GetKey()
     {

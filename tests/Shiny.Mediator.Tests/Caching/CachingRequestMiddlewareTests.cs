@@ -86,19 +86,19 @@ public class CachingRequestMiddlewareTests(ITestOutputHelper output)
     (
         IMediatorContext Context,
         MockCacheService Cache, 
-        ILogger<CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>> Logger, 
-        CachingRequestMiddleware<CachingRequestMiddlewareRequest, string> Middleware
+        ILogger<CachingRequestMiddleware<CachingContractMiddlewareContract, string>> Logger, 
+        CachingRequestMiddleware<CachingContractMiddlewareContract, string> Middleware
     ) MiddlewareSetup(string requestArg = "NotFromCache")
     {
         var context = new MockMediatorContext
         {
-            Message = new CachingRequestMiddlewareRequest(requestArg),
+            Message = new CachingContractMiddlewareContract(requestArg),
             MessageHandler = new CachingRequestMiddlewareRequestHandler()
         };
         var cache = new MockCacheService(timeProvider);
         var contractKeyProvider = new DefaultContractKeyProvider(null);
-        var logger = TestHelpers.CreateLogger<CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>>(output);
-        var middleware = new CachingRequestMiddleware<CachingRequestMiddlewareRequest, string>(logger, this.config, cache, contractKeyProvider);
+        var logger = TestHelpers.CreateLogger<CachingRequestMiddleware<CachingContractMiddlewareContract, string>>(output);
+        var middleware = new CachingRequestMiddleware<CachingContractMiddlewareContract, string>(logger, this.config, cache, contractKeyProvider);
         
         return (context, cache, logger, middleware);
     }
@@ -109,14 +109,14 @@ public class CachingRequestMiddlewareTests(ITestOutputHelper output)
     {
         var app = this.StandardCacheMediator(x => x.AddSingletonAsImplementedInterfaces<AttributedTestHandler>());
 
-        var result = await app.Mediator.Request(new AttributedTestRequest("Test1"));
+        var result = await app.Mediator.Request(new AttributedTestContract("Test1"));
         result.Result.ShouldBe("Test1");
             
         var cache = result.Context.Cache();
         cache.ShouldNotBeNull();
         cache.IsHit.ShouldBeFalse("Cache should not be hit");
         
-        result = await app.Mediator.Request(new AttributedTestRequest("Test2"));
+        result = await app.Mediator.Request(new AttributedTestContract("Test2"));
         result.Result.ShouldBe("Test1"); // still test one
         
         cache = result.Context.Cache();
@@ -132,14 +132,14 @@ public class CachingRequestMiddlewareTests(ITestOutputHelper output)
     {
         var app = this.StandardCacheMediator(x => x.AddSingletonAsImplementedInterfaces<AttributedTestHandler>());
 
-        var result = await app.Mediator.Request(new AttributedTestRequest("Test1"));
+        var result = await app.Mediator.Request(new AttributedTestContract("Test1"));
         result.Result.ShouldBe("Test1");
             
         var cache = result.Context.Cache();
         cache.ShouldNotBeNull();
         cache.IsHit.ShouldBeFalse("Cache should not be hit");
         
-        result = await app.Mediator.Request(new AttributedTestRequest("Test2"), CancellationToken.None, ctx => ctx.ForceCacheRefresh());
+        result = await app.Mediator.Request(new AttributedTestContract("Test2"), CancellationToken.None, ctx => ctx.ForceCacheRefresh());
         result.Result.ShouldBe("Test2"); // still test one
         
         cache = result.Context.Cache();
@@ -163,28 +163,28 @@ public class CachingRequestMiddlewareTests(ITestOutputHelper output)
     }
 }
 
-public record CachingRequestMiddlewareRequest(string Value) : IRequest<string>, IRequestKey
+public record CachingContractMiddlewareContract(string Value) : IRequest<string>, IContractKey
 {
     public string GetKey() => "Test";
 };
 
-public class CachingRequestMiddlewareRequestHandler : IRequestHandler<CachingRequestMiddlewareRequest, string>
+public class CachingRequestMiddlewareRequestHandler : IRequestHandler<CachingContractMiddlewareContract, string>
 {
-    public Task<string> Handle(CachingRequestMiddlewareRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    public Task<string> Handle(CachingContractMiddlewareContract contract, IMediatorContext context, CancellationToken cancellationToken)
     {
         return Task.FromResult("FromHandler");
     }
 }
 
-public record AttributedTestRequest(string Value) : IRequest<string>, IRequestKey
+public record AttributedTestContract(string Value) : IRequest<string>, IContractKey
 {
     public string GetKey() => "Test";
 };
-public partial class AttributedTestHandler : IRequestHandler<AttributedTestRequest, string>
+public partial class AttributedTestHandler : IRequestHandler<AttributedTestContract, string>
 {
     [Cache(SlidingExpirationSeconds = 99)]
-    public Task<string> Handle(AttributedTestRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    public Task<string> Handle(AttributedTestContract contract, IMediatorContext context, CancellationToken cancellationToken)
     {
-        return Task.FromResult(request.Value);
+        return Task.FromResult(contract.Value);
     }
 }

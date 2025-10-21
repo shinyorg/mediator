@@ -5,7 +5,7 @@
       HintName: ComplexContract_ContractKey.g.cs,
       Source:
 namespace MyNamespace.SubNamespace;
-partial class ComplexContract : global::Shiny.Mediator.IRequestKey
+partial class ComplexContract : global::Shiny.Mediator.IContractKey
 {
     public string GetKey()
     {

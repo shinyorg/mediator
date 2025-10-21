@@ -4,7 +4,7 @@
     {
       HintName: EventContract_ContractKey.g.cs,
       Source:
-partial class EventContract : global::Shiny.Mediator.IRequestKey
+partial class EventContract : global::Shiny.Mediator.IContractKey
 {
     public string GetKey()
     {

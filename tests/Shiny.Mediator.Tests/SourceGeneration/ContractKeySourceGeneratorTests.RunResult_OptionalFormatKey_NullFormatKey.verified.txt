@@ -4,7 +4,7 @@
     {
       HintName: NullFormatRequest_ContractKey.g.cs,
       Source:
-partial class NullFormatRequest : global::Shiny.Mediator.IRequestKey
+partial class NullFormatRequest : global::Shiny.Mediator.IContractKey
 {
     public string GetKey()
     {

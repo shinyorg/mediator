@@ -4,7 +4,7 @@
     {
       HintName: EmptyFormatRequest_ContractKey.g.cs,
       Source:
-partial class EmptyFormatRequest : global::Shiny.Mediator.IRequestKey
+partial class EmptyFormatRequest : global::Shiny.Mediator.IContractKey
 {
     public string GetKey()
     {

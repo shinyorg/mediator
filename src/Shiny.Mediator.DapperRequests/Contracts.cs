@@ -6,7 +6,7 @@ namespace Shiny.Mediator;
 public record DapperRequest<TResult>(
     FormattableString Sql, 
     string? RequestKey = null
-) : IRequest<TResult>, IRequestKey 
+) : IRequest<TResult>, IContractKey 
 {
     public string GetKey()
     {
@@ -22,10 +22,10 @@ public record DapperQuery<TResult>(
     int? CommandTimeout = null,
     IDbTransaction? Transaction = null,
     CommandType? CommandType = null,
-    string? RequestKey = null
+    string? ContractKey = null
 ) : DapperRequest<IEnumerable<TResult>>(
     Sql,
-    RequestKey
+    ContractKey
 );
 
 public record DapperFirstQuery<TResult>(
@@ -33,10 +33,10 @@ public record DapperFirstQuery<TResult>(
     int? CommandTimeout = null,
     IDbTransaction? Transaction = null,
     CommandType? CommandType = null,
-    string? RequestKey = null
+    string? ContractKey = null
 ) : DapperRequest<TResult>(
     Sql,
-    RequestKey
+    ContractKey
 );
 
 public record DapperScalar(
@@ -44,8 +44,8 @@ public record DapperScalar(
     int? CommandTimeout = null,
     IDbTransaction? Transaction = null,
     CommandType? CommandType = null,
-    string? RequestKey = null
+    string? ContractKey = null
 ) : DapperRequest<object>(
     Sql,
-    RequestKey
+    ContractKey
 );

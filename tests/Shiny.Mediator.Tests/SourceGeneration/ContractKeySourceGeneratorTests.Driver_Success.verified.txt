@@ -4,7 +4,7 @@
     {
       HintName: MyClass_ContractKey.g.cs,
       Source:
-partial class MyClass : global::Shiny.Mediator.IRequestKey
+partial class MyClass : global::Shiny.Mediator.IContractKey
 {
     public string GetKey()
     {

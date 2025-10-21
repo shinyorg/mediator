@@ -12,7 +12,7 @@ namespace Shiny.Mediator.Contracts.SourceGenerators;
 public class ContractKeySourceGenerator : IIncrementalGenerator
 {
     const string AttributeName = "Shiny.Mediator.ContractKeyAttribute";
-    const string IRequestKeyInterface = "Shiny.Mediator.IRequestKey";
+    const string IContractKeyInterface = "Shiny.Mediator.IContractKey";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -123,7 +123,7 @@ public class ContractKeySourceGenerator : IIncrementalGenerator
                 {
                     sb.AppendLine($"namespace {ns};");
                 }
-                sb.AppendLine($"partial {typeKind} {className} : global::{IRequestKeyInterface}");
+                sb.AppendLine($"partial {typeKind} {className} : global::{IContractKeyInterface}");
                 sb.AppendLine("{");
                 sb.AppendLine("    public string GetKey()");
                 sb.AppendLine("    {");

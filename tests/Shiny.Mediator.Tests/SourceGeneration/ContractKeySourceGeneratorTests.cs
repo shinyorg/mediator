@@ -367,7 +367,7 @@ public partial class NullFormatRequest
         var references = new[]
         {
             MetadataReference.CreateFromFile(typeof(IMediator).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IRequestKey).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IContractKey).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Task).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(CancellationToken).Assembly.Location),

@@ -4,7 +4,7 @@
     {
       HintName: ComplexRequest_ContractKey.g.cs,
       Source:
-partial class ComplexRequest : global::Shiny.Mediator.IRequestKey
+partial class ComplexRequest : global::Shiny.Mediator.IContractKey
 {
     public string GetKey()
     {

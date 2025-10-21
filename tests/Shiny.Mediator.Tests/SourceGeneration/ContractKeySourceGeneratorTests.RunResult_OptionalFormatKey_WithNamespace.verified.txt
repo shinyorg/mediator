@@ -5,7 +5,7 @@
       HintName: OrderRequest_ContractKey.g.cs,
       Source:
 namespace MyCompany.Orders;
-partial class OrderRequest : global::Shiny.Mediator.IRequestKey
+partial class OrderRequest : global::Shiny.Mediator.IContractKey
 {
     public string GetKey()
     {
