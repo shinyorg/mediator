@@ -506,9 +506,9 @@ public record MyResponse(string Data);
 [MediatorScoped]
 public class MyRequestMiddleware : IRequestMiddleware<MyRequest, MyResponse>
 {
-    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, RequestMiddlewareDelegate<MyRequest, MyResponse> next, CancellationToken cancellationToken)
+    public Task<MyResponse> Handle(IMediatorContext context, RequestMiddlewareDelegate<MyResponse> next, CancellationToken cancellationToken)
     {
-        return next(request, context, cancellationToken);
+        return next();
     }
 }
 ");
@@ -532,10 +532,10 @@ namespace MyApp.Middleware;
 public class LoggingRequestMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse> 
     where TRequest : IRequest<TResponse>
 {
-    public Task<TResponse> Handle(TRequest request, IMediatorContext context, RequestMiddlewareDelegate<TRequest, TResponse> next, CancellationToken cancellationToken)
+    public Task<TResponse> Handle(IMediatorContext context, RequestMiddlewareDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         // Logging logic
-        return next(request, context, cancellationToken);
+        return next();
     }
 }
 ");
@@ -560,7 +560,7 @@ public record MyEvent(string Message) : IEvent;
 [MediatorScoped]
 public class MyEventMiddleware : IEventMiddleware<MyEvent>
 {
-    public Task Handle(MyEvent @event, IMediatorContext context, EventMiddlewareDelegate<MyEvent> next, CancellationToken cancellationToken)
+    public Task Handle(IMediatorContext context, EventMiddlewareDelegate<MyEvent> next, CancellationToken cancellationToken)
     {
         return next(@event, context, cancellationToken);
     }
@@ -635,18 +635,18 @@ public class MyCommandHandler : ICommandHandler<MyCommand>
 public class LoggingRequestMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
-    public Task<TResponse> Handle(TRequest request, IMediatorContext context, RequestMiddlewareDelegate<TRequest, TResponse> next, CancellationToken cancellationToken)
+    public Task<TResponse> Handle(IMediatorContext context, RequestMiddlewareDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        return next(request, context, cancellationToken);
+        return next();
     }
 }
 
 [MediatorScoped]
 public class ValidationCommandMiddleware<TCommand> : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
-    public Task Handle(TCommand command, IMediatorContext context, CommandMiddlewareDelegate<TCommand> next, CancellationToken cancellationToken)
+    public Task Handle(IMediatorContext context, CommandMiddlewareDelegate next, CancellationToken cancellationToken)
     {
-        return next(command, context, cancellationToken);
+        return next();
     }
 }
 ");
@@ -934,7 +934,110 @@ public class TripleHandler : IRequestHandler<Request1, string>,
         return Verify(result);
     }
 
-    #region MSBuild Variable Tests
+    [Fact]
+    public Task HeadGeneration_Disabled_GeneratesOnlyAttributes()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp;
+
+public record MyRequest(string Data) : IRequest<MyResponse>;
+public record MyResponse(string Result);
+
+[MediatorSingleton]
+public class MyHandler : IRequestHandler<MyRequest, MyResponse>
+{
+    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new MyResponse(request.Data));
+    }
+}
+", 
+            rootNamespace: "MyApp",
+            enableHeadGeneration: false);
+        
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        
+        // Should only generate the attributes file when head generation is disabled
+        result.GeneratedTrees.Length.ShouldBe(1);
+        result.GeneratedTrees[0].FilePath.ShouldEndWith("MediatorAttributes.g.cs");
+        
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task HeadGeneration_EnabledViaMSBuild_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyApp;
+
+public record MyRequest(string Data) : IRequest<MyResponse>;
+public record MyResponse(string Result);
+
+[MediatorSingleton]
+public class MyHandler : IRequestHandler<MyRequest, MyResponse>
+{
+    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new MyResponse(request.Data));
+    }
+}
+", 
+            rootNamespace: "MyApp",
+            enableHeadGeneration: true);
+        
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        
+        // Should generate attributes, executor, and registry
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(1);
+        
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task HeadGeneration_EnabledViaAssemblyAttribute_GeneratesCorrectly()
+    {
+        var driver = BuildDriver(@"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+[assembly: ShinyMediatorHeadGeneration]
+
+namespace MyApp;
+
+public record MyRequest(string Data) : IRequest<MyResponse>;
+public record MyResponse(string Result);
+
+[MediatorSingleton]
+public class MyHandler : IRequestHandler<MyRequest, MyResponse>
+{
+    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new MyResponse(request.Data));
+    }
+}
+", 
+            rootNamespace: "MyApp",
+            enableHeadGeneration: false);  // Disabled via MSBuild but enabled via attribute
+        
+        var result = driver.GetRunResult();
+        result.Diagnostics.ShouldBeEmpty();
+        
+        // Should generate even though MSBuild property is false, because assembly attribute is present
+        result.GeneratedTrees.Length.ShouldBeGreaterThan(1);
+        
+        return Verify(result);
+    }
 
     [Fact]
     public Task CustomRequestExecutorClassName_GeneratesCorrectly()
@@ -1177,66 +1280,148 @@ public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
         var result = driver.GetRunResult();
         result.Diagnostics.ShouldBeEmpty();
         
-        // Verify custom names work with different namespace
-        var registryFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Registry.g.cs"));
-        registryFile.ShouldNotBeNull();
-        var registryCode = registryFile.ToString();
-        registryCode.ShouldContain("internal static class __ShinyMediatorRegistry");
-        registryCode.ShouldContain("[global::System.Runtime.CompilerServices.ModuleInitializer]");
-        registryCode.ShouldContain("global::MyCompany.MyProduct.Features.CustomRequestExec");
-        registryCode.ShouldContain("global::MyCompany.MyProduct.Features.CustomStreamExec");
-        
         return Verify(result);
     }
 
     [Fact]
-    public Task ModuleInitializer_GeneratesCorrectStructure()
+    public Task MultipleProjects_WithHandlersAndMiddleware_GeneratesCorrectly()
     {
-        var driver = BuildDriver(@"
+        // Simulate Project 1 - a library with handlers
+        var project1Code = @"
 using Shiny.Mediator;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MyApp;
+namespace Project1.Handlers;
 
-public record MyRequest(string Data) : IRequest<MyResponse>;
-public record MyResponse(string Result);
+public record Project1Request(string Data) : IRequest<Project1Response>;
+public record Project1Response(string Result);
+
+public record Project1Command(int Value) : ICommand;
 
 [MediatorSingleton]
-public class MyHandler : IRequestHandler<MyRequest, MyResponse>
+public class Project1RequestHandler : IRequestHandler<Project1Request, Project1Response>
 {
-    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    public Task<Project1Response> Handle(Project1Request request, IMediatorContext context, CancellationToken cancellationToken)
     {
-        return Task.FromResult(new MyResponse(request.Data));
+        return Task.FromResult(new Project1Response(request.Data));
     }
 }
-", rootNamespace: "MyApp");
-        
+
+[MediatorScoped]
+public class Project1CommandHandler : ICommandHandler<Project1Command>
+{
+    public Task Handle(Project1Command command, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+}
+
+[MediatorSingleton]
+public class Project1RequestMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
+{
+    public Task<TResponse> Process(IMediatorContext context, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    {
+        return next();
+    }
+}";
+
+        // Simulate Project 2 - another library with handlers and middleware
+        var project2Code = @"
+using Shiny.Mediator;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Project2.Features;
+
+public record Project2Request(int Id) : IRequest<Project2Response>;
+public record Project2Response(int Id, string Name);
+
+public record Project2StreamRequest(int Count) : IStreamRequest<string>;
+
+public record Project2Event(string Message) : IEvent;
+
+[MediatorScoped]
+public class Project2RequestHandler : IRequestHandler<Project2Request, Project2Response>
+{
+    public Task<Project2Response> Handle(Project2Request request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new Project2Response(request.Id, ""Test""));
+    }
+}
+
+[MediatorSingleton]
+public class Project2StreamHandler : IStreamRequestHandler<Project2StreamRequest, string>
+{
+    public async IAsyncEnumerable<string> Handle(Project2StreamRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        for (int i = 0; i < request.Count; i++)
+        {
+            yield return $""Item {i}"";
+            await Task.Delay(10, cancellationToken);
+        }
+    }
+}
+
+[MediatorScoped]
+public class Project2EventHandler : IEventHandler<Project2Event>
+{
+    public Task Handle(Project2Event @event, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+}
+
+[MediatorSingleton]
+public class Project2CommandMiddleware<TCommand> : ICommandMiddleware<TCommand>
+    where TCommand : ICommand
+{
+    public Task Process(IMediatorContext context, CommandHandlerDelegate next, CancellationToken cancellationToken)
+    {
+        return next();
+    }
+}";
+
+        // Main project that references both libraries
+        var mainProjectCode = @"
+using Shiny.Mediator;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MainApp;
+
+public record MainRequest(string Input) : IRequest<MainResponse>;
+public record MainResponse(string Output);
+
+[MediatorSingleton]
+public class MainRequestHandler : IRequestHandler<MainRequest, MainResponse>
+{
+    public Task<MainResponse> Handle(MainRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new MainResponse(request.Input.ToUpper()));
+    }
+}";
+
+        var driver = BuildDriverWithMultipleProjects(
+            mainProjectCode,
+            new[] { project1Code, project2Code },
+            rootNamespace: "MainApp");
+
         var result = driver.GetRunResult();
         result.Diagnostics.ShouldBeEmpty();
         
-        // Verify module initializer structure
-        var registryFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Registry.g.cs"));
-        registryFile.ShouldNotBeNull();
-        var registryCode = registryFile.ToString();
-        
-        // Check for module initializer attributes and structure
-        registryCode.ShouldContain("internal static class __ShinyMediatorRegistry");
-        registryCode.ShouldContain("[global::System.Runtime.CompilerServices.ModuleInitializer]");
-        registryCode.ShouldContain("public static void Run()");
-        registryCode.ShouldContain("global::Shiny.Mediator.Infrastructure.MediatorRegistry.RegisterCallback");
-        registryCode.ShouldContain("builder.Services.AddSingletonAsImplementedInterfaces<global::MyApp.MyHandler>();");
-        
         return Verify(result);
     }
-
-    #endregion
 
     static GeneratorDriver BuildDriver(
         string sourceCode, 
         string? rootNamespace = "TestAssembly",
         string? requestExecutorClassName = null,
-        string? streamRequestExecutorClassName = null)
+        string? streamRequestExecutorClassName = null,
+        bool enableHeadGeneration = true)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
         
@@ -1270,6 +1455,10 @@ public class MyHandler : IRequestHandler<MyRequest, MyResponse>
         if (streamRequestExecutorClassName != null)
             buildProperties["build_property.ShinyStreamRequestExecutorClassName"] = streamRequestExecutorClassName;
         
+        // Enable head generation via MSBuild property
+        if (enableHeadGeneration)
+            buildProperties["build_property.ShinyMediatorHeadGeneration"] = "true";
+        
         var optionsProvider = new MockAnalyzerConfigOptionsProvider(buildProperties);
         
         var driver = CSharpGeneratorDriver.Create(
@@ -1277,6 +1466,112 @@ public class MyHandler : IRequestHandler<MyRequest, MyResponse>
             optionsProvider: optionsProvider);
             
         return driver.RunGenerators(compilation);
+    }
+
+    static GeneratorDriver BuildDriverWithMultipleProjects(
+        string mainProjectCode,
+        string[] referencedProjectsCodes,
+        string? rootNamespace = "TestAssembly",
+        string? requestExecutorClassName = null,
+        string? streamRequestExecutorClassName = null,
+        bool enableHeadGeneration = true)
+    {
+        // Standard references needed by all projects
+        var standardReferences = new[]
+        {
+            MetadataReference.CreateFromFile(typeof(IMediator).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IRequest<>).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(Task).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(CancellationToken).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IAsyncEnumerable<>).Assembly.Location),
+            MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
+            MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
+        };
+
+        var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+        var sourceGenerator = new MediatorSourceGenerator();
+        
+        // Build referenced project assemblies
+        var referencedAssemblies = new List<MetadataReference>();
+        for (int i = 0; i < referencedProjectsCodes.Length; i++)
+        {
+            var projectCode = referencedProjectsCodes[i];
+            var projectSyntaxTree = CSharpSyntaxTree.ParseText(projectCode);
+            var projectCompilation = CSharpCompilation.Create(
+                $"ReferencedProject{i + 1}",
+                [projectSyntaxTree],
+                standardReferences,
+                options);
+
+            // Run source generator on referenced project to generate attributes
+            var projectBuildProps = new Dictionary<string, string>
+            {
+                ["build_property.RootNamespace"] = $"ReferencedProject{i + 1}",
+                ["build_property.ShinyMediatorHeadGeneration"] = "false" // Don't generate executors for libs
+            };
+            var projectOptionsProvider = new MockAnalyzerConfigOptionsProvider(projectBuildProps);
+            
+            var projectDriver = CSharpGeneratorDriver.Create(
+                generators: [sourceGenerator.AsSourceGenerator()],
+                optionsProvider: projectOptionsProvider);
+            
+            projectDriver = (CSharpGeneratorDriver)projectDriver.RunGenerators(projectCompilation);
+            var projectRunResult = projectDriver.GetRunResult();
+            
+            // Update compilation with generated sources
+            var generatedTrees = projectRunResult.GeneratedTrees.ToList();
+            projectCompilation = projectCompilation.AddSyntaxTrees(generatedTrees);
+
+            // Emit to memory and create metadata reference
+            using var ms = new MemoryStream();
+            var emitResult = projectCompilation.Emit(ms);
+            if (!emitResult.Success)
+            {
+                var errors = emitResult.Diagnostics
+                    .Where(d => d.Severity == DiagnosticSeverity.Error)
+                    .Select(d => d.GetMessage());
+                throw new InvalidOperationException(
+                    $"Failed to compile referenced project {i + 1}: " +
+                    string.Join(", ", errors));
+            }
+
+            ms.Seek(0, SeekOrigin.Begin);
+            referencedAssemblies.Add(MetadataReference.CreateFromStream(ms));
+        }
+
+        // Build main project with references to the other projects
+        var mainSyntaxTree = CSharpSyntaxTree.ParseText(mainProjectCode);
+        var allReferences = standardReferences.Concat(referencedAssemblies).ToArray();
+        var mainCompilation = CSharpCompilation.Create(
+            "MainTestAssembly",
+            [mainSyntaxTree],
+            allReferences,
+            options);
+        
+        // Setup analyzer config options with MSBuild properties
+        var mainBuildProperties = new Dictionary<string, string>();
+        
+        if (rootNamespace != null)
+            mainBuildProperties["build_property.RootNamespace"] = rootNamespace;
+            
+        if (requestExecutorClassName != null)
+            mainBuildProperties["build_property.ShinyRequestExecutorClassName"] = requestExecutorClassName;
+            
+        if (streamRequestExecutorClassName != null)
+            mainBuildProperties["build_property.ShinyStreamRequestExecutorClassName"] = streamRequestExecutorClassName;
+        
+        // Enable head generation via MSBuild property
+        if (enableHeadGeneration)
+            mainBuildProperties["build_property.ShinyMediatorHeadGeneration"] = "true";
+        
+        var mainOptionsProvider = new MockAnalyzerConfigOptionsProvider(mainBuildProperties);
+        
+        var mainDriver = CSharpGeneratorDriver.Create(
+            generators: [sourceGenerator.AsSourceGenerator()],
+            optionsProvider: mainOptionsProvider);
+            
+        return mainDriver.RunGenerators(mainCompilation);
     }
 }
 

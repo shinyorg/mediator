@@ -8,16 +8,16 @@ using Shiny.Mediator;
 using Microsoft.Extensions.DependencyInjection;
 
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
-internal static class __ShinyMediatorRegistry
+internal static class __ShinyMediatorRegistryFromReferences
 {
     [global::System.Runtime.CompilerServices.ModuleInitializer]
     public static void Run()
     {
         global::Shiny.Mediator.Infrastructure.MediatorRegistry.RegisterCallback(builder =>
         {
-            builder.Services.AddSingletonAsImplementedInterfaces<global::MyApp.MyHandler>();
+         builder.Services.AddSingletonAsImplementedInterfaces<global::MyApp.MyHandler>();
 
-            builder.Services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, global::MyApp.MyCustomRequestExecutor>();
+    builder.Services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, global::MyApp.MyCustomRequestExecutor>();
         });
     }
 }

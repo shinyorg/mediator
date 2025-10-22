@@ -10,8 +10,9 @@ public class TestHttpRequestHandler<TRequest, TResult>(
     ILogger<HttpRequestHandler<TRequest, TResult>> logger,
     IConfiguration configuration, 
     ISerializerService serializer,
+    IHttpClientFactory httpClientFactory,
     IEnumerable<IHttpRequestDecorator> decorators
-) : HttpRequestHandler<TRequest, TResult>(logger, configuration, serializer, decorators) 
+) : HttpRequestHandler<TRequest, TResult>(logger, configuration, serializer, httpClientFactory, decorators) 
     where TRequest : IHttpRequest<TResult>
 {
     public HttpRequestMessage GetMessage(TRequest request, string testUri)

@@ -8,18 +8,18 @@ using Shiny.Mediator;
 using Microsoft.Extensions.DependencyInjection;
 
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
-internal static class __ShinyMediatorRegistry
+internal static class __ShinyMediatorRegistryFromReferences
 {
     [global::System.Runtime.CompilerServices.ModuleInitializer]
     public static void Run()
     {
         global::Shiny.Mediator.Infrastructure.MediatorRegistry.RegisterCallback(builder =>
         {
-            builder.Services.AddSingletonAsImplementedInterfaces<global::MyCompany.MyProduct.Features.MyRequestHandler>();
-            builder.Services.AddSingletonAsImplementedInterfaces<global::MyCompany.MyProduct.Features.MyStreamHandler>();
+         builder.Services.AddSingletonAsImplementedInterfaces<global::MyCompany.MyProduct.Features.MyRequestHandler>();
+         builder.Services.AddSingletonAsImplementedInterfaces<global::MyCompany.MyProduct.Features.MyStreamHandler>();
 
-            builder.Services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, global::MyCompany.MyProduct.Features.CustomRequestExec>();
-            builder.Services.AddSingleton<global::Shiny.Mediator.Infrastructure.IStreamRequestExecutor, global::MyCompany.MyProduct.Features.CustomStreamExec>();
+    builder.Services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, global::MyCompany.MyProduct.Features.CustomRequestExec>();
+   builder.Services.AddSingleton<global::Shiny.Mediator.Infrastructure.IStreamRequestExecutor, global::MyCompany.MyProduct.Features.CustomStreamExec>();
         });
     }
 }

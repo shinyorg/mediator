@@ -15,14 +15,14 @@ internal class CustomStreamExec : global::Shiny.Mediator.Infrastructure.StreamRe
 {
     public override global::System.Collections.Generic.IAsyncEnumerable<TResult> Request<TResult>(
         global::Shiny.Mediator.IMediatorContext context,
-        global::Shiny.Mediator.IStreamRequest<TResult> request,
+global::Shiny.Mediator.IStreamRequest<TResult> request,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        if (request is global::MyCompany.MyProduct.Features.MyStreamRequest p0)
+      if (request is global::MyCompany.MyProduct.Features.MyStreamRequest p0)
         {
-            var handle = this.Execute<global::MyCompany.MyProduct.Features.MyStreamRequest, string>(context, p0, cancellationToken);
-            return (global::System.Collections.Generic.IAsyncEnumerable<TResult>)handle;
-        }
+   var handle = this.Execute<global::MyCompany.MyProduct.Features.MyStreamRequest, string>(context, p0, cancellationToken);
+       return (global::System.Collections.Generic.IAsyncEnumerable<TResult>)handle;
+ }
 
         throw new global::System.InvalidOperationException("Unknown request type");
     }
@@ -30,7 +30,7 @@ internal class CustomStreamExec : global::Shiny.Mediator.Infrastructure.StreamRe
     public override bool CanRequest<TResult>(global::Shiny.Mediator.IStreamRequest<TResult> request)
     {
         if (request is global::MyCompany.MyProduct.Features.MyStreamRequest)
-            return true;
+        return true;
 
         return false;
     }

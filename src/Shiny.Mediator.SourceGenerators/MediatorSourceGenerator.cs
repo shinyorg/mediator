@@ -31,7 +31,8 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                     $GENCODEATTRIBUTE$
                     [global::System.AttributeUsage(global::System.AttributeTargets.Assembly, AllowMultiple = false)]
                     internal sealed class ShinyMediatorHeadGenerationAttribute : global::System.Attribute 
-                    {}
+                    {
+                    }
 
                     $GENCODEATTRIBUTE$
                     [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
@@ -478,14 +479,14 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         sb.AppendLine("{");
 
         // Request method
-        sb.AppendLine(
-            "    public override global::System.Collections.Generic.IAsyncEnumerable<TResult> Request<TResult>(");
+        sb.AppendLine("    public override global::System.Collections.Generic.IAsyncEnumerable<TResult> Request<TResult>(");
         sb.AppendLine("        global::Shiny.Mediator.IMediatorContext context,");
-        sb.AppendLine("global::Shiny.Mediator.IStreamRequest<TResult> request,");
-        sb.AppendLine("        global::System.Threading.CancellationToken cancellationToken)");
+        sb.AppendLine("        global::Shiny.Mediator.IStreamRequest<TResult> request,");
+        sb.AppendLine("        global::System.Threading.CancellationToken cancellationToken");
+        sb.AppendLine("    )");
         sb.AppendLine("    {");
 
-        for (int i = 0; i < handlers.Count; i++)
+        for (var i = 0; i < handlers.Count; i++)
         {
             var handler = handlers[i];
             var requestTypeFull = GetFullTypeName(handler.RequestType);
@@ -493,8 +494,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
 
             sb.AppendLine($"      if (request is {requestTypeFull} p{i})");
             sb.AppendLine("        {");
-            sb.AppendLine(
-                $"   var handle = this.Execute<{requestTypeFull}, {resultTypeFull}>(context, p{i}, cancellationToken);");
+            sb.AppendLine($"   var handle = this.Execute<{requestTypeFull}, {resultTypeFull}>(context, p{i}, cancellationToken);");
             sb.AppendLine("       return (global::System.Collections.Generic.IAsyncEnumerable<TResult>)handle;");
             sb.AppendLine(" }");
             sb.AppendLine();
@@ -505,11 +505,10 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         sb.AppendLine();
 
         // CanRequest method
-        sb.AppendLine(
-            "    public override bool CanRequest<TResult>(global::Shiny.Mediator.IStreamRequest<TResult> request)");
+        sb.AppendLine("    public override bool CanRequest<TResult>(global::Shiny.Mediator.IStreamRequest<TResult> request)");
         sb.AppendLine("    {");
 
-        for (int i = 0; i < handlers.Count; i++)
+        for (var i = 0; i < handlers.Count; i++)
         {
             var handler = handlers[i];
             var requestTypeFull = GetFullTypeName(handler.RequestType);

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Http;
 using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
 using Shiny.Mediator.Infrastructure.Impl;
@@ -21,7 +22,7 @@ public class HttpRequestTests(ITestOutputHelper output)
         };
         var serializer = new SysTextJsonSerializerService();
         var logger = TestHelpers.CreateLogger<HttpRequestHandler<MyHttpResultRequest, HttpResult>>(output);
-        var handler = new TestHttpRequestHandler<MyHttpResultRequest, HttpResult>(logger, null, serializer, null!);
+        var handler = new TestHttpRequestHandler<MyHttpResultRequest, HttpResult>(logger, null, serializer, null!, null!);
         var message = handler.GetMessage(request, "https://test.com");
         message.RequestUri!.ToString().ShouldBe(expectedUri);
     }

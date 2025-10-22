@@ -7,6 +7,12 @@
 #nullable disable
 
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.AttributeUsage(global::System.AttributeTargets.Assembly, AllowMultiple = false)]
+internal sealed class ShinyMediatorHeadGenerationAttribute : global::System.Attribute 
+{
+}
+
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
 [global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
 internal sealed class MediatorSingletonAttribute : global::System.Attribute
 {

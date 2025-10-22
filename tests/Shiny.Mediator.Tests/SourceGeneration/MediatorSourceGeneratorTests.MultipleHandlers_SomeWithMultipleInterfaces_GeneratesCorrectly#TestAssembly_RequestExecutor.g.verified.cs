@@ -15,40 +15,40 @@ internal class TestAssemblyRequestExecutor : global::Shiny.Mediator.Infrastructu
 {
     public override async global::System.Threading.Tasks.Task<TResult> Request<TResult>(
         global::Shiny.Mediator.IMediatorContext context,
-        global::Shiny.Mediator.IRequest<TResult> request,
-        global::System.Threading.CancellationToken cancellationToken)
+  global::Shiny.Mediator.IRequest<TResult> request,
+ global::System.Threading.CancellationToken cancellationToken)
     {
-        if (request is global::MyApp.Combined.Request1 p0)
+      if (request is global::MyApp.Combined.Request1 p0)
         {
-            object result = await this.Execute<global::MyApp.Combined.Request1, global::MyApp.Combined.Response1>(p0, context, cancellationToken);
-            return (TResult)result;
+          object result = await this.Execute<global::MyApp.Combined.Request1, global::MyApp.Combined.Response1>(p0, context, cancellationToken);
+    return (TResult)result;
         }
 
-        if (request is global::MyApp.Combined.Request2 p1)
+      if (request is global::MyApp.Combined.Request2 p1)
         {
-            object result = await this.Execute<global::MyApp.Combined.Request2, global::MyApp.Combined.Response2>(p1, context, cancellationToken);
-            return (TResult)result;
+          object result = await this.Execute<global::MyApp.Combined.Request2, global::MyApp.Combined.Response2>(p1, context, cancellationToken);
+    return (TResult)result;
         }
 
-        if (request is global::MyApp.Combined.Request3 p2)
+      if (request is global::MyApp.Combined.Request3 p2)
         {
-            object result = await this.Execute<global::MyApp.Combined.Request3, global::MyApp.Combined.Response3>(p2, context, cancellationToken);
-            return (TResult)result;
+          object result = await this.Execute<global::MyApp.Combined.Request3, global::MyApp.Combined.Response3>(p2, context, cancellationToken);
+    return (TResult)result;
         }
 
-        throw new global::System.InvalidOperationException("Unknown request type");
+ throw new global::System.InvalidOperationException("Unknown request type");
     }
 
     public override bool CanHandle<TResult>(global::Shiny.Mediator.IRequest<TResult> request)
     {
-        if (request is global::MyApp.Combined.Request1)
-            return true;
+      if (request is global::MyApp.Combined.Request1)
+     return true;
 
-        if (request is global::MyApp.Combined.Request2)
-            return true;
+      if (request is global::MyApp.Combined.Request2)
+     return true;
 
-        if (request is global::MyApp.Combined.Request3)
-            return true;
+      if (request is global::MyApp.Combined.Request3)
+     return true;
 
         return false;
     }

@@ -8,20 +8,20 @@ using Shiny.Mediator;
 using Microsoft.Extensions.DependencyInjection;
 
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
-internal static class __ShinyMediatorRegistry
+internal static class __ShinyMediatorRegistryFromReferences
 {
     [global::System.Runtime.CompilerServices.ModuleInitializer]
     public static void Run()
     {
         global::Shiny.Mediator.Infrastructure.MediatorRegistry.RegisterCallback(builder =>
         {
-            builder.Services.AddSingletonAsImplementedInterfaces<global::MyApp.MyRequestHandler>();
-            builder.Services.AddScopedAsImplementedInterfaces<global::MyApp.MyCommandHandler>();
+         builder.Services.AddSingletonAsImplementedInterfaces<global::MyApp.MyRequestHandler>();
+         builder.Services.AddScopedAsImplementedInterfaces<global::MyApp.MyCommandHandler>();
 
-            builder.Services.AddSingleton(typeof(global::Shiny.Mediator.IRequestMiddleware<,>), typeof(global::MyApp.LoggingRequestMiddleware<,>));
-            builder.Services.AddScoped(typeof(global::Shiny.Mediator.ICommandMiddleware<>), typeof(global::MyApp.ValidationCommandMiddleware<>));
+         builder.Services.AddSingleton(typeof(global::Shiny.Mediator.IRequestMiddleware<,>), typeof(global::MyApp.LoggingRequestMiddleware<,>));
+         builder.Services.AddScoped(typeof(global::Shiny.Mediator.ICommandMiddleware<>), typeof(global::MyApp.ValidationCommandMiddleware<>));
 
-            builder.Services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, global::TestAssembly.TestAssemblyRequestExecutor>();
+    builder.Services.AddSingleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, global::TestAssembly.TestAssemblyRequestExecutor>();
         });
     }
 }

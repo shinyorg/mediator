@@ -15,14 +15,14 @@ internal class TestAssemblyStreamRequestExecutor : global::Shiny.Mediator.Infras
 {
     public override global::System.Collections.Generic.IAsyncEnumerable<TResult> Request<TResult>(
         global::Shiny.Mediator.IMediatorContext context,
-        global::Shiny.Mediator.IStreamRequest<TResult> request,
+global::Shiny.Mediator.IStreamRequest<TResult> request,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        if (request is global::MyApp.EventStreams.EventStreamRequest p0)
+      if (request is global::MyApp.EventStreams.EventStreamRequest p0)
         {
-            var handle = this.Execute<global::MyApp.EventStreams.EventStreamRequest, global::MyApp.EventStreams.EventData>(context, p0, cancellationToken);
-            return (global::System.Collections.Generic.IAsyncEnumerable<TResult>)handle;
-        }
+   var handle = this.Execute<global::MyApp.EventStreams.EventStreamRequest, global::MyApp.EventStreams.EventData>(context, p0, cancellationToken);
+       return (global::System.Collections.Generic.IAsyncEnumerable<TResult>)handle;
+ }
 
         throw new global::System.InvalidOperationException("Unknown request type");
     }
@@ -30,7 +30,7 @@ internal class TestAssemblyStreamRequestExecutor : global::Shiny.Mediator.Infras
     public override bool CanRequest<TResult>(global::Shiny.Mediator.IStreamRequest<TResult> request)
     {
         if (request is global::MyApp.EventStreams.EventStreamRequest)
-            return true;
+        return true;
 
         return false;
     }

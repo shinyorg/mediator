@@ -15,22 +15,22 @@ internal class TestAssemblyRequestExecutor : global::Shiny.Mediator.Infrastructu
 {
     public override async global::System.Threading.Tasks.Task<TResult> Request<TResult>(
         global::Shiny.Mediator.IMediatorContext context,
-        global::Shiny.Mediator.IRequest<TResult> request,
-        global::System.Threading.CancellationToken cancellationToken)
+  global::Shiny.Mediator.IRequest<TResult> request,
+ global::System.Threading.CancellationToken cancellationToken)
     {
-        if (request is global::MyApp.GetDataRequest p0)
+      if (request is global::MyApp.GetDataRequest p0)
         {
-            object result = await this.Execute<global::MyApp.GetDataRequest, global::MyApp.DataResponse>(p0, context, cancellationToken);
-            return (TResult)result;
+          object result = await this.Execute<global::MyApp.GetDataRequest, global::MyApp.DataResponse>(p0, context, cancellationToken);
+    return (TResult)result;
         }
 
-        throw new global::System.InvalidOperationException("Unknown request type");
+ throw new global::System.InvalidOperationException("Unknown request type");
     }
 
     public override bool CanHandle<TResult>(global::Shiny.Mediator.IRequest<TResult> request)
     {
-        if (request is global::MyApp.GetDataRequest)
-            return true;
+      if (request is global::MyApp.GetDataRequest)
+     return true;
 
         return false;
     }

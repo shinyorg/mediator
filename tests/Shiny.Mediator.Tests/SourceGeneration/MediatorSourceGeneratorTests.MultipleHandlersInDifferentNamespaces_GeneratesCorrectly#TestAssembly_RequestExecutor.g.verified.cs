@@ -15,31 +15,31 @@ internal class TestAssemblyRequestExecutor : global::Shiny.Mediator.Infrastructu
 {
     public override async global::System.Threading.Tasks.Task<TResult> Request<TResult>(
         global::Shiny.Mediator.IMediatorContext context,
-        global::Shiny.Mediator.IRequest<TResult> request,
-        global::System.Threading.CancellationToken cancellationToken)
+  global::Shiny.Mediator.IRequest<TResult> request,
+ global::System.Threading.CancellationToken cancellationToken)
     {
-        if (request is global::MyApp.Features.Users.GetUserRequest p0)
+      if (request is global::MyApp.Features.Users.GetUserRequest p0)
         {
-            object result = await this.Execute<global::MyApp.Features.Users.GetUserRequest, global::MyApp.Features.Users.UserDto>(p0, context, cancellationToken);
-            return (TResult)result;
+          object result = await this.Execute<global::MyApp.Features.Users.GetUserRequest, global::MyApp.Features.Users.UserDto>(p0, context, cancellationToken);
+    return (TResult)result;
         }
 
-        if (request is global::MyApp.Features.Users.MyApp.Features.Orders.GetOrderRequest p1)
+      if (request is global::MyApp.Features.Users.MyApp.Features.Orders.GetOrderRequest p1)
         {
-            object result = await this.Execute<global::MyApp.Features.Users.MyApp.Features.Orders.GetOrderRequest, global::MyApp.Features.Users.MyApp.Features.Orders.OrderDto>(p1, context, cancellationToken);
-            return (TResult)result;
+          object result = await this.Execute<global::MyApp.Features.Users.MyApp.Features.Orders.GetOrderRequest, global::MyApp.Features.Users.MyApp.Features.Orders.OrderDto>(p1, context, cancellationToken);
+    return (TResult)result;
         }
 
-        throw new global::System.InvalidOperationException("Unknown request type");
+ throw new global::System.InvalidOperationException("Unknown request type");
     }
 
     public override bool CanHandle<TResult>(global::Shiny.Mediator.IRequest<TResult> request)
     {
-        if (request is global::MyApp.Features.Users.GetUserRequest)
-            return true;
+      if (request is global::MyApp.Features.Users.GetUserRequest)
+     return true;
 
-        if (request is global::MyApp.Features.Users.MyApp.Features.Orders.GetOrderRequest)
-            return true;
+      if (request is global::MyApp.Features.Users.MyApp.Features.Orders.GetOrderRequest)
+     return true;
 
         return false;
     }

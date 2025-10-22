@@ -15,20 +15,20 @@ internal class TestAssemblyStreamRequestExecutor : global::Shiny.Mediator.Infras
 {
     public override global::System.Collections.Generic.IAsyncEnumerable<TResult> Request<TResult>(
         global::Shiny.Mediator.IMediatorContext context,
-        global::Shiny.Mediator.IStreamRequest<TResult> request,
+global::Shiny.Mediator.IStreamRequest<TResult> request,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        if (request is global::MyApp.MultiStreamHandlers.StreamRequest1 p0)
+      if (request is global::MyApp.MultiStreamHandlers.StreamRequest1 p0)
         {
-            var handle = this.Execute<global::MyApp.MultiStreamHandlers.StreamRequest1, string>(context, p0, cancellationToken);
-            return (global::System.Collections.Generic.IAsyncEnumerable<TResult>)handle;
-        }
+   var handle = this.Execute<global::MyApp.MultiStreamHandlers.StreamRequest1, string>(context, p0, cancellationToken);
+       return (global::System.Collections.Generic.IAsyncEnumerable<TResult>)handle;
+ }
 
-        if (request is global::MyApp.MultiStreamHandlers.StreamRequest2 p1)
+      if (request is global::MyApp.MultiStreamHandlers.StreamRequest2 p1)
         {
-            var handle = this.Execute<global::MyApp.MultiStreamHandlers.StreamRequest2, int>(context, p1, cancellationToken);
-            return (global::System.Collections.Generic.IAsyncEnumerable<TResult>)handle;
-        }
+   var handle = this.Execute<global::MyApp.MultiStreamHandlers.StreamRequest2, int>(context, p1, cancellationToken);
+       return (global::System.Collections.Generic.IAsyncEnumerable<TResult>)handle;
+ }
 
         throw new global::System.InvalidOperationException("Unknown request type");
     }
@@ -36,10 +36,10 @@ internal class TestAssemblyStreamRequestExecutor : global::Shiny.Mediator.Infras
     public override bool CanRequest<TResult>(global::Shiny.Mediator.IStreamRequest<TResult> request)
     {
         if (request is global::MyApp.MultiStreamHandlers.StreamRequest1)
-            return true;
+        return true;
 
         if (request is global::MyApp.MultiStreamHandlers.StreamRequest2)
-            return true;
+        return true;
 
         return false;
     }
