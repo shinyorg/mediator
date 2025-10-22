@@ -42,3 +42,10 @@ public class SerializationTests
         return Verify(serializedJson);
     }
 }
+
+
+// [SourceGenerateJsonConverter]
+// public partial record VehicleResult(int Id, string Manufacturer, string Model)
+// {
+//     public string Name => $"{Manufacturer} {Model}";
+// };

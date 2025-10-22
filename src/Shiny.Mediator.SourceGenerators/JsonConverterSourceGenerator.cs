@@ -100,14 +100,32 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         // Check if the type is partial
         var isPartial = typeDeclaration.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
         
+        // Determine the type kind (class, struct, record, record struct)
+        var typeKind = GetTypeKind(typeDeclaration);
+        
         return new TypeInfo(
             typeSymbol.Name,
             typeSymbol.ContainingNamespace?.ToDisplayString() ?? "",
-            typeDeclaration.IsKind(SyntaxKind.ClassDeclaration),
+            typeDeclaration.IsKind(SyntaxKind.ClassDeclaration) || typeDeclaration.IsKind(SyntaxKind.RecordDeclaration),
             isPartial,
             properties,
-            typeDeclaration.GetLocation()
+            typeDeclaration.GetLocation(),
+            typeKind
         );
+    }
+
+    private static string GetTypeKind(TypeDeclarationSyntax typeDeclaration)
+    {
+        if (typeDeclaration.IsKind(SyntaxKind.RecordStructDeclaration))
+            return "record struct";
+        if (typeDeclaration.IsKind(SyntaxKind.RecordDeclaration))
+            return "record";
+        if (typeDeclaration.IsKind(SyntaxKind.ClassDeclaration))
+            return "class";
+        if (typeDeclaration.IsKind(SyntaxKind.StructDeclaration))
+            return "struct";
+        
+        return "class"; // fallback
     }
 
     private static bool IsNullableType(ITypeSymbol type)
@@ -160,6 +178,9 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         // Check if the type is partial
         var isPartial = typeDeclaration.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
         var isClass = typeSymbol.TypeKind == TypeKind.Class;
+        
+        // Determine the type kind (class, struct, record, record struct)
+        var typeKind = GetTypeKind(typeDeclaration);
 
         var typeInfo = new TypeInfo(
             typeSymbol.Name,
@@ -167,7 +188,8 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
             isClass,
             isPartial,
             properties,
-            typeDeclaration.GetLocation()
+            typeDeclaration.GetLocation(),
+            typeKind
         );
 
         // Validate that classes are partial (structs don't need to be partial)
@@ -211,11 +233,11 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
-        var typeKeyword = typeInfo.IsClass ? "class" : "struct";
-        var partialKeyword = typeInfo.IsClass ? "partial " : "";
+        var typeKeyword = typeInfo.TypeKind;
+        // All types need to be partial to accept the JsonConverter attribute
         
         sb.AppendLine($"[global::System.Text.Json.Serialization.JsonConverter(typeof({typeInfo.Name}JsonConverter))]");
-        sb.AppendLine($"{partialKeyword}{typeKeyword} {typeInfo.Name}");
+        sb.AppendLine($"partial {typeKeyword} {typeInfo.Name}");
         sb.AppendLine("{");
         sb.AppendLine("}");
 
@@ -319,7 +341,22 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         sb.AppendLine("            throw new JsonException(\"Expected StartObject token\");");
         sb.AppendLine();
         
-        sb.AppendLine($"        var result = new {typeInfo.Name}();");
+        // For records, we need to collect values and use the constructor
+        var isRecord = typeInfo.TypeKind.Contains("record");
+        
+        if (isRecord)
+        {
+            // Declare variables for each property with default values
+            foreach (var prop in typeInfo.Properties)
+            {
+                var defaultValue = GetDefaultValue(prop.TypeName, prop.IsNullable);
+                sb.AppendLine($"        {prop.TypeName} {ToCamelCase(prop.Name)} = {defaultValue};");
+            }
+        }
+        else
+        {
+            sb.AppendLine($"        var result = new {typeInfo.Name}();");
+        }
         
         sb.AppendLine();
         sb.AppendLine("        while (reader.Read())");
@@ -341,15 +378,16 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
             sb.AppendLine($"                case \"{prop.JsonPropertyName}\":");
             
             var readerMethod = GetReaderMethodForType(prop.TypeName, prop.IsNullable, prop.TypeSymbol);
+            var targetVariable = isRecord ? ToCamelCase(prop.Name) : $"result.{prop.Name}";
             
             sb.AppendLine("                    if (reader.TokenType != JsonTokenType.Null)");
             if (readerMethod != null)
             {
-                sb.AppendLine($"                        result.{prop.Name} = {readerMethod};");
+                sb.AppendLine($"                        {targetVariable} = {readerMethod};");
             }
             else
             {
-                sb.AppendLine($"                        result.{prop.Name} = JsonSerializer.Deserialize<{prop.TypeName}>(ref reader, options);");
+                sb.AppendLine($"                        {targetVariable} = JsonSerializer.Deserialize<{prop.TypeName}>(ref reader, options);");
             }
             sb.AppendLine("                    break;");
         }
@@ -360,7 +398,18 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         sb.AppendLine("            }");
         sb.AppendLine("        }");
         sb.AppendLine();
-        sb.AppendLine("        return result;");
+        
+        if (isRecord)
+        {
+            // Create the record using the constructor
+            var constructorArgs = string.Join(", ", typeInfo.Properties.Select(p => ToCamelCase(p.Name)));
+            sb.AppendLine($"        return new {typeInfo.Name}({constructorArgs});");
+        }
+        else
+        {
+            sb.AppendLine("        return result;");
+        }
+        
         sb.AppendLine("    }");
         sb.AppendLine("}");
 
@@ -477,7 +526,8 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         bool IsClass,
         bool IsPartial,
         PropertyInfo[] Properties,
-        Location Location
+        Location Location,
+        string TypeKind
     );
 
 
@@ -504,5 +554,37 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
 
         // If the attribute is not present, return the default property name
         return property.Name;
+    }
+
+    private static string ToCamelCase(string name)
+    {
+        if (string.IsNullOrEmpty(name) || char.IsLower(name[0]))
+            return name;
+        
+        return char.ToLowerInvariant(name[0]) + name.Substring(1);
+    }
+
+    private static string GetDefaultValue(string typeName, bool isNullable)
+    {
+        var cleanTypeName = typeName.Replace("global::", "").Replace("?", "");
+        
+        if (isNullable)
+            return "default";
+        
+        return cleanTypeName switch
+        {
+            "System.Boolean" or "bool" => "false",
+            "System.String" or "string" => "string.Empty",
+            "System.Int32" or "int" => "0",
+            "System.Int64" or "long" => "0L",
+            "System.Int16" or "short" => "(short)0",
+            "System.UInt32" or "uint" => "0u",
+            "System.UInt64" or "ulong" => "0ul",
+            "System.UInt16" or "ushort" => "(ushort)0",
+            "System.Single" or "float" => "0f",
+            "System.Double" or "double" => "0d",
+            "System.Decimal" or "decimal" => "0m",
+            _ => "default"
+        };
     }
 }

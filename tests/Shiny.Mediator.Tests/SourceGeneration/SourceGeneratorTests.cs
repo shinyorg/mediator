@@ -55,6 +55,27 @@ public class SourceGeneratorTests
     }
 
     [Fact]
+    public Task GenerateJsonConverter_ForRecord_ShouldGenerateCorrectCode()
+    {
+        // Arrange
+        var source = """
+            using System;
+            
+            [SourceGenerateJsonConverter]
+            public partial record VehicleResult(int Id, string Manufacturer, string Model)
+            {
+                public string Name => $"{Manufacturer} {Model}";
+            }
+            """;
+
+        // Act
+        var result = TestHelper.RunSourceGenerator(source);
+
+        // Assert
+        return Verify(result);
+    }
+
+    [Fact]
     public void GenerateJsonConverter_ForNonPartialClass_ShouldReportDiagnostic()
     {
         // Arrange

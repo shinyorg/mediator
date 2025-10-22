@@ -183,8 +183,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
     }
 
 
-    static void ScanAssembly(INamespaceSymbol namespaceSymbol, List<HandlerInfo> handlers,
-        List<MiddlewareInfo> middleware)
+    static void ScanAssembly(INamespaceSymbol namespaceSymbol, List<HandlerInfo> handlers, List<MiddlewareInfo> middleware)
     {
         foreach (var member in namespaceSymbol.GetMembers())
         {
@@ -203,8 +202,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
     }
 
 
-    static void ScanNestedTypes(INamedTypeSymbol typeSymbol, List<HandlerInfo> handlers,
-        List<MiddlewareInfo> middleware)
+    static void ScanNestedTypes(INamedTypeSymbol typeSymbol, List<HandlerInfo> handlers, List<MiddlewareInfo> middleware)
     {
         foreach (var nestedType in typeSymbol.GetTypeMembers())
         {
