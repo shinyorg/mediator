@@ -5,6 +5,7 @@
 
     <ItemGroup>
         <CompilerVisibleProperty Include="RootNamespace"/>
+        <CompilerVisibleProperty Include="ShinyMediatorHeadGeneration"/>
         <CompilerVisibleProperty Include="ShinyRequestExecutorClassName"/>
         <CompilerVisibleProperty Include="ShinyStreamRequestExecutorClassName"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false"/>

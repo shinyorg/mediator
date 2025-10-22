@@ -1,10 +1,7 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
-using Polly;
-using Sample.Contracts;
-using Sample.Handlers;
-using Shiny.Mediator.Infrastructure;
+
+[assembly: ShinyMediatorHeadGeneration]
 
 namespace Sample;
 
@@ -48,7 +45,6 @@ public static class MauiProgram
                 .GetManifestResourceStream("Sample.appsettings.json")!
         );
         
-        // builder.Services.AddSingleton<IRequestExecutor, AotRequestExecutor>();
         builder.AddShinyMediator(x => x
             .AddRegistry()
             .UseMaui()
