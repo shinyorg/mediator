@@ -1,8 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.Configuration;
 
-[assembly: ShinyMediatorHeadGeneration]
-
 namespace Sample;
 
 
@@ -44,9 +42,9 @@ public static class MauiProgram
                 .GetExecutingAssembly()
                 .GetManifestResourceStream("Sample.appsettings.json")!
         );
-        
+
+        builder.Services.AddMediatorRegistry();
         builder.AddShinyMediator(x => x
-            .AddRegistry()
             .UseMaui()
             .UseBlazor()
             .PreventEventExceptions()

@@ -21,7 +21,7 @@ public class MediatorBenchmarks
         services.AddShinyMediator(
             x =>
             {
-                x.AddRegistry();
+                x.Services.AddMediatorRegistry();
                 x.Services.AddSingleton<IRequestHandler<NormalRequest, int>, NormalRequestHandler>();
             }, 
             false

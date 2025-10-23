@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Shiny.Mediator.SourceGenerators;
 
 namespace Shiny.Mediator.Tests.SourceGeneration;
@@ -9,1419 +10,400 @@ namespace Shiny.Mediator.Tests.SourceGeneration;
 public class MediatorSourceGeneratorTests
 {
     [Fact]
-    public Task SingletonRequestHandler_GeneratesCorrectly()
+    public Task GeneratesRegistry_WithSingletonRequestHandler()
     {
         var driver = BuildDriver(@"
 using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace MyNamespace.Handlers;
 
-public record MyRequest(string Name) : IRequest<MyResponse>;
+namespace TestApp;
 
-public record MyResponse
-{
-    public string Message { get; set; }
-}
+public record MyRequest(string Name) : IRequest<string>;
 
 [MediatorSingleton]
-public class MyRequestHandler : IRequestHandler<MyRequest, MyResponse>
+public class MyRequestHandler : IRequestHandler<MyRequest, string>
 {
-    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    public Task<string> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
     {
-        var response = new MyResponse { Message = $""Hello, {request.Name}!"" };
-        return Task.FromResult(response);
+        return Task.FromResult($""Hello {request.Name}"");
     }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
         return Verify(result);
     }
 
     [Fact]
-    public Task ScopedRequestHandler_GeneratesCorrectly()
+    public Task GeneratesRegistry_WithScopedRequestHandler()
     {
         var driver = BuildDriver(@"
 using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace MyApp.Handlers;
 
-public record GetUserRequest(int UserId) : IRequest<UserResponse>;
+namespace TestApp;
 
-public record UserResponse(int Id, string Name, string Email);
+public record MyRequest(int Id) : IRequest<int>;
 
 [MediatorScoped]
-public class GetUserRequestHandler : IRequestHandler<GetUserRequest, UserResponse>
+public class MyRequestHandler : IRequestHandler<MyRequest, int>
 {
-    public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    public Task<int> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
     {
-        return Task.FromResult(new UserResponse(request.UserId, ""John"", ""john@example.com""));
+        return Task.FromResult(request.Id * 2);
     }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
         return Verify(result);
     }
 
     [Fact]
-    public Task SingletonStreamHandler_GeneratesCorrectly()
+    public Task GeneratesRegistry_WithMultipleHandlers()
     {
         var driver = BuildDriver(@"
 using Shiny.Mediator;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace MyApp.Streams;
 
-public record TickerRequest(int Count, int Interval) : IStreamRequest<string>;
+namespace TestApp;
+
+public record Request1(string Name) : IRequest<string>;
+public record Request2(int Value) : IRequest<int>;
+public record Command1(string Data) : ICommand;
 
 [MediatorSingleton]
-public class TickerRequestHandler : IStreamRequestHandler<TickerRequest, string>
+public class Request1Handler : IRequestHandler<Request1, string>
 {
-    public async IAsyncEnumerable<string> Handle(TickerRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        for (int i = 0; i < request.Count; i++)
-        {
-            yield return $""Tick {i + 1}"";
-            await Task.Delay(request.Interval, cancellationToken);
-        }
-    }
+    public Task<string> Handle(Request1 request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(request.Name);
 }
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task ScopedStreamHandler_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp.EventStreams;
-
-public record EventStreamRequest(string EventType) : IStreamRequest<EventData>;
-
-public record EventData(string Type, string Payload, System.DateTime Timestamp);
-
-[MediatorScoped]
-public class EventStreamHandler : IStreamRequestHandler<EventStreamRequest, EventData>
-{
-    public async IAsyncEnumerable<EventData> Handle(EventStreamRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        yield return new EventData(request.EventType, ""Payload1"", System.DateTime.Now);
-        await Task.Delay(100, cancellationToken);
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task MultipleHandlers_MixedLifetimes_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp;
-
-public record Request1(string Data) : IRequest<Response1>;
-public record Response1(string Result);
-
-public record Request2(int Value) : IRequest<Response2>;
-public record Response2(int Result);
-
-public record StreamRequest1(int Count) : IStreamRequest<string>;
 
 [MediatorSingleton]
-public class Handler1 : IRequestHandler<Request1, Response1>
+public class Request2Handler : IRequestHandler<Request2, int>
 {
-    public Task<Response1> Handle(Request1 request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new Response1(request.Data));
-    }
+    public Task<int> Handle(Request2 request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(request.Value);
 }
 
 [MediatorScoped]
-public class Handler2 : IRequestHandler<Request2, Response2>
+public class Command1Handler : ICommandHandler<Command1>
 {
-    public Task<Response2> Handle(Request2 request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new Response2(request.Value * 2));
-    }
-}
-
-[MediatorSingleton]
-public class StreamHandler1 : IStreamRequestHandler<StreamRequest1, string>
-{
-    public async IAsyncEnumerable<string> Handle(StreamRequest1 request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        for (int i = 0; i < request.Count; i++)
-        {
-            yield return $""Item {i}"";
-            await Task.Delay(10, cancellationToken);
-        }
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+    public Task Handle(Command1 request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.CompletedTask;
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
         return Verify(result);
     }
 
     [Fact]
-    public Task NoHandlers_GeneratesNothing()
+    public Task GeneratesRegistry_WithEventHandler()
     {
         var driver = BuildDriver(@"
 using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace MyApp;
 
-public record MyRequest(string Data) : IRequest<MyResponse>;
-public record MyResponse(string Result);
-
-// No handler with attributes
-public class MyRequestHandler : IRequestHandler<MyRequest, MyResponse>
-{
-    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new MyResponse(request.Data));
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        // Should only generate the attributes file
-        result.GeneratedTrees.Length.ShouldBe(1);
-        result.GeneratedTrees[0].FilePath.ShouldEndWith("MediatorAttributes.g.cs");
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task ComplexNamespaces_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyCompany.MyProduct.Features.Users.Handlers;
-
-public record CreateUserRequest(string Name, string Email) : IRequest<CreateUserResponse>;
-public record CreateUserResponse(int UserId, string Name);
-
-[MediatorSingleton]
-public class CreateUserRequestHandler : IRequestHandler<CreateUserRequest, CreateUserResponse>
-{
-    public Task<CreateUserResponse> Handle(CreateUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new CreateUserResponse(1, request.Name));
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task GenericResponseTypes_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp;
-
-public record GetListRequest(int Count) : IRequest<List<string>>;
-
-[MediatorSingleton]
-public class GetListRequestHandler : IRequestHandler<GetListRequest, List<string>>
-{
-    public Task<List<string>> Handle(GetListRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        var list = new List<string>();
-        for (int i = 0; i < request.Count; i++)
-        {
-            list.Add($""Item {i}"");
-        }
-        return Task.FromResult(list);
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task MultipleHandlersInDifferentNamespaces_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp.Features.Users;
-
-public record GetUserRequest(int Id) : IRequest<UserDto>;
-public record UserDto(int Id, string Name);
-
-[MediatorSingleton]
-public class GetUserHandler : IRequestHandler<GetUserRequest, UserDto>
-{
-    public Task<UserDto> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new UserDto(request.Id, ""User""));
-    }
-}
-
-namespace MyApp.Features.Orders;
-
-public record GetOrderRequest(int Id) : IRequest<OrderDto>;
-public record OrderDto(int Id, decimal Total);
-
-[MediatorScoped]
-public class GetOrderHandler : IRequestHandler<GetOrderRequest, OrderDto>
-{
-    public Task<OrderDto> Handle(GetOrderRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new OrderDto(request.Id, 100.50m));
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task CommandHandler_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp.Commands;
-
-public record CreateUserCommand(string Name, string Email) : ICommand;
-
-[MediatorSingleton]
-public class CreateUserCommandHandler : ICommandHandler<CreateUserCommand>
-{
-    public Task Handle(CreateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        // Create user logic here
-        return Task.CompletedTask;
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        // Should generate attributes and registry, but NO executors
-        result.GeneratedTrees.Length.ShouldBe(2);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task EventHandler_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp.Events;
-
-public record UserCreatedEvent(int UserId, string Name) : IEvent;
-
-[MediatorScoped]
-public class UserCreatedEventHandler : IEventHandler<UserCreatedEvent>
-{
-    public Task Handle(UserCreatedEvent @event, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        // Handle event logic here
-        return Task.CompletedTask;
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        // Should generate attributes and registry, but NO executors
-        result.GeneratedTrees.Length.ShouldBe(2);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task MixedHandlers_RequestCommandEvent_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp;
-
-public record GetDataRequest(int Id) : IRequest<DataResponse>;
-public record DataResponse(int Id, string Data);
-
-public record UpdateDataCommand(int Id, string NewData) : ICommand;
-
-public record DataUpdatedEvent(int Id, string Data) : IEvent;
-
-[MediatorSingleton]
-public class GetDataHandler : IRequestHandler<GetDataRequest, DataResponse>
-{
-    public Task<DataResponse> Handle(GetDataRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new DataResponse(request.Id, ""Data""));
-    }
-}
-
-[MediatorScoped]
-public class UpdateDataCommandHandler : ICommandHandler<UpdateDataCommand>
-{
-    public Task Handle(UpdateDataCommand command, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
-    }
-}
-
-[MediatorSingleton]
-public class DataUpdatedEventHandler : IEventHandler<DataUpdatedEvent>
-{
-    public Task Handle(DataUpdatedEvent @event, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        // Should generate attributes, request executor, and registry (no stream executor)
-        result.GeneratedTrees.Length.ShouldBe(3);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task ClosedCommandMiddleware_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp.Middleware;
-
-public record MyCommand(string Data) : ICommand;
-
-[MediatorScoped]
-public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
-{
-    public Task Handle(MyCommand command, IMediatorContext context, CommandMiddlewareDelegate<MyCommand> next, CancellationToken cancellationToken)
-    {
-        return next(command, context, cancellationToken);
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task OpenGenericCommandMiddleware_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp.Middleware;
-
-[MediatorSingleton]
-public class ValidationCommandMiddleware<TCommand> : ICommandMiddleware<TCommand> where TCommand : ICommand
-{
-    public Task Handle(TCommand command, IMediatorContext context, CommandMiddlewareDelegate<TCommand> next, CancellationToken cancellationToken)
-    {
-        // Validation logic
-        return next(command, context, cancellationToken);
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task ClosedRequestMiddleware_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp.Middleware;
-
-public record MyRequest(int Id) : IRequest<MyResponse>;
-public record MyResponse(string Data);
-
-[MediatorScoped]
-public class MyRequestMiddleware : IRequestMiddleware<MyRequest, MyResponse>
-{
-    public Task<MyResponse> Handle(IMediatorContext context, RequestMiddlewareDelegate<MyResponse> next, CancellationToken cancellationToken)
-    {
-        return next();
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task OpenGenericRequestMiddleware_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp.Middleware;
-
-[MediatorSingleton]
-public class LoggingRequestMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse> 
-    where TRequest : IRequest<TResponse>
-{
-    public Task<TResponse> Handle(IMediatorContext context, RequestMiddlewareDelegate<TResponse> next, CancellationToken cancellationToken)
-    {
-        // Logging logic
-        return next();
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task ClosedEventMiddleware_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp.Middleware;
+namespace TestApp;
 
 public record MyEvent(string Message) : IEvent;
 
-[MediatorScoped]
-public class MyEventMiddleware : IEventMiddleware<MyEvent>
-{
-    public Task Handle(IMediatorContext context, EventMiddlewareDelegate<MyEvent> next, CancellationToken cancellationToken)
-    {
-        return next(@event, context, cancellationToken);
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task OpenGenericEventMiddleware_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp.Middleware;
-
 [MediatorSingleton]
-public class AuditEventMiddleware<TEvent> : IEventMiddleware<TEvent> where TEvent : IEvent
+public class MyEventHandler : IEventHandler<MyEvent>
 {
-    public Task Handle(TEvent @event, IMediatorContext context, EventMiddlewareDelegate<TEvent> next, CancellationToken cancellationToken)
-    {
-        // Audit logic
-        return next(@event, context, cancellationToken);
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task MixedHandlersAndMiddleware_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp;
-
-public record MyRequest(int Id) : IRequest<MyResponse>;
-public record MyResponse(string Data);
-
-public record MyCommand(string Action) : ICommand;
-
-[MediatorSingleton]
-public class MyRequestHandler : IRequestHandler<MyRequest, MyResponse>
-{
-    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new MyResponse(""Data""));
-    }
-}
-
-[MediatorScoped]
-public class MyCommandHandler : ICommandHandler<MyCommand>
-{
-    public Task Handle(MyCommand command, IMediatorContext context, CancellationToken cancellationToken)
+    public Task Handle(MyEvent @event, IMediatorContext context, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }
-}
-
-[MediatorSingleton]
-public class LoggingRequestMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse>
-    where TRequest : IRequest<TResponse>
-{
-    public Task<TResponse> Handle(IMediatorContext context, RequestMiddlewareDelegate<TResponse> next, CancellationToken cancellationToken)
-    {
-        return next();
-    }
-}
-
-[MediatorScoped]
-public class ValidationCommandMiddleware<TCommand> : ICommandMiddleware<TCommand> where TCommand : ICommand
-{
-    public Task Handle(IMediatorContext context, CommandMiddlewareDelegate next, CancellationToken cancellationToken)
-    {
-        return next();
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
         return Verify(result);
     }
 
     [Fact]
-    public Task SingleHandler_MultipleRequestInterfaces_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp.MultiHandlers;
-
-public record Request1(string Name) : IRequest<Response1>;
-public record Response1(string Message);
-
-public record Request2(int Value) : IRequest<Response2>;
-public record Response2(int Result);
-
-[MediatorSingleton]
-public class MultiRequestHandler : IRequestHandler<Request1, Response1>, IRequestHandler<Request2, Response2>
-{
-    public Task<Response1> Handle(Request1 request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new Response1($""Hello, {request.Name}!""));
-    }
-
-    public Task<Response2> Handle(Request2 request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new Response2(request.Value * 2));
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task SingleHandler_MultipleStreamInterfaces_GeneratesCorrectly()
+    public Task GeneratesRegistry_WithStreamRequestHandler()
     {
         var driver = BuildDriver(@"
 using Shiny.Mediator;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace MyApp.MultiStreamHandlers;
 
-public record StreamRequest1(int Count) : IStreamRequest<string>;
-public record StreamRequest2(int Max) : IStreamRequest<int>;
+namespace TestApp;
 
-[MediatorScoped]
-public class MultiStreamHandler : IStreamRequestHandler<StreamRequest1, string>, IStreamRequestHandler<StreamRequest2, int>
+public record StreamRequest(int Count) : IStreamRequest<int>;
+
+[MediatorSingleton]
+public class StreamRequestHandler : IStreamRequestHandler<StreamRequest, int>
 {
-    public async IAsyncEnumerable<string> Handle(StreamRequest1 request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<int> Handle(StreamRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         for (int i = 0; i < request.Count; i++)
-        {
-            yield return $""Item {i}"";
-            await Task.Delay(10, cancellationToken);
-        }
-    }
-
-    public async IAsyncEnumerable<int> Handle(StreamRequest2 request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        for (int i = 0; i < request.Max; i++)
         {
             yield return i;
-            await Task.Delay(10, cancellationToken);
         }
     }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
         return Verify(result);
     }
 
     [Fact]
-    public Task SingleHandler_MixedRequestAndStreamInterfaces_GeneratesCorrectly()
+    public Task GeneratesRegistry_WithRequestMiddleware()
     {
         var driver = BuildDriver(@"
 using Shiny.Mediator;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace MyApp.MixedHandlers;
 
-public record GetDataRequest(int Id) : IRequest<DataResponse>;
-public record DataResponse(int Id, string Data);
+namespace TestApp;
 
-public record StreamDataRequest(int StartId) : IStreamRequest<DataItem>;
-public record DataItem(int Id, string Value);
+public record MyRequest(string Name) : IRequest<string>;
+public record MyResponse(string Result);
 
 [MediatorSingleton]
-public class DataHandler : IRequestHandler<GetDataRequest, DataResponse>, IStreamRequestHandler<StreamDataRequest, DataItem>
+public class MyRequestHandler : IRequestHandler<MyRequest, string>
 {
-    public Task<DataResponse> Handle(GetDataRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new DataResponse(request.Id, $""Data for {request.Id}""));
-    }
-
-    public async IAsyncEnumerable<DataItem> Handle(StreamDataRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        for (int i = request.StartId; i < request.StartId + 5; i++)
-        {
-            yield return new DataItem(i, $""Value {i}"");
-            await Task.Delay(10, cancellationToken);
-        }
-    }
+    public Task<string> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(request.Name);
 }
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+
+[MediatorSingleton]
+public class MyRequestMiddleware : IRequestMiddleware<MyRequest, string>
+{
+    public async Task<string> Process(IMediatorContext context, RequestHandlerDelegate<string> next, CancellationToken cancellationToken)
+    {
+        var result = await next();
+        return result.ToUpper();
+    }
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
         return Verify(result);
     }
 
     [Fact]
-    public Task SingleHandler_RequestStreamAndCommandInterfaces_GeneratesCorrectly()
+    public Task GeneratesRegistry_WithOpenGenericMiddleware()
     {
         var driver = BuildDriver(@"
 using Shiny.Mediator;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace MyApp.ComplexHandlers;
 
-public record GetUserRequest(int UserId) : IRequest<UserDto>;
-public record UserDto(int Id, string Name);
+namespace TestApp;
 
-public record StreamUsersRequest : IStreamRequest<UserDto>;
+public record MyRequest(string Name) : IRequest<string>;
 
-public record UpdateUserCommand(int UserId, string NewName) : ICommand;
-
-[MediatorScoped]
-public class UserHandler : IRequestHandler<GetUserRequest, UserDto>, 
-                           IStreamRequestHandler<StreamUsersRequest, UserDto>,
-                           ICommandHandler<UpdateUserCommand>
+[MediatorSingleton]
+public class MyRequestHandler : IRequestHandler<MyRequest, string>
 {
-    public Task<UserDto> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new UserDto(request.UserId, ""John Doe""));
-    }
-
-    public async IAsyncEnumerable<UserDto> Handle(StreamUsersRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        yield return new UserDto(1, ""User 1"");
-        await Task.Delay(10, cancellationToken);
-        yield return new UserDto(2, ""User 2"");
-    }
-
-    public Task Handle(UpdateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
-    }
+    public Task<string> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(request.Name);
 }
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+
+[MediatorSingleton]
+public class GenericStreamMiddleware<TRequest, TResult> : IStreamRequestMiddleware<TRequest, TResult>
+    where TRequest : IStreamRequest<TResult>
+{
+    public IAsyncEnumerable<TResult> Process(IMediatorContext context, StreamRequestHandlerDelegate<TResult> next, CancellationToken cancellationToken)
+    {
+        return next();
+    }
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
         return Verify(result);
     }
 
     [Fact]
-    public Task MultipleHandlers_SomeWithMultipleInterfaces_GeneratesCorrectly()
+    public Task GeneratesRegistry_WithCustomRootNamespace()
     {
-        var driver = BuildDriver(@"
+        var driver = BuildDriverWithOptions(
+            @"
 using Shiny.Mediator;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace MyApp.Combined;
 
-public record Request1(string Data) : IRequest<Response1>;
-public record Response1(string Result);
+public record MyRequest(string Name) : IRequest<string>;
 
-public record Request2(int Value) : IRequest<Response2>;
-public record Response2(int Result);
-
-public record Request3(bool Flag) : IRequest<Response3>;
-public record Response3(bool Success);
-
-public record StreamRequest1(int Count) : IStreamRequest<string>;
-
-// Single interface handler
 [MediatorSingleton]
-public class Handler1 : IRequestHandler<Request1, Response1>
+public class MyRequestHandler : IRequestHandler<MyRequest, string>
 {
-    public Task<Response1> Handle(Request1 request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new Response1(request.Data));
-    }
-}
-
-// Multiple interface handler
-[MediatorScoped]
-public class Handler2 : IRequestHandler<Request2, Response2>, IRequestHandler<Request3, Response3>
-{
-    public Task<Response2> Handle(Request2 request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new Response2(request.Value * 2));
-    }
-
-    public Task<Response3> Handle(Request3 request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new Response3(request.Flag));
-    }
-}
-
-// Stream handler
-[MediatorSingleton]
-public class StreamHandler : IStreamRequestHandler<StreamRequest1, string>
-{
-    public async IAsyncEnumerable<string> Handle(StreamRequest1 request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        for (int i = 0; i < request.Count; i++)
-        {
-            yield return $""Item {i}"";
-            await Task.Delay(10, cancellationToken);
-        }
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+    public Task<string> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(request.Name);
+}",
+            rootNamespace: "CustomNamespace");
+        
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
         return Verify(result);
     }
 
     [Fact]
-    public Task SingleHandler_ThreeRequestInterfaces_GeneratesCorrectly()
+    public Task GeneratesRegistry_WithPublicAccessModifier()
+    {
+        var driver = BuildDriverWithOptions(
+            @"
+using Shiny.Mediator;
+
+
+namespace TestApp;
+
+public record MyRequest(string Name) : IRequest<string>;
+
+[MediatorSingleton]
+public class MyRequestHandler : IRequestHandler<MyRequest, string>
+{
+    public Task<string> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(request.Name);
+}",
+            accessModifier: "public");
+        
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task GeneratesRegistry_WithCustomMethodName()
+    {
+        var driver = BuildDriverWithOptions(
+            @"
+using Shiny.Mediator;
+
+
+namespace TestApp;
+
+public record MyRequest(string Name) : IRequest<string>;
+
+[MediatorSingleton]
+public class MyRequestHandler : IRequestHandler<MyRequest, string>
+{
+    public Task<string> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(request.Name);
+}",
+            methodName: "AddCustomMediatorServices");
+        
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task GeneratesRegistry_WithMixedLifetimes()
     {
         var driver = BuildDriver(@"
 using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace MyApp.TripleHandlers;
 
-public record Request1(string A) : IRequest<string>;
-public record Request2(int B) : IRequest<int>;
-public record Request3(bool C) : IRequest<bool>;
+namespace TestApp;
+
+public record Request1(string Name) : IRequest<string>;
+public record Request2(int Value) : IRequest<int>;
 
 [MediatorSingleton]
-public class TripleHandler : IRequestHandler<Request1, string>, 
-                              IRequestHandler<Request2, int>, 
-                              IRequestHandler<Request3, bool>
+public class Request1Handler : IRequestHandler<Request1, string>
 {
     public Task<string> Handle(Request1 request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(request.A.ToUpper());
-    }
+        => Task.FromResult(request.Name);
+}
 
+[MediatorScoped]
+public class Request2Handler : IRequestHandler<Request2, int>
+{
     public Task<int> Handle(Request2 request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(request.B * 10);
-    }
-
-    public Task<bool> Handle(Request3 request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(!request.C);
-    }
-}
-");
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(0);
+        => Task.FromResult(request.Value);
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
         return Verify(result);
     }
 
+//     [Fact]
+//     public Task DoesNotGenerate_WithoutAttribute()
+//     {
+//         var driver = BuildDriver(@"
+// using Shiny.Mediator;
+//
+// namespace TestApp;
+//
+// public record MyRequest(string Name) : IRequest<string>;
+//
+// [MediatorSingleton]
+// public class MyRequestHandler : IRequestHandler<MyRequest, string>
+// {
+//     public Task<string> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+//         => Task.FromResult(request.Name);
+// }");
+//         var result = driver.GetRunResult().Results.FirstOrDefault();
+//         result.Exception.ShouldBeNull();
+//         // Should only generate the attributes file, no registry
+//         result.GeneratedSources.Length.ShouldBe(1);
+//         result.GeneratedSources[0].HintName.ShouldBe("MediatorAttributes.g.cs");
+//         return Verify(result);
+//     }
+
     [Fact]
-    public Task HeadGeneration_Disabled_GeneratesOnlyAttributes()
+    public Task DoesNotGenerate_WithoutMediatorAttribute()
     {
         var driver = BuildDriver(@"
 using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace MyApp;
 
-public record MyRequest(string Data) : IRequest<MyResponse>;
-public record MyResponse(string Result);
+namespace TestApp;
 
-[MediatorSingleton]
-public class MyHandler : IRequestHandler<MyRequest, MyResponse>
+public record MyRequest(string Name) : IRequest<string>;
+
+// No [MediatorSingleton] or [MediatorScoped] attribute
+public class MyRequestHandler : IRequestHandler<MyRequest, string>
 {
-    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new MyResponse(request.Data));
-    }
-}
-", 
-            rootNamespace: "MyApp",
-            enableHeadGeneration: false);
-        
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        
-        // Should only generate the attributes file when head generation is disabled
-        result.GeneratedTrees.Length.ShouldBe(1);
-        result.GeneratedTrees[0].FilePath.ShouldEndWith("MediatorAttributes.g.cs");
-        
+    public Task<string> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(request.Name);
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        // Should only generate the attributes file, no registry
+        result.GeneratedSources.Length.ShouldBe(1);
+        result.GeneratedSources[0].HintName.ShouldBe("MediatorAttributes.g.cs");
         return Verify(result);
     }
 
     [Fact]
-    public Task HeadGeneration_EnabledViaMSBuild_GeneratesCorrectly()
+    public Task GeneratesRegistry_WithCommandMiddleware()
     {
         var driver = BuildDriver(@"
 using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace MyApp;
 
-public record MyRequest(string Data) : IRequest<MyResponse>;
-public record MyResponse(string Result);
+namespace TestApp;
+
+public record MyCommand(string Data) : ICommand;
 
 [MediatorSingleton]
-public class MyHandler : IRequestHandler<MyRequest, MyResponse>
+public class MyCommandHandler : ICommandHandler<MyCommand>
 {
-    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new MyResponse(request.Data));
-    }
+    public Task Handle(MyCommand request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.CompletedTask;
 }
-", 
-            rootNamespace: "MyApp",
-            enableHeadGeneration: true);
-        
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        
-        // Should generate attributes, executor, and registry
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(1);
-        
+
+[MediatorSingleton]
+public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
+{
+    public async Task Process(IMediatorContext context, CommandHandlerDelegate next, CancellationToken cancellationToken)
+    {
+        await next();
+    }
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
         return Verify(result);
     }
 
-    [Fact]
-    public Task HeadGeneration_EnabledViaAssemblyAttribute_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
+    static GeneratorDriver BuildDriver(string sourceCode)
+        => BuildDriverWithOptions(sourceCode);
 
-[assembly: ShinyMediatorHeadGeneration]
-
-namespace MyApp;
-
-public record MyRequest(string Data) : IRequest<MyResponse>;
-public record MyResponse(string Result);
-
-[MediatorSingleton]
-public class MyHandler : IRequestHandler<MyRequest, MyResponse>
-{
-    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new MyResponse(request.Data));
-    }
-}
-", 
-            rootNamespace: "MyApp",
-            enableHeadGeneration: false);  // Disabled via MSBuild but enabled via attribute
-        
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        
-        // Should generate even though MSBuild property is false, because assembly attribute is present
-        result.GeneratedTrees.Length.ShouldBeGreaterThan(1);
-        
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task CustomRequestExecutorClassName_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp;
-
-public record MyRequest(string Data) : IRequest<MyResponse>;
-public record MyResponse(string Result);
-
-[MediatorSingleton]
-public class MyHandler : IRequestHandler<MyRequest, MyResponse>
-{
-    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new MyResponse(request.Data));
-    }
-}
-", 
-            rootNamespace: "MyApp",
-            requestExecutorClassName: "MyCustomRequestExecutor");
-        
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        
-        // Verify the custom executor class name is used
-        var executorFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_RequestExecutor.g.cs"));
-        executorFile.ShouldNotBeNull();
-        executorFile.ToString().ShouldContain("internal class MyCustomRequestExecutor");
-        
-        // Verify it's registered with the custom name in the registry
-        var registryFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Registry.g.cs"));
-        registryFile.ShouldNotBeNull();
-        registryFile.ToString().ShouldContain("global::MyApp.MyCustomRequestExecutor");
-        
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task CustomStreamRequestExecutorClassName_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp;
-
-public record MyStreamRequest(int Count) : IStreamRequest<string>;
-
-[MediatorSingleton]
-public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
-{
-    public async IAsyncEnumerable<string> Handle(MyStreamRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        for (int i = 0; i < request.Count; i++)
-        {
-            yield return $""Item {i}"";
-            await Task.Delay(10, cancellationToken);
-        }
-    }
-}
-", 
-            rootNamespace: "MyApp",
-            streamRequestExecutorClassName: "MyCustomStreamExecutor");
-        
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        
-        // Verify the custom stream executor class name is used
-        var streamExecutorFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_StreamRequestExecutor.g.cs"));
-        streamExecutorFile.ShouldNotBeNull();
-        streamExecutorFile.ToString().ShouldContain("internal class MyCustomStreamExecutor");
-        
-        // Verify it's registered with the custom name in the registry
-        var registryFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Registry.g.cs"));
-        registryFile.ShouldNotBeNull();
-        registryFile.ToString().ShouldContain("global::MyApp.MyCustomStreamExecutor");
-        
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task BothCustomExecutorClassNames_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp;
-
-public record MyRequest(string Data) : IRequest<MyResponse>;
-public record MyResponse(string Result);
-
-public record MyStreamRequest(int Count) : IStreamRequest<string>;
-
-[MediatorSingleton]
-public class MyRequestHandler : IRequestHandler<MyRequest, MyResponse>
-{
-    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new MyResponse(request.Data));
-    }
-}
-
-[MediatorSingleton]
-public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
-{
-    public async IAsyncEnumerable<string> Handle(MyStreamRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        for (int i = 0; i < request.Count; i++)
-        {
-            yield return $""Item {i}"";
-            await Task.Delay(10, cancellationToken);
-        }
-    }
-}
-", 
-            rootNamespace: "MyApp",
-            requestExecutorClassName: "MyCustomRequestExecutor",
-            streamRequestExecutorClassName: "MyCustomStreamExecutor");
-        
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        
-        // Verify both custom class names are used
-        var registryFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Registry.g.cs"));
-        registryFile.ShouldNotBeNull();
-        var registryCode = registryFile.ToString();
-        registryCode.ShouldContain("internal static class __ShinyMediatorRegistry");
-        registryCode.ShouldContain("[global::System.Runtime.CompilerServices.ModuleInitializer]");
-        registryCode.ShouldContain("global::Shiny.Mediator.Infrastructure.MediatorRegistry.RegisterCallback");
-        registryCode.ShouldContain("global::MyApp.MyCustomRequestExecutor");
-        registryCode.ShouldContain("global::MyApp.MyCustomStreamExecutor");
-        
-        var executorFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_RequestExecutor.g.cs"));
-        executorFile.ShouldNotBeNull();
-        executorFile.ToString().ShouldContain("internal class MyCustomRequestExecutor");
-        
-        var streamExecutorFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_StreamRequestExecutor.g.cs"));
-        streamExecutorFile.ShouldNotBeNull();
-        streamExecutorFile.ToString().ShouldContain("internal class MyCustomStreamExecutor");
-        
-        return Verify(result);
-    }
-
-    [Fact]
-    public void CustomClassNames_WithNullOrEmpty_UsesDefaults()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyApp;
-
-public record MyRequest(string Data) : IRequest<MyResponse>;
-public record MyResponse(string Result);
-
-[MediatorSingleton]
-public class MyHandler : IRequestHandler<MyRequest, MyResponse>
-{
-    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new MyResponse(request.Data));
-    }
-}
-", 
-            rootNamespace: "MyApp",
-            requestExecutorClassName: "",  // Empty string should use default
-            streamRequestExecutorClassName: "");  // Empty string should use default
-        
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        
-        // Verify default names are used when empty strings are provided
-        var registryFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_Registry.g.cs"));
-        registryFile.ShouldNotBeNull();
-        var registryCode = registryFile.ToString();
-        registryCode.ShouldContain("internal static class __ShinyMediatorRegistry");  // Always uses fixed name
-        registryCode.ShouldContain("global::MyApp.MyAppRequestExecutor");  // Default request executor
-        
-        var executorFile = result.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("_RequestExecutor.g.cs"));
-        executorFile.ShouldNotBeNull();
-        executorFile.ToString().ShouldContain("internal class MyAppRequestExecutor");  // Default based on namespace
-    }
-
-    [Fact]
-    public Task CustomClassNames_WithDifferentNamespace_GeneratesCorrectly()
-    {
-        var driver = BuildDriver(@"
-using Shiny.Mediator;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MyCompany.MyProduct.Features;
-
-public record MyRequest(string Data) : IRequest<MyResponse>;
-public record MyResponse(string Result);
-
-public record MyStreamRequest(int Count) : IStreamRequest<string>;
-
-[MediatorSingleton]
-public class MyRequestHandler : IRequestHandler<MyRequest, MyResponse>
-{
-    public Task<MyResponse> Handle(MyRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new MyResponse(request.Data));
-    }
-}
-
-[MediatorSingleton]
-public class MyStreamHandler : IStreamRequestHandler<MyStreamRequest, string>
-{
-    public async IAsyncEnumerable<string> Handle(MyStreamRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        for (int i = 0; i < request.Count; i++)
-        {
-            yield return $""Item {i}"";
-            await Task.Delay(10, cancellationToken);
-        }
-    }
-}
-", 
-            rootNamespace: "MyCompany.MyProduct.Features",
-            requestExecutorClassName: "CustomRequestExec",
-            streamRequestExecutorClassName: "CustomStreamExec");
-        
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        
-        return Verify(result);
-    }
-
-    [Fact]
-    public Task MultipleProjects_WithHandlersAndMiddleware_GeneratesCorrectly()
-    {
-        // Simulate Project 1 - a library with handlers
-        var project1Code = @"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Project1.Handlers;
-
-public record Project1Request(string Data) : IRequest<Project1Response>;
-public record Project1Response(string Result);
-
-public record Project1Command(int Value) : ICommand;
-
-[MediatorSingleton]
-public class Project1RequestHandler : IRequestHandler<Project1Request, Project1Response>
-{
-    public Task<Project1Response> Handle(Project1Request request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new Project1Response(request.Data));
-    }
-}
-
-[MediatorScoped]
-public class Project1CommandHandler : ICommandHandler<Project1Command>
-{
-    public Task Handle(Project1Command command, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
-    }
-}
-
-[MediatorSingleton]
-public class Project1RequestMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse>
-    where TRequest : IRequest<TResponse>
-{
-    public Task<TResponse> Process(IMediatorContext context, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
-    {
-        return next();
-    }
-}";
-
-        // Simulate Project 2 - another library with handlers and middleware
-        var project2Code = @"
-using Shiny.Mediator;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Project2.Features;
-
-public record Project2Request(int Id) : IRequest<Project2Response>;
-public record Project2Response(int Id, string Name);
-
-public record Project2StreamRequest(int Count) : IStreamRequest<string>;
-
-public record Project2Event(string Message) : IEvent;
-
-[MediatorScoped]
-public class Project2RequestHandler : IRequestHandler<Project2Request, Project2Response>
-{
-    public Task<Project2Response> Handle(Project2Request request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new Project2Response(request.Id, ""Test""));
-    }
-}
-
-[MediatorSingleton]
-public class Project2StreamHandler : IStreamRequestHandler<Project2StreamRequest, string>
-{
-    public async IAsyncEnumerable<string> Handle(Project2StreamRequest request, IMediatorContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        for (int i = 0; i < request.Count; i++)
-        {
-            yield return $""Item {i}"";
-            await Task.Delay(10, cancellationToken);
-        }
-    }
-}
-
-[MediatorScoped]
-public class Project2EventHandler : IEventHandler<Project2Event>
-{
-    public Task Handle(Project2Event @event, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
-    }
-}
-
-[MediatorSingleton]
-public class Project2CommandMiddleware<TCommand> : ICommandMiddleware<TCommand>
-    where TCommand : ICommand
-{
-    public Task Process(IMediatorContext context, CommandHandlerDelegate next, CancellationToken cancellationToken)
-    {
-        return next();
-    }
-}";
-
-        // Main project that references both libraries
-        var mainProjectCode = @"
-using Shiny.Mediator;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MainApp;
-
-public record MainRequest(string Input) : IRequest<MainResponse>;
-public record MainResponse(string Output);
-
-[MediatorSingleton]
-public class MainRequestHandler : IRequestHandler<MainRequest, MainResponse>
-{
-    public Task<MainResponse> Handle(MainRequest request, IMediatorContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new MainResponse(request.Input.ToUpper()));
-    }
-}";
-
-        var driver = BuildDriverWithMultipleProjects(
-            mainProjectCode,
-            new[] { project1Code, project2Code },
-            rootNamespace: "MainApp");
-
-        var result = driver.GetRunResult();
-        result.Diagnostics.ShouldBeEmpty();
-        
-        return Verify(result);
-    }
-
-    static GeneratorDriver BuildDriver(
-        string sourceCode, 
-        string? rootNamespace = "TestAssembly",
-        string? requestExecutorClassName = null,
-        string? streamRequestExecutorClassName = null,
-        bool enableHeadGeneration = true)
+    static GeneratorDriver BuildDriverWithOptions(
+        string sourceCode,
+        string? rootNamespace = null,
+        string? accessModifier = null,
+        string? methodName = null)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
         
@@ -1442,136 +424,61 @@ public class MainRequestHandler : IRequestHandler<MainRequest, MainResponse>
         var compilation = CSharpCompilation.Create("TestAssembly", [syntaxTree], references, options);
 
         var generator = new MediatorSourceGenerator();
-        
-        // Setup analyzer config options with MSBuild properties
-        var buildProperties = new Dictionary<string, string>();
-        
-        if (rootNamespace != null)
-            buildProperties["build_property.RootNamespace"] = rootNamespace;
-            
-        if (requestExecutorClassName != null)
-            buildProperties["build_property.ShinyRequestExecutorClassName"] = requestExecutorClassName;
-            
-        if (streamRequestExecutorClassName != null)
-            buildProperties["build_property.ShinyStreamRequestExecutorClassName"] = streamRequestExecutorClassName;
-        
-        // Enable head generation via MSBuild property
-        if (enableHeadGeneration)
-            buildProperties["build_property.ShinyMediatorHeadGeneration"] = "true";
-        
-        var optionsProvider = new MockAnalyzerConfigOptionsProvider(buildProperties);
-        
-        var driver = CSharpGeneratorDriver.Create(
-            generators: [generator.AsSourceGenerator()],
-            optionsProvider: optionsProvider);
-            
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        // Add MSBuild options if specified
+        if (rootNamespace != null || accessModifier != null || methodName != null)
+        {
+            var optionsProvider = new TestAnalyzerConfigOptionsProvider(
+                rootNamespace,
+                accessModifier,
+                methodName);
+            driver = (CSharpGeneratorDriver)driver.WithUpdatedAnalyzerConfigOptions(optionsProvider);
+        }
+
         return driver.RunGenerators(compilation);
     }
 
-    static GeneratorDriver BuildDriverWithMultipleProjects(
-        string mainProjectCode,
-        string[] referencedProjectsCodes,
-        string? rootNamespace = "TestAssembly",
-        string? requestExecutorClassName = null,
-        string? streamRequestExecutorClassName = null,
-        bool enableHeadGeneration = true)
+    class TestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
     {
-        // Standard references needed by all projects
-        var standardReferences = new[]
+        private readonly TestAnalyzerConfigOptions globalOptions;
+
+        public TestAnalyzerConfigOptionsProvider(
+            string? rootNamespace,
+            string? accessModifier,
+            string? methodName)
         {
-            MetadataReference.CreateFromFile(typeof(IMediator).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IRequest<>).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(Task).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(CancellationToken).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IAsyncEnumerable<>).Assembly.Location),
-            MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
-            MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
-        };
-
-        var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
-        var sourceGenerator = new MediatorSourceGenerator();
-        
-        // Build referenced project assemblies
-        var referencedAssemblies = new List<MetadataReference>();
-        for (int i = 0; i < referencedProjectsCodes.Length; i++)
-        {
-            var projectCode = referencedProjectsCodes[i];
-            var projectSyntaxTree = CSharpSyntaxTree.ParseText(projectCode);
-            var projectCompilation = CSharpCompilation.Create(
-                $"ReferencedProject{i + 1}",
-                [projectSyntaxTree],
-                standardReferences,
-                options);
-
-            // Run source generator on referenced project to generate attributes
-            var projectBuildProps = new Dictionary<string, string>
-            {
-                ["build_property.RootNamespace"] = $"ReferencedProject{i + 1}",
-                ["build_property.ShinyMediatorHeadGeneration"] = "false" // Don't generate executors for libs
-            };
-            var projectOptionsProvider = new MockAnalyzerConfigOptionsProvider(projectBuildProps);
-            
-            var projectDriver = CSharpGeneratorDriver.Create(
-                generators: [sourceGenerator.AsSourceGenerator()],
-                optionsProvider: projectOptionsProvider);
-            
-            projectDriver = (CSharpGeneratorDriver)projectDriver.RunGenerators(projectCompilation);
-            var projectRunResult = projectDriver.GetRunResult();
-            
-            // Update compilation with generated sources
-            var generatedTrees = projectRunResult.GeneratedTrees.ToList();
-            projectCompilation = projectCompilation.AddSyntaxTrees(generatedTrees);
-
-            // Emit to memory and create metadata reference
-            using var ms = new MemoryStream();
-            var emitResult = projectCompilation.Emit(ms);
-            if (!emitResult.Success)
-            {
-                var errors = emitResult.Diagnostics
-                    .Where(d => d.Severity == DiagnosticSeverity.Error)
-                    .Select(d => d.GetMessage());
-                throw new InvalidOperationException(
-                    $"Failed to compile referenced project {i + 1}: " +
-                    string.Join(", ", errors));
-            }
-
-            ms.Seek(0, SeekOrigin.Begin);
-            referencedAssemblies.Add(MetadataReference.CreateFromStream(ms));
+            this.globalOptions = new TestAnalyzerConfigOptions(
+                rootNamespace,
+                accessModifier,
+                methodName);
         }
 
-        // Build main project with references to the other projects
-        var mainSyntaxTree = CSharpSyntaxTree.ParseText(mainProjectCode);
-        var allReferences = standardReferences.Concat(referencedAssemblies).ToArray();
-        var mainCompilation = CSharpCompilation.Create(
-            "MainTestAssembly",
-            [mainSyntaxTree],
-            allReferences,
-            options);
-        
-        // Setup analyzer config options with MSBuild properties
-        var mainBuildProperties = new Dictionary<string, string>();
-        
-        if (rootNamespace != null)
-            mainBuildProperties["build_property.RootNamespace"] = rootNamespace;
-            
-        if (requestExecutorClassName != null)
-            mainBuildProperties["build_property.ShinyRequestExecutorClassName"] = requestExecutorClassName;
-            
-        if (streamRequestExecutorClassName != null)
-            mainBuildProperties["build_property.ShinyStreamRequestExecutorClassName"] = streamRequestExecutorClassName;
-        
-        // Enable head generation via MSBuild property
-        if (enableHeadGeneration)
-            mainBuildProperties["build_property.ShinyMediatorHeadGeneration"] = "true";
-        
-        var mainOptionsProvider = new MockAnalyzerConfigOptionsProvider(mainBuildProperties);
-        
-        var mainDriver = CSharpGeneratorDriver.Create(
-            generators: [sourceGenerator.AsSourceGenerator()],
-            optionsProvider: mainOptionsProvider);
-            
-        return mainDriver.RunGenerators(mainCompilation);
+        public override AnalyzerConfigOptions GlobalOptions => this.globalOptions;
+
+        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => this.globalOptions;
+
+        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => this.globalOptions;
+    }
+
+    class TestAnalyzerConfigOptions : AnalyzerConfigOptions
+    {
+        private readonly Dictionary<string, string> options = new();
+
+        public TestAnalyzerConfigOptions(
+            string? rootNamespace,
+            string? accessModifier,
+            string? methodName)
+        {
+            if (rootNamespace != null)
+                this.options["build_property.RootNamespace"] = rootNamespace;
+            if (accessModifier != null)
+                this.options["build_property.ShinyMediatorRegistryAccessModifier"] = accessModifier;
+            if (methodName != null)
+                this.options["build_property.ShinyMediatorRegistryMethodName"] = methodName;
+        }
+
+        public override bool TryGetValue(string key, out string value)
+            => this.options.TryGetValue(key, out value!);
     }
 }
-

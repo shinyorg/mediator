@@ -60,10 +60,11 @@ public partial class App : Application
                         .Section<AppConfig>()
                 )
                 .UseNavigation(RegisterRoutes)
-                .AddShinyMediator(x => x
-                    .AddRegistry()
-                    .AddUnoPersistentCache()
-                )
+                .AddShinyMediator(x =>
+                {
+                    x.Services.AddMediatorRegistry();
+                    x.AddUnoPersistentCache();
+                })
             );
         
         MainWindow = builder.Window;

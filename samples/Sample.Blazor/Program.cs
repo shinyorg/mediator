@@ -17,6 +17,10 @@ builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
 
 builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
-builder.Services.AddShinyMediator(x => x.AddRegistry().UseBlazor());
+builder.Services.AddShinyMediator(x =>
+{
+    x.Services.AddMediatorRegistry();
+    x.UseBlazor();
+});
 
 await builder.Build().RunAsync();

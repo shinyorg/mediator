@@ -1,4 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
@@ -10,13 +12,6 @@ public sealed class ShinyMediatorBuilder(IServiceCollection services)
 {
     public IServiceCollection Services => services;
 
-
-    public ShinyMediatorBuilder AddRegistry()
-    {
-        // TODO: should I clear registrations after to prevent double registration if method is recalledrecalling
-        MediatorRegistry.RunCallbacks(this);
-        return this;
-    }
 
     public ShinyMediatorBuilder SetContractKeyProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>() where TProvider : class, IContractKeyProvider
     {
