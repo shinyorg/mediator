@@ -2,10 +2,11 @@ namespace Shiny.Mediator.Prism.Infrastructure;
 
 
 public class PrismNavigationCommandHandler<TCommand>(
-    IGlobalNavigationService navigator
+    IGlobalNavigationService navigator,
+    IDispatcher dispatcher
 ) : ICommandHandler<TCommand> where TCommand : IPrismNavigationCommand
 {
-    public async Task Handle(TCommand command, IMediatorContext context, CancellationToken cancellationToken)
+    public Task Handle(TCommand command, IMediatorContext context, CancellationToken cancellationToken)
     {
         var pn = command.NavigationParameterName ?? command.GetType().Name;
         var nav = command.Navigator ?? navigator;
@@ -19,25 +20,14 @@ public class PrismNavigationCommandHandler<TCommand>(
         if (command.IsModal)
             navParams.Add(KnownNavigationParameters.UseModalNavigation, true);
         
-        if (command.IsAnimated ?? true)
-            navParams.Add(KnownNavigationParameters.Animated, true);
+        if (command.IsAnimated != null)
+            navParams.Add(KnownNavigationParameters.Animated, command.IsAnimated.Value);
         
-        MainThread.BeginInvokeOnMainThread(async () =>
+        return dispatcher.DispatchAsync(async () =>
         {
-            try
-            {
-                var result = await nav.NavigateAsync(navUri, navParams);
-                if (!result.Success)
-                    throw new InvalidOperationException("Failed to Navigate", result.Exception);
-                
-                tcs.SetResult();
-            }
-            catch (Exception ex)
-            {
-                tcs.SetException(ex);
-            }
+            var result = await nav.NavigateAsync(navUri, navParams);
+            if (!result.Success)
+                throw new InvalidOperationException("Failed to Navigate", result.Exception);
         });
-
-        await tcs.Task.ConfigureAwait(false);
     }
 }
