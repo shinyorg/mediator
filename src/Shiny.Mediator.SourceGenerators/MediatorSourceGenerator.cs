@@ -466,6 +466,12 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         sb.AppendLine(Constants.GeneratedCodeAttributeString);
         sb.AppendLine($"{options.AccessModifier} static class __ShinyMediatorRegistry");
         sb.AppendLine("{");
+        sb.AppendLine($"    public static global::Shiny.Mediator.ShinyMediatorBuilder {options.RegistryMethodName}(this global::Shiny.Mediator.ShinyMediatorBuilder builder)");
+        sb.AppendLine("    {");
+        sb.AppendLine($"        builder.Services.{options.RegistryMethodName}();");
+        sb.AppendLine("        return builder;");
+        sb.AppendLine("    }");
+        sb.AppendLine();
         sb.AppendLine($"    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection {options.RegistryMethodName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)");
         sb.AppendLine("    {");
 

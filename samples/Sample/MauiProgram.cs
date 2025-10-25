@@ -43,8 +43,8 @@ public static class MauiProgram
                 .GetManifestResourceStream("Sample.appsettings.json")!
         );
 
-        builder.Services.AddMediatorRegistry();
         builder.AddShinyMediator(x => x
+            .AddMediatorRegistry()
             .UseMaui()
             .UseBlazor()
             .PreventEventExceptions()
