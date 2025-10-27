@@ -6,9 +6,11 @@
 
 <body>
     <a href="/scalar">Scalar</a>
-    <button id="start">Start</button>
-    <button id="stop">Stop</button>
-
+    <button id="start">Start Stream</button>
+    <button id="stop">Stop All Streams</button>
+    <button id="sub">Subscribe to Event Stream</button>
+    <button id="pubevent">Publish Event</button>
+    
     <div id="messages"></div>
 
     <script type="text/javascript">
@@ -44,6 +46,29 @@
                     eventSource.close();
                     eventSource = null;
                 }
+            });
+            
+            $('#sub').on('click', function () {
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+                eventSource = new EventSource('/sub');
+
+                eventSource.onmessage = function (event) {
+                    console.log('Event', event);
+                    $('#messages').append($('<div>').text('Event Publish Received').append($('<hr/>')));
+                };
+
+                eventSource.onerror = function (e) {
+                    console.error('EventSource failed.', e);
+                    eventSource.close();
+                    eventSource = null;
+                };
+            });
+
+            $('#pubevent').on('click', function () {
+                $.get('/pub');
             });
         })();
     </script>

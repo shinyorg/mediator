@@ -28,4 +28,25 @@ app.MapGet(
     ) => mediator.RequestServerSentEvents(request, context)
 ).ExcludeFromDescription();
 
+app.MapGet(
+    "/pub",
+    async (
+        [FromServices] IMediator mediator
+    ) => 
+    {
+        await mediator.Publish(new MyEvent());
+        return Results.Ok();
+    }
+).ExcludeFromDescription();
+
+app.MapGet(
+    "/sub",
+    (
+        [FromServices] IMediator mediator,
+        [FromServices] IHttpContextAccessor context
+    ) => mediator.EventStreamToServerSentEvents<MyEvent>(context)
+).ExcludeFromDescription();
+
 app.Run();
+
+public record MyEvent : IEvent;
