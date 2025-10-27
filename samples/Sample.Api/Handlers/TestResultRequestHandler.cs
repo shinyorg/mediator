@@ -4,6 +4,7 @@ public record TestResultRequest(int Number) : IRequest<TestResult>;
 public record TestResult;
 
 
+[MediatorScoped]
 [MediatorHttpGroup("/test")]
 public class TestResultRequestHandler : IRequestHandler<TestResultRequest, TestResult>
 {

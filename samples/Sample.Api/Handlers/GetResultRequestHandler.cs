@@ -1,6 +1,7 @@
 namespace Sample.Api.Handlers;
 
 
+[MediatorScoped]
 [MediatorHttpGroup("/thing")]
 public class GetResultRequestHandler : IRequestHandler<GetThingRequest, GetThingResult>, ICommandHandler<DoThing>, ICommandHandler<DoOtherThing>
 {

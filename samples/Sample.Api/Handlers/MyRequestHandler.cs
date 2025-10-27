@@ -1,5 +1,6 @@
 namespace Sample.Api.Handlers;
 
+[MediatorScoped]
 public class MyRequestHandler : IRequestHandler<MyRequest, string>
 {
     [MediatorHttpGet("GetMyRequest", "/")]
