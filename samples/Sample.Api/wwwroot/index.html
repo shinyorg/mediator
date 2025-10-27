@@ -1,0 +1,76 @@
+<html>
+<head>
+    <title>Server Sent Events</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <a href="/scalar">Scalar</a>
+    <button id="start">Start Stream</button>
+    <button id="stop">Stop All Streams</button>
+    <button id="sub">Subscribe to Event Stream</button>
+    <button id="pubevent">Publish Event</button>
+    
+    <div id="messages"></div>
+
+    <script type="text/javascript">
+        (function () {
+            var eventSource;
+
+            $('#start').on('click', function () {
+                if (eventSource) {
+                    return;
+                }
+
+                eventSource = new EventSource('/sse?Count=999&IntervalMs=1000');
+
+                eventSource.onmessage = function (event) {
+                    console.log('Event', event);
+                    let message = event.data;
+                    if (message == null || message === '') {
+                        message = '(no data)';
+                    }
+                    console.log('Message: ' + message);
+                    $('#messages').append($('<div>').text(message).append($('<hr/>')));
+                };
+
+                eventSource.onerror = function (e) {
+                    console.error('EventSource failed.', e);
+                    eventSource.close();
+                    eventSource = null;
+                };
+            });
+
+            $('#stop').on('click', function () {
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+            });
+            
+            $('#sub').on('click', function () {
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+                eventSource = new EventSource('/sub');
+
+                eventSource.onmessage = function (event) {
+                    console.log('Event', event);
+                    $('#messages').append($('<div>').text('Event Publish Received').append($('<hr/>')));
+                };
+
+                eventSource.onerror = function (e) {
+                    console.error('EventSource failed.', e);
+                    eventSource.close();
+                    eventSource = null;
+                };
+            });
+
+            $('#pubevent').on('click', function () {
+                $.get('/pub');
+            });
+        })();
+    </script>
+</body>
+</html>

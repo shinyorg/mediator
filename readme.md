@@ -24,6 +24,7 @@ We are AOT/Trim friendly in all aspects of how you use Mediator.  We use source 
 
 ## Features
 - A Mediator for your ALL .NET Apps
+- Fully AOT & Trimming friendly
 - [Request/Response Handling](https://shinylib.net/mediator/requests)
 - [Event Publication](https://shinylib.net/mediator/events)
 - [Async Enumerable Stream Requests](https://shinylib.net/mediator/streams)
@@ -41,6 +42,7 @@ We are AOT/Trim friendly in all aspects of how you use Mediator.  We use source 
   - [Dapper Extension](https://shinylib.net/mediator/extensions/dapper) for Easy Query Handling
   - [HTTP Extension](https://shinylib.net/mediator/extensions/http) for Easy API handling - OpenAPI Contract Generation takes it even one step further
   - Map contracts directly to handlers with our [ASP.NET Extension](https://shinylib.net/mediator/extensions/aspnet)
+  - Server Sent Events for ASP.NET
 - [Epic Out-of-the-Box Middleware](https://shinylib.net/mediator/middleware/)
   - [Offline Data](https://shinylib.net/mediator/middleware/offline)
   - [Caching](https://shinylib.net/mediator/middleware/caching)
