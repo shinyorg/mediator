@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddShinyMediator(x => x.AddMediatorRegistry());
 builder.Services.AddOpenApi();
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -16,29 +17,15 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 app.MapGeneratedMediatorEndpoints();
-app.MapStaticAssets();
+app.UseDefaultFiles().UseStaticFiles();
 
-// app.MapGet(
-//     "/sse",
-//     async (
-//         [FromServices] IMediator mediator,
-//         [FromServices] IHttpContextAccessor context
-//     ) =>
-//     {
-//         context.HttpContext.Response.Headers.ContentType = "text/event-stream";
-//         context.HttpContext.Response.Headers.CacheControl = "no-cache";
-//         context.HttpContext.Response.Headers.Connection = "keep-alive";
-//
-//         // while (!context.HttpContext.RequestAborted.IsCancellationRequested)
-//         // {
-//             var stream = mediator.Request(new TickerStreamRequest(999, 1000));
-//             await foreach (var ticker in stream)
-//             {
-//                 await context.HttpContext.Response.WriteAsync(ticker.Result.ToString());
-//                 await context.HttpContext.Response.Body.FlushAsync();
-//             }
-//         // }
-//     }
-// );
+app.MapGet(
+    "/sse",
+    (
+        [FromServices] IMediator mediator,
+        [FromServices] IHttpContextAccessor context,
+        [AsParameters] TickerStreamRequest request
+    ) => mediator.RequestServerSentEvents(request, context)
+).ExcludeFromDescription();
 
 app.Run();

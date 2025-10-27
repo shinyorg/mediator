@@ -5,13 +5,14 @@
 </head>
 
 <body>
+    <a href="/scalar">Scalar</a>
     <button id="start">Start</button>
     <button id="stop">Stop</button>
 
     <div id="messages"></div>
 
     <script type="text/javascript">
-        $(function () {
+        (function () {
             var eventSource;
 
             $('#start').on('click', function () {
@@ -19,15 +20,20 @@
                     return;
                 }
 
-                eventSource = new EventSource('/sse');
+                eventSource = new EventSource('/sse?Count=999&IntervalMs=1000');
 
                 eventSource.onmessage = function (event) {
-                    var message = event.data;
+                    console.log('Event', event);
+                    let message = event.data;
+                    if (message == null || message === '') {
+                        message = '(no data)';
+                    }
+                    console.log('Message: ' + message);
                     $('#messages').append($('<div>').text(message).append($('<hr/>')));
                 };
 
-                eventSource.onerror = function () {
-                    console.error('EventSource failed.');
+                eventSource.onerror = function (e) {
+                    console.error('EventSource failed.', e);
                     eventSource.close();
                     eventSource = null;
                 };
