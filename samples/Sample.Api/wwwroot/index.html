@@ -1,0 +1,45 @@
+<html>
+<head>
+    <title>Server Sent Events</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <button id="start">Start</button>
+    <button id="stop">Stop</button>
+
+    <div id="messages"></div>
+
+    <script type="text/javascript">
+        $(function () {
+            var eventSource;
+
+            $('#start').on('click', function () {
+                if (eventSource) {
+                    return;
+                }
+
+                eventSource = new EventSource('/sse');
+
+                eventSource.onmessage = function (event) {
+                    var message = event.data;
+                    $('#messages').append($('<div>').text(message).append($('<hr/>')));
+                };
+
+                eventSource.onerror = function () {
+                    console.error('EventSource failed.');
+                    eventSource.close();
+                    eventSource = null;
+                };
+            });
+
+            $('#stop').on('click', function () {
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

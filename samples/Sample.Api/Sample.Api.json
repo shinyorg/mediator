@@ -85,6 +85,50 @@
         }
       }
     },
+    "/ticker": {
+      "get": {
+        "tags": [
+          "Sample.Api"
+        ],
+        "operationId": "GetTicker",
+        "parameters": [
+          {
+            "name": "Count",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "IntervalMs",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/test/command": {
       "post": {
         "tags": [

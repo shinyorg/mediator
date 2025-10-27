@@ -94,7 +94,7 @@ using System.Text.Json.Serialization;
 namespace <global namespace>;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(PointJsonConverter))]
-struct Point
+partial struct Point
 {
 }
 
