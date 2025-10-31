@@ -159,6 +159,7 @@ public class AttributeMarkerSourceGenerator : IIncrementalGenerator
         sb.AppendLine("// </auto-generated>");
         sb.AppendLine("#nullable enable");
         sb.AppendLine();
+        sb.AppendLine($"using System.Linq;");
 
         // Namespace
         var namespaceName = handler.ClassSymbol.ContainingNamespace.ToDisplayString();
