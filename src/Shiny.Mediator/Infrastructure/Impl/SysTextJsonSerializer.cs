@@ -6,7 +6,11 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 
 public class SysTextJsonSerializerService : ISerializerService
 {
-    public JsonSerializerOptions JsonOptions { get; set; } = new();
+    public JsonSerializerOptions JsonOptions { get; set; } = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        DefaultBufferSize = 128
+    };
     
     public string Serialize<T>(T obj)
     {
@@ -25,4 +29,8 @@ public class SysTextJsonSerializerService : ISerializerService
         var obj = JsonSerializer.Deserialize(content, type, this.JsonOptions)!;
         return obj;
     }
+
+
+    public IAsyncEnumerable<T> DeserlializeAsyncEnumerable<T>(Stream stream, CancellationToken cancellationToken = default)
+        => JsonSerializer.DeserializeAsyncEnumerable<T>(stream, JsonOptions, cancellationToken);
 }
