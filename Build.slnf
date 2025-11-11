@@ -18,7 +18,6 @@
             "src\\Shiny.Mediator.Resilience\\Shiny.Mediator.Resilience.csproj",
             "src\\Shiny.Mediator.Uno\\Shiny.Mediator.Uno.csproj",
             "src\\Shiny.Mediator.Testing\\Shiny.Mediator.Testing.csproj",
-            "src\\Shiny.Mediator.Reflector\\Shiny.Mediator.Reflector.csproj",
             "src\\Shiny.Mediator.Sentry\\Shiny.Mediator.Sentry.csproj"
         ]
     }
