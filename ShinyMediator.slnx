@@ -17,7 +17,7 @@
         <File Path="Directory.build.props"/>
         <File Path="Directory.build.targets"/>
         <File Path="Directory.packages.props"/>
-        <File Path="src\nuget.txt"/>
+        <File Path="nuget.txt"/>
         <File Path="LICENSE"/>
         <File Path=".github\PULL_REQUEST_TEMPLATE.md"/>
         <File Path="Build.slnf"/>

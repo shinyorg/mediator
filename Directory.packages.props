@@ -29,7 +29,6 @@
         <PackageVersion Include="FluentValidation" Version="12.0.0"/>
         <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0"/>
         <PackageVersion Include="Prism.Maui" Version="9.0.537"/>
-        <PackageVersion Include="Shiny.Reflector" Version="1.7.0"/>
     </ItemGroup>
 
     <!--source generator-->
