@@ -2,7 +2,6 @@
     <PropertyGroup>
         <MicrosoftSdkVersion>10.0.0</MicrosoftSdkVersion>
         <MauiVersion>10.0.0</MauiVersion>
-        <UnoVersion>6.4.13</UnoVersion>
     </PropertyGroup>
 
     <!--core project-->
@@ -60,7 +59,6 @@
         <PackageVersion Include="DeviceRunners.UITesting.Xunit" Version="0.1.0-preview.5"/>
         <PackageVersion Include="DeviceRunners.VisualRunners.Maui" Version="0.1.0-preview.5"/>
         <PackageVersion Include="DeviceRunners.VisualRunners.Xunit" Version="0.1.0-preview.5"/>
-        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0"/>
         <PackageVersion Include="DryIoc.Microsoft.DependencyInjection" Version="6.2.0"/>
         <PackageVersion Include="GitHubActionsTestLogger" Version="2.4.1"/>
         <PackageVersion Include="Microsoft.Data.Sqlite" Version="$(MicrosoftSdkVersion)"/>
