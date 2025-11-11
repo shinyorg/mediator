@@ -1,6 +1,6 @@
 <Project Sdk="Uno.Sdk/6.0.96">
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>$(BaseTargetFramework)</TargetFramework>
         <UnoSingleProject>true</UnoSingleProject>
         <OutputType>Library</OutputType>
         <Nullable>enable</Nullable>

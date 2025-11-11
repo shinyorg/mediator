@@ -1,6 +1,6 @@
 <Project Sdk="Uno.Sdk/6.0.96">
     <PropertyGroup>
-        <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst;net9.0-windows10.0.26100;net9.0-browserwasm;net9.0-desktop;net9.0</TargetFrameworks>
+        <TargetFrameworks>$(BaseTargetFramework)-android;$(BaseTargetFramework)-ios;$(BaseTargetFramework)-maccatalyst;$(BaseTargetFramework)-windows10.0.26100;$(BaseTargetFramework)-browserwasm;$(BaseTargetFramework)-desktop;$(BaseTargetFramework)</TargetFrameworks>
 
         <OutputType>Exe</OutputType>
         <Nullable>enable</Nullable>

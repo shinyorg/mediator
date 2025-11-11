@@ -51,8 +51,9 @@ public static class RegistrationExtensions
     public static ShinyMediatorBuilder AddHttpClient(this ShinyMediatorBuilder mediatorBuilder)
     {
         mediatorBuilder.Services.AddHttpClient();
-        mediatorBuilder.Services.AddScoped(typeof(IRequestHandler<,>), typeof(HttpRequestHandler<,>));
-        mediatorBuilder.Services.AddSingleton<IRequestHandler<HttpDirectRequest, object?>, HttpDirectRequestHandler>();
+        mediatorBuilder.Services.AddSingleton(typeof(IRequestHandler<,>), typeof(HttpRequestHandler<,>));
+        mediatorBuilder.Services.AddSingleton(typeof(IStreamRequestHandler<,>), typeof(HttpStreamRequestHandler<,>));
+        // mediatorBuilder.Services.AddSingleton<IRequestHandler<HttpDirectRequest, object?>, HttpDirectRequestHandler>();
         return mediatorBuilder;
     }
     
