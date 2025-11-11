@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
-        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks>$(BaseTargetFramework)-android;$(BaseTargetFramework)-ios;$(BaseTargetFramework)-maccatalyst</TargetFrameworks>
+        <!--<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(BaseTargetFramework)-windows10.0.19041.0</TargetFrameworks>-->
 
         <OutputType>Exe</OutputType>
         <RootNamespace>Shiny.Mediator.Maui.Tests</RootNamespace>
@@ -10,7 +10,6 @@
         <SingleProject>true</SingleProject>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <MauiVersion>9.0.90</MauiVersion>
 
         <ApplicationTitle>Shiny.Mediator.Maui.Tests</ApplicationTitle>
         <ApplicationId>org.shiny.mediator.maui.tests</ApplicationId>
@@ -37,12 +36,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="DeviceRunners.UITesting.Maui" Version="0.1.0-preview.5"/>
-        <PackageReference Include="DeviceRunners.UITesting.Xunit" Version="0.1.0-preview.5"/>
-        <PackageReference Include="DeviceRunners.VisualRunners.Maui" Version="0.1.0-preview.5"/>
-        <PackageReference Include="DeviceRunners.VisualRunners.Xunit" Version="0.1.0-preview.5"/>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0"/>
+        <PackageReference Include="DeviceRunners.UITesting.Maui"/>
+        <PackageReference Include="DeviceRunners.UITesting.Xunit"/>
+        <PackageReference Include="DeviceRunners.VisualRunners.Maui"/>
+        <PackageReference Include="DeviceRunners.VisualRunners.Xunit"/>
+        <PackageReference Include="Microsoft.Maui.Controls"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug"/>
     </ItemGroup>
 
     <ItemGroup>

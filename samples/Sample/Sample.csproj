@@ -2,7 +2,6 @@
     <PropertyGroup>
         <TargetFrameworks>$(TargetFrameworks);$(BaseTargetFramework)-android</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks);$(BaseTargetFramework)-ios</TargetFrameworks>
-        <MauiVersion>10.0.0</MauiVersion>
         <OutputType>Exe</OutputType>
         <RootNamespace>Sample</RootNamespace>
         <SingleProject>true</SingleProject>
@@ -91,14 +90,14 @@
     </ItemGroup>
     
     <ItemGroup>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
-        <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" Condition="'$(Configuration)' == 'Debug'" />
+        <PackageReference Include="CommunityToolkit.Mvvm"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json"/>
+        <PackageReference Include="Microsoft.Maui.Controls"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Condition="'$(Configuration)' == 'Debug'" />
 
-        <PackageReference Include="Prism.DryIoc.Maui" Version="9.0.537"/>
-        <PackageReference Include="sqlite-net-pcl" Version="1.9.172"/>
+        <PackageReference Include="Prism.DryIoc.Maui"/>
+        <PackageReference Include="sqlite-net-pcl"/>
     </ItemGroup>
 
     <ItemGroup>

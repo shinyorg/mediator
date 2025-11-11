@@ -1,4 +1,4 @@
-<Project Sdk="Uno.Sdk/6.0.96">
+<Project Sdk="Uno.Sdk/6.4.13">
     <PropertyGroup>
         <TargetFrameworks>$(BaseTargetFramework)-android;$(BaseTargetFramework)-ios;$(BaseTargetFramework)-maccatalyst;$(BaseTargetFramework)-windows10.0.26100;$(BaseTargetFramework)-browserwasm;$(BaseTargetFramework)-desktop;$(BaseTargetFramework)</TargetFrameworks>
 

@@ -10,8 +10,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" />
-        <ProjectReference Include="..\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj" />
-        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj" />
+        <PackageReference Include="Microsoft.Maui.Controls"/>
+        <ProjectReference Include="..\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj"/>
+        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
     </ItemGroup>
 </Project>

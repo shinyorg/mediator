@@ -114,7 +114,7 @@ public abstract class BaseHttpRequestHandler(
         //     .ConfigureAwait(false);
         //
         // return result;
-        return null;
+        return default;
     }
     
 

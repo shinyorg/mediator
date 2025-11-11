@@ -1,6 +1,6 @@
 ﻿<Solution>
   <Folder Name="/Prototypes/">
-    <Project Path="src\Shiny.Mediator.RabbitMq\Shiny.Mediator.RabbitMq.csproj" Type="C#" />
+    <Project Path="src\Shiny.Mediator.RabbitMq\Shiny.Mediator.RabbitMq.csproj" />
   </Folder>
   <Folder Name="/Samples/">
     <Project Path="samples\Sample.Api\Sample.Api.csproj" />
@@ -22,16 +22,17 @@
     <File Path="src\Directory.packages.props" />
     <File Path="Build.slnf" />
     <File Path="nuget.config" />
+    <File Path="Directory.packages.props" />
     <File Path="global.json" />
   </Folder>
   <Folder Name="/sourcegen/">
-    <Project Path="src\Shiny.Mediator.AspNet.SourceGenerators\Shiny.Mediator.AspNet.SourceGenerators.csproj" Type="C#" />
-    <Project Path="src\Shiny.Mediator.Contracts.SourceGenerators\Shiny.Mediator.Contracts.SourceGenerators.csproj" Type="C#" />
+    <Project Path="src\Shiny.Mediator.AspNet.SourceGenerators\Shiny.Mediator.AspNet.SourceGenerators.csproj" />
+    <Project Path="src\Shiny.Mediator.Contracts.SourceGenerators\Shiny.Mediator.Contracts.SourceGenerators.csproj" />
     <Project Path="src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests\Shiny.Mediator.Benchmarks\Shiny.Mediator.Benchmarks.csproj" Type="C#" />
-    <Project Path="tests\Shiny.Mediator.Maui.Tests\Shiny.Mediator.Maui.Tests.csproj" Type="C#" />
+    <Project Path="tests\Shiny.Mediator.Benchmarks\Shiny.Mediator.Benchmarks.csproj" />
+    <Project Path="tests\Shiny.Mediator.Maui.Tests\Shiny.Mediator.Maui.Tests.csproj" />
     <Project Path="tests\Shiny.Mediator.Tests\Shiny.Mediator.Tests.csproj" />
   </Folder>
   <Project Path="src\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj" />
@@ -44,8 +45,8 @@
   <Project Path="src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj" />
   <Project Path="src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj" />
   <Project Path="src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj" />
-  <Project Path="src\Shiny.Mediator.Sentry\Shiny.Mediator.Sentry.csproj" Type="C#" />
-  <Project Path="src\Shiny.Mediator.Testing\Shiny.Mediator.Testing.csproj" Type="C#" />
+  <Project Path="src\Shiny.Mediator.Sentry\Shiny.Mediator.Sentry.csproj" />
+  <Project Path="src\Shiny.Mediator.Testing\Shiny.Mediator.Testing.csproj" />
   <Project Path="src\Shiny.Mediator.Uno\Shiny.Mediator.Uno.csproj" />
   <Project Path="src\Shiny.Mediator\Shiny.Mediator.csproj" />
 </Solution>

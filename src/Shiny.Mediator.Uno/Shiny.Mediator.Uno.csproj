@@ -1,4 +1,4 @@
-<Project Sdk="Uno.Sdk/6.0.96">
+<Project Sdk="Uno.Sdk/6.4.13">
     <PropertyGroup>
         <TargetFramework>$(BaseTargetFramework)</TargetFramework>
         <UnoSingleProject>true</UnoSingleProject>
