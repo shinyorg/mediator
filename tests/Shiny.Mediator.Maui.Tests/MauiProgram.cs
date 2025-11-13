@@ -12,9 +12,9 @@ public static class MauiProgram
             .CreateBuilder()
             .ConfigureUITesting()
             .UseVisualTestRunner(conf => conf
-                    .AddXunit()
-                    .AddConsoleResultChannel()
-                    .AddTestAssembly(typeof(MauiProgram).Assembly)
+                .AddXunit()
+                .AddConsoleResultChannel()
+                .AddTestAssembly(typeof(MauiProgram).Assembly)
 #if MODE_NON_INTERACTIVE_VISUAL
 				.EnableAutoStart(true)
 				.AddTcpResultChannel(new TcpResultChannelOptions

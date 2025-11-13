@@ -1,76 +1,70 @@
 <Project>
-    <PropertyGroup>
-        <MicrosoftSdkVersion>10.0.0</MicrosoftSdkVersion>
-        <MauiVersion>10.0.0</MauiVersion>
-    </PropertyGroup>
-
-    <!--core project-->
-    <ItemGroup>
-        <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.Diagnostics" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="RabbitMQ.Client" Version="7.1.2"/>
-        <PackageVersion Include="Sentry" Version="5.15.1"/>
-    </ItemGroup>
-
-    <!--support libs-->
-    <ItemGroup>
-        <PackageVersion Include="Microsoft.Maui.Controls" Version="$(MauiVersion)"/>
-        <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftSdkVersion)"/>
-
-        <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.Resilience" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Dapper" Version="2.1.35"/>
-        <PackageVersion Include="InterpolatedSql.Dapper" Version="2.3.0"/>
-        <PackageVersion Include="FluentValidation" Version="12.0.0"/>
-        <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0"/>
-        <PackageVersion Include="Prism.Maui" Version="9.0.537"/>
-    </ItemGroup>
-
-    <!--source generator-->
-    <ItemGroup>
-        <PackageVersion Include="SharpYaml" Version="2.1.3" PrivateAssets="All" GeneratePathProperty="true"/>
-        <PackageVersion Include="Microsoft.OpenApi" Version="1.6.24" PrivateAssets="All" GeneratePathProperty="true"/>
-        <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.24" PrivateAssets="All" GeneratePathProperty="true"/>
-        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageVersion Include="Prism.DryIoc.Maui" Version="9.0.537"/>
-        <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0"/>
-        <PackageVersion Include="sqlite-net-pcl" Version="1.9.172"/>
-        <PackageVersion Include="Scalar.AspNetCore" Version="2.10.3"/>
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftSdkVersion)" Condition="'$(Configuration)' == 'Debug'"/>
-        <PackageVersion Include="Microsoft.Extensions.ApiDescription.Server" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)"/>
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(MicrosoftSdkVersion)"/>
-    </ItemGroup>
-    
-    <ItemGroup>
-        <PackageVersion Include="BenchmarkDotNet" Version="0.15.4"/>
-        <PackageVersion Include="DeviceRunners.UITesting.Maui" Version="0.1.0-preview.5"/>
-        <PackageVersion Include="DeviceRunners.UITesting.Xunit" Version="0.1.0-preview.5"/>
-        <PackageVersion Include="DeviceRunners.VisualRunners.Maui" Version="0.1.0-preview.5"/>
-        <PackageVersion Include="DeviceRunners.VisualRunners.Xunit" Version="0.1.0-preview.5"/>
-        <PackageVersion Include="DryIoc.Microsoft.DependencyInjection" Version="6.2.0"/>
-        <PackageVersion Include="GitHubActionsTestLogger" Version="2.4.1"/>
-        <PackageVersion Include="Microsoft.Data.Sqlite" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1"/>
-        <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.6.0"/>
-        <PackageVersion Include="Npgsql" Version="9.0.2"/>
-        <PackageVersion Include="Shouldly" Version="4.3.0"/>
-        <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0"/>
-        <PackageVersion Include="Verify.Xunit" Version="31.0.0"/>
-        <PackageVersion Include="xunit" Version="2.9.3"/>
-        <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5"/>
-    </ItemGroup>
+  <PropertyGroup>
+    <MicrosoftSdkVersion>10.0.0</MicrosoftSdkVersion>
+    <MauiVersion>10.0.0</MauiVersion>
+  </PropertyGroup>
+  <!--core project-->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="RabbitMQ.Client" Version="7.1.2" />
+    <PackageVersion Include="Sentry" Version="5.15.1" />
+  </ItemGroup>
+  <!--support libs-->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Resilience" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Dapper" Version="2.1.35" />
+    <PackageVersion Include="InterpolatedSql.Dapper" Version="2.3.0" />
+    <PackageVersion Include="FluentValidation" Version="12.0.0" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
+    <PackageVersion Include="Prism.Maui" Version="9.0.537" />
+  </ItemGroup>
+  <!--source generator-->
+  <ItemGroup>
+    <PackageVersion Include="SharpYaml" Version="2.1.3" PrivateAssets="All" GeneratePathProperty="true" />
+    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.24" PrivateAssets="All" GeneratePathProperty="true" />
+    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.24" PrivateAssets="All" GeneratePathProperty="true" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageVersion Include="Prism.DryIoc.Maui" Version="9.0.537" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageVersion Include="sqlite-net-pcl" Version="1.9.172" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.10.3" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftSdkVersion)" Condition="'$(Configuration)' == 'Debug'" />
+    <PackageVersion Include="Microsoft.Extensions.ApiDescription.Server" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(MicrosoftSdkVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.6" />
+    <PackageVersion Include="DeviceRunners.UITesting.Maui" Version="0.1.0-preview.5" />
+    <PackageVersion Include="DeviceRunners.UITesting.Xunit" Version="0.1.0-preview.5" />
+    <PackageVersion Include="DeviceRunners.VisualRunners.Maui" Version="0.1.0-preview.5" />
+    <PackageVersion Include="DeviceRunners.VisualRunners.Xunit" Version="0.1.0-preview.5" />
+    <PackageVersion Include="GitHubActionsTestLogger" Version="2.4.1" />
+    <PackageVersion Include="DryIoc.Microsoft.DependencyInjection" Version="6.2.0" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.7.0" />
+    <PackageVersion Include="Npgsql" Version="9.0.2" />
+    <PackageVersion Include="Shouldly" Version="4.3.0" />
+    <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
+    <PackageVersion Include="Verify.Xunit" Version="31.0.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
 </Project>
