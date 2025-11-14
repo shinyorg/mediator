@@ -7,7 +7,7 @@ public interface IPrismRegionNavigationCommand : ICommand
     string? NavigationParameterName { get; }
 
     /// <summary>
-    /// Pass the region manager from your viewmodel for it to be used
+    /// The region manager instance to use for navigation
     /// </summary>
-    IRegionManager? RegionManager { get; set; }
+    IRegionManager RegionManager { get; }
 }
