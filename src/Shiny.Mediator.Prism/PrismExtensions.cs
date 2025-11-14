@@ -11,6 +11,7 @@ public static class PrismExtensions
         // cfg.Services.AddSingletonAsImplementedInterfaces<PrismNavigationRequestHandler>();
 	    cfg.AddEventCollector<PrismRegionEventCollector>();
         cfg.Services.AddSingleton(typeof(ICommandHandler<>), typeof(PrismNavigationCommandHandler<>));
+        cfg.Services.AddSingleton(typeof(ICommandHandler<>), typeof(PrismRegionNavigationCommandHandler<>));
         cfg.Services.AddSingleton<IGlobalNavigationService, GlobalNavigationService>();
         return cfg;
     }    
