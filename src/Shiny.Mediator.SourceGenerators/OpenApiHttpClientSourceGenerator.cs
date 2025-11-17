@@ -10,7 +10,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Reader;
-using Microsoft.OpenApi.YamlReader;
 
 namespace Shiny.Mediator.SourceGenerators;
 
@@ -18,7 +17,7 @@ namespace Shiny.Mediator.SourceGenerators;
 [Generator(LanguageNames.CSharp)]
 public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
 {
-    private static readonly HttpClient HttpClient = new();
+    static readonly HttpClient HttpClient = new();
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -98,7 +97,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         });
     }
 
-    private static MediatorHttpItemConfig GetConfig(
+    static MediatorHttpItemConfig GetConfig(
         AnalyzerConfigOptionsProvider configProvider,
         AdditionalText item,
         string defaultNamespace)
@@ -123,7 +122,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         }
     }
 
-    private static List<HandlerRegistrationInfo> ProcessOpenApiDocument(
+    static List<HandlerRegistrationInfo> ProcessOpenApiDocument(
         SourceProductionContext context,
         AdditionalText item,
         MediatorHttpItemConfig config,
@@ -240,7 +239,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         return handlers;
     }
 
-    private static void GenerateComponents(
+    static void GenerateComponents(
         SourceProductionContext context,
         OpenApiDocument document,
         MediatorHttpItemConfig config,
@@ -260,7 +259,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         }
     }
 
-    private static List<HandlerRegistrationInfo> GenerateHandlers(
+    static List<HandlerRegistrationInfo> GenerateHandlers(
         SourceProductionContext context,
         OpenApiDocument document,
         MediatorHttpItemConfig config,
@@ -310,14 +309,15 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         return handlers;
     }
 
-    private static HandlerRegistrationInfo GenerateHandlerForOperation(
+    static HandlerRegistrationInfo GenerateHandlerForOperation(
         SourceProductionContext context,
         string path,
         string operationType,
         OpenApiOperation operation,
         MediatorHttpItemConfig config,
         Compilation compilation,
-        OpenApiDocument document)
+        OpenApiDocument document
+    )
     {
         var contractName = $"{config.ContractPrefix ?? ""}{(operation.OperationId ?? "Unknown").Pascalize()}{config.ContractPostfix ?? ""}";
         var handlerName = $"{contractName}Handler";
@@ -400,7 +400,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             config.Namespace
         );
 
-        context.AddSource($"{handlerName}.g.cs", SourceText.From(handlerCode, Encoding.UTF8));
+        var handlerFileName = GetFileName(config.Namespace, handlerName);
+        context.AddSource(handlerFileName, SourceText.From(handlerCode, Encoding.UTF8));
 
         return new HandlerRegistrationInfo(
             handlerTypeFull,
@@ -409,14 +410,16 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             isStreamRequest
         );
     }
+    
 
-    private static void GenerateContractClass(
+    static void GenerateContractClass(
         SourceProductionContext context,
         string className,
         string responseType,
         List<HttpPropertyInfo> properties,
         MediatorHttpItemConfig config,
-        Compilation compilation)
+        Compilation compilation
+    )
     {
         var accessor = config.UseInternalClasses ? "internal" : "public";
         
@@ -441,7 +444,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         sb.AppendLine("}");
 
         var contractSource = sb.ToString();
-        context.AddSource($"{className}.g.cs", SourceText.From(contractSource, Encoding.UTF8));
+        var fileName = GetFileName(config.Namespace, className);
+        context.AddSource(fileName, SourceText.From(contractSource, Encoding.UTF8));
 
         // Generate JSON converter if GenerateJsonConverters is true and there are Body parameters
         if (config.GenerateJsonConverters && properties.Any(p => p.ParameterType == HttpParameterType.Body))
@@ -485,8 +489,9 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             }
         }
     }
+    
 
-    private static string GetResponseType(OpenApiOperation operation, MediatorHttpItemConfig config, OpenApiDocument document)
+    static string GetResponseType(OpenApiOperation operation, MediatorHttpItemConfig config, OpenApiDocument document)
     {
         if (operation.Responses != null && operation.Responses.TryGetValue("200", out var response200))
         {
@@ -501,7 +506,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         return "global::System.Net.Http.HttpResponseMessage";
     }
 
-    private static string GetSchemaType(OpenApiSchema schema, MediatorHttpItemConfig config, OpenApiDocument document)
+    
+    static string GetSchemaType(OpenApiSchema schema, MediatorHttpItemConfig config, OpenApiDocument document)
     {
         // Try to find this schema in the components/schemas by object reference
         if (document.Components?.Schemas != null)
@@ -547,24 +553,23 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         return "object";
     }
 
-    private static string GetStringSchemaType(OpenApiSchema schema)
+    static string GetStringSchemaType(OpenApiSchema schema) => schema.Format switch
     {
-        return schema.Format switch
-        {
-            "date-time" => "global::System.DateTimeOffset",
-            "uuid" => "global::System.Guid",
-            "date" => "global::System.DateOnly",
-            "time" => "global::System.TimeOnly",
-            _ => "string"
-        };
-    }
+        "date-time" => "global::System.DateTimeOffset",
+        "uuid" => "global::System.Guid",
+        "date" => "global::System.DateOnly",
+        "time" => "global::System.TimeOnly",
+        _ => "string"
+    };
+    
 
-    private static void ReportDiagnostic(
+    static void ReportDiagnostic(
         SourceProductionContext context,
         string id,
         string title,
         string message,
-        DiagnosticSeverity severity)
+        DiagnosticSeverity severity
+    )
     {
         context.ReportDiagnostic(Diagnostic.Create(
             new DiagnosticDescriptor(
@@ -579,5 +584,13 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             Location.None,
             message
         ));
+    }
+
+    
+    static string GetFileName(string namespaceName, string typeName)
+    {
+        // Sanitize namespace to be file-system safe
+        var sanitizedNamespace = namespaceName.Replace(".", "_").Replace("<", "_").Replace(">", "_");
+        return $"{sanitizedNamespace}.{typeName}.g.cs";
     }
 }
