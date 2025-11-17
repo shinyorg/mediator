@@ -331,7 +331,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         var handlerName = $"{contractName}Handler";
 
         // Determine response type
-        var responseType = GetResponseType(operation, config, document);
+        var responseType = GetResponseType(operation, config, document, context);
         
         // Determine HTTP method
         var httpMethod = operationType.ToUpper();
@@ -499,17 +499,101 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     }
     
 
-    static string GetResponseType(OpenApiOperation operation, MediatorHttpItemConfig config, OpenApiDocument document)
+    static string GetResponseType(OpenApiOperation operation, MediatorHttpItemConfig config, OpenApiDocument document, SourceProductionContext context)
     {
-        if (operation.Responses != null && operation.Responses.TryGetValue("200", out var response200))
+        if (operation.Responses == null || operation.Responses.Count == 0)
         {
-            if (response200?.Content != null && 
-                response200.Content.TryGetValue("application/json", out var mediaType) &&
-                mediaType.Schema is OpenApiSchema schema)
+            return "global::System.Net.Http.HttpResponseMessage";
+        }
+
+        // Try to find a successful response (2xx status codes)
+        var successResponses = new[] { "200", "201", "202", "203" };
+        foreach (var statusCode in successResponses)
+        {
+            if (operation.Responses.TryGetValue(statusCode, out var response))
             {
-                return GetSchemaType(schema, config, document);
+                // Check if response has content
+                if (response?.Content != null && response.Content.Count > 0)
+                {
+                    // Try application/json first
+                    if (response.Content.TryGetValue("application/json", out var mediaType))
+                    {
+                        if (mediaType.Schema is OpenApiSchema schema)
+                        {
+                            var schemaType = GetSchemaType(schema, config, document);
+                            return schemaType;
+                        }
+                        else
+                        {
+                            // Schema is null - report diagnostic
+                            ReportDiagnostic(
+                                context,
+                                "SHINYMED009",
+                                "Missing Schema in Response",
+                                $"Operation '{operation.OperationId}' has {statusCode} response with application/json content but schema is null",
+                                DiagnosticSeverity.Warning
+                            );
+                        }
+                    }
+                    
+                    // Try other content types
+                    var firstContent = response.Content.FirstOrDefault();
+                    if (firstContent.Value?.Schema is OpenApiSchema firstSchema)
+                    {
+                        var schemaType = GetSchemaType(firstSchema, config, document);
+                        return schemaType;
+                    }
+                }
+                
+                // If we found a successful response but no content (e.g., 204 No Content),
+                // return void for 204, otherwise check next status code
+                if (statusCode == "204" || response?.Content == null || response.Content.Count == 0)
+                {
+                    // For 204 or no content responses, we should use void, but since we're in IRequest<T> 
+                    // we'll use a Unit type or HttpResponseMessage as fallback
+                    // Actually, if there's no content, we should still check other status codes
+                    if (statusCode == "204")
+                    {
+                        // 204 No Content - but we can't return void here since IRequest<T> needs a type
+                        // Let's continue to check if there are other responses with content
+                        continue;
+                    }
+                }
             }
         }
+        
+        // Check for 204 No Content specifically - if that's the only success response, return void
+        if (operation.Responses.TryGetValue("204", out var response204))
+        {
+            if (response204?.Content == null || response204.Content.Count == 0)
+            {
+                // No content response - but we can't use void in IRequest<T>
+                // Use a marker type or HttpResponseMessage
+                return "global::System.Net.Http.HttpResponseMessage";
+            }
+        }
+
+        // Fallback: check if there's any 2xx response with default
+        if (operation.Responses.TryGetValue("2XX", out var response2xx) ||
+            operation.Responses.TryGetValue("default", out response2xx))
+        {
+            if (response2xx?.Content != null && 
+                response2xx.Content.TryGetValue("application/json", out var mediaType) &&
+                mediaType.Schema is OpenApiSchema schema)
+            {
+                var schemaType = GetSchemaType(schema, config, document);
+                return schemaType;
+            }
+        }
+
+        // Report that we're falling back to HttpResponseMessage
+        ReportDiagnostic(
+            context,
+            "SHINYMED010",
+            "Falling back to HttpResponseMessage",
+            $"Operation '{operation.OperationId}' - no suitable response schema found, returning HttpResponseMessage. Response codes available: {string.Join(", ", operation.Responses.Keys)}",
+            DiagnosticSeverity.Info
+        );
 
         return "global::System.Net.Http.HttpResponseMessage";
     }
@@ -517,17 +601,6 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     
     static string GetSchemaType(OpenApiSchema schema, MediatorHttpItemConfig config, OpenApiDocument document)
     {
-        // Try to find this schema in the components/schemas by object reference
-        if (document.Components?.Schemas != null)
-        {
-            foreach (var componentSchema in document.Components.Schemas)
-            {
-                if (ReferenceEquals(componentSchema.Value, schema))
-                {
-                    return $"global::{config.Namespace}.{componentSchema.Key}";
-                }
-            }
-        }
 
         // Check if this schema has a title (meaning it's a named type reference)
         // In OpenAPI v3.0, when a schema is referenced from components, it typically has a title
@@ -535,6 +608,51 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         {
             return $"global::{config.Namespace}.{schema.Title}";
         }
+
+        // Handle composed schemas by taking the first resolved type (best effort)
+        if (schema.AllOf is { Count: > 0 })
+        {
+            var first = schema.AllOf.OfType<OpenApiSchema>().FirstOrDefault();
+            if (first != null)
+                return GetSchemaType(first, config, document);
+        }
+        if (schema.OneOf is { Count: > 0 })
+        {
+            var first = schema.OneOf.OfType<OpenApiSchema>().FirstOrDefault();
+            if (first != null)
+                return GetSchemaType(first, config, document);
+        }
+        if (schema.AnyOf is { Count: > 0 })
+        {
+            var first = schema.AnyOf.OfType<OpenApiSchema>().FirstOrDefault();
+            if (first != null)
+                return GetSchemaType(first, config, document);
+        }
+
+        // Try to find this schema in the components/schemas by object reference or properties match
+        if (document.Components?.Schemas != null)
+        {
+            foreach (var componentSchema in document.Components.Schemas)
+            {
+                var componentSchemaValue = componentSchema.Value as OpenApiSchema;
+                if (componentSchemaValue != null)
+                {
+                    // Check if it's the same object reference
+                    if (ReferenceEquals(componentSchemaValue, schema))
+                    {
+                        return $"global::{config.Namespace}.{componentSchema.Key}";
+                    }
+                    
+                    // Check if schemas match by comparing key properties
+                    // This helps when OpenAPI library creates multiple instances for the same schema
+                    if (SchemasMatch(componentSchemaValue, schema))
+                    {
+                        return $"global::{config.Namespace}.{componentSchema.Key}";
+                    }
+                }
+            }
+        }
+
 
         if (schema.Type != null)
         {
@@ -559,6 +677,49 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         }
 
         return "object";
+    }
+
+    static bool SchemasMatch(OpenApiSchema schema1, OpenApiSchema schema2)
+    {
+        // If both have properties, they must match exactly
+        if (schema1.Properties != null && schema2.Properties != null && 
+            schema1.Properties.Count > 0 && schema2.Properties.Count > 0)
+        {
+            if (schema1.Properties.Count != schema2.Properties.Count)
+                return false;
+            
+            // Check if all property names match
+            var props1 = schema1.Properties.Keys.OrderBy(k => k).ToList();
+            var props2 = schema2.Properties.Keys.OrderBy(k => k).ToList();
+            
+            return props1.SequenceEqual(props2);
+        }
+        
+        // If one has properties and the other doesn't, they don't match
+        var hasProps1 = schema1.Properties is { Count: > 0 };
+        var hasProps2 = schema2.Properties is { Count: > 0 };
+        if (hasProps1 != hasProps2)
+            return false;
+        
+        // For schemas without properties, be more strict
+        // Only match if type, format, and required fields are the same
+        if (schema1.Type != schema2.Type)
+            return false;
+        
+        if (schema1.Format != schema2.Format)
+            return false;
+        
+        // Check if both have the same required fields
+        var required1 = schema1.Required ?? new HashSet<string>();
+        var required2 = schema2.Required ?? new HashSet<string>();
+        
+        if (required1.Count != required2.Count)
+            return false;
+        
+        if (!required1.OrderBy(x => x).SequenceEqual(required2.OrderBy(x => x)))
+            return false;
+        
+        return true;
     }
 
     static string GetStringSchemaType(OpenApiSchema schema) => schema.Format switch
@@ -602,3 +763,4 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         return $"{sanitizedNamespace}.{typeName}.g.cs";
     }
 }
+

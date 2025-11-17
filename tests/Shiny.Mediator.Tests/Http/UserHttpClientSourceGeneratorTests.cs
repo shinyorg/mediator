@@ -459,22 +459,19 @@ public class UserHttpClientSourceGeneratorTests
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
 
-        var references = new List<MetadataReference>
-        {
-            MetadataReference.CreateFromFile(typeof(IMediator).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ICommand).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(MediatorHttpGroupAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(Task).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(CancellationToken).Assembly.Location),
-            MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
-            MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
-        };
-
         return CSharpCompilation.Create(
             "TestAssembly",
             [syntaxTree],
-            references,
+            [
+                MetadataReference.CreateFromFile(typeof(IMediator).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ICommand).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(MediatorHttpGroupAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Task).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(CancellationToken).Assembly.Location),
+                MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
+                MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location)
+            ],
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
     }
 }
