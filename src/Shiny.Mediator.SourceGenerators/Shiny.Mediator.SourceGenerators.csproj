@@ -16,39 +16,39 @@
 
     <ItemGroup>
         <!--4.11 does not generate in project refs on rider-->
-        <PackageReference Include="SharpYaml" PrivateAssets="All" GeneratePathProperty="true" />
-        <PackageReference Include="Microsoft.OpenApi" PrivateAssets="All" GeneratePathProperty="true" />
-        <PackageReference Include="Microsoft.OpenApi.Readers" PrivateAssets="All" GeneratePathProperty="true" />
-        
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all"/>
+
+        <PackageReference Include="Microsoft.OpenApi" PrivateAssets="all" GeneratePathProperty="true"/>
+        <PackageReference Include="Microsoft.OpenApi.YamlReader" PrivateAssets="all" GeneratePathProperty="true"/>
+        <PackageReference Include="SharpYaml" PrivateAssets="all" GeneratePathProperty="true"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="SourceGenerators.targets" Pack="True" PackagePath="buildTransitive/$(AssemblyName).targets" />
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-
-        <None Include="$(PKGMicrosoft_OpenApi_Readers)\lib\netstandard2.0\Microsoft.OpenApi.Readers.dll"
-              Pack="true"
-              PackagePath="analyzers/dotnet/cs"
-              Visible="false" />
+        <None Update="SourceGenerators.targets" Pack="True" PackagePath="buildTransitive/$(AssemblyName).targets"/>
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
 
         <None Include="$(PKGMicrosoft_OpenApi)\lib\netstandard2.0\Microsoft.OpenApi.dll"
               Pack="true"
               PackagePath="analyzers/dotnet/cs"
-              Visible="false" />
+              Visible="false"/>
+
+        <None Include="$(PKGMicrosoft_OpenApi_YamlReader)\lib\netstandard2.0\Microsoft.OpenApi.YamlReader.dll"
+              Pack="true"
+              PackagePath="analyzers/dotnet/cs"
+              Visible="false"/>
 
         <None Include="$(PKGSharpYaml)\lib\netstandard2.0\SharpYaml.dll"
               Pack="true"
               PackagePath="analyzers/dotnet/cs"
-              Visible="false" />
+              Visible="false"/>
+
     </ItemGroup>
 
     <Target Name="GetDependencyTargetPaths">
         <ItemGroup>
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_OpenApi_Readers)\lib\netstandard2.0\Microsoft.OpenApi.Readers.dll" IncludeRuntimeDependency="false" />
-
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_OpenApi)\lib\netstandard2.0\Microsoft.OpenApi.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGSharpYaml)\lib\netstandard2.0\SharpYaml.dll" IncludeRuntimeDependency="false" />
+            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_OpenApi_YamlReader)\lib\netstandard2.0\Microsoft.OpenApi.YamlReader.dll" IncludeRuntimeDependency="false"/>
+            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_OpenApi)\lib\netstandard2.0\Microsoft.OpenApi.dll" IncludeRuntimeDependency="false"/>
+            <TargetPathWithTargetPlatformMoniker Include="$(PKGSharpYaml)\lib\netstandard2.0\SharpYaml.dll" IncludeRuntimeDependency="false"/>
         </ItemGroup>
     </Target>
 </Project>

@@ -68,6 +68,8 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
+    
+    <!--
     <ItemGroup>
         <MediatorHttp Include="OpenApiRemote"
                       Uri="https://api.themeparks.wiki/docs/v1.yaml"
@@ -83,6 +85,7 @@
                       GenerateJsonConverters="true"
                       Visible="false"/>
     </ItemGroup>
+    -->
 
     <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"/>
 </Project>
