@@ -27,4 +27,12 @@
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false"/>
     </ItemGroup>
+
+    <ItemGroup>
+        <MediatorHttp Include="Sample.Api.json"
+                      Namespace="Sample.Api.Generated"
+                      ContractPrefix="Api"
+                      ContractPostfix="Request"
+                      GenerateJsonConverters="true" />
+    </ItemGroup>
 </Project>

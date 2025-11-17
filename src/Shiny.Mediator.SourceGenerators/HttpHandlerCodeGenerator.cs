@@ -147,7 +147,7 @@ internal static class HttpHandlerCodeGenerator
         sb.AppendLine(Constants.GeneratedCodeAttributeString);
         sb.AppendLine("public static class __ShinyHttpClientRegistration");
         sb.AppendLine("{");
-        sb.AppendLine("    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddHttpHandlers(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)");
+        sb.AppendLine("    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddHttpClient(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)");
         sb.AppendLine("    {");
 
         foreach (var handler in handlers)
@@ -238,7 +238,8 @@ public enum HttpParameterType
 public record HttpPropertyInfo(
     string PropertyName,
     string ParameterName,
-    HttpParameterType ParameterType
+    HttpParameterType ParameterType,
+    string? PropertyType = null
 );
 
 public record HandlerRegistrationInfo(
