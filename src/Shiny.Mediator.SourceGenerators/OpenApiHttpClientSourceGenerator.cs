@@ -61,12 +61,20 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                 return;
 
             var allHandlers = new List<HandlerRegistrationInfo>();
+            string? registrationNamespace = null;
 
             foreach (var item in texts)
             {
                 try
                 {
                     var config = GetConfig(configOptions, item, defaultNamespace);
+                    
+                    // Track the first namespace for registration
+                    if (registrationNamespace == null)
+                    {
+                        registrationNamespace = config.Namespace;
+                    }
+                    
                     var handlers = ProcessOpenApiDocument(sourceContext, item, config, configOptions, compilation);
                     allHandlers.AddRange(handlers);
                 }
@@ -87,7 +95,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             {
                 var registrationCode = HttpHandlerCodeGenerator.GenerateRegistration(
                     allHandlers,
-                    defaultNamespace
+                    registrationNamespace ?? defaultNamespace
                 );
                 sourceContext.AddSource(
                     "__ShinyHttpClientRegistration.g.cs",
