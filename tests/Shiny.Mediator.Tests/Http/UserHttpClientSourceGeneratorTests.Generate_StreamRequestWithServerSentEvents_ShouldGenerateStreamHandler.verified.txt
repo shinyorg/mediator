@@ -27,7 +27,7 @@ public partial class ServerSentEventsRequestHttpHandler(global::Shiny.Mediator.H
         global::Shiny.Mediator.IMediatorContext context,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        var route = $"/api/sse";
+        var route = "/api/sse";
         var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleStream<global::TestNamespace.ServerSentEventsRequest, global::TestNamespace.EventItem>(
@@ -57,9 +57,9 @@ namespace TestNamespace;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
 public static class __ShinyHttpClientRegistration
 {
-    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddHttpHandlers(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
+    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddHttpClient(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
     {
-        services.TryAddSingleton<global::Shiny.Mediator.IStreamRequestHandler<global::TestNamespace.ServerSentEventsRequest, global::TestNamespace.EventItem>, TestNamespace.ServerSentEventsRequestHttpHandler>();
+        services.TryAddSingleton<global::Shiny.Mediator.IStreamRequestHandler<global::TestNamespace.ServerSentEventsRequest, global::TestNamespace.EventItem>, global::TestNamespace.ServerSentEventsRequestHttpHandler>();
         return services;
     }
 }

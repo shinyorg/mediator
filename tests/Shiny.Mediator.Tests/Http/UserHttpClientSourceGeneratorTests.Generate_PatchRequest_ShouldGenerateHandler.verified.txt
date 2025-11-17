@@ -61,9 +61,9 @@ namespace TestNamespace;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
 public static class __ShinyHttpClientRegistration
 {
-    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddHttpHandlers(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
+    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddHttpClient(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
     {
-        services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestNamespace.PatchUserRequest, global::TestNamespace.UserResult>, TestNamespace.PatchUserRequestHttpHandler>();
+        services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestNamespace.PatchUserRequest, global::TestNamespace.UserResult>, global::TestNamespace.PatchUserRequestHttpHandler>();
         return services;
     }
 }
