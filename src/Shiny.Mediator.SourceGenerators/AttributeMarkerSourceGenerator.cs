@@ -48,19 +48,19 @@ public class AttributeMarkerSourceGenerator : IIncrementalGenerator
         
         foreach (var iface in classSymbol.AllInterfaces)
         {
-            if (iface.Name == "IRequestHandler" && iface.TypeArguments.Length == 2)
+            if (iface is { Name: "IRequestHandler", TypeArguments.Length: 2 })
             {
                 handlerInterfaces.Add((iface, iface.TypeArguments[0]));
             }
-            else if (iface.Name == "IStreamRequestHandler" && iface.TypeArguments.Length == 2)
+            else if (iface is { Name: "IStreamRequestHandler", TypeArguments.Length: 2 })
             {
                 handlerInterfaces.Add((iface, iface.TypeArguments[0]));
             }
-            else if (iface.Name == "ICommandHandler" && iface.TypeArguments.Length == 1)
+            else if (iface is { Name: "ICommandHandler", TypeArguments.Length: 1 })
             {
                 handlerInterfaces.Add((iface, iface.TypeArguments[0]));
             }
-            else if (iface.Name == "IEventHandler" && iface.TypeArguments.Length == 1)
+            else if (iface is { Name: "IEventHandler", TypeArguments.Length: 1 })
             {
                 handlerInterfaces.Add((iface, iface.TypeArguments[0]));
             }

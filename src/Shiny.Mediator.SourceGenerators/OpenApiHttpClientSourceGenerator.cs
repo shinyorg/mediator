@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.OpenApi;
@@ -49,11 +51,12 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
 
         var combined = mediatorHttpItems
             .Combine(rootNamespace)
-            .Combine(context.AnalyzerConfigOptionsProvider);
+            .Combine(context.AnalyzerConfigOptionsProvider)
+            .Combine(context.CompilationProvider);
 
         context.RegisterSourceOutput(combined, (sourceContext, data) =>
         {
-            var ((texts, defaultNamespace), configOptions) = data;
+            var (((texts, defaultNamespace), configOptions), compilation) = data;
 
             if (texts.IsEmpty)
                 return;
@@ -65,7 +68,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                 try
                 {
                     var config = GetConfig(configOptions, item, defaultNamespace);
-                    var handlers = ProcessOpenApiDocument(sourceContext, item, config, configOptions);
+                    var handlers = ProcessOpenApiDocument(sourceContext, item, config, configOptions, compilation);
                     allHandlers.AddRange(handlers);
                 }
                 catch (Exception ex)
@@ -124,7 +127,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         SourceProductionContext context,
         AdditionalText item,
         MediatorHttpItemConfig config,
-        AnalyzerConfigOptionsProvider configProvider)
+        AnalyzerConfigOptionsProvider configProvider,
+        Compilation compilation)
     {
         var handlers = new List<HandlerRegistrationInfo>();
         
@@ -229,7 +233,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             // Generate handlers from paths (unless GenerateModelsOnly is true)
             if (!config.GenerateModelsOnly)
             {
-                handlers = GenerateHandlers(context, document, config);
+                handlers = GenerateHandlers(context, document, config, compilation);
             }
         }
 
@@ -258,7 +262,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     private static List<HandlerRegistrationInfo> GenerateHandlers(
         SourceProductionContext context,
         OpenApiDocument document,
-        MediatorHttpItemConfig config)
+        MediatorHttpItemConfig config,
+        Compilation compilation)
     {
         var handlers = new List<HandlerRegistrationInfo>();
 
@@ -289,7 +294,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                     path.Key,
                     operation.Key.ToString(),
                     operation.Value,
-                    config
+                    config,
+                    compilation
                 );
 
                 if (handler != null)
@@ -307,7 +313,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         string path,
         string operationType,
         OpenApiOperation operation,
-        MediatorHttpItemConfig config)
+        MediatorHttpItemConfig config,
+        Compilation compilation)
     {
         var contractName = $"{config.ContractPrefix ?? ""}{(operation.OperationId ?? "Unknown").Pascalize()}{config.ContractPostfix ?? ""}";
         var handlerName = $"{contractName}Handler";
@@ -357,7 +364,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         }
 
         // Generate contract class
-        GenerateContractClass(context, contractName, responseType, properties, config);
+        GenerateContractClass(context, contractName, responseType, properties, config, compilation);
 
         // Determine if this is a stream request (for now, assume non-stream)
         var isStreamRequest = false;
@@ -395,7 +402,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         string className,
         string responseType,
         List<HttpPropertyInfo> properties,
-        MediatorHttpItemConfig config)
+        MediatorHttpItemConfig config,
+        Compilation compilation)
     {
         var accessor = config.UseInternalClasses ? "internal" : "public";
         
@@ -418,7 +426,50 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
 
         sb.AppendLine("}");
 
-        context.AddSource($"{className}.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
+        var contractSource = sb.ToString();
+        context.AddSource($"{className}.g.cs", SourceText.From(contractSource, Encoding.UTF8));
+
+        // Generate JSON converter if GenerateJsonConverters is true and there are Body parameters
+        if (config.GenerateJsonConverters && properties.Any(p => p.ParameterType == HttpParameterType.Body))
+        {
+            try
+            {
+                var parseOptions = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions ?? CSharpParseOptions.Default;
+                var syntaxTree = CSharpSyntaxTree.ParseText(
+                    contractSource, 
+                    parseOptions,
+                    cancellationToken: context.CancellationToken
+                );
+                compilation = compilation.AddSyntaxTrees(syntaxTree);
+                
+                var fullyQualifiedTypeName = $"{config.Namespace}.{className}";
+                var typeSymbol = compilation.GetTypeByMetadataName(fullyQualifiedTypeName);
+                if (typeSymbol == null)
+                {
+                    ReportDiagnostic(
+                        context, 
+                        "SHINYMED007",
+                        "Missing Type for JSON Converter",
+                        $"Missing Type '{fullyQualifiedTypeName}' for JSON Converter", 
+                        DiagnosticSeverity.Warning
+                    );
+                }
+                else
+                {
+                    JsonConverterSourceGenerator.GenerateJsonConverter(context, typeSymbol);
+                }
+            }
+            catch (Exception ex)
+            {
+                ReportDiagnostic(
+                    context, 
+                    "SHINYMED008",
+                    "Error in Parsing Generated Code for JSON Converter",
+                    $"Error in Parsing Generated Code for JSON Converter: {ex.Message}", 
+                    DiagnosticSeverity.Warning
+                );
+            }
+        }
     }
 
     private static string GetResponseType(OpenApiOperation operation, MediatorHttpItemConfig config)

@@ -7,7 +7,7 @@ namespace Shiny.Mediator.SourceGenerators;
 /// <summary>
 /// Reusable code generator for HTTP request handlers
 /// </summary>
-public static class HttpHandlerCodeGenerator
+internal static class HttpHandlerCodeGenerator
 {
     public static string GenerateHandler(
         string handlerClassName,
