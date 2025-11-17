@@ -8,54 +8,61 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Http;
 
 
-// TODO: response decorators?
-public abstract class BaseHttpRequestHandler(
-    ILogger logger,
-    IConfiguration configuration,
-    ISerializerService serializer,
-    IHttpClientFactory httpClientFactory,
-    IEnumerable<IHttpRequestDecorator> decorators
-)
+public record HttpHandlerServices(
+    ILoggerFactory LoggerFactory,
+    IConfiguration Configuration,
+    ISerializerService Serializer,
+    IHttpClientFactory HttpClientFactory,
+    IEnumerable<IHttpRequestDecorator> Decorators
+);
+
+public abstract class BaseHttpRequestHandler
 {
+    readonly HttpHandlerServices services;
+    readonly ILogger logger;
+    
+    
+    protected BaseHttpRequestHandler(HttpHandlerServices services)
+    {
+        this.services = services;
+        this.logger = services.LoggerFactory.CreateLogger<BaseHttpRequestHandler>();
+    }
+    
     
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
-    public async IAsyncEnumerable<TResult> HandleStream<TRequest, TResult>(TRequest request, IMediatorContext context, CancellationToken cancellationToken)
-        where TRequest : IHttpStreamRequest<TResult>
+    protected virtual async IAsyncEnumerable<TResult> HandleStream<TRequest, TResult>(
+        HttpRequestMessage httpRequest,
+        TRequest request, 
+        bool useServerSentEvents,
+        IMediatorContext context, 
+        [EnumeratorCancellation] CancellationToken cancellationToken
+    )
     {
-        //var httpRequest = await this.BuildRequest(request, context, cancellationToken).ConfigureAwait(false);
-        var httpClient = httpClientFactory.CreateClient();
-        var httpRequest = new HttpRequestMessage(HttpMethod.Get, "http://example.com/stream"); // Placeholder
+        var httpClient = this.CreateHttpClient(context);
         
         var httpResponse = await httpClient
             .SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
        
-        // context.SetHttp(httpRequest, httpResponse);
-        // await this.WriteDebugIfEnable(httpRequest, httpResponse, cancellationToken).ConfigureAwait(false);
+        context.SetHttp(httpRequest, httpResponse);
+        await this.WriteDebugIfEnable(httpRequest, httpResponse, cancellationToken).ConfigureAwait(false);
         httpResponse.EnsureSuccessStatusCode();
        
         await using var responseStream = await httpResponse.Content.ReadAsStreamAsync(cancellationToken);
 
-        var st = HttpStreamType.PlainStream;
-        if (request.StreamType == null)
-        {
-            st = httpResponse.Content.Headers.ContentType?.MediaType?.Equals("text/event-stream", StringComparison.InvariantCultureIgnoreCase) ?? false
-                ? HttpStreamType.ServerSentEvents
-                : HttpStreamType.PlainStream;
-        }
-
-        if (st == HttpStreamType.PlainStream)
-        {
-            await foreach (var obj in serializer.DeserlializeAsyncEnumerable<TResult>(responseStream, cancellationToken))
-            { 
-                yield return obj;
-            }
-        }
-        else
+        if (useServerSentEvents)
         {
             await foreach (var sseEvent in ReadServerSentEvents<TResult>(responseStream, cancellationToken))
             {
                 yield return sseEvent;
+            }
+
+        }
+        else
+        {
+            await foreach (var obj in this.services.Serializer.DeserlializeAsyncEnumerable<TResult>(responseStream, cancellationToken))
+            { 
+                yield return obj;
             }
         }
     }
@@ -78,7 +85,7 @@ public abstract class BaseHttpRequestHandler(
                 {
                     var json = sb.ToString();
                     sb.Clear();
-                    yield return serializer.Deserialize<T>(json);
+                    yield return services.Serializer.Deserialize<T>(json);
                 }
             }
             else if (line.StartsWith("data:"))
@@ -95,29 +102,34 @@ public abstract class BaseHttpRequestHandler(
     
     
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
-    public virtual async Task<TResult> HandleRequest<TRequest, TResult>(TRequest request, IMediatorContext context, CancellationToken cancellationToken)
+    protected virtual async Task<TResult> HandleRequest<TRequest, TResult>(
+        HttpRequestMessage httpRequest, 
+        TRequest request, 
+        IMediatorContext context, 
+        CancellationToken cancellationToken
+    )
     {
-        // TODO: could move this to a reflection based fallback?
-        // var http = request.GetType().GetCustomAttribute<HttpAttribute>();
-        // if (http == null)
-        //     throw new InvalidOperationException("HttpAttribute not specified on request");
-        //
-        // var baseUri = this.GetBaseUri(request);
-        // logger.LogDebug("Base URI: {BaseUri}", baseUri);
-        //
-        // var httpRequest = this.ContractToHttpRequest(request, http, baseUri);
-        // await this.Decorate(context, httpRequest, cancellationToken).ConfigureAwait(false);
-        //
-        // var timeoutSeconds = configuration.GetValue("Mediator:Http:Timeout", 20);
-        // var result = await this
-        //     .Send(context, httpRequest, TimeSpan.FromSeconds(timeoutSeconds), cancellationToken)
-        //     .ConfigureAwait(false);
-        //
-        // return result;
-        return default;
+        await this.Decorate(context, httpRequest, cancellationToken).ConfigureAwait(false);
+        var timeoutSeconds = this.services.Configuration.GetValue("Mediator:Http:Timeout", 20);
+        
+        var result = await this
+            .Send<TResult>(context, httpRequest, TimeSpan.FromSeconds(timeoutSeconds), cancellationToken)
+            .ConfigureAwait(false);
+
+        return result;
+    }
+
+
+    protected virtual HttpClient CreateHttpClient(IMediatorContext context)
+    {
+        var baseUri = this.GetBaseUri(context.Message);
+        var httpClient = this.services.HttpClientFactory.CreateClient();
+        httpClient.BaseAddress = new Uri(baseUri);
+
+        return httpClient;
     }
     
-
+    
     protected virtual async Task<TResult> Send<TResult>(
         IMediatorContext context,
         HttpRequestMessage httpRequest, 
@@ -132,7 +144,7 @@ public abstract class BaseHttpRequestHandler(
         TResult finalResult = default!;
         try
         {
-            var httpClient = httpClientFactory.CreateClient();
+            var httpClient = this.CreateHttpClient(context);
             var response = await httpClient
                 .SendAsync(httpRequest, cts.Token)
                 .ConfigureAwait(false);
@@ -155,7 +167,7 @@ public abstract class BaseHttpRequestHandler(
                     .ReadAsStringAsync(cts.Token)
                     .ConfigureAwait(false);
     
-                finalResult = serializer.Deserialize<TResult>(stringResult)!;
+                finalResult = this.services.Serializer.Deserialize<TResult>(stringResult)!;
             }
         }
         catch (TaskCanceledException ex)
@@ -166,11 +178,12 @@ public abstract class BaseHttpRequestHandler(
         return finalResult;
     }
 
+    
     protected virtual async Task Decorate(IMediatorContext context, HttpRequestMessage httpRequest, CancellationToken cancellationToken)
     {
-        foreach (var decorator in decorators)
+        foreach (var decorator in this.services.Decorators)
         {
-            logger.LogDebug("Decorating {Type}", decorator.GetType().Name);
+            this.logger.LogDebug("Decorating {Type}", decorator.GetType().Name);
             await decorator
                 .Decorate(httpRequest, context, cancellationToken)
                 .ConfigureAwait(false);
@@ -179,9 +192,13 @@ public abstract class BaseHttpRequestHandler(
 
     
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
-    protected virtual async ValueTask WriteDebugIfEnable(HttpRequestMessage request, HttpResponseMessage response, CancellationToken cancellationToken)
+    protected virtual async ValueTask WriteDebugIfEnable(
+        HttpRequestMessage request, 
+        HttpResponseMessage response, 
+        CancellationToken cancellationToken
+    )
     {
-        var debug = configuration.GetValue<bool>("Mediator:Http:Debug", false);
+        var debug = this.services.Configuration.GetValue("Mediator:Http:Debug", false);
         if (!debug)
             return;
     
@@ -193,11 +210,11 @@ public abstract class BaseHttpRequestHandler(
                 .ReadAsStringAsync(cancellationToken)
                 .ConfigureAwait(false);    
         }
-        
-        var responseBody = await response
-            .Content
-            .ReadAsStringAsync(cancellationToken)
-            .ConfigureAwait(false);
+
+        // var responseBody = await response
+        //     .Content
+        //     .ReadAsStringAsync(cancellationToken)
+        //     .ConfigureAwait(false);
         
         var details = new Dictionary<string, object>
         {
@@ -213,16 +230,13 @@ public abstract class BaseHttpRequestHandler(
             details.Add("Response_" + header.Key, header.Value);
         
         using (logger.BeginScope(details))
-        {
             logger.LogInformation("Request Body: {Body}", requestBody);
-            logger.LogInformation("Response Body: {Body}", responseBody);
-        }
     }
 
     
     protected virtual string GetBaseUri(object request)
     {
-        var cfg = configuration.GetHandlerSection("Http", request, this);
+        var cfg = this.services.Configuration.GetHandlerSection("Http", request, this);
         if (cfg == null)
             throw new InvalidOperationException("No base URI configured for: " + request.GetType().FullName);
         

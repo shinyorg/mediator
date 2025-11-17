@@ -5,6 +5,7 @@
 
     <ItemGroup>
         <CompilerVisibleProperty Include="RootNamespace"/>
+        <CompilerVisibleProperty Include="ShinyMediatorHttpNamespace"/>
         <CompilerVisibleProperty Include="ShinyMediatorRegistryMethodName"/>
         <CompilerVisibleProperty Include="ShinyMediatorRegistryAccessModifier"/>
         <CompilerVisibleProperty Include="ShinyMediatorRequestExecutorClassName"/>

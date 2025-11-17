@@ -1,60 +1,32 @@
 namespace Shiny.Mediator.Http;
 
-public interface IHttpRequest<TResult> : IRequest<TResult>;
-
-public interface IHttpStreamRequest<T> : IStreamRequest<T>
-{
-    /// <summary>
-    /// Null will use auto detection based on Content-Type
-    /// </summary>
-    HttpStreamType? StreamType { get; set; }
-}
 
 public interface IHttpRequestDecorator
 {
     Task Decorate(HttpRequestMessage httpMessage, IMediatorContext context, CancellationToken cancellationToken);
 }
 
-// public interface IHttpResponseProcessor
-// {
-//     Task Process(HttpResponseMessage httpMessage, IMediatorContext context, CancellationToken cancellationToken);
-// }
 
-public enum HttpStreamType
-{
-    ServerSentEvents = 1,
-    PlainStream = 2
-}
+public interface IServerSentEventsStream;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public class HttpAttribute(HttpVerb httpVerb, string route) : Attribute
-{
-    public HttpVerb Verb => httpVerb;
-    public string Route => route;
-}
+public class GetAttribute(string route) : Attribute;
+
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+public class DeleteAttribute(string route) : Attribute;
+
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+public class PatchAttribute(string route) : Attribute;
+
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+public class PostAttribute(string route) : Attribute;
+
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+public class PutAttribute(string route) : Attribute;
 
 
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
-public class HttpParameterAttribute(HttpParameterType parameterType, string? parameterName = null) : Attribute
-{
-    public HttpParameterType Type => parameterType;
-    public string? ParameterName => parameterName;
-}
+[AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+public class HeaderAttribute(string? Name = null) : Attribute;
 
-public enum HttpVerb
-{
-    Get,
-    Post,
-    Put,
-    Delete,
-    Patch
-}
-
-public enum HttpParameterType
-{
-    Header,
-    Query,
-    // Cookie,
-    Path,
-    Body
-}
+[AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+public class BodyAttribute : Attribute;
