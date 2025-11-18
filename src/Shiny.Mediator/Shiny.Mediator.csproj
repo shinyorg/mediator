@@ -52,7 +52,7 @@
               PackagePath="analyzers/dotnet/cs" 
               Visible="false" />
 
-        <None Include="$(SourceGenBinDir)\Microsoft.OpenApi.Readers.dll"
+        <None Include="$(SourceGenBinDir)\Microsoft.OpenApi.YamlReader.dll"
               Pack="true"
               PackagePath="analyzers/dotnet/cs"
               Visible="false" />
