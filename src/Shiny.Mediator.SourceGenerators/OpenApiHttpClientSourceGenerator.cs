@@ -499,16 +499,18 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     }
     
 
+    static readonly string[] SuccessResponses = ["200", "201", "202", "203"];
+    const string JsonMediaType = "application/json";
+    const string FallbackType = "global::System.Net.Http.HttpResponseMessage";
+    
     static string GetResponseType(OpenApiOperation operation, MediatorHttpItemConfig config, OpenApiDocument document, SourceProductionContext context)
     {
+        var responseType = FallbackType;
         if (operation.Responses == null || operation.Responses.Count == 0)
-        {
-            return "global::System.Net.Http.HttpResponseMessage";
-        }
+            return responseType;
 
         // Try to find a successful response (2xx status codes)
-        var successResponses = new[] { "200", "201", "202", "203" };
-        foreach (var statusCode in successResponses)
+        foreach (var statusCode in SuccessResponses)
         {
             if (operation.Responses.TryGetValue(statusCode, out var response))
             {
@@ -516,50 +518,16 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                 if (response?.Content is { Count: > 0 })
                 {
                     // Try application/json first
-                    if (response.Content.TryGetValue("application/json", out var mediaType))
+                    if (response.Content.TryGetValue(JsonMediaType, out var mediaType))
                     {
                         if (mediaType?.Schema != null)
                         {
                             // Cast to OpenApiSchema (same pattern as used for components)
-                            if (mediaType.Schema is OpenApiSchemaReference openApiSchema)
+                            if (mediaType.Schema is OpenApiSchemaReference openApiSchema && openApiSchema.Target != null)
                             {
-                                var schemaType = GetSchemaType(openApiSchema.Target, config, document);
-                                return schemaType;
-                            }
-                            
-                            // If cast failed, try reflection approaches
-                            string? schemaTypeName = null;
-                            
-                            // Try getting Title property via reflection
-                            var titleProp = mediaType.Schema.GetType().GetProperty("Title");
-                            if (titleProp != null)
-                            {
-                                schemaTypeName = titleProp.GetValue(mediaType.Schema) as string;
-                            }
-                            
-                            // Try getting Ref property (for $ref)
-                            if (string.IsNullOrEmpty(schemaTypeName))
-                            {
-                                var refProp = mediaType.Schema.GetType().GetProperty("Ref");
-                                if (refProp != null)
-                                {
-                                    var refValue = refProp.GetValue(mediaType.Schema) as string;
-                                    if (!string.IsNullOrEmpty(refValue))
-                                    {
-                                        // Extract schema name from #/components/schemas/SchemaName
-                                        var parts = refValue.Split('/');
-                                        if (parts.Length > 0)
-                                        {
-                                            schemaTypeName = parts[parts.Length - 1];
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            if (!string.IsNullOrEmpty(schemaTypeName))
-                            {
-                                // If we found a schema name, assume it's a generated type
-                                return $"global::{config.Namespace}.{schemaTypeName}";
+                                var schemaType = GetSchemaType(openApiSchema.Target!, config, document);
+                                responseType = schemaType;
+                                break;
                             }
                             
                             ReportDiagnostic(
@@ -581,69 +549,15 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                             );
                         }
                     }
-                    
-                    // Try other content types
-                    var firstContent = response.Content.FirstOrDefault();
-                    if (firstContent.Value?.Schema != null)
-                    {
-                        var firstSchema = ResolveSchema(firstContent.Value.Schema, document);
-                        if (firstSchema != null)
-                        {
-                            var schemaType = GetSchemaType(firstSchema, config, document);
-                            return schemaType;
-                        }
-                    }
-                }
-                
-                // If we found a successful response but no content (e.g., 204 No Content),
-                // continue to check next status code
-                if (statusCode == "204" || response?.Content == null || response.Content.Count == 0)
-                {
-                    continue;
-                }
-            }
-        }
-        
-        // Check for 204 No Content specifically - if that's the only success response, return void
-        if (operation.Responses.TryGetValue("204", out var response204))
-        {
-            if (response204?.Content == null || response204.Content.Count == 0)
-            {
-                return "global::System.Net.Http.HttpResponseMessage";
-            }
-        }
-
-        // Fallback: check if there's any 2xx response with default
-        if (operation.Responses.TryGetValue("2XX", out var response2xx) ||
-            operation.Responses.TryGetValue("default", out response2xx))
-        {
-            if (response2xx?.Content != null && 
-                response2xx.Content.TryGetValue("application/json", out var mediaType) &&
-                mediaType.Schema != null)
-            {
-                var schema = ResolveSchema(mediaType.Schema, document);
-                if (schema != null)
-                {
-                    var schemaType = GetSchemaType(schema, config, document);
-                    return schemaType;
                 }
             }
         }
 
-        // Log what response codes we found for debugging
-        var responseCodes = string.Join(", ", operation.Responses.Keys);
-        ReportDiagnostic(
-            context,
-            "SHINYMED010",
-            "Falling back to HttpResponseMessage",
-            $"Operation '{operation.OperationId}' - no suitable response schema found, returning HttpResponseMessage. Response codes available: {responseCodes}",
-            DiagnosticSeverity.Info
-        );
-
-        return "global::System.Net.Http.HttpResponseMessage";
+        return responseType;
     }
 
-    static OpenApiSchema? ResolveSchema(object? schemaObj, OpenApiDocument document)
+    
+    static IOpenApiSchema? ResolveSchema(object? schemaObj, OpenApiDocument document)
     {
         if (schemaObj == null)
             return null;
