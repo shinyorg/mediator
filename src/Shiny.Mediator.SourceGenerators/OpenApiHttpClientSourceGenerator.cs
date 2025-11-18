@@ -590,36 +590,36 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     {
         // Resolve schema reference if present
         schema = ResolveSchema(schema, document) ?? schema;
+        var schemaType = "object";
 
-        // Check if this schema has a title (meaning it's a named type reference)
-        // In OpenAPI v3.0, when a schema is referenced from components, it typically has a title
-        if (!string.IsNullOrEmpty(schema.Title))
-        {
-            return $"global::{config.Namespace}.{schema.Title}";
-        }
+        // // Check if this schema has a title (meaning it's a named type reference)
+        // // In OpenAPI v3.0, when a schema is referenced from components, it typically has a title
+        // if (!string.IsNullOrEmpty(schema.Title))
+        // {
+        //     return $"global::{config.Namespace}.{schema.Title}";
+        // }
 
         // Handle composed schemas by taking the first resolved type (best effort)
         if (schema.AllOf is { Count: > 0 })
         {
             var first = schema.AllOf.OfType<OpenApiSchema>().FirstOrDefault();
             if (first != null)
-                return GetSchemaType(first, config, document);
+                schemaType = GetSchemaType(first, config, document);
         }
-        if (schema.OneOf is { Count: > 0 })
+        else if (schema.OneOf is { Count: > 0 })
         {
             var first = schema.OneOf.OfType<OpenApiSchema>().FirstOrDefault();
             if (first != null)
-                return GetSchemaType(first, config, document);
+                schemaType = GetSchemaType(first, config, document);
         }
-        if (schema.AnyOf is { Count: > 0 })
+        else if (schema.AnyOf is { Count: > 0 })
         {
             var first = schema.AnyOf.OfType<OpenApiSchema>().FirstOrDefault();
             if (first != null)
-                return GetSchemaType(first, config, document);
+                schemaType = GetSchemaType(first, config, document);
         }
-
         // Try to find this schema in the components/schemas by object reference or properties match
-        if (document.Components?.Schemas != null)
+        else if (document.Components?.Schemas != null)
         {
             foreach (var componentSchema in document.Components.Schemas)
             {
@@ -629,43 +629,41 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                     // Check if it's the same object reference
                     if (ReferenceEquals(componentSchemaValue, schema))
                     {
-                        return $"global::{config.Namespace}.{componentSchema.Key}";
+                        schemaType = $"global::{config.Namespace}.{componentSchema.Key}";
                     }
                     
                     // Check if schemas match by comparing key properties
                     // This helps when OpenAPI library creates multiple instances for the same schema
-                    if (SchemasMatch(componentSchemaValue, schema))
+                    else if (SchemasMatch(componentSchemaValue, schema))
                     {
-                        return $"global::{config.Namespace}.{componentSchema.Key}";
+                        schemaType = $"global::{config.Namespace}.{componentSchema.Key}";
                     }
                 }
             }
         }
-
-
-        if (schema.Type != null)
+        else if (schema.Type != null)
         {
             if (schema.Type.Value.HasFlag(JsonSchemaType.String))
-                return GetStringSchemaType(schema);
+                schemaType = GetStringSchemaType(schema);
             
-            if (schema.Type.Value.HasFlag(JsonSchemaType.Integer))
-                return schema.Format == "int64" ? "long" : "int";
+            else if (schema.Type.Value.HasFlag(JsonSchemaType.Integer))
+                schemaType = schema.Format == "int64" ? "long" : "int";
             
-            if (schema.Type.Value.HasFlag(JsonSchemaType.Number))
-                return schema.Format == "float" ? "float" : "double";
+            else if (schema.Type.Value.HasFlag(JsonSchemaType.Number))
+                schemaType = schema.Format == "float" ? "float" : "double";
             
-            if (schema.Type.Value.HasFlag(JsonSchemaType.Boolean))
-                return "bool";
+            else if (schema.Type.Value.HasFlag(JsonSchemaType.Boolean))
+                schemaType =  "bool";
             
-            if (schema.Type.Value.HasFlag(JsonSchemaType.Array))
+            else if (schema.Type.Value.HasFlag(JsonSchemaType.Array))
             {
                 var itemsSchema = schema.Items as OpenApiSchema;
                 if (itemsSchema != null)
-                    return $"global::System.Collections.Generic.List<{GetSchemaType(itemsSchema, config, document)}>";
+                    schemaType = $"global::System.Collections.Generic.List<{GetSchemaType(itemsSchema, config, document)}>";
             }
         }
 
-        return "object";
+        return schemaType;
     }
 
     static bool SchemasMatch(IOpenApiSchema schema1, IOpenApiSchema schema2)
@@ -749,7 +747,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     static string GetFileName(string namespaceName, string typeName)
     {
         // Sanitize namespace to be file-system safe
-        var sanitizedNamespace = namespaceName.Replace(".", "_").Replace("<", "_").Replace(">", "_");
+        var sanitizedNamespace = namespaceName.Replace("<", "_").Replace(">", "_");
         return $"{sanitizedNamespace}.{typeName}.g.cs";
     }
 }

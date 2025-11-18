@@ -8,8 +8,27 @@ using Shiny.Mediator.Tests.SourceGeneration;
 
 namespace Shiny.Mediator.Tests.Http;
 
+
 public class OpenApiHttpClientSourceGeneratorTests
 {
+    [Fact]
+    public Task ThemeParksApiGeneration()
+    {
+        var content = File.ReadAllText("./Http/themeparksapi.yml");
+        var additionalFiles = new AdditionalText[] { new MockAdditionalText("./Http/themeparksapi.yml", content) };
+
+        var buildProps = new Dictionary<string, string>
+        {
+            ["build_metadata.AdditionalFiles.SourceItemGroup"] = "MediatorHttp",
+            ["build_metadata.AdditionalFiles.Namespace"] = "TestApi",
+            ["build_property.RootNamespace"] = "UnitTests",
+            ["build_property.AssemblyName"] = "UnitTests"
+        };
+
+        var result = RunGenerator(additionalFiles, buildProps);
+        return Verify(result);
+    }
+    
     [Fact]
     public Task Response_With_Json_Schema_Uses_Schema_Type_Not_HttpResponseMessage()
     {

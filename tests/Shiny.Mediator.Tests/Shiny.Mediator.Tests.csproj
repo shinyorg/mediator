@@ -55,14 +55,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="Http\*.json"/>
-        <Content Include="Http\*.json" CopyToOutputDirectory="Always"/>
-        <None Remove="testapi.json"/>
-        <None Update="SourceGeneration\MediatorSourceGeneratorTests.Driver_Success#__MediatorHandlersRegistration.g.received.cs">
-            <ParentExtension>.cs</ParentExtension>
-            <ParentFile>MediatorSourceGeneratorTests</ParentFile>
-            <DependentUpon>MediatorSourceGeneratorTests.cs</DependentUpon>
-        </None>
+        <None Remove="Http\*.yml"/>
+        <Content Include="Http\*.yml" CopyToOutputDirectory="Always"/>
         <None Remove="SourceGeneration\serialization.json"/>
         <Content Include="SourceGeneration\serialization.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>

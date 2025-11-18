@@ -1,0 +1,515 @@
+openapi: "3.0.0"
+info:
+  version: "1.0.4"
+  title: "Theme Parks Wiki V1 API"
+  description: |-
+    The Theme Parks Wiki API provides a live data feed for theme parks around the world. This API is designed to be a simple, easy-to-use interface for developers to access live data from theme parks.
+
+    This API is provided by ThemeParks.Wiki, a community-driven project that aims to provide accurate, up-to-date information about theme parks around the world. The API is free to use. We hope you find the API useful, and we look forward to seeing what you build with it!
+
+    Please consider becoming a GitHub Sponsor if this API is useful to you. This project only remains online thanks to your support. Thank you!
+
+    ![GitHub Sponsors](https://img.shields.io/github/sponsors/cubehouse?style=social)
+servers:
+  - url: https://api.themeparks.wiki/v1
+    description: API Server
+tags:
+  - name: "Destinations"
+    description: "Operations related to destinations. All parks and attractions are grouped under a destination."
+  - name: "Entities"
+    description: "Operations related to entities (parks, attractions, etc.)"
+paths:
+  /destinations:
+    get:
+      tags:
+        - "Destinations"
+      summary: "Get a list of supported destinations available on the live API"
+      description: ""
+      operationId: "getDestinations"
+      responses:
+        "200":
+          description: "successful fetch"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinationsResponse'
+  /entity/{entityID}:
+    get:
+      tags:
+        - "Entities"
+      summary: "Get entity document"
+      description: "Get the full data document for a given entity. You can supply either a GUID or slug string."
+      operationId: "getEntity"
+      parameters:
+        - name: "entityID"
+          in: "path"
+          description: "Entity ID (or slug) to fetch"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "successful fetch"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityData'
+  /entity/{entityID}/children:
+    get:
+      tags:
+        - "Entities"
+      summary: "Get all children for a given entity document"
+      description: "Fetch a list of all the children that belong to this entity. This is recursive, so a destination will return all parks and all rides within those parks."
+      operationId: "getEntityChildren"
+      parameters:
+        - name: "entityID"
+          in: "path"
+          description: "Entity ID (or slug) to fetch"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "successful fetch"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityChildrenResponse'
+  /entity/{entityID}/live:
+    get:
+      tags:
+        - "Entities"
+      summary: "Get live data for this entity and any child entities"
+      description: "Fetch this entity's live data (queue times, parade times, etc.) as well as all child entities. For a destination, this will include all parks within that destination."
+      operationId: "getEntityLiveData"
+      parameters:
+        - name: "entityID"
+          in: "path"
+          description: "Entity ID (or slug) to fetch"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "successful fetch"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityLiveDataResponse'
+  /entity/{entityID}/schedule:
+    get:
+      tags:
+        - "Entities"
+      summary: "Get entity schedule"
+      description: "Fetch this entity's schedule for the next 30 days"
+      operationId: "getEntityScheduleUpcoming"
+      parameters:
+        - name: "entityID"
+          in: "path"
+          description: "Entity ID (or slug) to fetch"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "successful fetch"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityScheduleResponse'
+  /entity/{entityID}/schedule/{year}/{month}:
+    get:
+      tags:
+        - "Entities"
+      summary: "Get entity schedule for a specific month and year"
+      description: "Fetch this entity's schedule for the supplied year and month"
+      operationId: "getEntityScheduleYearMonth"
+      parameters:
+        - name: "entityID"
+          in: "path"
+          description: "Entity ID (or slug) to fetch"
+          required: true
+          schema:
+            type: string
+        - name: "year"
+          in: "path"
+          description: "Schedule year to fetch"
+          required: true
+          schema:
+            type: number
+        - name: "month"
+          in: "path"
+          description: "Schedule month to fetch. Must be a two digit zero-padded month."
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: "successful fetch"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityScheduleResponse'
+
+components:
+  schemas:
+    EntityType:
+      type: string
+      enum: [DESTINATION, PARK, ATTRACTION, RESTAURANT, HOTEL, SHOW]
+    LiveStatusType:
+      type: string
+      enum: [OPERATING, DOWN, CLOSED, REFURBISHMENT]
+    ReturnTimeState:
+      type: string
+      enum: [AVAILABLE, TEMP_FULL, FINISHED]
+    BoardingGroupState:
+      type: string
+      enum: [AVAILABLE, PAUSED, CLOSED]
+    PriceData:
+      type: object
+      properties:
+        amount:
+          type: number
+        currency:
+          type: "string"
+        formatted:
+          type: "string"
+      required:
+        - amount
+        - currency
+    LiveQueue:
+      type: object
+      properties:
+        STANDBY:
+          type: object
+          properties:
+            waitTime:
+              type: number
+        SINGLE_RIDER:
+          type: object
+          properties:
+            waitTime:
+              type: number
+              nullable: true
+          required:
+            - waitTime
+        RETURN_TIME:
+          type: object
+          properties:
+            state:
+              $ref: '#/components/schemas/ReturnTimeState'
+            returnStart:
+              type: string
+              format: date-time
+              nullable: true
+            returnEnd:
+              type: string
+              format: date-time
+              nullable: true
+          required:
+            - state
+            - returnStart
+            - returnEnd
+        PAID_RETURN_TIME:
+          type: object
+          properties:
+            state:
+              $ref: '#/components/schemas/ReturnTimeState'
+            returnStart:
+              type: string
+              format: date-time
+              nullable: true
+            returnEnd:
+              type: string
+              format: date-time
+              nullable: true
+            price:
+              $ref: '#/components/schemas/PriceData'
+          required:
+            - state
+            - returnStart
+            - returnEnd
+            - price
+        BOARDING_GROUP:
+          type: object
+          properties:
+            allocationStatus:
+              $ref: '#/components/schemas/BoardingGroupState'
+            currentGroupStart:
+              type: number
+              nullable: true
+            currentGroupEnd:
+              type: number
+              nullable: true
+            nextAllocationTime:
+              type: string
+              nullable: true
+              format: date-time
+            estimatedWait:
+              type: number
+              nullable: true
+          required:
+            - allocationStatus
+            - currentGroupStart
+            - currentGroupEnd
+            - nextAllocationTime
+            - estimatedWait
+        PAID_STANDBY:
+          type: object
+          properties:
+            waitTime:
+              type: number
+              nullable: true
+          required:
+            - waitTime
+    LiveShowTime:
+      type: object
+      properties:
+        type:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+          nullable: true
+        endTime:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - type
+    DiningAvailability:
+      type: object
+      properties:
+        partySize:
+          type: number
+          nullable: true
+        waitTime:
+          type: number
+          nullable: true
+    TagData:
+      type: object
+      properties:
+        tag:
+          type: string
+        tagName:
+          type: string
+        id:
+          type: string
+        value:
+          oneOf:
+            - type: string
+            - type: number
+            - type: object
+      required:
+        - tag
+        - tagName
+    EntityData:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        entityType:
+          $ref: '#/components/schemas/EntityType'
+        parentId:
+          type: string
+          nullable: true
+        destinationId:
+          type: string
+          nullable: true
+        timezone:
+          type: string
+        location:
+          type: object
+          properties:
+            latitude:
+              type: number
+            longitude:
+              type: number
+          nullable: true
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagData'
+      required:
+        - id
+        - name
+        - entityType
+        - timezone
+    EntityChild:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        entityType:
+          $ref: '#/components/schemas/EntityType'
+        externalId:
+          type: string
+        parentId:
+          type: string
+        location:
+          type: object
+          properties:
+            latitude:
+              type: number
+              nullable: true
+            longitude:
+              type: number
+              nullable: true
+          nullable: true
+      required:
+        - id
+        - name
+        - entityType
+    EntityChildrenResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        entityType:
+          $ref: '#/components/schemas/EntityType'
+        timezone:
+          type: string
+        children:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/EntityChild'
+    EntityLiveData:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        entityType:
+          $ref: '#/components/schemas/EntityType'
+        status:
+          $ref: '#/components/schemas/LiveStatusType'
+        lastUpdated:
+          type: string
+          format: date-time
+        queue:
+          $ref: '#/components/schemas/LiveQueue'
+        showtimes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LiveShowTime'
+        operatingHours:
+          type: array
+          items:
+            $ref: '#/components/schemas/LiveShowTime'
+        diningAvailability:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiningAvailability'
+      required:
+        - id
+        - name
+        - entityType
+        - lastUpdated
+    EntityLiveDataResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        entityType:
+          $ref: '#/components/schemas/EntityType'
+        timezone:
+          type: string
+        liveData:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/EntityLiveData'
+    SchedulePriceObject:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [ADMISSION, PACKAGE, ATTRACTION]
+          nullable: true
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          $ref: '#/components/schemas/PriceData'
+        available:
+          type: boolean
+    ScheduleEntry:
+      type: object
+      properties:
+        date:
+          type: string
+          format: YYYY-MM-DD
+        openingTime:
+          type: string
+          format: date-time
+        closingTime:
+          type: string
+          format: date-time
+        type:
+          type: string
+          enum: [OPERATING, TICKETED_EVENT, PRIVATE_EVENT, EXTRA_HOURS, INFO]
+        purchases:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchedulePriceObject'
+      required:
+        - date
+        - openingTime
+        - closingTime
+        - type
+    EntityScheduleResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        entityType:
+          $ref: '#/components/schemas/EntityType'
+        timezone:
+          type: string
+        schedule:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/ScheduleEntry'
+        parks:
+          description: "Only included for destinations, this will list all parks within the destination"
+          type: "array"
+          items:
+            $ref: '#/components/schemas/EntityScheduleResponse'
+    DestinationParkEntry:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+    DestinationEntry:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        slug:
+          type: "string"
+        parks:
+          type: array
+          items:
+            $ref: '#/components/schemas/DestinationParkEntry'
+    DestinationsResponse:
+      type: "object"
+      properties:
+        destinations:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/DestinationEntry'

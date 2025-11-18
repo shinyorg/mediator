@@ -88,7 +88,7 @@ public partial class TriggerViewModel(
         try
         {
             var response = await mediator.Request(new GetDestinationsHttpRequest(), this.cancelSource.Token);
-            // await dialogs.DisplayAlertAsync("Results", response.Result.Destinations.Count.ToString(), "OK");
+            await dialogs.DisplayAlertAsync("Results", response.Result.Destinations.Count.ToString(), "OK");
         }
         catch (Exception ex)
         {
