@@ -141,8 +141,9 @@ public class OpenApiModelGenerator
             {
                 var propertyName = property.Key.Pascalize();
 
-                if (property.Value is IOpenApiSchema propSchema)
+                if (property.Value != null)
                 {
+                    var propSchema = property.Value;
                     string? typeName;
 
                     // Check if this is a nested object (no title means it's inline)
@@ -166,9 +167,13 @@ public class OpenApiModelGenerator
 
                     if (typeName != null)
                     {
-                        sb.AppendLine(
-                            $"    [global::System.Text.Json.Serialization.JsonPropertyName(\"{property.Key}\")]");
-                        sb.AppendLine($"    public {typeName} {propertyName} {{ get; set; }}");
+                        var isRequired = schema.Required?.Contains(property.Key) ?? false;
+                        var typeIncludesNull = propSchema.Type?.HasFlag(JsonSchemaType.Null) ?? false;
+                        var isNullable = !isRequired || typeIncludesNull;
+                        var nullableSuffix = isNullable ? "?" : String.Empty;
+                        
+                        sb.AppendLine($"    [global::System.Text.Json.Serialization.JsonPropertyName(\"{property.Key}\")]");
+                        sb.AppendLine($"    public {typeName}{nullableSuffix} {propertyName} {{ get; set; }}");
                         sb.AppendLine();
                     }
                 }
@@ -213,7 +218,6 @@ public class OpenApiModelGenerator
     string? GetSchemaType(IOpenApiSchema schema)
     {
         string? type = null;
-        
         if (schema is OpenApiSchemaReference schemaRef && !String.IsNullOrWhiteSpace(schemaRef.Reference.Id))
         {
             var typeName = schemaRef.Reference.Id!.Split('/').Last().Pascalize();
@@ -221,7 +225,7 @@ public class OpenApiModelGenerator
             // var resolvedSchema = schemaRef.ResolveReference(/* document context */);
             // if (resolvedSchema != null)
             //     GenerateModel(typeName, resolvedSchema);
-        
+            
             type = $"global::{config.Namespace}.{typeName}";
         }
         else if (schema.Type != null)

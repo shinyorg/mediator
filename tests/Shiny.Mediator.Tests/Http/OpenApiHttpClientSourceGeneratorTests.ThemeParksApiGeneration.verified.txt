@@ -105,7 +105,7 @@ public partial class PriceData
     public string Currency { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("formatted")]
-    public string Formatted { get; set; }
+    public string? Formatted { get; set; }
 
 }
 
@@ -124,7 +124,7 @@ namespace TestApi;
 public partial class LiveQueueStandby
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
-    public double WaitTime { get; set; }
+    public double? WaitTime { get; set; }
 
 }
 
@@ -143,7 +143,7 @@ namespace TestApi;
 public partial class LiveQueueSingleRider
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
-    public double WaitTime { get; set; }
+    public double? WaitTime { get; set; }
 
 }
 
@@ -185,10 +185,10 @@ public partial class LiveQueueReturnTime
     public LiveQueueReturnTimeState State { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("returnStart")]
-    public global::System.DateTimeOffset ReturnStart { get; set; }
+    public global::System.DateTimeOffset? ReturnStart { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("returnEnd")]
-    public global::System.DateTimeOffset ReturnEnd { get; set; }
+    public global::System.DateTimeOffset? ReturnEnd { get; set; }
 
 }
 
@@ -233,7 +233,7 @@ public partial class LiveQueuePaidReturnTimePrice
     public string Currency { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("formatted")]
-    public string Formatted { get; set; }
+    public string? Formatted { get; set; }
 
 }
 
@@ -255,10 +255,10 @@ public partial class LiveQueuePaidReturnTime
     public LiveQueuePaidReturnTimeState State { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("returnStart")]
-    public global::System.DateTimeOffset ReturnStart { get; set; }
+    public global::System.DateTimeOffset? ReturnStart { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("returnEnd")]
-    public global::System.DateTimeOffset ReturnEnd { get; set; }
+    public global::System.DateTimeOffset? ReturnEnd { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("price")]
     public LiveQueuePaidReturnTimePrice Price { get; set; }
@@ -303,16 +303,16 @@ public partial class LiveQueueBoardingGroup
     public LiveQueueBoardingGroupAllocationStatus AllocationStatus { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("currentGroupStart")]
-    public double CurrentGroupStart { get; set; }
+    public double? CurrentGroupStart { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("currentGroupEnd")]
-    public double CurrentGroupEnd { get; set; }
+    public double? CurrentGroupEnd { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("nextAllocationTime")]
-    public global::System.DateTimeOffset NextAllocationTime { get; set; }
+    public global::System.DateTimeOffset? NextAllocationTime { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("estimatedWait")]
-    public double EstimatedWait { get; set; }
+    public double? EstimatedWait { get; set; }
 
 }
 
@@ -331,7 +331,7 @@ namespace TestApi;
 public partial class LiveQueuePaidStandby
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
-    public double WaitTime { get; set; }
+    public double? WaitTime { get; set; }
 
 }
 
@@ -350,22 +350,22 @@ namespace TestApi;
 public partial class LiveQueue
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("STANDBY")]
-    public LiveQueueStandby Standby { get; set; }
+    public LiveQueueStandby? Standby { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("SINGLE_RIDER")]
-    public LiveQueueSingleRider SingleRider { get; set; }
+    public LiveQueueSingleRider? SingleRider { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("RETURN_TIME")]
-    public LiveQueueReturnTime ReturnTime { get; set; }
+    public LiveQueueReturnTime? ReturnTime { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("PAID_RETURN_TIME")]
-    public LiveQueuePaidReturnTime PaidReturnTime { get; set; }
+    public LiveQueuePaidReturnTime? PaidReturnTime { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("BOARDING_GROUP")]
-    public LiveQueueBoardingGroup BoardingGroup { get; set; }
+    public LiveQueueBoardingGroup? BoardingGroup { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("PAID_STANDBY")]
-    public LiveQueuePaidStandby PaidStandby { get; set; }
+    public LiveQueuePaidStandby? PaidStandby { get; set; }
 
 }
 
@@ -387,10 +387,10 @@ public partial class LiveShowTime
     public string Type { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("startTime")]
-    public global::System.DateTimeOffset StartTime { get; set; }
+    public global::System.DateTimeOffset? StartTime { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("endTime")]
-    public global::System.DateTimeOffset EndTime { get; set; }
+    public global::System.DateTimeOffset? EndTime { get; set; }
 
 }
 
@@ -409,10 +409,10 @@ namespace TestApi;
 public partial class DiningAvailability
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("partySize")]
-    public double PartySize { get; set; }
+    public double? PartySize { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
-    public double WaitTime { get; set; }
+    public double? WaitTime { get; set; }
 
 }
 
@@ -437,7 +437,7 @@ public partial class TagData
     public string TagName { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
 }
 
@@ -479,10 +479,10 @@ namespace TestApi;
 public partial class EntityDataLocation
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("latitude")]
-    public double Latitude { get; set; }
+    public double? Latitude { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("longitude")]
-    public double Longitude { get; set; }
+    public double? Longitude { get; set; }
 
 }
 
@@ -510,19 +510,19 @@ public partial class EntityData
     public EntityDataEntityType EntityType { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("parentId")]
-    public string ParentId { get; set; }
+    public string? ParentId { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("destinationId")]
-    public string DestinationId { get; set; }
+    public string? DestinationId { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("timezone")]
     public string Timezone { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("location")]
-    public EntityDataLocation Location { get; set; }
+    public EntityDataLocation? Location { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("tags")]
-    public global::System.Collections.Generic.List<global::TestApi.TagData> Tags { get; set; }
+    public global::System.Collections.Generic.List<global::TestApi.TagData>? Tags { get; set; }
 
 }
 
@@ -564,10 +564,10 @@ namespace TestApi;
 public partial class EntityChildLocation
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("latitude")]
-    public double Latitude { get; set; }
+    public double? Latitude { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("longitude")]
-    public double Longitude { get; set; }
+    public double? Longitude { get; set; }
 
 }
 
@@ -595,13 +595,13 @@ public partial class EntityChild
     public EntityChildEntityType EntityType { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("externalId")]
-    public string ExternalId { get; set; }
+    public string? ExternalId { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("parentId")]
-    public string ParentId { get; set; }
+    public string? ParentId { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("location")]
-    public EntityChildLocation Location { get; set; }
+    public EntityChildLocation? Location { get; set; }
 
 }
 
@@ -643,19 +643,19 @@ namespace TestApi;
 public partial class EntityChildrenResponse
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("entityType")]
-    public EntityChildrenResponseEntityType EntityType { get; set; }
+    public EntityChildrenResponseEntityType? EntityType { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("timezone")]
-    public string Timezone { get; set; }
+    public string? Timezone { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("children")]
-    public global::System.Collections.Generic.List<global::TestApi.EntityChild> Children { get; set; }
+    public global::System.Collections.Generic.List<global::TestApi.EntityChild>? Children { get; set; }
 
 }
 
@@ -718,7 +718,7 @@ namespace TestApi;
 public partial class EntityLiveDataQueueStandby
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
-    public double WaitTime { get; set; }
+    public double? WaitTime { get; set; }
 
 }
 
@@ -737,7 +737,7 @@ namespace TestApi;
 public partial class EntityLiveDataQueueSingleRider
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
-    public double WaitTime { get; set; }
+    public double? WaitTime { get; set; }
 
 }
 
@@ -779,10 +779,10 @@ public partial class EntityLiveDataQueueReturnTime
     public EntityLiveDataQueueReturnTimeState State { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("returnStart")]
-    public global::System.DateTimeOffset ReturnStart { get; set; }
+    public global::System.DateTimeOffset? ReturnStart { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("returnEnd")]
-    public global::System.DateTimeOffset ReturnEnd { get; set; }
+    public global::System.DateTimeOffset? ReturnEnd { get; set; }
 
 }
 
@@ -827,7 +827,7 @@ public partial class EntityLiveDataQueuePaidReturnTimePrice
     public string Currency { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("formatted")]
-    public string Formatted { get; set; }
+    public string? Formatted { get; set; }
 
 }
 
@@ -849,10 +849,10 @@ public partial class EntityLiveDataQueuePaidReturnTime
     public EntityLiveDataQueuePaidReturnTimeState State { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("returnStart")]
-    public global::System.DateTimeOffset ReturnStart { get; set; }
+    public global::System.DateTimeOffset? ReturnStart { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("returnEnd")]
-    public global::System.DateTimeOffset ReturnEnd { get; set; }
+    public global::System.DateTimeOffset? ReturnEnd { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("price")]
     public EntityLiveDataQueuePaidReturnTimePrice Price { get; set; }
@@ -897,16 +897,16 @@ public partial class EntityLiveDataQueueBoardingGroup
     public EntityLiveDataQueueBoardingGroupAllocationStatus AllocationStatus { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("currentGroupStart")]
-    public double CurrentGroupStart { get; set; }
+    public double? CurrentGroupStart { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("currentGroupEnd")]
-    public double CurrentGroupEnd { get; set; }
+    public double? CurrentGroupEnd { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("nextAllocationTime")]
-    public global::System.DateTimeOffset NextAllocationTime { get; set; }
+    public global::System.DateTimeOffset? NextAllocationTime { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("estimatedWait")]
-    public double EstimatedWait { get; set; }
+    public double? EstimatedWait { get; set; }
 
 }
 
@@ -925,7 +925,7 @@ namespace TestApi;
 public partial class EntityLiveDataQueuePaidStandby
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
-    public double WaitTime { get; set; }
+    public double? WaitTime { get; set; }
 
 }
 
@@ -944,22 +944,22 @@ namespace TestApi;
 public partial class EntityLiveDataQueue
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("STANDBY")]
-    public EntityLiveDataQueueStandby Standby { get; set; }
+    public EntityLiveDataQueueStandby? Standby { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("SINGLE_RIDER")]
-    public EntityLiveDataQueueSingleRider SingleRider { get; set; }
+    public EntityLiveDataQueueSingleRider? SingleRider { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("RETURN_TIME")]
-    public EntityLiveDataQueueReturnTime ReturnTime { get; set; }
+    public EntityLiveDataQueueReturnTime? ReturnTime { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("PAID_RETURN_TIME")]
-    public EntityLiveDataQueuePaidReturnTime PaidReturnTime { get; set; }
+    public EntityLiveDataQueuePaidReturnTime? PaidReturnTime { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("BOARDING_GROUP")]
-    public EntityLiveDataQueueBoardingGroup BoardingGroup { get; set; }
+    public EntityLiveDataQueueBoardingGroup? BoardingGroup { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("PAID_STANDBY")]
-    public EntityLiveDataQueuePaidStandby PaidStandby { get; set; }
+    public EntityLiveDataQueuePaidStandby? PaidStandby { get; set; }
 
 }
 
@@ -987,22 +987,22 @@ public partial class EntityLiveData
     public EntityLiveDataEntityType EntityType { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("status")]
-    public EntityLiveDataStatus Status { get; set; }
+    public EntityLiveDataStatus? Status { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
     public global::System.DateTimeOffset LastUpdated { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("queue")]
-    public EntityLiveDataQueue Queue { get; set; }
+    public EntityLiveDataQueue? Queue { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("showtimes")]
-    public global::System.Collections.Generic.List<global::TestApi.LiveShowTime> Showtimes { get; set; }
+    public global::System.Collections.Generic.List<global::TestApi.LiveShowTime>? Showtimes { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("operatingHours")]
-    public global::System.Collections.Generic.List<global::TestApi.LiveShowTime> OperatingHours { get; set; }
+    public global::System.Collections.Generic.List<global::TestApi.LiveShowTime>? OperatingHours { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("diningAvailability")]
-    public global::System.Collections.Generic.List<global::TestApi.DiningAvailability> DiningAvailability { get; set; }
+    public global::System.Collections.Generic.List<global::TestApi.DiningAvailability>? DiningAvailability { get; set; }
 
 }
 
@@ -1044,19 +1044,19 @@ namespace TestApi;
 public partial class EntityLiveDataResponse
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("entityType")]
-    public EntityLiveDataResponseEntityType EntityType { get; set; }
+    public EntityLiveDataResponseEntityType? EntityType { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("timezone")]
-    public string Timezone { get; set; }
+    public string? Timezone { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("liveData")]
-    public global::System.Collections.Generic.List<global::TestApi.EntityLiveData> LiveData { get; set; }
+    public global::System.Collections.Generic.List<global::TestApi.EntityLiveData>? LiveData { get; set; }
 
 }
 
@@ -1101,7 +1101,7 @@ public partial class SchedulePriceObjectPrice
     public string Currency { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("formatted")]
-    public string Formatted { get; set; }
+    public string? Formatted { get; set; }
 
 }
 
@@ -1120,19 +1120,19 @@ namespace TestApi;
 public partial class SchedulePriceObject
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("type")]
-    public SchedulePriceObjectType Type { get; set; }
+    public SchedulePriceObjectType? Type { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("price")]
-    public SchedulePriceObjectPrice Price { get; set; }
+    public SchedulePriceObjectPrice? Price { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("available")]
-    public bool Available { get; set; }
+    public bool? Available { get; set; }
 
 }
 
@@ -1185,7 +1185,7 @@ public partial class ScheduleEntry
     public ScheduleEntryType Type { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("purchases")]
-    public global::System.Collections.Generic.List<global::TestApi.SchedulePriceObject> Purchases { get; set; }
+    public global::System.Collections.Generic.List<global::TestApi.SchedulePriceObject>? Purchases { get; set; }
 
 }
 
@@ -1227,22 +1227,22 @@ namespace TestApi;
 public partial class EntityScheduleResponse
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("entityType")]
-    public EntityScheduleResponseEntityType EntityType { get; set; }
+    public EntityScheduleResponseEntityType? EntityType { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("timezone")]
-    public string Timezone { get; set; }
+    public string? Timezone { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("schedule")]
-    public global::System.Collections.Generic.List<global::TestApi.ScheduleEntry> Schedule { get; set; }
+    public global::System.Collections.Generic.List<global::TestApi.ScheduleEntry>? Schedule { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("parks")]
-    public global::System.Collections.Generic.List<global::TestApi.EntityScheduleResponse> Parks { get; set; }
+    public global::System.Collections.Generic.List<global::TestApi.EntityScheduleResponse>? Parks { get; set; }
 
 }
 
@@ -1261,10 +1261,10 @@ namespace TestApi;
 public partial class DestinationParkEntry
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
 }
 
@@ -1283,16 +1283,16 @@ namespace TestApi;
 public partial class DestinationEntry
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("slug")]
-    public string Slug { get; set; }
+    public string? Slug { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("parks")]
-    public global::System.Collections.Generic.List<global::TestApi.DestinationParkEntry> Parks { get; set; }
+    public global::System.Collections.Generic.List<global::TestApi.DestinationParkEntry>? Parks { get; set; }
 
 }
 
@@ -1311,7 +1311,7 @@ namespace TestApi;
 public partial class DestinationsResponse
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("destinations")]
-    public global::System.Collections.Generic.List<global::TestApi.DestinationEntry> Destinations { get; set; }
+    public global::System.Collections.Generic.List<global::TestApi.DestinationEntry>? Destinations { get; set; }
 
 }
 
