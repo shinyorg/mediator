@@ -218,6 +218,7 @@
       Id: Guid_32,
       Name: Soaring Timbers,
       EntityType: ATTRACTION,
+      Status: OPERATING,
       LastUpdated: DateTimeOffset_23,
       Queue: {
         Standby: {
@@ -239,6 +240,7 @@
       Id: Guid_34,
       Name: Flying Canoes,
       EntityType: ATTRACTION,
+      Status: OPERATING,
       LastUpdated: DateTimeOffset_25,
       Queue: {
         Standby: {
@@ -271,6 +273,7 @@
       Id: Guid_38,
       Name: Klockwerks,
       EntityType: ATTRACTION,
+      Status: OPERATING,
       LastUpdated: DateTimeOffset_26,
       Queue: {
         Standby: {
@@ -299,6 +302,7 @@
       Id: Guid_41,
       Name: Swing of the Century,
       EntityType: ATTRACTION,
+      Status: OPERATING,
       LastUpdated: DateTimeOffset_27,
       Queue: {
         Standby: {
@@ -380,6 +384,7 @@
       Id: Guid_52,
       Name: Antique Carrousel,
       EntityType: ATTRACTION,
+      Status: OPERATING,
       LastUpdated: DateTimeOffset_27,
       Queue: {
         Standby: {
@@ -398,6 +403,7 @@
       Id: Guid_54,
       Name: Riptide,
       EntityType: ATTRACTION,
+      Status: OPERATING,
       LastUpdated: DateTimeOffset_29,
       Queue: {
         Standby: {
