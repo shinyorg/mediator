@@ -12,7 +12,7 @@
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.EntityType>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum EntityType
 {
     DESTINATION,
@@ -35,7 +35,7 @@ public enum EntityType
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.LiveStatusType>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum LiveStatusType
 {
     OPERATING,
@@ -56,7 +56,7 @@ public enum LiveStatusType
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.ReturnTimeState>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum ReturnTimeState
 {
     AVAILABLE,
@@ -76,7 +76,7 @@ public enum ReturnTimeState
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.BoardingGroupState>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum BoardingGroupState
 {
     AVAILABLE,
@@ -95,7 +95,7 @@ public enum BoardingGroupState
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class PriceData
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("amount")]
@@ -120,7 +120,7 @@ public partial class PriceData
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class LiveQueueStandby
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
@@ -139,7 +139,7 @@ public partial class LiveQueueStandby
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class LiveQueueSingleRider
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
@@ -159,7 +159,7 @@ public partial class LiveQueueSingleRider
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.LiveQueueReturnTimeState>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum LiveQueueReturnTimeState
 {
     AVAILABLE,
@@ -178,7 +178,7 @@ public enum LiveQueueReturnTimeState
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class LiveQueueReturnTime
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("state")]
@@ -204,7 +204,7 @@ public partial class LiveQueueReturnTime
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.LiveQueuePaidReturnTimeState>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum LiveQueuePaidReturnTimeState
 {
     AVAILABLE,
@@ -223,7 +223,7 @@ public enum LiveQueuePaidReturnTimeState
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class LiveQueuePaidReturnTimePrice
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("amount")]
@@ -248,7 +248,7 @@ public partial class LiveQueuePaidReturnTimePrice
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class LiveQueuePaidReturnTime
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("state")]
@@ -277,7 +277,7 @@ public partial class LiveQueuePaidReturnTime
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.LiveQueueBoardingGroupAllocationStatus>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum LiveQueueBoardingGroupAllocationStatus
 {
     AVAILABLE,
@@ -296,7 +296,7 @@ public enum LiveQueueBoardingGroupAllocationStatus
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class LiveQueueBoardingGroup
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("allocationStatus")]
@@ -327,7 +327,7 @@ public partial class LiveQueueBoardingGroup
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class LiveQueuePaidStandby
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
@@ -346,7 +346,7 @@ public partial class LiveQueuePaidStandby
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class LiveQueue
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("STANDBY")]
@@ -380,7 +380,7 @@ public partial class LiveQueue
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class LiveShowTime
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("type")]
@@ -405,7 +405,7 @@ public partial class LiveShowTime
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class DiningAvailability
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("partySize")]
@@ -427,7 +427,7 @@ public partial class DiningAvailability
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class TagData
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("tag")]
@@ -453,7 +453,7 @@ public partial class TagData
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.EntityDataEntityType>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum EntityDataEntityType
 {
     DESTINATION,
@@ -475,7 +475,7 @@ public enum EntityDataEntityType
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityDataLocation
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("latitude")]
@@ -497,7 +497,7 @@ public partial class EntityDataLocation
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityData
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -538,7 +538,7 @@ public partial class EntityData
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.EntityChildEntityType>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum EntityChildEntityType
 {
     DESTINATION,
@@ -560,7 +560,7 @@ public enum EntityChildEntityType
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityChildLocation
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("latitude")]
@@ -582,7 +582,7 @@ public partial class EntityChildLocation
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityChild
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -617,7 +617,7 @@ public partial class EntityChild
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.EntityChildrenResponseEntityType>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum EntityChildrenResponseEntityType
 {
     DESTINATION,
@@ -639,7 +639,7 @@ public enum EntityChildrenResponseEntityType
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityChildrenResponse
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -671,7 +671,7 @@ public partial class EntityChildrenResponse
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.EntityLiveDataEntityType>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum EntityLiveDataEntityType
 {
     DESTINATION,
@@ -694,7 +694,7 @@ public enum EntityLiveDataEntityType
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.EntityLiveDataStatus>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum EntityLiveDataStatus
 {
     OPERATING,
@@ -714,7 +714,7 @@ public enum EntityLiveDataStatus
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityLiveDataQueueStandby
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
@@ -733,7 +733,7 @@ public partial class EntityLiveDataQueueStandby
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityLiveDataQueueSingleRider
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
@@ -753,7 +753,7 @@ public partial class EntityLiveDataQueueSingleRider
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.EntityLiveDataQueueReturnTimeState>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum EntityLiveDataQueueReturnTimeState
 {
     AVAILABLE,
@@ -772,7 +772,7 @@ public enum EntityLiveDataQueueReturnTimeState
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityLiveDataQueueReturnTime
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("state")]
@@ -798,7 +798,7 @@ public partial class EntityLiveDataQueueReturnTime
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.EntityLiveDataQueuePaidReturnTimeState>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum EntityLiveDataQueuePaidReturnTimeState
 {
     AVAILABLE,
@@ -817,7 +817,7 @@ public enum EntityLiveDataQueuePaidReturnTimeState
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityLiveDataQueuePaidReturnTimePrice
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("amount")]
@@ -842,7 +842,7 @@ public partial class EntityLiveDataQueuePaidReturnTimePrice
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityLiveDataQueuePaidReturnTime
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("state")]
@@ -871,7 +871,7 @@ public partial class EntityLiveDataQueuePaidReturnTime
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.EntityLiveDataQueueBoardingGroupAllocationStatus>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum EntityLiveDataQueueBoardingGroupAllocationStatus
 {
     AVAILABLE,
@@ -890,7 +890,7 @@ public enum EntityLiveDataQueueBoardingGroupAllocationStatus
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityLiveDataQueueBoardingGroup
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("allocationStatus")]
@@ -921,7 +921,7 @@ public partial class EntityLiveDataQueueBoardingGroup
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityLiveDataQueuePaidStandby
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
@@ -940,7 +940,7 @@ public partial class EntityLiveDataQueuePaidStandby
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityLiveDataQueue
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("STANDBY")]
@@ -974,7 +974,7 @@ public partial class EntityLiveDataQueue
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityLiveData
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -1018,7 +1018,7 @@ public partial class EntityLiveData
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.EntityLiveDataResponseEntityType>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum EntityLiveDataResponseEntityType
 {
     DESTINATION,
@@ -1040,7 +1040,7 @@ public enum EntityLiveDataResponseEntityType
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityLiveDataResponse
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -1072,7 +1072,7 @@ public partial class EntityLiveDataResponse
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.SchedulePriceObjectType>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum SchedulePriceObjectType
 {
     ADMISSION,
@@ -1091,7 +1091,7 @@ public enum SchedulePriceObjectType
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class SchedulePriceObjectPrice
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("amount")]
@@ -1116,7 +1116,7 @@ public partial class SchedulePriceObjectPrice
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class SchedulePriceObject
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("type")]
@@ -1148,7 +1148,7 @@ public partial class SchedulePriceObject
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.ScheduleEntryType>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum ScheduleEntryType
 {
     OPERATING,
@@ -1169,7 +1169,7 @@ public enum ScheduleEntryType
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class ScheduleEntry
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("date")]
@@ -1201,7 +1201,7 @@ public partial class ScheduleEntry
 namespace TestApi;
 
 [global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::TestApi.EntityScheduleResponseEntityType>))]
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public enum EntityScheduleResponseEntityType
 {
     DESTINATION,
@@ -1223,7 +1223,7 @@ public enum EntityScheduleResponseEntityType
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class EntityScheduleResponse
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -1257,7 +1257,7 @@ public partial class EntityScheduleResponse
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class DestinationParkEntry
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -1279,7 +1279,7 @@ public partial class DestinationParkEntry
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class DestinationEntry
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -1307,7 +1307,7 @@ public partial class DestinationEntry
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class DestinationsResponse
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("destinations")]
@@ -1325,7 +1325,7 @@ public partial class DestinationsResponse
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 /// <summary>
 /// Get a list of supported destinations available on the live API
 /// </summary>
@@ -1349,7 +1349,7 @@ using System.Threading.Tasks;
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class GetDestinationsHandler(global::Shiny.Mediator.Http.HttpHandlerServices services)
     : global::Shiny.Mediator.Http.BaseHttpRequestHandler(services),
       global::Shiny.Mediator.IRequestHandler<global::TestApi.GetDestinations, global::TestApi.DestinationsResponse>
@@ -1381,7 +1381,7 @@ public partial class GetDestinationsHandler(global::Shiny.Mediator.Http.HttpHand
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 /// <summary>
 /// Get entity document
 /// </summary>
@@ -1409,7 +1409,7 @@ using System.Threading.Tasks;
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class GetEntityHandler(global::Shiny.Mediator.Http.HttpHandlerServices services)
     : global::Shiny.Mediator.Http.BaseHttpRequestHandler(services),
       global::Shiny.Mediator.IRequestHandler<global::TestApi.GetEntity, global::TestApi.EntityData>
@@ -1441,7 +1441,7 @@ public partial class GetEntityHandler(global::Shiny.Mediator.Http.HttpHandlerSer
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 /// <summary>
 /// Get all children for a given entity document
 /// </summary>
@@ -1469,7 +1469,7 @@ using System.Threading.Tasks;
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class GetEntityChildrenHandler(global::Shiny.Mediator.Http.HttpHandlerServices services)
     : global::Shiny.Mediator.Http.BaseHttpRequestHandler(services),
       global::Shiny.Mediator.IRequestHandler<global::TestApi.GetEntityChildren, global::TestApi.EntityChildrenResponse>
@@ -1501,7 +1501,7 @@ public partial class GetEntityChildrenHandler(global::Shiny.Mediator.Http.HttpHa
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 /// <summary>
 /// Get live data for this entity and any child entities
 /// </summary>
@@ -1529,7 +1529,7 @@ using System.Threading.Tasks;
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class GetEntityLiveDataHandler(global::Shiny.Mediator.Http.HttpHandlerServices services)
     : global::Shiny.Mediator.Http.BaseHttpRequestHandler(services),
       global::Shiny.Mediator.IRequestHandler<global::TestApi.GetEntityLiveData, global::TestApi.EntityLiveDataResponse>
@@ -1561,7 +1561,7 @@ public partial class GetEntityLiveDataHandler(global::Shiny.Mediator.Http.HttpHa
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 /// <summary>
 /// Get entity schedule
 /// </summary>
@@ -1589,7 +1589,7 @@ using System.Threading.Tasks;
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class GetEntityScheduleUpcomingHandler(global::Shiny.Mediator.Http.HttpHandlerServices services)
     : global::Shiny.Mediator.Http.BaseHttpRequestHandler(services),
       global::Shiny.Mediator.IRequestHandler<global::TestApi.GetEntityScheduleUpcoming, global::TestApi.EntityScheduleResponse>
@@ -1621,7 +1621,7 @@ public partial class GetEntityScheduleUpcomingHandler(global::Shiny.Mediator.Htt
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 /// <summary>
 /// Get entity schedule for a specific month and year
 /// </summary>
@@ -1657,7 +1657,7 @@ using System.Threading.Tasks;
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class GetEntityScheduleYearMonthHandler(global::Shiny.Mediator.Http.HttpHandlerServices services)
     : global::Shiny.Mediator.Http.BaseHttpRequestHandler(services),
       global::Shiny.Mediator.IRequestHandler<global::TestApi.GetEntityScheduleYearMonth, global::TestApi.EntityScheduleResponse>
@@ -1693,7 +1693,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public static class __ShinyHttpClientRegistration
 {
     public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddHttpClient(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)

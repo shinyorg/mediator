@@ -17,7 +17,7 @@ using System.Collections.Generic;
 
 namespace TestNamespace;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class StreamEventsRequestHttpHandler(global::Shiny.Mediator.Http.HttpHandlerServices services)
     : global::Shiny.Mediator.Http.BaseHttpRequestHandler(services),
       global::Shiny.Mediator.IStreamRequestHandler<global::TestNamespace.StreamEventsRequest, global::TestNamespace.EventItem>
@@ -54,7 +54,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace TestNamespace;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public static class __ShinyHttpClientRegistration
 {
     public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddHttpClient(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)

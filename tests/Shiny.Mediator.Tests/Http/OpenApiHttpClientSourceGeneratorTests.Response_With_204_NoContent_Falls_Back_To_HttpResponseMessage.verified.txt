@@ -10,7 +10,7 @@
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class Ping : global::Shiny.Mediator.IRequest<global::System.Net.Http.HttpResponseMessage>
 {
 }
@@ -31,7 +31,7 @@ using System.Threading.Tasks;
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class PingHandler(global::Shiny.Mediator.Http.HttpHandlerServices services)
     : global::Shiny.Mediator.Http.BaseHttpRequestHandler(services),
       global::Shiny.Mediator.IRequestHandler<global::TestApi.Ping, global::System.Net.Http.HttpResponseMessage>
@@ -67,7 +67,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace TestApi;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public static class __ShinyHttpClientRegistration
 {
     public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddHttpClient(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
