@@ -9,23 +9,13 @@ using Microsoft.OpenApi;
 namespace Shiny.Mediator.SourceGenerators;
 
 
-public class OpenApiModelGenerator
+public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProductionContext context, Compilation compilation)
 {
-    readonly MediatorHttpItemConfig config;
-    readonly SourceProductionContext context;
-    readonly Compilation compilation;
-    readonly string accessor;
+    readonly string accessor = config.UseInternalClasses ? "internal" : "public";
     readonly HashSet<string> generatedTypes = new();
 
-    public OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProductionContext context, Compilation compilation)
-    {
-        this.config = config;
-        this.context = context;
-        this.compilation = compilation;
-        this.accessor = config.UseInternalClasses ? "internal" : "public";
-    }
 
-    public void GenerateModel(string name, OpenApiSchema schema)
+    public void GenerateModel(string name, IOpenApiSchema schema)
     {
         var className = name.Pascalize();
 
@@ -42,6 +32,7 @@ public class OpenApiModelGenerator
         }
     }
 
+    
     void GenerateEnum(string enumName, IOpenApiSchema schema)
     {
         var sb = new StringBuilder();
@@ -68,7 +59,7 @@ public class OpenApiModelGenerator
 
         if (isStringEnum)
         {
-            foreach (var ev in schema.Enum)
+            foreach (var ev in schema.Enum!)
             {
                 if (ev != null)
                 {
@@ -79,7 +70,7 @@ public class OpenApiModelGenerator
         }
         else
         {
-            foreach (var ev in schema.Enum)
+            foreach (var ev in schema.Enum!)
             {
                 if (ev != null)
                 {
@@ -93,6 +84,7 @@ public class OpenApiModelGenerator
 
         context.AddSource(GetFileName(enumName), SourceText.From(sb.ToString(), Encoding.UTF8));
     }
+    
 
     void GenerateClass(string className, IOpenApiSchema schema)
     {
@@ -110,17 +102,10 @@ public class OpenApiModelGenerator
         // Handle inheritance
         if (schema.AllOf?.Count == 1)
         {
-            if (schema.AllOf[0] is OpenApiSchema baseSchema)
+            var baseType = GetSchemaType(schema.AllOf[0]);
+            if (baseType != null)
             {
-                var baseType = GetSchemaType(baseSchema);
-                if (baseType != null)
-                {
-                    sb.AppendLine($" : {baseType}");
-                }
-                else
-                {
-                    sb.AppendLine();
-                }
+                sb.AppendLine($" : {baseType}");
             }
             else
             {
@@ -154,7 +139,7 @@ public class OpenApiModelGenerator
                         typeName = className + propertyName;
                         GenerateClass(typeName, propSchema);
                     }
-                    else if (propSchema.Enum?.Count > 0 && string.IsNullOrEmpty(propSchema.Title))
+                    else if (propSchema.Enum?.Count > 0 && String.IsNullOrEmpty(propSchema.Title))
                     {
                         // Generate nested enum
                         typeName = className + propertyName;
@@ -215,6 +200,7 @@ public class OpenApiModelGenerator
         }
     }
 
+    
     string? GetSchemaType(IOpenApiSchema schema)
     {
         string? type = null;
@@ -259,9 +245,9 @@ public class OpenApiModelGenerator
                     // Object with no additional properties and no title - might be inline definition
                     type = "object";
                 }
-                else if (schema.AdditionalProperties is IOpenApiSchema addPropsSchema)
+                else
                 {
-                    var dictionaryValueType = GetSchemaType(addPropsSchema);
+                    var dictionaryValueType = GetSchemaType(schema.AdditionalProperties);
                     if (dictionaryValueType != null)
                         type = $"global::System.Collections.Generic.Dictionary<string, {dictionaryValueType}>";
                 }
@@ -273,8 +259,7 @@ public class OpenApiModelGenerator
         }
         else if (schema.AllOf?.Count == 1)
         {
-            if (schema.AllOf[0] is IOpenApiSchema allOfSchema)
-                type = GetSchemaType(allOfSchema);
+            type = GetSchemaType(schema.AllOf[0]);
         }
 
         return type;

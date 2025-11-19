@@ -1383,7 +1383,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
 public partial class GetEntity : global::Shiny.Mediator.IRequest<global::TestApi.EntityData>
 {
-    public global::TestApi.BoardingGroupState EntityID { get; set; }
+    public string EntityID { get; set; }
 }
 
     },
@@ -1438,7 +1438,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
 public partial class GetEntityChildren : global::Shiny.Mediator.IRequest<global::TestApi.EntityChildrenResponse>
 {
-    public global::TestApi.BoardingGroupState EntityID { get; set; }
+    public string EntityID { get; set; }
 }
 
     },
@@ -1493,7 +1493,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
 public partial class GetEntityLiveData : global::Shiny.Mediator.IRequest<global::TestApi.EntityLiveDataResponse>
 {
-    public global::TestApi.BoardingGroupState EntityID { get; set; }
+    public string EntityID { get; set; }
 }
 
     },
@@ -1548,7 +1548,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
 public partial class GetEntityScheduleUpcoming : global::Shiny.Mediator.IRequest<global::TestApi.EntityScheduleResponse>
 {
-    public global::TestApi.BoardingGroupState EntityID { get; set; }
+    public string EntityID { get; set; }
 }
 
     },
@@ -1603,9 +1603,9 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "5.0.0")]
 public partial class GetEntityScheduleYearMonth : global::Shiny.Mediator.IRequest<global::TestApi.EntityScheduleResponse>
 {
-    public global::TestApi.BoardingGroupState EntityID { get; set; }
-    public object Year { get; set; }
-    public object Month { get; set; }
+    public string EntityID { get; set; }
+    public double Year { get; set; }
+    public double Month { get; set; }
 }
 
     },

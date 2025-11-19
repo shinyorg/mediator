@@ -135,7 +135,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         AdditionalText item,
         MediatorHttpItemConfig config,
         AnalyzerConfigOptionsProvider configProvider,
-        Compilation compilation)
+        Compilation compilation
+    )
     {
         var handlers = new List<HandlerRegistrationInfo>();
         
@@ -205,9 +206,9 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                     settings.AddYamlReader();
                     
                     var result = OpenApiDocument.Load(docStream, null, settings);
-                    document = result.Document;
+                    document = result.Document!;
                     
-                    if (result.Diagnostic?.Errors?.Count > 0)
+                    if (result.Diagnostic?.Errors.Count > 0)
                     {
                         foreach (var error in result.Diagnostic.Errors)
                         {
@@ -251,7 +252,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         SourceProductionContext context,
         OpenApiDocument document,
         MediatorHttpItemConfig config,
-        Compilation compilation)
+        Compilation compilation
+    )
     {
         if (document.Components?.Schemas == null)
             return;
@@ -260,56 +262,55 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         
         foreach (var schema in document.Components.Schemas)
         {
-            if (schema.Value is OpenApiSchema openApiSchema)
-            {
-                generator.GenerateModel(schema.Key, openApiSchema);
-            }
+            generator.GenerateModel(schema.Key, schema.Value);
         }
     }
 
+    
     static List<HandlerRegistrationInfo> GenerateHandlers(
         SourceProductionContext context,
         OpenApiDocument document,
         MediatorHttpItemConfig config,
-        Compilation compilation)
+        Compilation compilation
+    )
     {
         var handlers = new List<HandlerRegistrationInfo>();
 
-        if (document.Paths == null || document.Paths.Count == 0)
+        if (document.Paths.Count == 0)
             return handlers;
 
         foreach (var path in document.Paths)
         {
-            if (path.Value?.Operations == null)
-                continue;
-
-            foreach (var operation in path.Value.Operations)
+            if (path.Value?.Operations != null)
             {
-                if (operation.Value == null || string.IsNullOrWhiteSpace(operation.Value.OperationId))
+                foreach (var operation in path.Value.Operations)
                 {
-                    ReportDiagnostic(
-                        context,
-                        "SHINYMED006",
-                        "Missing Operation ID",
-                        $"Operation {operation.Key} at path {path.Key} is missing an OperationId",
-                        DiagnosticSeverity.Warning
-                    );
-                    continue;
-                }
-
-                var handler = GenerateHandlerForOperation(
-                    context,
-                    path.Key,
-                    operation.Key.ToString(),
-                    operation.Value,
-                    config,
-                    compilation,
-                    document
-                );
-
-                if (handler != null)
-                {
-                    handlers.Add(handler);
+                    // TODO: operation.summary comment for generation
+                    // TODO: operationId is null - use HttpVerb+Endpoint to generate a name
+                    if (operation.Value == null || string.IsNullOrWhiteSpace(operation.Value.OperationId))
+                    {
+                        ReportDiagnostic(
+                            context,
+                            "SHINYMED006",
+                            "Missing Operation ID",
+                            $"Operation {operation.Key} at path {path.Key} is missing an OperationId",
+                            DiagnosticSeverity.Warning
+                        );
+                    }
+                    else
+                    {
+                        // TODO: operation can never be "unknown" - if it isn't set - we get can build it from the endpoint
+                        var handler = GenerateHandlerForOperation(
+                            context,
+                            path.Key,
+                            operation.Key.ToString(),
+                            operation.Value,
+                            config,
+                            compilation,
+                            document
+                        );
+                        handlers.Add(handler);
+                    }
                 }
             }
         }
@@ -327,7 +328,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         OpenApiDocument document
     )
     {
-        var contractName = $"{config.ContractPrefix ?? ""}{(operation.OperationId ?? "Unknown").Pascalize()}{config.ContractPostfix ?? ""}";
+        var contractName = $"{config.ContractPrefix ?? ""}{operation.OperationId!.Pascalize()}{config.ContractPostfix ?? ""}";
         var handlerName = $"{contractName}Handler";
 
         // Determine response type
@@ -344,38 +345,36 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         {
             foreach (var parameter in operation.Parameters)
             {
-                if (parameter == null || string.IsNullOrEmpty(parameter.Name))
-                    continue;
-
-                var paramType = parameter.In switch
+                if (!String.IsNullOrWhiteSpace(parameter?.Name))
                 {
-                    ParameterLocation.Path => HttpParameterType.Path,
-                    ParameterLocation.Query => HttpParameterType.Query,
-                    ParameterLocation.Header => HttpParameterType.Header,
-                    _ => HttpParameterType.Query
-                };
+                    var paramType = parameter.In switch
+                    {
+                        ParameterLocation.Path => HttpParameterType.Path,
+                        ParameterLocation.Query => HttpParameterType.Query,
+                        ParameterLocation.Header => HttpParameterType.Header,
+                        _ => HttpParameterType.Query
+                    };
 
-                var propertyType = parameter.Schema != null 
-                    ? GetSchemaType(parameter.Schema as OpenApiSchema ?? new OpenApiSchema(), config, document)
-                    : "string";
+                    // TODO: this is calculating wrong quite often
+                    // parameter.Required
+                    // parameter.Description for comments
+                    var propertyType = GetSchemaType(parameter.Schema!, config, document);
 
-                properties.Add(new HttpPropertyInfo(
-                    (parameter.Name ?? "Unknown").Pascalize(),
-                    parameter.Name ?? "Unknown",
-                    paramType,
-                    propertyType
-                ));
+                    // TODO: error on parameter.Name null
+                    properties.Add(new HttpPropertyInfo(
+                        parameter.Name!.Pascalize(),
+                        parameter.Name!,
+                        paramType,
+                        propertyType
+                    ));
+                }
             }
         }
 
         // Process request body
-        if (operation.RequestBody?.Content != null && 
-            operation.RequestBody.Content.TryGetValue("application/json", out var mediaType))
+        if (operation.RequestBody?.Content?.TryGetValue("application/json", out var mediaType) ?? false)
         {
-            var bodyType = mediaType.Schema != null 
-                ? GetSchemaType(mediaType.Schema as OpenApiSchema ?? new OpenApiSchema(), config, document)
-                : "object";
-
+            var bodyType = GetSchemaType(mediaType.Schema!, config, document);
             properties.Add(new HttpPropertyInfo(
                 "Body",
                 "Body",
@@ -518,36 +517,40 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                 if (response?.Content is { Count: > 0 })
                 {
                     // Try application/json first
-                    if (response.Content.TryGetValue(JsonMediaType, out var mediaType))
+                    if (response.Content.TryGetValue(JsonMediaType, out var mediaType) && mediaType?.Schema != null)
                     {
-                        if (mediaType?.Schema != null)
-                        {
-                            // Cast to OpenApiSchema (same pattern as used for components)
-                            if (mediaType.Schema is OpenApiSchemaReference openApiSchema && openApiSchema.Target != null)
-                            {
-                                var schemaType = GetSchemaType(openApiSchema.Target!, config, document);
-                                responseType = schemaType;
-                                break;
-                            }
-                            
-                            ReportDiagnostic(
-                                context,
-                                "SHINYMED009",
-                                "Missing Schema in Response",
-                                $"Operation '{operation.OperationId}' has {statusCode} response with application/json content but schema could not be resolved. Schema type: {mediaType.Schema.GetType().FullName}",
-                                DiagnosticSeverity.Warning
-                            );
-                        }
-                        else
-                        {
-                            ReportDiagnostic(
-                                context,
-                                "SHINYMED009",
-                                "Missing Schema in Response",
-                                $"Operation '{operation.OperationId}' has {statusCode} response with application/json content but schema is null",
-                                DiagnosticSeverity.Warning
-                            );
-                        }
+                        responseType = GetSchemaType(mediaType.Schema, config, document);
+                        // if (mediaType?.Schema != null)
+                        // {
+                        //     // Cast to OpenApiSchema (same pattern as used for components)
+                        //     if (mediaType.Schema is OpenApiSchemaReference { Target: not null } openApiSchema)
+                        //     {
+                        //         var schemaType = GetSchemaType(openApiSchema.Target!, config, document);
+                        //         if (!String.IsNullOrEmpty(schemaType))
+                        //         {
+                        //             responseType = schemaType;
+                        //             break;
+                        //         }
+                        //     }
+                        //     
+                        //     ReportDiagnostic(
+                        //         context,
+                        //         "SHINYMED009",
+                        //         "Missing Schema in Response",
+                        //         $"Operation '{operation.OperationId}' has {statusCode} response with application/json content but schema could not be resolved. Schema type: {mediaType.Schema.GetType().FullName}",
+                        //         DiagnosticSeverity.Warning
+                        //     );
+                        // }
+                        // else
+                        // {
+                        //     ReportDiagnostic(
+                        //         context,
+                        //         "SHINYMED009",
+                        //         "Missing Schema in Response",
+                        //         $"Operation '{operation.OperationId}' has {statusCode} response with application/json content but schema is null",
+                        //         DiagnosticSeverity.Warning
+                        //     );
+                        // }
                     }
                 }
             }
@@ -555,42 +558,12 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
 
         return responseType;
     }
-
     
-    static IOpenApiSchema? ResolveSchema(object? schemaObj, OpenApiDocument document)
-    {
-        if (schemaObj == null)
-            return null;
-
-        // The schema object should already be an OpenApiSchema from the OpenAPI library
-        var schema = schemaObj as OpenApiSchema;
-        if (schema == null)
-            return null;
-
-        // If the schema has a title, it might be a referenced schema from components
-        // Try to find it in the components/schemas section
-        if (!string.IsNullOrEmpty(schema.Title) && document.Components?.Schemas != null)
-        {
-            if (document.Components.Schemas.TryGetValue(schema.Title, out var componentSchema))
-            {
-                // Return the schema from components, which should have full details
-                if (componentSchema is OpenApiSchema resolvedSchema)
-                {
-                    return resolvedSchema;
-                }
-            }
-        }
-
-        // The schema is already resolved by the OpenAPI reader
-        // Just return it as-is
-        return schema;
-    }
     
     static string GetSchemaType(IOpenApiSchema schema, MediatorHttpItemConfig config, OpenApiDocument document)
     {
         // Resolve schema reference if present
-        schema = ResolveSchema(schema, document) ?? schema;
-        var schemaType = "object";
+        string? schemaType = null;
 
         // // Check if this schema has a title (meaning it's a named type reference)
         // // In OpenAPI v3.0, when a schema is referenced from components, it typically has a title
@@ -600,116 +573,123 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         // }
 
         // Handle composed schemas by taking the first resolved type (best effort)
-        if (schema.AllOf is { Count: > 0 })
+        if (schema is OpenApiSchemaReference schemaRef)
         {
-            var first = schema.AllOf.OfType<OpenApiSchema>().FirstOrDefault();
-            if (first != null)
-                schemaType = GetSchemaType(first, config, document);
+            // Extract the schema name from the reference (e.g., "#/components/schemas/Pet" -> "Pet")
+            var refId = schemaRef.Reference.ReferenceV3?.Split('/').LastOrDefault();
+            schemaType = $"global::{config.Namespace}.{refId}";
         }
-        else if (schema.OneOf is { Count: > 0 })
+        else if (schema.Type!.Value.HasFlag(JsonSchemaType.Object))
         {
-            var first = schema.OneOf.OfType<OpenApiSchema>().FirstOrDefault();
-            if (first != null)
-                schemaType = GetSchemaType(first, config, document);
-        }
-        else if (schema.AnyOf is { Count: > 0 })
-        {
-            var first = schema.AnyOf.OfType<OpenApiSchema>().FirstOrDefault();
-            if (first != null)
-                schemaType = GetSchemaType(first, config, document);
-        }
-        // Try to find this schema in the components/schemas by object reference or properties match
-        else if (document.Components?.Schemas != null)
-        {
-            foreach (var componentSchema in document.Components.Schemas)
+            if (schema.AllOf is { Count: > 0 })
             {
-                var componentSchemaValue = componentSchema.Value as OpenApiSchema;
-                if (componentSchemaValue != null)
-                {
-                    // Check if it's the same object reference
-                    if (ReferenceEquals(componentSchemaValue, schema))
-                    {
-                        schemaType = $"global::{config.Namespace}.{componentSchema.Key}";
-                    }
-                    
-                    // Check if schemas match by comparing key properties
-                    // This helps when OpenAPI library creates multiple instances for the same schema
-                    else if (SchemasMatch(componentSchemaValue, schema))
-                    {
-                        schemaType = $"global::{config.Namespace}.{componentSchema.Key}";
-                    }
-                }
+                var first = schema.AllOf.OfType<OpenApiSchema>().FirstOrDefault();
+                if (first != null)
+                    schemaType = GetSchemaType(first, config, document);
             }
-        }
-        else if (schema.Type != null)
-        {
-            if (schema.Type.Value.HasFlag(JsonSchemaType.String))
-                schemaType = GetStringSchemaType(schema);
-            
-            else if (schema.Type.Value.HasFlag(JsonSchemaType.Integer))
-                schemaType = schema.Format == "int64" ? "long" : "int";
-            
-            else if (schema.Type.Value.HasFlag(JsonSchemaType.Number))
-                schemaType = schema.Format == "float" ? "float" : "double";
-            
-            else if (schema.Type.Value.HasFlag(JsonSchemaType.Boolean))
-                schemaType =  "bool";
-            
-            else if (schema.Type.Value.HasFlag(JsonSchemaType.Array))
+            else if (schema.OneOf is { Count: > 0 })
             {
-                var itemsSchema = schema.Items as OpenApiSchema;
-                if (itemsSchema != null)
-                    schemaType = $"global::System.Collections.Generic.List<{GetSchemaType(itemsSchema, config, document)}>";
+                var first = schema.OneOf.OfType<OpenApiSchema>().FirstOrDefault();
+                if (first != null)
+                    schemaType = GetSchemaType(first, config, document);
             }
+            else if (schema.AnyOf is { Count: > 0 })
+            {
+                var first = schema.AnyOf.OfType<OpenApiSchema>().FirstOrDefault();
+                if (first != null)
+                    schemaType = GetSchemaType(first, config, document);
+            }
+            else
+            {
+                schemaType = "SHIT";
+            }
+            // Try to find this schema in the components/schemas by object reference or properties match
+            // else if (document.Components?.Schemas != null)
+            // {
+            //     foreach (var componentSchema in document.Components.Schemas)
+            //     {
+            //         if (componentSchema.Value != null)
+            //         {
+            //             // Check if it's the same object reference
+            //             if (ReferenceEquals(componentSchema.Value, schema))
+            //             {
+            //                 schemaType = $"global::{config.Namespace}.{componentSchema.Key}";
+            //             }
+            //
+            //             // Check if schemas match by comparing key properties
+            //             // This helps when OpenAPI library creates multiple instances for the same schema
+            //             else if (SchemasMatch(componentSchema.Value, schema))
+            //             {
+            //                 schemaType = $"global::{config.Namespace}.{componentSchema.Key}";
+            //             }
+            //         }
+            //     }
+            // }
+        }
+        else if (schema.Type.Value.HasFlag(JsonSchemaType.String))
+            schemaType = GetStringSchemaType(schema);
+            
+        else if (schema.Type.Value.HasFlag(JsonSchemaType.Integer))
+            schemaType = schema.Format == "int64" ? "long" : "int";
+        
+        else if (schema.Type.Value.HasFlag(JsonSchemaType.Number))
+            schemaType = schema.Format == "float" ? "float" : "double";
+        
+        else if (schema.Type.Value.HasFlag(JsonSchemaType.Boolean))
+            schemaType =  "bool";
+        
+        else if (schema.Type.Value.HasFlag(JsonSchemaType.Array))
+        {
+            if (schema.Items != null)
+                schemaType = $"global::System.Collections.Generic.List<{GetSchemaType(schema.Items, config, document)}>";
         }
 
-        return schemaType;
+        return schemaType!;
     }
 
-    static bool SchemasMatch(IOpenApiSchema schema1, IOpenApiSchema schema2)
-    {
-        // If both have properties, they must match exactly
-        if (schema1.Properties != null && schema2.Properties != null && 
-            schema1.Properties.Count > 0 && schema2.Properties.Count > 0)
-        {
-            if (schema1.Properties.Count != schema2.Properties.Count)
-                return false;
-            
-            // Check if all property names match
-            var props1 = schema1.Properties.Keys.OrderBy(k => k).ToList();
-            var props2 = schema2.Properties.Keys.OrderBy(k => k).ToList();
-            
-            return props1.SequenceEqual(props2);
-        }
-        
-        // If one has properties and the other doesn't, they don't match
-        var hasProps1 = schema1.Properties is { Count: > 0 };
-        var hasProps2 = schema2.Properties is { Count: > 0 };
-        if (hasProps1 != hasProps2)
-            return false;
-        
-        // For schemas without properties, be more strict
-        // Only match if type, format, and required fields are the same
-        if (schema1.Type != schema2.Type)
-            return false;
-        
-        if (schema1.Format != schema2.Format)
-            return false;
-        
-        // Check if both have the same required fields
-        var required1 = schema1.Required ?? new HashSet<string>();
-        var required2 = schema2.Required ?? new HashSet<string>();
-        
-        if (required1.Count != required2.Count)
+    // static bool SchemasMatch(IOpenApiSchema schema1, IOpenApiSchema schema2)
+    // {
+    //     // If both have properties, they must match exactly
+    //     if (schema1.Properties is { Count: > 0 }  && schema2.Properties is { Count: 0 })
+    //     {
+    //         if (schema1.Properties.Count != schema2.Properties.Count)
+    //             return false;
+    //         
+    //         // Check if all property names match
+    //         var props1 = schema1.Properties.Keys.OrderBy(k => k).ToList();
+    //         var props2 = schema2.Properties.Keys.OrderBy(k => k).ToList();
+    //         
+    //         return props1.SequenceEqual(props2);
+    //     }
+    //     
+    //     // If one has properties and the other doesn't, they don't match
+    //     var hasProps1 = schema1.Properties is { Count: > 0 };
+    //     var hasProps2 = schema2.Properties is { Count: > 0 };
+    //     if (hasProps1 != hasProps2)
+    //         return false;
+    //     
+    //     // For schemas without properties, be more strict
+    //     // Only match if type, format, and required fields are the same
+    //     if (schema1.Type != schema2.Type)
+    //         return false;
+    //     
+    //     if (schema1.Format != schema2.Format)
+    //         return false;
+    //     
+    //     // Check if both have the same required fields
+    //     var required1 = schema1.Required ?? new HashSet<string>();
+    //     var required2 = schema2.Required ?? new HashSet<string>();
+    //     
+    //     if (required1.Count != required2.Count)
+    //         return false;
+    //     
+    //     if (!required1.OrderBy(x => x).SequenceEqual(required2.OrderBy(x => x)))
+    //         return false;
+    //     
+    //     return true;
+    // }
 
-            return false;
-        
-        if (!required1.OrderBy(x => x).SequenceEqual(required2.OrderBy(x => x)))
-            return false;
-        
-        return true;
-    }
-
+    
     static string GetStringSchemaType(IOpenApiSchema schema) => schema.Format switch
     {
         "date-time" => "global::System.DateTimeOffset",
