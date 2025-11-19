@@ -169,7 +169,7 @@ internal static class HttpHandlerCodeGenerator
         return sb.ToString();
     }
 
-    private static string ProcessRoute(string route, IEnumerable<HttpPropertyInfo> properties)
+    static string ProcessRoute(string route, IEnumerable<HttpPropertyInfo> properties)
     {
         // Materialize once to avoid multiple enumeration
         var propertiesList = properties.ToList();
@@ -213,18 +213,15 @@ internal static class HttpHandlerCodeGenerator
         return $"$\"{result}\"";
     }
 
-    private static string GetHttpMethodMapping(string httpMethod)
+    static string GetHttpMethodMapping(string httpMethod) => httpMethod switch
     {
-        return httpMethod switch
-        {
-            "Get" or "GET" => "global::System.Net.Http.HttpMethod.Get",
-            "Post" or "POST" => "global::System.Net.Http.HttpMethod.Post",
-            "Put" or "PUT" => "global::System.Net.Http.HttpMethod.Put",
-            "Patch" or "PATCH" => "global::System.Net.Http.HttpMethod.Patch",
-            "Delete" or "DELETE" => "global::System.Net.Http.HttpMethod.Delete",
-            _ => "global::System.Net.Http.HttpMethod.Get"
-        };
-    }
+        "Get" or "GET" => "global::System.Net.Http.HttpMethod.Get",
+        "Post" or "POST" => "global::System.Net.Http.HttpMethod.Post",
+        "Put" or "PUT" => "global::System.Net.Http.HttpMethod.Put",
+        "Patch" or "PATCH" => "global::System.Net.Http.HttpMethod.Patch",
+        "Delete" or "DELETE" => "global::System.Net.Http.HttpMethod.Delete",
+        _ => "global::System.Net.Http.HttpMethod.Get"
+    };
 }
 
 public enum HttpParameterType
@@ -238,8 +235,10 @@ public enum HttpParameterType
 public record HttpPropertyInfo(
     string PropertyName,
     string ParameterName,
+    bool IsRequired,
     HttpParameterType ParameterType,
-    string? PropertyType = null
+    string? PropertyType = null,
+    string? Comments = null
 );
 
 public record HandlerRegistrationInfo(

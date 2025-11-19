@@ -285,32 +285,15 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             {
                 foreach (var operation in path.Value.Operations)
                 {
-                    // TODO: operation.summary comment for generation
-                    // TODO: operationId is null - use HttpVerb+Endpoint to generate a name
-                    if (operation.Value == null || string.IsNullOrWhiteSpace(operation.Value.OperationId))
-                    {
-                        ReportDiagnostic(
-                            context,
-                            "SHINYMED006",
-                            "Missing Operation ID",
-                            $"Operation {operation.Key} at path {path.Key} is missing an OperationId",
-                            DiagnosticSeverity.Warning
-                        );
-                    }
-                    else
-                    {
-                        // TODO: operation can never be "unknown" - if it isn't set - we get can build it from the endpoint
-                        var handler = GenerateHandlerForOperation(
-                            context,
-                            path.Key,
-                            operation.Key.ToString(),
-                            operation.Value,
-                            config,
-                            compilation,
-                            document
-                        );
-                        handlers.Add(handler);
-                    }
+                    var handler = GenerateHandlerForOperation(
+                        context,
+                        path.Key,
+                        operation.Key.ToString(),
+                        operation.Value,
+                        config,
+                        compilation
+                    );
+                    handlers.Add(handler);
                 }
             }
         }
@@ -324,15 +307,15 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         string operationType,
         OpenApiOperation operation,
         MediatorHttpItemConfig config,
-        Compilation compilation,
-        OpenApiDocument document
+        Compilation compilation
     )
     {
-        var contractName = $"{config.ContractPrefix ?? ""}{operation.OperationId!.Pascalize()}{config.ContractPostfix ?? ""}";
+        var opId = operation.OperationId?.Pascalize() ?? $"{operationType.Pascalize()}{path.Split('/').Last().Pascalize()}";
+        var contractName = $"{config.ContractPrefix ?? ""}{opId}{config.ContractPostfix ?? ""}";
         var handlerName = $"{contractName}Handler";
 
         // Determine response type
-        var responseType = GetResponseType(operation, config, document, context);
+        var responseType = GetResponseType(operation, config);
         
         // Determine HTTP method
         var httpMethod = operationType.ToUpper();
@@ -345,7 +328,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         {
             foreach (var parameter in operation.Parameters)
             {
-                if (!String.IsNullOrWhiteSpace(parameter?.Name))
+                if (!String.IsNullOrWhiteSpace(parameter!.Name))
                 {
                     var paramType = parameter.In switch
                     {
@@ -355,17 +338,14 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                         _ => HttpParameterType.Query
                     };
 
-                    // TODO: this is calculating wrong quite often
-                    // parameter.Required
-                    // parameter.Description for comments
-                    var propertyType = GetSchemaType(parameter.Schema!, config, document);
-
-                    // TODO: error on parameter.Name null
+                    var propertyType = GetSchemaType(parameter.Schema!, config);
                     properties.Add(new HttpPropertyInfo(
                         parameter.Name!.Pascalize(),
                         parameter.Name!,
+                        parameter.Required,
                         paramType,
-                        propertyType
+                        propertyType,
+                        parameter.Description
                     ));
                 }
             }
@@ -374,17 +354,19 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         // Process request body
         if (operation.RequestBody?.Content?.TryGetValue("application/json", out var mediaType) ?? false)
         {
-            var bodyType = GetSchemaType(mediaType.Schema!, config, document);
+            var bodyType = GetSchemaType(mediaType.Schema!, config);
             properties.Add(new HttpPropertyInfo(
                 "Body",
                 "Body",
+                operation.RequestBody.Required,
                 HttpParameterType.Body,
-                bodyType
+                bodyType,
+                operation.RequestBody.Description
             ));
         }
 
         // Generate contract class
-        GenerateContractClass(context, contractName, responseType, properties, config, compilation);
+        GenerateContractClass(context, contractName, responseType, operation.Summary, properties, config, compilation);
 
         // Determine if this is a stream request (for now, assume non-stream)
         var isStreamRequest = false;
@@ -423,6 +405,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         SourceProductionContext context,
         string className,
         string responseType,
+        string? comment,
         List<HttpPropertyInfo> properties,
         MediatorHttpItemConfig config,
         Compilation compilation
@@ -434,18 +417,33 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         sb.AppendLine("// <auto-generated>");
         sb.AppendLine("// Code generated by Shiny Mediator OpenAPI Source Generator.");
         sb.AppendLine("// </auto-generated>");
-        sb.AppendLine("#nullable disable");
         sb.AppendLine();
         sb.AppendLine($"namespace {config.Namespace};");
         sb.AppendLine();
         sb.AppendLine(Constants.GeneratedCodeAttributeString);
+
+        if (!String.IsNullOrWhiteSpace(comment))
+        {
+            sb.AppendLine( "/// <summary>");
+            sb.AppendLine($"/// {comment}");
+            sb.AppendLine( "/// </summary>");
+        }
+        
         sb.AppendLine($"{accessor} partial class {className} : global::Shiny.Mediator.IRequest<{responseType}>");
         sb.AppendLine("{");
 
         foreach (var prop in properties)
         {
-            var propType = prop.PropertyType ?? "object";
-            sb.AppendLine($"    public {propType} {prop.PropertyName} {{ get; set; }}");
+            if (!String.IsNullOrWhiteSpace(prop.Comments))
+            {
+                sb.AppendLine( "    /// <summary>");
+                sb.AppendLine($"    /// {prop.Comments}");
+                sb.AppendLine( "    /// </summary>");
+            }
+
+            var required = prop.IsRequired ? "required " : String.Empty;
+            var nullable = prop.IsRequired ? String.Empty : "?";
+            sb.AppendLine($"    public {required}{prop.PropertyType}{nullable} {prop.PropertyName} {{ get; set; }}");
         }
 
         sb.AppendLine("}");
@@ -502,7 +500,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     const string JsonMediaType = "application/json";
     const string FallbackType = "global::System.Net.Http.HttpResponseMessage";
     
-    static string GetResponseType(OpenApiOperation operation, MediatorHttpItemConfig config, OpenApiDocument document, SourceProductionContext context)
+    static string GetResponseType(OpenApiOperation operation, MediatorHttpItemConfig config)
     {
         var responseType = FallbackType;
         if (operation.Responses == null || operation.Responses.Count == 0)
@@ -518,40 +516,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                 {
                     // Try application/json first
                     if (response.Content.TryGetValue(JsonMediaType, out var mediaType) && mediaType?.Schema != null)
-                    {
-                        responseType = GetSchemaType(mediaType.Schema, config, document);
-                        // if (mediaType?.Schema != null)
-                        // {
-                        //     // Cast to OpenApiSchema (same pattern as used for components)
-                        //     if (mediaType.Schema is OpenApiSchemaReference { Target: not null } openApiSchema)
-                        //     {
-                        //         var schemaType = GetSchemaType(openApiSchema.Target!, config, document);
-                        //         if (!String.IsNullOrEmpty(schemaType))
-                        //         {
-                        //             responseType = schemaType;
-                        //             break;
-                        //         }
-                        //     }
-                        //     
-                        //     ReportDiagnostic(
-                        //         context,
-                        //         "SHINYMED009",
-                        //         "Missing Schema in Response",
-                        //         $"Operation '{operation.OperationId}' has {statusCode} response with application/json content but schema could not be resolved. Schema type: {mediaType.Schema.GetType().FullName}",
-                        //         DiagnosticSeverity.Warning
-                        //     );
-                        // }
-                        // else
-                        // {
-                        //     ReportDiagnostic(
-                        //         context,
-                        //         "SHINYMED009",
-                        //         "Missing Schema in Response",
-                        //         $"Operation '{operation.OperationId}' has {statusCode} response with application/json content but schema is null",
-                        //         DiagnosticSeverity.Warning
-                        //     );
-                        // }
-                    }
+                        responseType = GetSchemaType(mediaType.Schema, config);
                 }
             }
         }
@@ -560,19 +525,10 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     }
     
     
-    static string GetSchemaType(IOpenApiSchema schema, MediatorHttpItemConfig config, OpenApiDocument document)
+    static string GetSchemaType(IOpenApiSchema schema, MediatorHttpItemConfig config)
     {
-        // Resolve schema reference if present
         string? schemaType = null;
-
-        // // Check if this schema has a title (meaning it's a named type reference)
-        // // In OpenAPI v3.0, when a schema is referenced from components, it typically has a title
-        // if (!string.IsNullOrEmpty(schema.Title))
-        // {
-        //     return $"global::{config.Namespace}.{schema.Title}";
-        // }
-
-        // Handle composed schemas by taking the first resolved type (best effort)
+        
         if (schema is OpenApiSchemaReference schemaRef)
         {
             // Extract the schema name from the reference (e.g., "#/components/schemas/Pet" -> "Pet")
@@ -585,23 +541,19 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             {
                 var first = schema.AllOf.OfType<OpenApiSchema>().FirstOrDefault();
                 if (first != null)
-                    schemaType = GetSchemaType(first, config, document);
+                    schemaType = GetSchemaType(first, config);
             }
             else if (schema.OneOf is { Count: > 0 })
             {
                 var first = schema.OneOf.OfType<OpenApiSchema>().FirstOrDefault();
                 if (first != null)
-                    schemaType = GetSchemaType(first, config, document);
+                    schemaType = GetSchemaType(first, config);
             }
             else if (schema.AnyOf is { Count: > 0 })
             {
                 var first = schema.AnyOf.OfType<OpenApiSchema>().FirstOrDefault();
                 if (first != null)
-                    schemaType = GetSchemaType(first, config, document);
-            }
-            else
-            {
-                schemaType = "SHIT";
+                    schemaType = GetSchemaType(first, config);
             }
             // Try to find this schema in the components/schemas by object reference or properties match
             // else if (document.Components?.Schemas != null)
@@ -628,67 +580,27 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         }
         else if (schema.Type.Value.HasFlag(JsonSchemaType.String))
             schemaType = GetStringSchemaType(schema);
-            
+
         else if (schema.Type.Value.HasFlag(JsonSchemaType.Integer))
             schemaType = schema.Format == "int64" ? "long" : "int";
-        
+
         else if (schema.Type.Value.HasFlag(JsonSchemaType.Number))
             schemaType = schema.Format == "float" ? "float" : "double";
-        
+
         else if (schema.Type.Value.HasFlag(JsonSchemaType.Boolean))
             schemaType =  "bool";
-        
+
         else if (schema.Type.Value.HasFlag(JsonSchemaType.Array))
         {
             if (schema.Items != null)
-                schemaType = $"global::System.Collections.Generic.List<{GetSchemaType(schema.Items, config, document)}>";
+                schemaType = $"global::System.Collections.Generic.List<{GetSchemaType(schema.Items, config)}>";
         }
 
+        if (String.IsNullOrEmpty(schemaType))
+            throw new InvalidOperationException("Unable to determine schema type");
+        
         return schemaType!;
     }
-
-    // static bool SchemasMatch(IOpenApiSchema schema1, IOpenApiSchema schema2)
-    // {
-    //     // If both have properties, they must match exactly
-    //     if (schema1.Properties is { Count: > 0 }  && schema2.Properties is { Count: 0 })
-    //     {
-    //         if (schema1.Properties.Count != schema2.Properties.Count)
-    //             return false;
-    //         
-    //         // Check if all property names match
-    //         var props1 = schema1.Properties.Keys.OrderBy(k => k).ToList();
-    //         var props2 = schema2.Properties.Keys.OrderBy(k => k).ToList();
-    //         
-    //         return props1.SequenceEqual(props2);
-    //     }
-    //     
-    //     // If one has properties and the other doesn't, they don't match
-    //     var hasProps1 = schema1.Properties is { Count: > 0 };
-    //     var hasProps2 = schema2.Properties is { Count: > 0 };
-    //     if (hasProps1 != hasProps2)
-    //         return false;
-    //     
-    //     // For schemas without properties, be more strict
-    //     // Only match if type, format, and required fields are the same
-    //     if (schema1.Type != schema2.Type)
-    //         return false;
-    //     
-    //     if (schema1.Format != schema2.Format)
-    //         return false;
-    //     
-    //     // Check if both have the same required fields
-    //     var required1 = schema1.Required ?? new HashSet<string>();
-    //     var required2 = schema2.Required ?? new HashSet<string>();
-    //     
-    //     if (required1.Count != required2.Count)
-    //         return false;
-    //     
-    //     if (!required1.OrderBy(x => x).SequenceEqual(required2.OrderBy(x => x)))
-    //         return false;
-    //     
-    //     return true;
-    // }
-
     
     static string GetStringSchemaType(IOpenApiSchema schema) => schema.Format switch
     {

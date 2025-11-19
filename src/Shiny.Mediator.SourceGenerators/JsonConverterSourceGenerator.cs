@@ -70,7 +70,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         });
     }
 
-    private static TypeInfo? GetTypeInfo(GeneratorAttributeSyntaxContext context)
+    static TypeInfo? GetTypeInfo(GeneratorAttributeSyntaxContext context)
     {
         if (context.TargetNode is not TypeDeclarationSyntax typeDeclaration)
             return null;
@@ -84,8 +84,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
             .OfType<IPropertySymbol>()
             .Where(x => 
                 x.DeclaredAccessibility == Accessibility.Public && 
-                x.GetMethod != null && 
-                x.SetMethod != null
+                x is { GetMethod: not null, SetMethod: not null }
             )
             .Select(x => new PropertyInfo(
                 x.Name,
@@ -114,7 +113,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         );
     }
 
-    private static string GetTypeKind(TypeDeclarationSyntax typeDeclaration)
+    static string GetTypeKind(TypeDeclarationSyntax typeDeclaration)
     {
         if (typeDeclaration.IsKind(SyntaxKind.RecordStructDeclaration))
             return "record struct";
@@ -128,7 +127,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         return "class"; // fallback
     }
 
-    private static bool IsNullableType(ITypeSymbol type)
+    static bool IsNullableType(ITypeSymbol type)
     {
         // Check if it's a nullable value type (e.g., int?, DateTime?)
         if (type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
@@ -162,8 +161,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
             .OfType<IPropertySymbol>()
             .Where(x => 
                 x.DeclaredAccessibility == Accessibility.Public && 
-                x.GetMethod != null && 
-                x.SetMethod != null
+                x is { GetMethod: not null, SetMethod: not null }
             )
             .Select(x => new PropertyInfo(
                 x.Name,
@@ -193,7 +191,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         );
 
         // Validate that classes are partial (structs don't need to be partial)
-        if (typeInfo.IsClass && !typeInfo.IsPartial)
+        if (typeInfo is { IsClass: true, IsPartial: false })
         {
             var diagnostic = Diagnostic.Create(
                 new DiagnosticDescriptor(
@@ -217,7 +215,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
     }
     
 
-    private static void GeneratePartialTypeWithAttribute(SourceProductionContext context, TypeInfo typeInfo)
+    static void GeneratePartialTypeWithAttribute(SourceProductionContext context, TypeInfo typeInfo)
     {
         var sb = new StringBuilder();
         
@@ -249,7 +247,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
     }
     
 
-    private static void GenerateJsonConverter(SourceProductionContext context, TypeInfo typeInfo)
+    static void GenerateJsonConverter(SourceProductionContext context, TypeInfo typeInfo)
     {
         var sb = new StringBuilder();
         
@@ -540,7 +538,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         ITypeSymbol TypeSymbol
     );
 
-    private static string GetJsonPropertyName(IPropertySymbol property)
+    static string GetJsonPropertyName(IPropertySymbol property)
     {
         // Check if the property has the JsonPropertyName attribute
         var jsonPropertyNameAttribute = property.GetAttributes()
@@ -556,7 +554,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         return property.Name;
     }
 
-    private static string ToCamelCase(string name)
+    static string ToCamelCase(string name)
     {
         if (string.IsNullOrEmpty(name) || char.IsLower(name[0]))
             return name;
@@ -564,7 +562,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         return char.ToLowerInvariant(name[0]) + name.Substring(1);
     }
 
-    private static string GetDefaultValue(string typeName, bool isNullable)
+    static string GetDefaultValue(string typeName, bool isNullable)
     {
         var cleanTypeName = typeName.Replace("global::", "").Replace("?", "");
         

@@ -4,6 +4,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <CompilerVisibleProperty Include="AssemblyName"/>
         <CompilerVisibleProperty Include="RootNamespace"/>
         <CompilerVisibleProperty Include="ShinyMediatorHttpNamespace"/>
         <CompilerVisibleProperty Include="ShinyMediatorRegistryMethodName"/>

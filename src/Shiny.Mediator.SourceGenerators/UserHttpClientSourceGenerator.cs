@@ -284,6 +284,7 @@ public class UserHttpClientSourceGenerator : IIncrementalGenerator
             httpProperties.Add(new HttpPropertyInfo(
                 prop.Name,
                 parameterName,
+                false,
                 paramType,
                 GetFullTypeName(prop.Type)
             ));
