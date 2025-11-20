@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -10,26 +11,37 @@ namespace Shiny.Mediator.SourceGenerators;
 
 
 [Generator(LanguageNames.CSharp)]
-public class UserHttpClientSourceGenerator : IIncrementalGenerator
+public class HttpClientSourceGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         // Get MSBuild configuration options
-        var msbuildOptions = context.CompilationProvider
+        var msbuildOptions = context
+            .CompilationProvider
             .Combine(context.AnalyzerConfigOptionsProvider)
             .Select((pair, _) =>
             {
                 var (compilation, provider) = pair;
                 
-                provider.GlobalOptions.TryGetValue("build_property.RootNamespace", out var rootNamespace);
-                provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorHttpNamespace", out var httpNamespace);
+                provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorHttpRegistrationClassName", out var className);
+                provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorHttpRegistrationMethodName", out var methodName);
+                provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorHttpRegistrationAccessModifier", out var useInternalString);
                 
-                var assemblyName = compilation.AssemblyName ?? "Generated";
-                var targetNamespace = httpNamespace ?? rootNamespace ?? assemblyName;
+                provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorHttpNamespace", out var @namespace);
+                if (String.IsNullOrWhiteSpace(@namespace))
+                {
+                    provider.GlobalOptions.TryGetValue("build_property.RootNamespace", out @namespace);
+                    if (String.IsNullOrWhiteSpace(@namespace))
+                        @namespace = compilation.AssemblyName;
+                }
                 
+                var useInternal = useInternalString?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? Constants.DefaultHttpRegistrationUseInternal;
+                    
                 return new HttpMsBuildOptions(
-                    Namespace: targetNamespace,
-                    AssemblyName: assemblyName
+                    useInternal,
+                    @namespace!,
+                    String.IsNullOrWhiteSpace(className) ? Constants.DefaultHttpRegistrationClassName : className!,
+                    String.IsNullOrWhiteSpace(methodName) ? Constants.DefaultHttpRegistrationMethodName : methodName!
                 );
             });
 
@@ -50,10 +62,8 @@ public class UserHttpClientSourceGenerator : IIncrementalGenerator
             var requests = source.Left;
             var options = source.Right;
 
-            if (requests.IsEmpty)
-                return;
-
-            Execute(requests, options, spc);
+            if (!requests.IsEmpty)
+                Execute(requests, options, spc);
         });
     }
 
@@ -65,6 +75,7 @@ public class UserHttpClientSourceGenerator : IIncrementalGenerator
         return classDecl.AttributeLists.Count > 0;
     }
 
+    
     static HttpRequestInfo? GetHttpRequestInfo(GeneratorSyntaxContext context)
     {
         var classDecl = (ClassDeclarationSyntax)context.Node;
@@ -187,10 +198,7 @@ public class UserHttpClientSourceGenerator : IIncrementalGenerator
         );
     }
 
-    static bool IsHttpMethodAttribute(string? name)
-    {
-        return name is "GetAttribute" or "PostAttribute" or "PutAttribute" or "PatchAttribute" or "DeleteAttribute";
-    }
+    static bool IsHttpMethodAttribute(string? name) => name is "GetAttribute" or "PostAttribute" or "PutAttribute" or "PatchAttribute" or "DeleteAttribute";
 
     static void Execute(
         ImmutableArray<HttpRequestInfo?> requests,
@@ -208,7 +216,9 @@ public class UserHttpClientSourceGenerator : IIncrementalGenerator
         // Generate individual handlers
         foreach (var request in validRequests)
         {
-            var handlerClassName = $"{GetSimpleTypeName(request!.ClassSymbol)}HttpHandler";
+            var typeName = GetSimpleTypeName(request.ClassSymbol);
+            
+            var handlerClassName = $"{typeName}HttpHandler";
             var requestTypeFull = GetFullTypeName(request.ClassSymbol);
             var resultTypeFull = GetFullTypeName(request.ResultType);
             var handlerTypeFull = $"global::{options.Namespace}.{handlerClassName}";
@@ -229,7 +239,7 @@ public class UserHttpClientSourceGenerator : IIncrementalGenerator
                 options.Namespace
             );
 
-            var handlerFileName = $"{GetSimpleTypeName(request.ClassSymbol)}_HttpHandler.g.cs";
+            var handlerFileName = $"{options.Namespace}.{handlerClassName}.g.cs";
             context.AddSource(handlerFileName, SourceText.From(handlerCode, Encoding.UTF8));
 
             // Add to registration list
@@ -242,8 +252,15 @@ public class UserHttpClientSourceGenerator : IIncrementalGenerator
         }
 
         // Generate registration extension method using HttpHandlerCodeGenerator
-        var registrationCode = HttpHandlerCodeGenerator.GenerateRegistration(allHandlers, options.Namespace);
-        context.AddSource("__ShinyHttpClientRegistration.g.cs", SourceText.From(registrationCode, Encoding.UTF8));
+        var registrationCode = HttpHandlerCodeGenerator.GenerateRegistration(
+            allHandlers, 
+            options.Namespace,
+            options.ClassName,
+            options.MethodName,
+            options.UseInternalAccessModifier
+        );
+        
+        context.AddSource(options.ClassName + ".g.cs", SourceText.From(registrationCode, Encoding.UTF8));
     }
 
     static List<HttpPropertyInfo> ConvertToHttpPropertyInfo(ImmutableArray<PropertyInfo> properties, string route)
@@ -298,8 +315,10 @@ public class UserHttpClientSourceGenerator : IIncrementalGenerator
 }
 
 record HttpMsBuildOptions(
+    bool UseInternalAccessModifier,
     string Namespace,
-    string AssemblyName
+    string ClassName,
+    string MethodName
 );
 
 record HttpRequestInfo(

@@ -1,21 +1,31 @@
 <Project>
     <ItemGroup>
-        <AvailableItemName Include="MediatorHttp"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <CompilerVisibleProperty Include="RootNamespace"/>
-        
-        <CompilerVisibleProperty Include="ShinyMediatorHttpNamespace"/>
-        <CompilerVisibleProperty Include="ShinyMediatorHttpRegistrationMethodName"/>
-        
+    </ItemGroup>
+    
+    <!--handler registry variables - [MediatorSingleton]/[MediatorScoped]-->
+    <ItemGroup>
         <CompilerVisibleProperty Include="ShinyMediatorRegistryMethodName"/>
-        <CompilerVisibleProperty Include="ShinyMediatorRegistryAccessModifier"/>
+        <CompilerVisibleProperty Include="ShinyMediatorRegistryUseInternalClass"/>
         <CompilerVisibleProperty Include="ShinyMediatorRequestExecutorClassName"/>
         <CompilerVisibleProperty Include="ShinyMediatorStreamRequestExecutorClassName"/>
+    </ItemGroup>
+
+    <!--user httpclient registration variables-->
+    <ItemGroup>
+        <CompilerVisibleProperty Include="ShinyMediatorHttpRegistrationUseInternalClass"/>
+        <CompilerVisibleProperty Include="ShinyMediatorHttpRegistrationNamespace"/>
+        <CompilerVisibleProperty Include="ShinyMediatorHttpRegistrationClassName"/>
+        <CompilerVisibleProperty Include="ShinyMediatorHttpRegistrationMethodName"/>
+    </ItemGroup>
+    
+    <!--mediator http openapi-->
+    <ItemGroup>
+        <AvailableItemName Include="MediatorHttp"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Uri" Visible="false"/>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RegistrationClassName" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RegistrationMethodName" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="UseInternalClasses" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateModelsOnly" Visible="false"/>
@@ -28,6 +38,7 @@
         <ItemGroup>
             <AdditionalFiles Include="@(MediatorHttp)"
                              Namespace="%(MediatorHttp.Namespace)"
+                             RegistrationClassName="%(MediatorHttp.RegistrationClassName)"
                              RegistrationMethodName="%(MediatorHttp.RegistrationMethodName)"
                              Uri="%(MediatorHttp.Uri)"
                              UseInternalClasses="%(MediatorHttp.UseInternalClasses)"

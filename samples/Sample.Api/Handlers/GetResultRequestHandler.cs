@@ -5,13 +5,13 @@ namespace Sample.Api.Handlers;
 [MediatorHttpGroup("/thing")]
 public class GetResultRequestHandler : IRequestHandler<GetThingRequest, GetThingResult>, ICommandHandler<DoThing>, ICommandHandler<DoOtherThing>
 {
-    [MediatorHttpGet("GetThing", "/{parameter}")]
+    [MediatorHttpGet("/{parameter}")]
     public Task<GetThingResult> Handle(GetThingRequest request, IMediatorContext context, CancellationToken cancellationToken)
     {
         return Task.FromResult(new GetThingResult(request.Parameter, request.Query));
     }
 
-    [MediatorHttpPut("DoThing", "/")]
+    [MediatorHttpPut("/", OperationId = "DoThing")]
     public Task Handle(DoThing command, IMediatorContext context, CancellationToken cancellationToken)
         => Task.CompletedTask;
 

@@ -7,7 +7,7 @@ using Shiny.Mediator.SourceGenerators;
 namespace Shiny.Mediator.Tests.Http;
 
 
-public class UserHttpClientSourceGeneratorTests
+public class HttpClientSourceGeneratorTests
 {
 
     [Fact]
@@ -439,7 +439,7 @@ public class UserHttpClientSourceGeneratorTests
     static GeneratorRunResult RunGenerator(string source, string? rootNamespace = null, string? httpNamespace = null)
     {
         var compilation = CreateCompilation(source);
-        var generator = new UserHttpClientSourceGenerator().AsSourceGenerator();
+        var generator = new HttpClientSourceGenerator().AsSourceGenerator();
         
         var optionsProvider = new TestAnalyzerConfigOptionsProvider(
             rootNamespace ?? "TestNamespace",

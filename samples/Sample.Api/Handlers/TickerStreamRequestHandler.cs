@@ -5,7 +5,7 @@ namespace Sample.Api.Handlers;
 [MediatorScoped]
 public class TickerStreamRequestHandler : IStreamRequestHandler<TickerStreamRequest, int>
 {
-    [MediatorHttpGet("GetTicker", "/ticker")]
+    [MediatorHttpGet("/ticker")]
     public async IAsyncEnumerable<int> Handle(
         TickerStreamRequest request, 
         IMediatorContext context,

@@ -22,14 +22,18 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         // Get the root namespace from MSBuild
-        var rootNamespace = context.AnalyzerConfigOptionsProvider
-            .Select((provider, _) =>
+        var rootNamespace = context
+            .CompilationProvider
+            .Combine(context.AnalyzerConfigOptionsProvider)
+            .Select((pair, _) =>
             {
-                provider.GlobalOptions.TryGetValue("build_property.RootNamespace", out var rootNs);
-                provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorHttpNamespace", out var httpNs);
-                provider.GlobalOptions.TryGetValue("build_property.AssemblyName", out var assemblyName);
+                var (compilation, provider) = pair;
                 
-                return httpNs ?? rootNs ?? assemblyName ?? "Generated";
+                provider.GlobalOptions.TryGetValue("build_property.RootNamespace", out var @namespace);
+                if (String.IsNullOrWhiteSpace(@namespace))
+                    @namespace = compilation.AssemblyName;
+
+                return @namespace;
             });
 
         // Find all MediatorHttp items in the project
@@ -56,51 +60,40 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(combined, (sourceContext, data) =>
         {
             var (((texts, defaultNamespace), configOptions), compilation) = data;
-
-            if (texts.IsEmpty)
-                return;
-
-            var allHandlers = new List<HandlerRegistrationInfo>();
-            string? registrationNamespace = null;
-
-            foreach (var item in texts)
+            
+            if (!texts.IsEmpty)
             {
-                try
+                foreach (var item in texts)
                 {
-                    var config = GetConfig(configOptions, item, defaultNamespace);
-                    
-                    // Track the first namespace for registration
-                    if (registrationNamespace == null)
+                    try
                     {
-                        registrationNamespace = config.Namespace;
-                    }
-                    
-                    var handlers = ProcessOpenApiDocument(sourceContext, item, config, configOptions, compilation);
-                    allHandlers.AddRange(handlers);
-                }
-                catch (Exception ex)
-                {
-                    ReportDiagnostic(
-                        sourceContext,
-                        "SHINYMED001",
-                        "Error Generating HTTP Handlers from OpenAPI",
-                        $"Error processing {item.Path}: {ex.Message}",
-                        DiagnosticSeverity.Error
-                    );
-                }
-            }
+                        var config = GetConfig(configOptions, item, defaultNamespace);
 
-            // Generate registration file if we have handlers
-            if (allHandlers.Count > 0)
-            {
-                var registrationCode = HttpHandlerCodeGenerator.GenerateRegistration(
-                    allHandlers,
-                    registrationNamespace ?? defaultNamespace
-                );
-                sourceContext.AddSource(
-                    "__ShinyHttpClientRegistration.g.cs",
-                    SourceText.From(registrationCode, Encoding.UTF8)
-                );
+                        var handlers = ProcessOpenApiDocument(sourceContext, item, config, configOptions, compilation);
+                        var registrationCode = HttpHandlerCodeGenerator.GenerateRegistration(
+                            handlers,
+                            config.Namespace,
+                            config.RegistrationClassName,
+                            config.RegistrationMethodName,
+                            config.UseInternalClasses
+                        );
+                
+                        sourceContext.AddSource(
+                            config.RegistrationClassName + ".g.cs",
+                            SourceText.From(registrationCode, Encoding.UTF8)
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        ReportDiagnostic(
+                            sourceContext,
+                            "SHINYMED001",
+                            "Error Generating HTTP Handlers from OpenAPI",
+                            $"Error processing {item.Path}: {ex.Message}",
+                            DiagnosticSeverity.Error
+                        );
+                    }
+                }
             }
         });
     }
@@ -108,27 +101,33 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     static MediatorHttpItemConfig GetConfig(
         AnalyzerConfigOptionsProvider configProvider,
         AdditionalText item,
-        string defaultNamespace)
+        string defaultNamespace
+    )
     {
         var options = configProvider.GetOptions(item);
 
         return new MediatorHttpItemConfig
         {
-            Namespace = GetProperty(options, "Namespace") ?? defaultNamespace,
-            ContractPrefix = GetProperty(options, "ContractPrefix"),
-            ContractPostfix = GetProperty(options, "ContractPostfix"),
-            GenerateModelsOnly = GetProperty(options, "GenerateModelsOnly")?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
-            UseInternalClasses = GetProperty(options, "UseInternalClasses")?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
-            GenerateJsonConverters = GetProperty(options, "GenerateJsonConverters")?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false
+            Namespace = GetProperty(options, "Namespace", defaultNamespace)!,
+            ContractPrefix = GetProperty(options, "ContractPrefix", null),
+            ContractPostfix = GetProperty(options, "ContractPostfix", null),
+            RegistrationClassName =  GetProperty(options, "RegistrationClassName", Constants.DefaultOpenApiRegistrationClassName)!,
+            RegistrationMethodName = GetProperty(options, "RegistrationMethodName", Constants.DefaultOpenApiRegistrationMethodName)!,
+            GenerateModelsOnly = GetProperty(options, "GenerateModelsOnly", null)?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
+            UseInternalClasses = GetProperty(options, "UseInternalClasses", null)?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? Constants.DefaultOpenApiRegistrationUseInternal,
+            GenerateJsonConverters = GetProperty(options, "GenerateJsonConverters", null)?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? Constants.DefaultOpenApiGenerateJsonConverters
         };
-
-        static string? GetProperty(AnalyzerConfigOptions options, string propertyName)
-        {
-            return options.TryGetValue($"build_metadata.AdditionalFiles.{propertyName}", out var value) 
-                ? value 
-                : null;
-        }
     }
+
+
+    static string? GetProperty(AnalyzerConfigOptions options, string propertyName, string? defaultValue)
+    {
+        if (!options.TryGetValue($"build_metadata.AdditionalFiles.{propertyName}", out var value) || String.IsNullOrWhiteSpace(value))
+            return defaultValue;
+
+        return value;
+    }
+
 
     static List<HandlerRegistrationInfo> ProcessOpenApiDocument(
         SourceProductionContext context,
@@ -240,9 +239,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
 
             // Generate handlers from paths (unless GenerateModelsOnly is true)
             if (!config.GenerateModelsOnly)
-            {
                 handlers = GenerateHandlers(context, document, config, compilation);
-            }
         }
 
         return handlers;
@@ -300,7 +297,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
 
         return handlers;
     }
-
+    
+    
     static HandlerRegistrationInfo GenerateHandlerForOperation(
         SourceProductionContext context,
         string path,
@@ -310,7 +308,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         Compilation compilation
     )
     {
-        var opId = operation.OperationId?.Pascalize() ?? $"{operationType.Pascalize()}{path.Split('/').Last().Pascalize()}";
+        var opId = operation.OperationId?.Pascalize() ?? $"{operationType.Pascalize()}{String.Concat(path.Split('/').Where(s => !String.IsNullOrWhiteSpace(s)).Select(s => s.Pascalize()))}";
         var contractName = $"{config.ContractPrefix ?? ""}{opId}{config.ContractPostfix ?? ""}";
         var handlerName = $"{contractName}Handler";
 

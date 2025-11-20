@@ -5,17 +5,16 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/thing/{parameter}": {
+    "/thing": {
       "get": {
         "tags": [
           "Sample.Api"
         ],
-        "operationId": "GetThing",
+        "operationId": "/{parameter}",
         "parameters": [
           {
-            "name": "parameter",
-            "in": "path",
-            "required": true,
+            "name": "Parameter",
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -40,14 +39,12 @@
             }
           }
         }
-      }
-    },
-    "/thing": {
+      },
       "put": {
         "tags": [
           "Sample.Api"
         ],
-        "operationId": "DoThing",
+        "operationId": "/",
         "requestBody": {
           "content": {
             "application/json": {
@@ -70,27 +67,7 @@
         "tags": [
           "Sample.Api"
         ],
-        "operationId": "GetMyRequest",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/ticker": {
-      "get": {
-        "tags": [
-          "Sample.Api"
-        ],
-        "operationId": "GetTicker",
+        "operationId": "/ticker",
         "parameters": [
           {
             "name": "Count",
@@ -141,35 +118,12 @@
         }
       }
     },
-    "/test/command": {
+    "/test": {
       "post": {
         "tags": [
           "Sample.Api"
         ],
-        "operationId": "TestCommand",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TestCommand"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/test/result": {
-      "post": {
-        "tags": [
-          "Sample.Api"
-        ],
-        "operationId": "TestResult",
+        "operationId": "/result",
         "requestBody": {
           "content": {
             "application/json": {
