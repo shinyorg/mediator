@@ -1,8 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
-using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator;
@@ -13,6 +10,11 @@ public sealed class ShinyMediatorBuilder(IServiceCollection services)
     public IServiceCollection Services => services;
 
 
+    /// <summary>
+    /// Sets the contract key provider
+    /// </summary>
+    /// <typeparam name="TProvider"></typeparam>
+    /// <returns></returns>
     public ShinyMediatorBuilder SetContractKeyProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>() where TProvider : class, IContractKeyProvider
     {
         this.Services.AddSingleton<IContractKeyProvider, TProvider>();
@@ -20,14 +22,33 @@ public sealed class ShinyMediatorBuilder(IServiceCollection services)
     }
 
     
-    public ShinyMediatorBuilder SetSerializer<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSerializer>() where TSerializer : class, ISerializerService
+    /// <summary>
+    /// Sets the serializer service
+    /// </summary>
+    /// <typeparam name="TSerializer"></typeparam>
+    /// <returns></returns>
+    public ShinyMediatorBuilder SetSerializer<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSerializer
+    >() where TSerializer : class, ISerializerService
     {
         this.Services.AddSingleton<ISerializerService, TSerializer>();
         return this;
     }
 
-    
-    public ShinyMediatorBuilder AddRequestMiddleware<TRequest, TResult, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImpl>(
+
+    /// <summary>
+    /// Registers a command middleware
+    /// </summary>
+    /// <param name="lifetime"></param>
+    /// <typeparam name="TRequest"></typeparam>
+    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TImpl"></typeparam>
+    /// <returns></returns>
+    public ShinyMediatorBuilder AddRequestMiddleware<
+        TRequest, 
+        TResult, 
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImpl
+    >(
         ServiceLifetime lifetime = ServiceLifetime.Scoped
     )
         where TRequest : IRequest<TResult>
@@ -52,35 +73,78 @@ public sealed class ShinyMediatorBuilder(IServiceCollection services)
     }
 
 
-    public ShinyMediatorBuilder AddOpenCommandMiddleware([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    /// <summary>
+    /// Registers an open generic command middleware
+    /// </summary>
+    /// <param name="implementationType"></param>
+    /// <param name="lifetime"></param>
+    /// <returns></returns>
+    public ShinyMediatorBuilder AddOpenCommandMiddleware(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType, 
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    )
     {
         services.Add(new ServiceDescriptor(typeof(ICommandMiddleware<>), null, implementationType, lifetime));
         return this;
     }
     
     
-    public ShinyMediatorBuilder AddOpenRequestMiddleware([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped) 
+    /// <summary>
+    /// Registers an open generic request middleware
+    /// </summary>
+    /// <param name="implementationType"></param>
+    /// <param name="lifetime"></param>
+    /// <returns></returns>
+    public ShinyMediatorBuilder AddOpenRequestMiddleware(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType, 
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    ) 
     {
         services.Add(new ServiceDescriptor(typeof(IRequestMiddleware<,>), null, implementationType, lifetime));
         return this;
     }
     
     
-    public ShinyMediatorBuilder AddOpenStreamMiddleware([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped) 
+    /// <summary>
+    /// Registers an open generic stream request middleware
+    /// </summary>
+    /// <param name="implementationType"></param>
+    /// <param name="lifetime"></param>
+    /// <returns></returns>
+    public ShinyMediatorBuilder AddOpenStreamMiddleware(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType, 
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    ) 
     {
         services.Add(new ServiceDescriptor(typeof(IStreamRequestMiddleware<,>), null, implementationType, lifetime));
         return this;
     }
     
 
-    public ShinyMediatorBuilder AddOpenEventMiddleware([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    /// <summary>
+    /// Registers an open generic event middleware
+    /// </summary>
+    /// <param name="implementationType"></param>
+    /// <param name="lifetime"></param>
+    /// <returns></returns>
+    public ShinyMediatorBuilder AddOpenEventMiddleware(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType, 
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    )
     {
         services.Add(new ServiceDescriptor(typeof(IEventMiddleware<>), null, implementationType, lifetime));
         return this;
     }
     
 
-    public ShinyMediatorBuilder AddEventCollector<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImpl>() where TImpl : class, IEventCollector
+    /// <summary>
+    /// Registers an event collector
+    /// </summary>
+    /// <typeparam name="TImpl"></typeparam>
+    /// <returns></returns>
+    public ShinyMediatorBuilder AddEventCollector<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImpl
+    >() where TImpl : class, IEventCollector
     {
         if (!services.Any(x => x.ServiceType == typeof(TImpl)))
             services.AddSingleton<IEventCollector, TImpl>();
