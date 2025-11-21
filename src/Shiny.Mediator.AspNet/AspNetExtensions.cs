@@ -8,8 +8,12 @@ namespace Shiny.Mediator;
 public static class AspNetExtensions
 {
     public static string? IpAddress(this IHttpContextAccessor httpContextAccessor)
+        => httpContextAccessor.HttpContext?.IpAddress(); 
+
+
+    public static string? IpAddress(this HttpContext httpContext)
     {
-        var request = httpContextAccessor.HttpContext?.Request;
+        var request = httpContext?.Request;
         if (request == null)
             return null;
         
