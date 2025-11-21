@@ -23,10 +23,9 @@ app.MapGet(
     "/sse",
     (
         [FromServices] IMediator mediator,
-        [FromServices] IHttpContextAccessor context,
         [AsParameters] TickerStreamRequest request
-    ) => mediator.RequestServerSentEvents(request, context)
-).ExcludeFromDescription();
+    ) => mediator.Request(request)
+);
 
 app.MapGet(
     "/pub",
@@ -37,15 +36,12 @@ app.MapGet(
         await mediator.Publish(new MyEvent());
         return Results.Ok();
     }
-).ExcludeFromDescription();
+);
 
 app.MapGet(
     "/sub",
-    (
-        [FromServices] IMediator mediator,
-        [FromServices] IHttpContextAccessor context
-    ) => mediator.EventStreamToServerSentEvents<MyEvent>(context)
-).ExcludeFromDescription();
+    ([FromServices] IMediator mediator) => TypedResults.ServerSentEvents(mediator.EventStream<MyEvent>())
+);
 
 app.Run();
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator;
 
@@ -154,11 +155,7 @@ public static class EndpointRouteBuilderExtensions
                     CancellationToken cancellationToken
                 ) =>
                 {
-                    await mediator
-                        .Send(command, cancellationToken)
-                        .ConfigureAwait(false);
-
-                    return Results.Ok();
+                    
                 }
             );
     }
@@ -172,6 +169,58 @@ public static class EndpointRouteBuilderExtensions
         public RouteHandlerBuilder MapMediatorStreamGet<TRequest, TResult>(string pattern) where TRequest : IStreamRequest<TResult>
             => builder.MapGet(
                 pattern, 
+                async (
+                    HttpContext http,
+                    [FromServices] IMediator mediator,
+                    [FromServices] ISerializerService serializer,
+                    [AsParameters] TRequest request,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    var result = mediator
+                        .Request(request, cancellationToken)
+                        .ConfigureAwait(false);
+
+                    await foreach (var item in result)
+                    {
+                        var json = serializer.Serialize(item);
+                        await http.Response.WriteAsync(json, cancellationToken);
+                        await http.Response.Body.FlushAsync(cancellationToken);
+                    }
+                }
+            )
+            .Produces<TResult>(StatusCodes.Status200OK);
+        
+        
+        public RouteHandlerBuilder MapMediatorStreamPost<TRequest, TResult>(string pattern) where TRequest : IStreamRequest<TResult>
+            => builder.MapGet(
+                pattern, 
+                async (
+                    HttpContext http,
+                    [FromServices] IMediator mediator,
+                    [FromServices] ISerializerService serializer,
+                    [AsParameters] TRequest request,
+                    CancellationToken cancellationToken
+                ) =>
+                {
+                    var result = mediator
+                        .Request(request, cancellationToken)
+                        .ConfigureAwait(false);
+
+                    await foreach (var item in result)
+                    {
+                        var json = serializer.Serialize(item);
+                        await http.Response.WriteAsync(json, cancellationToken);
+                        await http.Response.Body.FlushAsync(cancellationToken);
+                    }
+                }
+            )
+            .Produces<TResult>(StatusCodes.Status200OK);
+        
+        
+        public RouteHandlerBuilder MapMediatorServerSentEventsGet<TRequest, TResult>(string pattern, string? eventName = null) where TRequest : IStreamRequest<TResult>
+            => builder.MapGet(
+                pattern, 
                 (
                     [FromServices] IMediator mediator,
                     [AsParameters] TRequest request,
@@ -182,12 +231,12 @@ public static class EndpointRouteBuilderExtensions
                         .Request(request, cancellationToken)
                         .ConfigureAwait(false);
 
-                    return TypedResults.Ok(UnwrapMediatorAsyncEnumerable(result));
+                    return TypedResults.ServerSentEvents(UnwrapMediatorAsyncEnumerable(result), eventName);
                 }
             );
 
 
-        public RouteHandlerBuilder MapMediatorStreamPost<TRequest, TResult>(string pattern)
+        public RouteHandlerBuilder MapMediatorServerSentEventsPost<TRequest, TResult>(string pattern, string? eventName = null)
             where TRequest : IStreamRequest<TResult>
             => builder.MapPost(
                 pattern, 
@@ -201,11 +250,11 @@ public static class EndpointRouteBuilderExtensions
                         .Request(request, cancellationToken)
                         .ConfigureAwait(false);
 
-                    return TypedResults.Ok(UnwrapMediatorAsyncEnumerable(result));
+                    return TypedResults.ServerSentEvents(UnwrapMediatorAsyncEnumerable(result), eventName);
                 }
             );
     }
-
+    
 
     static async IAsyncEnumerable<T> UnwrapMediatorAsyncEnumerable<T>(ConfiguredCancelableAsyncEnumerable<(IMediatorContext Context, T Result)> source)
     {

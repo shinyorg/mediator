@@ -5,16 +5,16 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/thing": {
+    "/thing/{parameter}": {
       "get": {
         "tags": [
           "Sample.Api"
         ],
-        "operationId": "/{parameter}",
         "parameters": [
           {
-            "name": "Parameter",
-            "in": "query",
+            "name": "parameter",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -39,12 +39,14 @@
             }
           }
         }
-      },
+      }
+    },
+    "/thing": {
       "put": {
         "tags": [
           "Sample.Api"
         ],
-        "operationId": "/",
+        "operationId": "DoThing",
         "requestBody": {
           "content": {
             "application/json": {
@@ -67,7 +69,25 @@
         "tags": [
           "Sample.Api"
         ],
-        "operationId": "/ticker",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ticker": {
+      "get": {
+        "tags": [
+          "Sample.Api"
+        ],
         "parameters": [
           {
             "name": "Count",
@@ -118,12 +138,114 @@
         }
       }
     },
-    "/test": {
+    "/sse": {
+      "get": {
+        "tags": [
+          "Sample.Api"
+        ],
+        "parameters": [
+          {
+            "name": "Count",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "IntervalMs",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ValueTupleOfIMediatorContextAndint"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pub": {
+      "get": {
+        "tags": [
+          "Sample.Api"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/sub": {
+      "get": {
+        "tags": [
+          "Sample.Api"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/SseItemOfMyEvent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/test/command": {
       "post": {
         "tags": [
           "Sample.Api"
         ],
-        "operationId": "/result",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/test/result": {
+      "post": {
+        "tags": [
+          "Sample.Api"
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -175,6 +297,36 @@
           }
         }
       },
+      "MyEvent": {
+        "type": "object"
+      },
+      "SseItemOfMyEvent": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MyEvent"
+          },
+          "eventType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "eventId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "reconnectionInterval": {
+            "pattern": "^-?(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$",
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "TestCommand": {
         "required": [
           "number",
@@ -213,6 +365,9 @@
             "format": "int32"
           }
         }
+      },
+      "ValueTupleOfIMediatorContextAndint": {
+        "type": "object"
       }
     }
   },
