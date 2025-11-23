@@ -21,7 +21,7 @@ public static class MediatorEndpoints
     {
 
         // StreamDataHandler - StreamData
-        builder.MapMediatorServerSentEventsPost<global::Test.StreamDataRequest, global::string>(
+        builder.MapMediatorServerSentEventsPost<global::Test.StreamDataRequest, string>(
             "/stream/data"
         )
             .WithName("StreamData")

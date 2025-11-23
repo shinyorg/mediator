@@ -24,7 +24,7 @@ public static class MediatorEndpoints
         var group__api_v1 = builder.MapGroup("/api/v1");
 
         // TickerHandler - GetTicker
-        group__api_v1.MapMediatorServerSentEventsGet<global::Test.TickerRequest, global::decimal>(
+        group__api_v1.MapMediatorServerSentEventsGet<global::Test.TickerRequest, decimal>(
             "/ticker/{symbol}"
         )
             .WithName("GetTicker")

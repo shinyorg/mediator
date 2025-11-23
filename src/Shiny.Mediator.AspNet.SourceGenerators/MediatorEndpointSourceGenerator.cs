@@ -17,6 +17,13 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly SymbolDisplayFormat FullyQualifiedFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers |
+                               SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         // Define the pipeline to find classes with MediatorHttp attributes
@@ -111,8 +118,8 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
             if (methodAttributes.Any())
             {
-                // Get the first parameter type (the request/command type)
-                var parameterType = method.Parameters[0].Type.ToDisplayString();
+                // Get the first parameter type (the request/command type) using fully qualified format
+                var parameterType = method.Parameters[0].Type.ToDisplayString(FullyQualifiedFormat);
 
                 // Determine result type based on method return type
                 var resultType = "void";
@@ -121,7 +128,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
                         IsGenericType: true, TypeArguments.Length: > 0
                     } namedReturnType)
                 {
-                    resultType = namedReturnType.TypeArguments[0].ToDisplayString();
+                    resultType = namedReturnType.TypeArguments[0].ToDisplayString(FullyQualifiedFormat);
                 }
 
                 foreach (var attr in methodAttributes)
@@ -258,18 +265,18 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
         if (requestInterface != null)
         {
-            requestType = requestInterface.TypeArguments[0].ToDisplayString();
-            resultType = requestInterface.TypeArguments[1].ToDisplayString();
+            requestType = requestInterface.TypeArguments[0].ToDisplayString(FullyQualifiedFormat);
+            resultType = requestInterface.TypeArguments[1].ToDisplayString(FullyQualifiedFormat);
         }
         else if (commandInterface != null)
         {
-            requestType = commandInterface.TypeArguments[0].ToDisplayString();
+            requestType = commandInterface.TypeArguments[0].ToDisplayString(FullyQualifiedFormat);
             resultType = "void";
         }
         else if (streamRequestInterface != null)
         {
-            requestType = streamRequestInterface.TypeArguments[0].ToDisplayString();
-            resultType = streamRequestInterface.TypeArguments[1].ToDisplayString();
+            requestType = streamRequestInterface.TypeArguments[0].ToDisplayString(FullyQualifiedFormat);
+            resultType = streamRequestInterface.TypeArguments[1].ToDisplayString(FullyQualifiedFormat);
         }
 
         return new GenericTypeInfo(requestType, resultType);
@@ -473,7 +480,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
     {
         var methodName = httpMethod.Substring(0, 1).ToUpper() + httpMethod.Substring(1);
         
-        sb.AppendLine($"        builder.MapMediator{methodName}<global::{requestType}, global::{resultType}>(");
+        sb.AppendLine($"        builder.MapMediator{methodName}<{requestType}, {resultType}>(");
         sb.AppendLine($"            \"{uriTemplate}\"");
         sb.AppendLine($"        )");
 
@@ -486,7 +493,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
     {
         var methodName = httpMethod.Substring(0, 1).ToUpper() + httpMethod.Substring(1);
         
-        sb.AppendLine($"        builder.MapMediator{methodName}<global::{requestType}>(");
+        sb.AppendLine($"        builder.MapMediator{methodName}<{requestType}>(");
         sb.AppendLine($"            \"{uriTemplate}\"");
         sb.AppendLine($"        )");
 
@@ -506,7 +513,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
         var methodName = httpMethod.Substring(0, 1).ToUpper() + httpMethod.Substring(1);
         
-        sb.AppendLine($"        builder.MapMediatorServerSentEvents{methodName}<global::{requestType}, global::{resultType}>(");
+        sb.AppendLine($"        builder.MapMediatorServerSentEvents{methodName}<{requestType}, {resultType}>(");
         sb.AppendLine($"            \"{uriTemplate}\"");
         sb.AppendLine($"        )");
 
@@ -755,7 +762,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
     {
         var methodName = httpMethod.Substring(0, 1).ToUpper() + httpMethod.Substring(1);
         
-        sb.AppendLine($"        {groupVariableName}.MapMediator{methodName}<global::{requestType}, global::{resultType}>(");
+        sb.AppendLine($"        {groupVariableName}.MapMediator{methodName}<{requestType}, {resultType}>(");
         sb.AppendLine($"            \"{uriTemplate}\"");
         sb.AppendLine($"        )");
 
@@ -767,7 +774,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
     {
         var methodName = httpMethod.Substring(0, 1).ToUpper() + httpMethod.Substring(1);
         
-        sb.AppendLine($"        {groupVariableName}.MapMediator{methodName}<global::{requestType}>(");
+        sb.AppendLine($"        {groupVariableName}.MapMediator{methodName}<{requestType}>(");
         sb.AppendLine($"            \"{uriTemplate}\"");
         sb.AppendLine($"        )");
 
@@ -786,7 +793,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
         var methodName = httpMethod.Substring(0, 1).ToUpper() + httpMethod.Substring(1);
         
-        sb.AppendLine($"        {groupVariableName}.MapMediatorServerSentEvents{methodName}<global::{requestType}, global::{resultType}>(");
+        sb.AppendLine($"        {groupVariableName}.MapMediatorServerSentEvents{methodName}<{requestType}, {resultType}>(");
         sb.AppendLine($"            \"{uriTemplate}\"");
         sb.AppendLine($"        )");
 

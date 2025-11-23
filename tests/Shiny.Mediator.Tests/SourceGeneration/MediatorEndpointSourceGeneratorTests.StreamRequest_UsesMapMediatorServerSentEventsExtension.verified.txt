@@ -21,7 +21,7 @@ public static class MediatorEndpoints
     {
 
         // TickerHandler - GetTicker
-        builder.MapMediatorServerSentEventsGet<global::Test.TickerRequest, global::decimal>(
+        builder.MapMediatorServerSentEventsGet<global::Test.TickerRequest, decimal>(
             "/ticker/{symbol}"
         )
             .WithName("GetTicker")
