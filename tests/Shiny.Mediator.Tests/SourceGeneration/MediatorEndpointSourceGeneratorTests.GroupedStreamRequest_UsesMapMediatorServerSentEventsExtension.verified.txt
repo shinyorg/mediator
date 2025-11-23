@@ -17,21 +17,14 @@ public static class MediatorEndpoints
     public static global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder MapGeneratedMediatorEndpoints(this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder)
     {
 
-        // Group: /api
-        var group__api = builder.MapGroup("/api");
+        // Group: /api/v1
+        var group__api_v1 = builder.MapGroup("/api/v1");
 
-        // GroupedHandler - GetUser
-        group__api.MapMediatorGet<Test.GetUserRequest, Test.UserResponse>(
-            "/users/{id}"
+        // TickerHandler - GetTicker
+        group__api_v1.MapMediatorServerSentEventsGet<Test.TickerRequest, decimal>(
+            "/ticker/{symbol}"
         )
-            .WithName("GetUser")
-        ;
-
-        // GroupedHandler - CreateUser
-        group__api.MapMediatorPost<Test.CreateUserCommand>(
-            "/users"
-        )
-            .WithName("CreateUser")
+            .WithName("GetTicker")
         ;
         return builder;
     }

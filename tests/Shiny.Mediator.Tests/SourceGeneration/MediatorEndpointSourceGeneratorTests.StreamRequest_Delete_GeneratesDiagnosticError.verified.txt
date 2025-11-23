@@ -1,0 +1,5 @@
+﻿{
+  DiagnosticId: SHINY001,
+  Severity: Error,
+  Message: Stream requests only support GET and POST HTTP methods. DELETE is not supported for endpoint '/stream/data/{id}'
+}

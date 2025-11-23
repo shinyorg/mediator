@@ -26,19 +26,8 @@ public static class MediatorEndpoints
         group__api_v1.WithTags("V1", "API");
 
         // GroupedUserHandler - GetUser
-        group__api_v1.MapGet(
-            "/users/{id}",
-            async (
-                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,
-                [global::Microsoft.AspNetCore.Http.AsParameters] Test.GetUserRequest request,
-                global::System.Threading.CancellationToken cancellationToken
-            ) =>
-            {
-                var result = await mediator
-                    .Request(request, cancellationToken)
-                    .ConfigureAwait(false);
-                return global::Microsoft.AspNetCore.Http.TypedResults.Ok(result.Result);
-            }
+        group__api_v1.MapMediatorGet<Test.GetUserRequest, Test.UserResponse>(
+            "/users/{id}"
         )
             .WithName("GetUser")
         ;

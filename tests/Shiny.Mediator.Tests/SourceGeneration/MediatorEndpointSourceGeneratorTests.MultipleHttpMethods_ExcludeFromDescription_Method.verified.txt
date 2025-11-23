@@ -21,56 +21,23 @@ public static class MediatorEndpoints
         var group__users = builder.MapGroup("/users");
 
         // UserHandler - GetUser
-        group__users.MapGet(
-            "/{id}",
-            async (
-                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,
-                [global::Microsoft.AspNetCore.Http.AsParameters] Test.GetUserRequest request,
-                global::System.Threading.CancellationToken cancellationToken
-            ) =>
-            {
-                var result = await mediator
-                    .Request(request, cancellationToken)
-                    .ConfigureAwait(false);
-                return global::Microsoft.AspNetCore.Http.TypedResults.Ok(result.Result);
-            }
+        group__users.MapMediatorGet<Test.GetUserRequest, Test.UserResponse>(
+            "/{id}"
         )
             .WithName("GetUser")
             .ExcludeFromDescription()
         ;
 
         // UserHandler - UpdateUser
-        group__users.MapPut(
-            "/{id}",
-            async (
-                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,
-                [global::Microsoft.AspNetCore.Mvc.FromBody] Test.UpdateUserCommand command,
-                global::System.Threading.CancellationToken cancellationToken
-            ) =>
-            {
-                await mediator
-                    .Send(command, cancellationToken)
-                    .ConfigureAwait(false);
-                return global::Microsoft.AspNetCore.Http.Results.Ok();
-            }
+        group__users.MapMediatorPut<Test.UpdateUserCommand>(
+            "/{id}"
         )
             .WithName("UpdateUser")
         ;
 
         // UserHandler - DeleteUser
-        group__users.MapDelete(
-            "/{id}",
-            async (
-                [global::Microsoft.AspNetCore.Mvc.FromServices] global::Shiny.Mediator.IMediator mediator,
-                [global::Microsoft.AspNetCore.Http.AsParameters] Test.DeleteUserCommand command,
-                global::System.Threading.CancellationToken cancellationToken
-            ) =>
-            {
-                await mediator
-                    .Send(command, cancellationToken)
-                    .ConfigureAwait(false);
-                return global::Microsoft.AspNetCore.Http.Results.Ok();
-            }
+        group__users.MapMediatorDelete<Test.DeleteUserCommand>(
+            "/{id}"
         )
             .WithName("DeleteUser")
             .ExcludeFromDescription()

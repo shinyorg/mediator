@@ -5,15 +5,9 @@ using Shiny.Mediator.AspNet.SourceGenerators;
 
 namespace Shiny.Mediator.Tests.SourceGeneration;
 
+
 public class MediatorEndpointSourceGeneratorTests
 {
-    // [Fact]
-    // public Task Generated_Content()
-    // {
-    //     var content = File.ReadAllText("./Sample.Api.json");
-    //     return Verify(content);
-    // }
-    
     [Fact]
     public Task Basic_RequestHandler_GeneratesCorrectEndpoint()
     {
@@ -28,7 +22,7 @@ public record UserResponse(string Name);
 
 public class GetUserHandler : IRequestHandler<GetUserRequest, UserResponse>
 {
-    [MediatorHttpGet(""GetUser"", ""/users/{id}"")]
+    [MediatorHttpGet(""/users/{id}"", OperationId = ""GetUser"")]
     public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult(new UserResponse(""Test""));
 }";
@@ -50,7 +44,7 @@ public record CreateUserCommand(string Name) : ICommand;
 
 public class CreateUserHandler : ICommandHandler<CreateUserCommand>
 {
-    [MediatorHttpPost(""CreateUser"", ""/users"")]
+    [MediatorHttpPost(""/users"", OperationId = ""CreateUser"")]
     public Task Handle(CreateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
         => Task.CompletedTask;
 }";
@@ -77,13 +71,13 @@ public partial class MixedHandler {}
 
 public partial class MixedHandler : IRequestHandler<GetUserRequest, UserResponse>
 {
-    [MediatorHttpGet(""GetUser"", ""/{id}"")]
+    [MediatorHttpGet(""/{id}"", OperationId = ""GetUser"")]
     public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult(new UserResponse(""Test""));
 }
 public partial class MixedHandler : ICommandHandler<CreateUserCommand>
 {
-    [MediatorHttpPost(""CreateUser"", ""/"")]
+    [MediatorHttpPost(""/"", OperationId = ""CreateUser"")]
     public Task Handle(CreateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
         => Task.CompletedTask;
 }
@@ -108,11 +102,11 @@ public record UserResponse(string Name);
 
 public class MixedHandler : IRequestHandler<GetUserRequest, UserResponse>, ICommandHandler<CreateUserCommand>
 {
-    [MediatorHttpGet(""GetUser"", ""/users/{id}"")]
+    [MediatorHttpGet(""/users/{id}"", OperationId = ""GetUser"")]
     public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult(new UserResponse(""Test""));
 
-    [MediatorHttpPost(""CreateUser"", ""/users"")]
+    [MediatorHttpPost(""/users"", OperationId = ""CreateUser"")]
     public Task Handle(CreateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
         => Task.CompletedTask;
 }";
@@ -137,11 +131,11 @@ public record UserResponse(string Name);
 [MediatorHttpGroup(""/api"")]
 public class GroupedHandler : IRequestHandler<GetUserRequest, UserResponse>, ICommandHandler<CreateUserCommand>
 {
-    [MediatorHttpGet(""GetUser"", ""/users/{id}"")]
+    [MediatorHttpGet(""/users/{id}"", OperationId = ""GetUser"")]
     public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult(new UserResponse(""Test""));
 
-    [MediatorHttpPost(""CreateUser"", ""/users"")]
+    [MediatorHttpPost(""/users"", OperationId = ""CreateUser"")]
     public Task Handle(CreateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
         => Task.CompletedTask;
 }";
@@ -166,15 +160,15 @@ public record UserResponse(string Name);
 
 public class UserHandler : IRequestHandler<GetUserRequest, UserResponse>, ICommandHandler<UpdateUserCommand>, ICommandHandler<DeleteUserCommand>
 {
-    [MediatorHttpGet(""GetUser"", ""/users/{id}"")]
+    [MediatorHttpGet(""/users/{id}"", OperationId = ""GetUser"")]
     public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult(new UserResponse(""Test""));
 
-    [MediatorHttpPut(""UpdateUser"", ""/users/{id}"")]
+    [MediatorHttpPut(""/users/{id}"", OperationId = ""UpdateUser"")]
     public Task Handle(UpdateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
         => Task.CompletedTask;
 
-    [MediatorHttpDelete(""DeleteUser"", ""/users/{id}"")]
+    [MediatorHttpDelete(""/users/{id}"", OperationId = ""DeleteUser"")]
     public Task Handle(DeleteUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
         => Task.CompletedTask;
 }";
@@ -201,15 +195,15 @@ public record UserResponse(string Name);
 [MediatorHttpGroup(""/users"", ExcludeFromDescription = true)]
 public class UserHandler : IRequestHandler<GetUserRequest, UserResponse>, ICommandHandler<UpdateUserCommand>, ICommandHandler<DeleteUserCommand>
 {
-    [MediatorHttpGet(""GetUser"", ""/{id}"")]
+    [MediatorHttpGet(""/{id}"", OperationId = ""GetUser"")]
     public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult(new UserResponse(""Test""));
 
-    [MediatorHttpPut(""UpdateUser"", ""/{id}"")]
+    [MediatorHttpPut(""/{id}"", OperationId = ""UpdateUser"")]
     public Task Handle(UpdateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
         => Task.CompletedTask;
 
-    [MediatorHttpDelete(""DeleteUser"", ""/{id}"")]
+    [MediatorHttpDelete(""/{id}"", OperationId = ""DeleteUser"")]
     public Task Handle(DeleteUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
         => Task.CompletedTask;
 }";
@@ -235,15 +229,15 @@ public record UserResponse(string Name);
 [MediatorHttpGroup(""/users"")]
 public class UserHandler : IRequestHandler<GetUserRequest, UserResponse>, ICommandHandler<UpdateUserCommand>, ICommandHandler<DeleteUserCommand>
 {
-    [MediatorHttpGet(""GetUser"", ""/{id}"", ExcludeFromDescription = true)]
+    [MediatorHttpGet(""/{id}"", OperationId = ""GetUser"", ExcludeFromDescription = true)]
     public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult(new UserResponse(""Test""));
 
-    [MediatorHttpPut(""UpdateUser"", ""/{id}"")]
+    [MediatorHttpPut(""/{id}"", OperationId = ""UpdateUser"")]
     public Task Handle(UpdateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
         => Task.CompletedTask;
 
-    [MediatorHttpDelete(""DeleteUser"", ""/{id}"", ExcludeFromDescription = true)]
+    [MediatorHttpDelete(""/{id}"", OperationId = ""DeleteUser"", ExcludeFromDescription = true)]
     public Task Handle(DeleteUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
         => Task.CompletedTask;
 }";
@@ -266,7 +260,8 @@ public record UserResponse(string Name);
 
 public class UserHandler : IRequestHandler<GetUserRequest, UserResponse>
 {
-    [MediatorHttpGet(""GetUser"", ""/users/{id}"", 
+    [MediatorHttpGet(""/users/{id}"",
+        OperationId = ""GetUser"", 
         RequiresAuthorization = true,
         AuthorizationPolicies = new[] { ""AdminPolicy"" },
         DisplayName = ""Get User by ID"",
@@ -308,7 +303,7 @@ public record UserResponse(string Name);
 )]
 public class GroupedUserHandler : IRequestHandler<GetUserRequest, UserResponse>
 {
-    [MediatorHttpGet(""GetUser"", ""/users/{id}"")]
+    [MediatorHttpGet(""/users/{id}"", OperationId = ""GetUser"")]
     public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult(new UserResponse(""Test""));
 }";
@@ -353,8 +348,8 @@ public record UserResponse(string Name);
 
 public class UserHandler : IRequestHandler<GetUserRequest, UserResponse>
 {
-    [MediatorHttpGet(""GetUser"", ""/users/{id}"")]
-    [MediatorHttpGet(""GetUserAlt"", ""/user/{id}"")]
+    [MediatorHttpGet(""/users/{id}"", OperationId = ""GetUser"")]
+    [MediatorHttpGet(""/user/{id}"", OperationId = ""GetUserAlt"")]
     public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult(new UserResponse(""Test""));
 }";
@@ -378,13 +373,241 @@ public record UserDetailResponse(string Name, List<string> Permissions);
 
 public class ComplexUserHandler : IRequestHandler<GetUserDetailRequest, UserDetailResponse>
 {
-    [MediatorHttpGet(""GetUserDetail"", ""/users/{userId}/details"")]
+    [MediatorHttpGet(""/users/{userId}/details"", OperationId = ""GetUserDetails"")]
     public Task<UserDetailResponse> Handle(GetUserDetailRequest request, IMediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult(new UserDetailResponse(""Test"", new List<string>()));
 }";
 
         var result = RunGeneratorAndGetFiles(source);
         return Verify(result);
+    }
+
+    [Fact]
+    public Task StreamRequest_Get_GeneratesCorrectEndpoint()
+    {
+        var source = @"
+using Shiny.Mediator;
+using System.Threading;
+using System.Collections.Generic;
+
+namespace Test;
+
+public record TickerRequest(string Symbol) : IStreamRequest<decimal>;
+
+public class TickerHandler : IStreamRequestHandler<TickerRequest, decimal>
+{
+    [MediatorHttpGet(""/ticker/{symbol}"", OperationId = ""GetTicker"")]
+    public IAsyncEnumerable<decimal> Handle(TickerRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => throw new System.NotImplementedException();
+}";
+
+        var result = RunGeneratorAndGetFiles(source);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task StreamRequest_Post_GeneratesCorrectEndpoint()
+    {
+        var source = @"
+using Shiny.Mediator;
+using System.Threading;
+using System.Collections.Generic;
+
+namespace Test;
+
+public record StreamDataRequest(string Filter) : IStreamRequest<string>;
+
+public class StreamDataHandler : IStreamRequestHandler<StreamDataRequest, string>
+{
+    [MediatorHttpPost(""/stream/data"", OperationId = ""StreamData"")]
+    public IAsyncEnumerable<string> Handle(StreamDataRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => throw new System.NotImplementedException();
+}";
+
+        var result = RunGeneratorAndGetFiles(source);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task StreamRequest_Put_GeneratesDiagnosticError()
+    {
+        var source = @"
+using Shiny.Mediator;
+using System.Threading;
+using System.Collections.Generic;
+
+namespace Test;
+
+public record StreamDataRequest(string Filter) : IStreamRequest<string>;
+
+public class StreamDataHandler : IStreamRequestHandler<StreamDataRequest, string>
+{
+    [MediatorHttpPut(""/stream/data"", OperationId = ""StreamData"")]
+    public IAsyncEnumerable<string> Handle(StreamDataRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => throw new System.NotImplementedException();
+}";
+
+        var driver = BuildDriver(source);
+        var runResult = driver.GetRunResult();
+        
+        // Should have a diagnostic error for invalid HTTP method
+        runResult.Diagnostics.ShouldNotBeEmpty();
+        var diagnostic = runResult.Diagnostics.First(d => d.Id == "SHINY001");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Error);
+        diagnostic.GetMessage().ShouldContain("PUT");
+        diagnostic.GetMessage().ShouldContain("GET and POST");
+        
+        return Verify(new { 
+            DiagnosticId = diagnostic.Id, 
+            Severity = diagnostic.Severity.ToString(), 
+            Message = diagnostic.GetMessage() 
+        });
+    }
+
+    [Fact]
+    public Task StreamRequest_Delete_GeneratesDiagnosticError()
+    {
+        var source = @"
+using Shiny.Mediator;
+using System.Threading;
+using System.Collections.Generic;
+
+namespace Test;
+
+public record StreamDataRequest(string Id) : IStreamRequest<string>;
+
+public class StreamDataHandler : IStreamRequestHandler<StreamDataRequest, string>
+{
+    [MediatorHttpDelete(""/stream/data/{id}"", OperationId = ""DeleteStream"")]
+    public IAsyncEnumerable<string> Handle(StreamDataRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => throw new System.NotImplementedException();
+}";
+
+        var driver = BuildDriver(source);
+        var runResult = driver.GetRunResult();
+        
+        // Should have a diagnostic error for invalid HTTP method
+        runResult.Diagnostics.ShouldNotBeEmpty();
+        var diagnostic = runResult.Diagnostics.First(d => d.Id == "SHINY001");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Error);
+        diagnostic.GetMessage().ShouldContain("DELETE");
+        
+        return Verify(new { 
+            DiagnosticId = diagnostic.Id, 
+            Severity = diagnostic.Severity.ToString(), 
+            Message = diagnostic.GetMessage() 
+        });
+    }
+
+    [Fact]
+    public Task Request_UsesMapMediatorExtension()
+    {
+        var source = @"
+using Shiny.Mediator;
+using System.Threading;
+
+namespace Test;
+
+public record GetUserRequest(int Id) : IRequest<UserResponse>;
+public record UserResponse(string Name);
+
+public class GetUserHandler : IRequestHandler<GetUserRequest, UserResponse>
+{
+    [MediatorHttpGet(""/users/{id}"", OperationId = ""GetUser"")]
+    public Task<UserResponse> Handle(GetUserRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(new UserResponse(""Test""));
+}";
+
+        var generatedFiles = RunGeneratorAndGetFiles(source);
+        var generatedCode = generatedFiles["MediatorEndpoints.g.cs"];
+        
+        // Verify it uses MapMediatorGet instead of MapGet with inline lambda
+        generatedCode.ShouldContain("MapMediatorGet<");
+        generatedCode.ShouldNotContain("[FromServices] IMediator mediator");
+        
+        return Verify(generatedFiles);
+    }
+
+    [Fact]
+    public Task Command_UsesMapMediatorExtension()
+    {
+        var source = @"
+using Shiny.Mediator;
+using System.Threading;
+
+namespace Test;
+
+public record CreateUserCommand(string Name) : ICommand;
+
+public class CreateUserHandler : ICommandHandler<CreateUserCommand>
+{
+    [MediatorHttpPost(""/users"", OperationId = ""CreateUser"")]
+    public Task Handle(CreateUserCommand command, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.CompletedTask;
+}";
+
+        var generatedFiles = RunGeneratorAndGetFiles(source);
+        var generatedCode = generatedFiles["MediatorEndpoints.g.cs"];
+        
+        // Verify it uses MapMediatorPost instead of MapPost with inline lambda
+        generatedCode.ShouldContain("MapMediatorPost<");
+        generatedCode.ShouldNotContain("[FromServices] IMediator mediator");
+        
+        return Verify(generatedFiles);
+    }
+
+    [Fact]
+    public Task StreamRequest_UsesMapMediatorServerSentEventsExtension()
+    {
+        var source = @"
+using Shiny.Mediator;
+using System.Threading;
+using System.Collections.Generic;
+
+namespace Test;
+
+public record TickerRequest(string Symbol) : IStreamRequest<decimal>;
+
+public class TickerHandler : IStreamRequestHandler<TickerRequest, decimal>
+{
+    [MediatorHttpGet(""/ticker/{symbol}"", OperationId = ""GetTicker"")]
+    public IAsyncEnumerable<decimal> Handle(TickerRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => throw new System.NotImplementedException();
+}";
+
+        var generatedFiles = RunGeneratorAndGetFiles(source);
+        var generatedCode = generatedFiles["MediatorEndpoints.g.cs"];
+        
+        // Verify it uses MapMediatorServerSentEventsGet instead of MapGet with StreamResultsAsync helper
+        generatedCode.ShouldContain("MapMediatorServerSentEventsGet<");
+        generatedCode.ShouldNotContain("StreamResultsAsync");
+        generatedCode.ShouldNotContain("[FromServices] IMediator mediator");
+        
+        return Verify(generatedFiles);
+    }
+
+    [Fact]
+    public Task GroupedStreamRequest_UsesMapMediatorServerSentEventsExtension()
+    {
+        var source = @"
+using Shiny.Mediator;
+using System.Threading;
+using System.Collections.Generic;
+
+namespace Test;
+
+public record TickerRequest(string Symbol) : IStreamRequest<decimal>;
+
+[MediatorHttpGroup(""/api/v1"")]
+public class TickerHandler : IStreamRequestHandler<TickerRequest, decimal>
+{
+    [MediatorHttpGet(""/ticker/{symbol}"", OperationId = ""GetTicker"")]
+    public IAsyncEnumerable<decimal> Handle(TickerRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => throw new System.NotImplementedException();
+}";
+
+        var generatedFiles = RunGeneratorAndGetFiles(source);
+        return Verify(generatedFiles);
     }
 
     static Dictionary<string, string> RunGeneratorAndGetFiles(string source)
