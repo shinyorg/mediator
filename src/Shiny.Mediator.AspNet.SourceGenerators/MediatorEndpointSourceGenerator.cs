@@ -371,6 +371,9 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine("// regenerated.");
         sb.AppendLine("// </auto-generated>");
         sb.AppendLine("#nullable enable");
+        sb.AppendLine();
+        sb.AppendLine("using Shiny.Mediator;");
+        sb.AppendLine();
         sb.AppendLine($"namespace {nameSpace};");
         sb.AppendLine();
         sb.AppendLine(Constants.GeneratedCodeAttributeString);
@@ -470,7 +473,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
     {
         var methodName = httpMethod.Substring(0, 1).ToUpper() + httpMethod.Substring(1);
         
-        sb.AppendLine($"        builder.MapMediator{methodName}<{requestType}, {resultType}>(");
+        sb.AppendLine($"        builder.MapMediator{methodName}<global::{requestType}, global::{resultType}>(");
         sb.AppendLine($"            \"{uriTemplate}\"");
         sb.AppendLine($"        )");
 
@@ -483,7 +486,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
     {
         var methodName = httpMethod.Substring(0, 1).ToUpper() + httpMethod.Substring(1);
         
-        sb.AppendLine($"        builder.MapMediator{methodName}<{requestType}>(");
+        sb.AppendLine($"        builder.MapMediator{methodName}<global::{requestType}>(");
         sb.AppendLine($"            \"{uriTemplate}\"");
         sb.AppendLine($"        )");
 
@@ -503,7 +506,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
         var methodName = httpMethod.Substring(0, 1).ToUpper() + httpMethod.Substring(1);
         
-        sb.AppendLine($"        builder.MapMediatorServerSentEvents{methodName}<{requestType}, {resultType}>(");
+        sb.AppendLine($"        builder.MapMediatorServerSentEvents{methodName}<global::{requestType}, global::{resultType}>(");
         sb.AppendLine($"            \"{uriTemplate}\"");
         sb.AppendLine($"        )");
 
@@ -605,6 +608,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         if (groupAttribute?.Properties.TryGetValue("Tags", out var groupTags) == true &&
             groupTags is string[] groupTagArray)
             allTags.AddRange(groupTagArray);
+        
         if (attribute.Properties.TryGetValue("Tags", out var attrTags) && attrTags is string[] attrTagArray)
             allTags.AddRange(attrTagArray);
 
@@ -613,22 +617,11 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             var tagList = string.Join("\", \"", allTags.Distinct());
             sb.AppendLine($"            .WithTags(\"{tagList}\")");
         }
-
-        // Group name - attribute takes precedence, then group GroupName
-        var groupName = "";
-        if (groupAttribute?.Properties.TryGetValue("GroupName", out var groupGroupName) == true)
-            groupName = (string)groupGroupName;
-        if (attribute.Properties.TryGetValue("GroupName", out var attrGroupName) &&
-            !string.IsNullOrEmpty((string)attrGroupName))
-            groupName = (string)attrGroupName;
-
-        if (!string.IsNullOrEmpty(groupName))
-            sb.AppendLine($"            .WithOpenApi(operation => {{ operation.Tags = new List<Microsoft.OpenApi.Models.OpenApiTag> {{ new() {{ Name = \"{groupName}\" }} }}; return operation; }})");
-
         // Exclude from description - attribute takes precedence
         var excludeFromDesc = false;
         if (groupAttribute?.Properties.TryGetValue("ExcludeFromDescription", out var groupExcludeFromDesc) == true)
             excludeFromDesc = (bool)groupExcludeFromDesc;
+        
         if (attribute.Properties.TryGetValue("ExcludeFromDescription", out var attrExcludeFromDesc))
             excludeFromDesc = (bool)attrExcludeFromDesc;
 
@@ -762,7 +755,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
     {
         var methodName = httpMethod.Substring(0, 1).ToUpper() + httpMethod.Substring(1);
         
-        sb.AppendLine($"        {groupVariableName}.MapMediator{methodName}<{requestType}, {resultType}>(");
+        sb.AppendLine($"        {groupVariableName}.MapMediator{methodName}<global::{requestType}, global::{resultType}>(");
         sb.AppendLine($"            \"{uriTemplate}\"");
         sb.AppendLine($"        )");
 
@@ -774,7 +767,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
     {
         var methodName = httpMethod.Substring(0, 1).ToUpper() + httpMethod.Substring(1);
         
-        sb.AppendLine($"        {groupVariableName}.MapMediator{methodName}<{requestType}>(");
+        sb.AppendLine($"        {groupVariableName}.MapMediator{methodName}<global::{requestType}>(");
         sb.AppendLine($"            \"{uriTemplate}\"");
         sb.AppendLine($"        )");
 
@@ -793,7 +786,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
 
         var methodName = httpMethod.Substring(0, 1).ToUpper() + httpMethod.Substring(1);
         
-        sb.AppendLine($"        {groupVariableName}.MapMediatorServerSentEvents{methodName}<{requestType}, {resultType}>(");
+        sb.AppendLine($"        {groupVariableName}.MapMediatorServerSentEvents{methodName}<global::{requestType}, global::{resultType}>(");
         sb.AppendLine($"            \"{uriTemplate}\"");
         sb.AppendLine($"        )");
 
@@ -846,10 +839,6 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
             var tagList = string.Join("\", \"", tagArray);
             sb.AppendLine($"            .WithTags(\"{tagList}\")");
         }
-
-        if (attribute.Properties.TryGetValue("GroupName", out var groupName) &&
-            !string.IsNullOrEmpty((string)groupName))
-            sb.AppendLine($"            .WithOpenApi(operation => {{ operation.Tags = new List<Microsoft.OpenApi.Models.OpenApiTag> {{ new() {{ Name = \"{groupName}\" }} }}; return operation; }})");
 
         if (attribute.Properties.TryGetValue("ExcludeFromDescription", out var excludeFromDesc) && (bool)excludeFromDesc)
             sb.AppendLine($"            .ExcludeFromDescription()");

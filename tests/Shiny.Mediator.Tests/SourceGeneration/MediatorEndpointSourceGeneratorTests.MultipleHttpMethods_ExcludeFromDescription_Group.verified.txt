@@ -6,6 +6,9 @@
 // regenerated.
 // </auto-generated>
 #nullable enable
+
+using Shiny.Mediator;
+
 namespace TestAssembly;
 
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.AspNet.SourceGenerators", "4.0.0")]
@@ -22,21 +25,21 @@ public static class MediatorEndpoints
         group__users.ExcludeFromDescription();
 
         // UserHandler - GetUser
-        group__users.MapMediatorGet<Test.GetUserRequest, Test.UserResponse>(
+        group__users.MapMediatorGet<global::Test.GetUserRequest, global::Test.UserResponse>(
             "/{id}"
         )
             .WithName("GetUser")
         ;
 
         // UserHandler - UpdateUser
-        group__users.MapMediatorPut<Test.UpdateUserCommand>(
+        group__users.MapMediatorPut<global::Test.UpdateUserCommand>(
             "/{id}"
         )
             .WithName("UpdateUser")
         ;
 
         // UserHandler - DeleteUser
-        group__users.MapMediatorDelete<Test.DeleteUserCommand>(
+        group__users.MapMediatorDelete<global::Test.DeleteUserCommand>(
             "/{id}"
         )
             .WithName("DeleteUser")

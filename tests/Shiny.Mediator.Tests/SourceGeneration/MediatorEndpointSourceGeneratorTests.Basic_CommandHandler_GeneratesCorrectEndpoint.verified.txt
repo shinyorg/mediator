@@ -6,6 +6,9 @@
 // regenerated.
 // </auto-generated>
 #nullable enable
+
+using Shiny.Mediator;
+
 namespace TestAssembly;
 
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.AspNet.SourceGenerators", "4.0.0")]
@@ -18,7 +21,7 @@ public static class MediatorEndpoints
     {
 
         // CreateUserHandler - CreateUser
-        builder.MapMediatorPost<Test.CreateUserCommand>(
+        builder.MapMediatorPost<global::Test.CreateUserCommand>(
             "/users"
         )
             .WithName("CreateUser")

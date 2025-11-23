@@ -6,6 +6,9 @@
 // regenerated.
 // </auto-generated>
 #nullable enable
+
+using Shiny.Mediator;
+
 namespace TestAssembly;
 
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.AspNet.SourceGenerators", "4.0.0")]
@@ -21,7 +24,7 @@ public static class MediatorEndpoints
         var group__api_v1 = builder.MapGroup("/api/v1");
 
         // TickerHandler - GetTicker
-        group__api_v1.MapMediatorServerSentEventsGet<Test.TickerRequest, decimal>(
+        group__api_v1.MapMediatorServerSentEventsGet<global::Test.TickerRequest, global::decimal>(
             "/ticker/{symbol}"
         )
             .WithName("GetTicker")

@@ -29,7 +29,7 @@ public static class RegistrationExtensions
 
         if (includeStandardMiddleware)
         {
-            cfg.AddHttpClient();
+            cfg.AddHttpClientServices();
             cfg.PreventEventExceptions();
             cfg.AddTimerRefreshStreamMiddleware();
         }
@@ -48,7 +48,7 @@ public static class RegistrationExtensions
     /// </summary>
     /// <param name="mediatorBuilder"></param>
     /// <returns></returns>
-    public static ShinyMediatorBuilder AddHttpClient(this ShinyMediatorBuilder mediatorBuilder)
+    public static ShinyMediatorBuilder AddHttpClientServices(this ShinyMediatorBuilder mediatorBuilder)
     {
         mediatorBuilder.Services.AddHttpClient();
         mediatorBuilder.Services.AddSingleton<HttpHandlerServices>();

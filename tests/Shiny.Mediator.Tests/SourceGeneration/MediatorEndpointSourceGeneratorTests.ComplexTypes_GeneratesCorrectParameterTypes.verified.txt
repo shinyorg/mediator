@@ -6,6 +6,9 @@
 // regenerated.
 // </auto-generated>
 #nullable enable
+
+using Shiny.Mediator;
+
 namespace TestAssembly;
 
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.AspNet.SourceGenerators", "4.0.0")]
@@ -18,7 +21,7 @@ public static class MediatorEndpoints
     {
 
         // ComplexUserHandler - GetUserDetails
-        builder.MapMediatorGet<Test.Complex.GetUserDetailRequest, Test.Complex.UserDetailResponse>(
+        builder.MapMediatorGet<global::Test.Complex.GetUserDetailRequest, global::Test.Complex.UserDetailResponse>(
             "/users/{userId}/details"
         )
             .WithName("GetUserDetails")
