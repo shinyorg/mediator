@@ -155,7 +155,11 @@ public static class EndpointRouteBuilderExtensions
                     CancellationToken cancellationToken
                 ) =>
                 {
-                    
+                    await mediator
+                        .Send(command, cancellationToken)
+                        .ConfigureAwait(false);
+
+                    return Results.Ok();
                 }
             );
     }
@@ -231,7 +235,7 @@ public static class EndpointRouteBuilderExtensions
                         .Request(request, cancellationToken)
                         .ConfigureAwait(false);
 
-                    return TypedResults.ServerSentEvents(UnwrapMediatorAsyncEnumerable(result), eventName);
+                    return TypedResults.ServerSentEvents(result.UnwrapMediatorAsyncEnumerable(), eventName);
                 }
             );
 
@@ -250,17 +254,11 @@ public static class EndpointRouteBuilderExtensions
                         .Request(request, cancellationToken)
                         .ConfigureAwait(false);
 
-                    return TypedResults.ServerSentEvents(UnwrapMediatorAsyncEnumerable(result), eventName);
+                    return TypedResults.ServerSentEvents(result.UnwrapMediatorAsyncEnumerable(), eventName);
                 }
             );
     }
     
-
-    static async IAsyncEnumerable<T> UnwrapMediatorAsyncEnumerable<T>(ConfiguredCancelableAsyncEnumerable<(IMediatorContext Context, T Result)> source)
-    {
-        await foreach (var item in source)
-            yield return item.Result;
-    }
     
     #endregion
 }

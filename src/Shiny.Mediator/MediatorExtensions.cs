@@ -52,4 +52,17 @@ public static class MediatorExtensions
             yield return e;
         }
     }
+    
+    
+    /// <summary>
+    /// This method unwraps the mediator context from an async enumerable result - useful for outgoing aspnet endpoints
+    /// </summary>
+    /// <param name="source"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static async IAsyncEnumerable<T> UnwrapMediatorAsyncEnumerable<T>(this ConfiguredCancelableAsyncEnumerable<(IMediatorContext Context, T Result)> source)
+    {
+        await foreach (var item in source)
+            yield return item.Result;
+    }
 }
