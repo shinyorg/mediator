@@ -49,7 +49,7 @@ public class HttpClientSourceGenerator : IIncrementalGenerator
         var httpRequests = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => IsCandidateHttpRequest(s),
-                transform: static (ctx, _) => GetHttpRequestInfo(ctx)
+                transform: static (ctx, _) => GetHttpRequestResult(ctx)
             )
             .Where(static m => m is not null)
             .Collect();
@@ -76,7 +76,7 @@ public class HttpClientSourceGenerator : IIncrementalGenerator
     }
 
     
-    static HttpRequestInfo? GetHttpRequestInfo(GeneratorSyntaxContext context)
+    static HttpRequestResult? GetHttpRequestResult(GeneratorSyntaxContext context)
     {
         var classDecl = (ClassDeclarationSyntax)context.Node;
         var symbol = context.SemanticModel.GetDeclaredSymbol(classDecl);
@@ -135,16 +135,27 @@ public class HttpClientSourceGenerator : IIncrementalGenerator
 
         if (resultType is null)
         {
-            // TODO: Report diagnostic - must implement IRequest<> or IStreamRequest<>
-            return null;
+            return new HttpRequestResult(
+                RequestInfo: null,
+                Diagnostic: new DiagnosticInfo(
+                    "SHINYMED_HTTP001",
+                    "HTTP request must implement IRequest<> or IStreamRequest<>",
+                    $"Type '{classSymbol.Name}' must implement IRequest<TResult> or IStreamRequest<TResult> to use HTTP method attributes",
+                    classDecl.Identifier.GetLocation()
+                )
+            );
         }
 
         // Get properties with attributes
         var properties = new List<PropertyInfo>();
+        var bodyCount = 0;
+        
         foreach (var member in classSymbol.GetMembers().OfType<IPropertySymbol>())
         {
             var headerAttr = member.GetAttributes()
                 .FirstOrDefault(a => a.AttributeClass?.Name == "HeaderAttribute");
+            var queryAttr = member.GetAttributes()
+                .FirstOrDefault(a => a.AttributeClass?.Name == "QueryAttribute");
             var bodyAttr = member.GetAttributes()
                 .FirstOrDefault(a => a.AttributeClass?.Name == "BodyAttribute");
 
@@ -159,27 +170,74 @@ public class HttpClientSourceGenerator : IIncrementalGenerator
                     Name: member.Name,
                     Type: member.Type,
                     PropertyType: PropertyType.Header,
-                    HeaderName: headerName
+                    AttributeName: headerName
+                ));
+            }
+            else if (queryAttr is not null)
+            {
+                var queryName = queryAttr.ConstructorArguments.Length > 0 && 
+                                queryAttr.ConstructorArguments[0].Value is string qname
+                    ? qname
+                    : member.Name;
+
+                properties.Add(new PropertyInfo(
+                    Name: member.Name,
+                    Type: member.Type,
+                    PropertyType: PropertyType.Query,
+                    AttributeName: queryName
                 ));
             }
             else if (bodyAttr is not null)
             {
+                bodyCount++;
+                if (bodyCount > 1)
+                {
+                    return new HttpRequestResult(
+                        RequestInfo: null,
+                        Diagnostic: new DiagnosticInfo(
+                            "SHINYMED_HTTP002",
+                            "Only one [Body] attribute allowed per request",
+                            $"Type '{classSymbol.Name}' has multiple [Body] attributes. Only one body is allowed per HTTP request",
+                            classDecl.Identifier.GetLocation()
+                        )
+                    );
+                }
+                
                 properties.Add(new PropertyInfo(
                     Name: member.Name,
                     Type: member.Type,
                     PropertyType: PropertyType.Body,
-                    HeaderName: null
+                    AttributeName: null
                 ));
             }
             else
             {
-                // Regular property - might be route or query parameter
+                // Regular property - might be route parameter
                 properties.Add(new PropertyInfo(
                     Name: member.Name,
                     Type: member.Type,
                     PropertyType: PropertyType.RouteOrQuery,
-                    HeaderName: null
+                    AttributeName: null
                 ));
+            }
+        }
+        
+        // Validate route parameters exist as properties
+        var routeParams = ExtractRouteParameters(route);
+        foreach (var routeParam in routeParams)
+        {
+            var propExists = properties.Any(p => p.Name.Equals(routeParam, StringComparison.OrdinalIgnoreCase));
+            if (!propExists)
+            {
+                return new HttpRequestResult(
+                    RequestInfo: null,
+                    Diagnostic: new DiagnosticInfo(
+                        "SHINYMED_HTTP003",
+                        "Route parameter must exist as class property",
+                        $"Type '{classSymbol.Name}' has route parameter '{routeParam}' in route '{route}', but no matching property was found. Add a property named '{routeParam}' to the class",
+                        classDecl.Identifier.GetLocation()
+                    )
+                );
             }
         }
 
@@ -187,7 +245,7 @@ public class HttpClientSourceGenerator : IIncrementalGenerator
         var implementsSse = classSymbol.AllInterfaces
             .Any(i => i.Name == "IServerSentEventsStream");
 
-        return new HttpRequestInfo(
+        var requestInfo = new HttpRequestInfo(
             ClassSymbol: classSymbol,
             Route: route,
             HttpMethod: httpMethod,
@@ -196,17 +254,71 @@ public class HttpClientSourceGenerator : IIncrementalGenerator
             Properties: properties.ToImmutableArray(),
             ImplementsServerSentEvents: implementsSse
         );
+
+        return new HttpRequestResult(requestInfo, null);
     }
 
     static bool IsHttpMethodAttribute(string? name) => name is "GetAttribute" or "PostAttribute" or "PutAttribute" or "PatchAttribute" or "DeleteAttribute";
 
+    static List<string> ExtractRouteParameters(string route)
+    {
+        var parameters = new List<string>();
+        var startIndex = 0;
+        
+        while (true)
+        {
+            var openBrace = route.IndexOf('{', startIndex);
+            if (openBrace == -1) break;
+            
+            var closeBrace = route.IndexOf('}', openBrace);
+            if (closeBrace == -1) break;
+            
+            var paramName = route.Substring(openBrace + 1, closeBrace - openBrace - 1);
+            parameters.Add(paramName);
+            
+            startIndex = closeBrace + 1;
+        }
+        
+        return parameters;
+    }
+
     static void Execute(
-        ImmutableArray<HttpRequestInfo?> requests,
+        ImmutableArray<HttpRequestResult?> results,
         HttpMsBuildOptions options,
         SourceProductionContext context
     )
     {
-        var validRequests = requests.Where(r => r is not null).ToList();
+        if (results.IsEmpty)
+            return;
+
+        var validRequests = new List<HttpRequestInfo>();
+
+        // First, report all diagnostics and collect valid requests
+        foreach (var result in results)
+        {
+            if (result is null)
+                continue;
+
+            if (result.Diagnostic is not null)
+            {
+                var diag = result.Diagnostic;
+                context.ReportDiagnostic(Diagnostic.Create(
+                    new DiagnosticDescriptor(
+                        diag.Id,
+                        diag.Title,
+                        diag.Message,
+                        "ShinyMediator.Http",
+                        DiagnosticSeverity.Error,
+                        isEnabledByDefault: true
+                    ),
+                    diag.Location
+                ));
+            }
+            else if (result.RequestInfo is not null)
+            {
+                validRequests.Add(result.RequestInfo);
+            }
+        }
         
         if (validRequests.Count == 0)
             return;
@@ -218,7 +330,7 @@ public class HttpClientSourceGenerator : IIncrementalGenerator
         {
             var typeName = GetSimpleTypeName(request.ClassSymbol);
             
-            var handlerClassName = $"{typeName}HttpHandler";
+            var handlerClassName = request.IsStreamRequest ? $"{typeName}StreamHandler" : $"{typeName}Handler";
             var requestTypeFull = GetFullTypeName(request.ClassSymbol);
             var resultTypeFull = GetFullTypeName(request.ResultType);
             var handlerTypeFull = $"global::{options.Namespace}.{handlerClassName}";
@@ -275,7 +387,12 @@ public class HttpClientSourceGenerator : IIncrementalGenerator
             if (prop.PropertyType == PropertyType.Header)
             {
                 paramType = HttpParameterType.Header;
-                parameterName = prop.HeaderName ?? prop.Name;
+                parameterName = prop.AttributeName ?? prop.Name;
+            }
+            else if (prop.PropertyType == PropertyType.Query)
+            {
+                paramType = HttpParameterType.Query;
+                parameterName = prop.AttributeName ?? prop.Name;
             }
             else if (prop.PropertyType == PropertyType.Body)
             {
@@ -284,17 +401,17 @@ public class HttpClientSourceGenerator : IIncrementalGenerator
             }
             else // RouteOrQuery
             {
-                // Check if property is in route or query string
+                // Check if property is in route
                 var routeParam = $"{{{prop.Name}}}";
-                if (route.Contains(routeParam))
+                if (route.Contains(routeParam, StringComparison.OrdinalIgnoreCase))
                 {
                     paramType = HttpParameterType.Path;
                     parameterName = prop.Name;
                 }
                 else
                 {
-                    paramType = HttpParameterType.Query;
-                    parameterName = prop.Name;
+                    // Not in route, so it's ignored (not used as query param automatically)
+                    continue;
                 }
             }
 
@@ -321,6 +438,18 @@ record HttpMsBuildOptions(
     string MethodName
 );
 
+record HttpRequestResult(
+    HttpRequestInfo? RequestInfo,
+    DiagnosticInfo? Diagnostic
+);
+
+record DiagnosticInfo(
+    string Id,
+    string Title,
+    string Message,
+    Location Location
+);
+
 record HttpRequestInfo(
     INamedTypeSymbol ClassSymbol,
     string Route,
@@ -335,12 +464,13 @@ record PropertyInfo(
     string Name,
     ITypeSymbol Type,
     PropertyType PropertyType,
-    string? HeaderName
+    string? AttributeName
 );
 
 enum PropertyType
 {
     Header,
+    Query,
     Body,
     RouteOrQuery
 }

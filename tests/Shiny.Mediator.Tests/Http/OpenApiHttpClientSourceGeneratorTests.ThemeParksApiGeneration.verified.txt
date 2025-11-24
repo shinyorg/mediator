@@ -1360,6 +1360,7 @@ public partial class GetDestinationsHandler(global::Shiny.Mediator.Http.HttpHand
         global::System.Threading.CancellationToken cancellationToken)
     {
         var route = "/destinations";
+
         var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleRequest<global::TestApi.GetDestinations, global::TestApi.DestinationsResponse>(
@@ -1420,6 +1421,7 @@ public partial class GetEntityHandler(global::Shiny.Mediator.Http.HttpHandlerSer
         global::System.Threading.CancellationToken cancellationToken)
     {
         var route = $"/entity/{request.EntityID}";
+
         var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleRequest<global::TestApi.GetEntity, global::TestApi.EntityData>(
@@ -1480,6 +1482,7 @@ public partial class GetEntityChildrenHandler(global::Shiny.Mediator.Http.HttpHa
         global::System.Threading.CancellationToken cancellationToken)
     {
         var route = $"/entity/{request.EntityID}/children";
+
         var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleRequest<global::TestApi.GetEntityChildren, global::TestApi.EntityChildrenResponse>(
@@ -1540,6 +1543,7 @@ public partial class GetEntityLiveDataHandler(global::Shiny.Mediator.Http.HttpHa
         global::System.Threading.CancellationToken cancellationToken)
     {
         var route = $"/entity/{request.EntityID}/live";
+
         var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleRequest<global::TestApi.GetEntityLiveData, global::TestApi.EntityLiveDataResponse>(
@@ -1600,6 +1604,7 @@ public partial class GetEntityScheduleUpcomingHandler(global::Shiny.Mediator.Htt
         global::System.Threading.CancellationToken cancellationToken)
     {
         var route = $"/entity/{request.EntityID}/schedule";
+
         var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleRequest<global::TestApi.GetEntityScheduleUpcoming, global::TestApi.EntityScheduleResponse>(
@@ -1668,6 +1673,7 @@ public partial class GetEntityScheduleYearMonthHandler(global::Shiny.Mediator.Ht
         global::System.Threading.CancellationToken cancellationToken)
     {
         var route = $"/entity/{request.EntityID}/schedule/{request.Year}/{request.Month}";
+
         var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleRequest<global::TestApi.GetEntityScheduleYearMonth, global::TestApi.EntityScheduleResponse>(

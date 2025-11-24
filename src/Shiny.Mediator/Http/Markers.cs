@@ -25,8 +25,12 @@ public class PostAttribute(string route) : Attribute;
 public class PutAttribute(string route) : Attribute;
 
 
+
 [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
 public class HeaderAttribute(string? Name = null) : Attribute;
 
 [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
 public class BodyAttribute : Attribute;
+
+[AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+public class QueryAttribute(string? Name = null) : Attribute;

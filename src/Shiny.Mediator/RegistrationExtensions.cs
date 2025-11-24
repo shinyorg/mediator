@@ -42,20 +42,7 @@ public static class RegistrationExtensions
         return services;
     }
     
-
-    /// <summary>
-    /// Add HTTP Client to mediator
-    /// </summary>
-    /// <param name="mediatorBuilder"></param>
-    /// <returns></returns>
-    public static ShinyMediatorBuilder AddHttpClientServices(this ShinyMediatorBuilder mediatorBuilder)
-    {
-        mediatorBuilder.Services.AddHttpClient();
-        mediatorBuilder.Services.AddSingleton<HttpHandlerServices>();
-        return mediatorBuilder;
-    }
     
-
     /// <summary>
     /// Adds command scheduling
     /// </summary>

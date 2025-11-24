@@ -68,9 +68,10 @@ public class HttpClientSourceGeneratorTests
             
             namespace TestNamespace;
             
-            [Get("/api/search?query={SearchTerm}")]
+            [Get("/api/search")]
             public class SearchRequest : IRequest<SearchResult>
             {
+                [Query("query")]
                 public string SearchTerm { get; set; } = string.Empty;
             }
             
@@ -155,10 +156,12 @@ public class HttpClientSourceGeneratorTests
             
             namespace TestNamespace;
             
-            [Post("/api/orders/{OrderId}?status={Status}")]
+            [Post("/api/orders/{OrderId}")]
             public class UpdateOrderRequest : IRequest<OrderResult>
             {
                 public int OrderId { get; set; }
+                
+                [Query("status")]
                 public string Status { get; set; } = string.Empty;
                 
                 [Header("X-Custom-Header")]
@@ -393,6 +396,140 @@ public class HttpClientSourceGeneratorTests
     }
 
     [Fact]
+    public Task Generate_PocTestsRequest_ShouldGenerateHandler()
+    {
+        var source = """
+            using Shiny.Mediator;
+            using Shiny.Mediator.Http;
+            
+            namespace TestNamespace;
+            
+            [Get("/poc/test/{RouteParameter}")]
+            public class PocTests : IRequest<ResultObject>
+            {
+                public int RouteParameter { get; set; }
+                
+                [Header("X-Custom-Header")] 
+                public string TestValue { get; set; } = string.Empty;
+                
+                [Header]
+                public string? Test2Value { get; set; }
+            
+                [Query("TestQuery")]
+                public int? QueryValue { get; set; }
+            
+                [Body]
+                public TestBody? Body { get; set; }
+            }
+            
+            public class TestBody
+            {
+                public string Hello { get; set; } = string.Empty;
+            }
+            
+            public class ResultObject
+            {
+                public string World { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = RunGenerator(source);
+        return Verify(result);
+    }
+
+    [Fact]
+    public Task Generate_PocStreamRequest_ShouldGenerateStreamHandler()
+    {
+        var source = """
+            using Shiny.Mediator;
+            using Shiny.Mediator.Http;
+            
+            namespace TestNamespace;
+            
+            [Get("/poc/stream/")]
+            public class PocStreamRequest : IStreamRequest<ResultObject>;
+            
+            public class ResultObject
+            {
+                public string World { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = RunGenerator(source);
+        return Verify(result);
+    }
+
+    [Fact]
+    public void Generate_MultipleBodyAttributes_ShouldReportError()
+    {
+        var source = """
+            using Shiny.Mediator;
+            using Shiny.Mediator.Http;
+            
+            namespace TestNamespace;
+            
+            [Post("/api/test")]
+            public class TestRequest : IRequest<TestResult>
+            {
+                [Body]
+                public TestBody1? Body1 { get; set; }
+                
+                [Body]
+                public TestBody2? Body2 { get; set; }
+            }
+            
+            public class TestBody1
+            {
+                public string Value1 { get; set; } = string.Empty;
+            }
+            
+            public class TestBody2
+            {
+                public string Value2 { get; set; } = string.Empty;
+            }
+            
+            public class TestResult
+            {
+                public string Value { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = RunGenerator(source);
+        
+        // Should report diagnostic error
+        result.Diagnostics.ShouldNotBeEmpty();
+        result.Diagnostics[0].Id.ShouldBe("SHINYMED_HTTP002");
+    }
+
+    [Fact]
+    public void Generate_MissingRouteParameterProperty_ShouldReportError()
+    {
+        var source = """
+            using Shiny.Mediator;
+            using Shiny.Mediator.Http;
+            
+            namespace TestNamespace;
+            
+            [Get("/api/users/{UserId}")]
+            public class GetUserRequest : IRequest<UserResult>
+            {
+                // Missing UserId property!
+            }
+            
+            public class UserResult
+            {
+                public string Name { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = RunGenerator(source);
+        
+        // Should report diagnostic error
+        result.Diagnostics.ShouldNotBeEmpty();
+        result.Diagnostics[0].Id.ShouldBe("SHINYMED_HTTP003");
+    }
+
+    [Fact]
     public void Generate_ClassWithoutHttpAttribute_ShouldNotGenerateHandler()
     {
         var source = """
@@ -417,7 +554,7 @@ public class HttpClientSourceGeneratorTests
     }
 
     [Fact]
-    public void Generate_ClassWithoutMediatorInterface_ShouldNotGenerateHandler()
+    public void Generate_ClassWithoutMediatorInterface_ShouldReportError()
     {
         var source = """
             using Shiny.Mediator.Http;
@@ -432,8 +569,37 @@ public class HttpClientSourceGeneratorTests
 
         var result = RunGenerator(source);
         
-        // Should not generate any handlers
-        result.GeneratedSources.ShouldBeEmpty();
+        // Should report diagnostic error
+        result.Diagnostics.ShouldNotBeEmpty();
+        result.Diagnostics[0].Id.ShouldBe("SHINYMED_HTTP001");
+    }
+
+    [Fact]
+    public Task Generate_PropertyWithoutAttributes_NotInRoute_ShouldBeIgnored()
+    {
+        var source = """
+            using Shiny.Mediator;
+            using Shiny.Mediator.Http;
+            
+            namespace TestNamespace;
+            
+            [Get("/api/users/{UserId}")]
+            public class GetUserRequest : IRequest<UserResult>
+            {
+                public int UserId { get; set; }
+                
+                // This property should be ignored (not added as query param automatically)
+                public string? IgnoredProperty { get; set; }
+            }
+            
+            public class UserResult
+            {
+                public string Name { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = RunGenerator(source);
+        return Verify(result);
     }
 
     static GeneratorRunResult RunGenerator(string source, string? rootNamespace = null, string? httpNamespace = null)

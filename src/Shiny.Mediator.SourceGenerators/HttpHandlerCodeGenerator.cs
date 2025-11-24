@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -68,35 +69,59 @@ internal static class HttpHandlerCodeGenerator
             sb.AppendLine("    {");
         }
 
-        // Build the route with parameters
-        var processedRoute = ProcessRoute(route, propertiesList);
-        sb.AppendLine($"        var route = {processedRoute};");
+        // Build the route with path parameters interpolated
+        var routeExpression = BuildRouteExpression(route, propertiesList);
+        sb.AppendLine($"        var route = {routeExpression};");
+        
+        // Add query parameters conditionally to route
+        var queryProps = propertiesList.Where(p => p.ParameterType == HttpParameterType.Query).ToList();
+        if (queryProps.Count > 0)
+        {
+            sb.AppendLine();
+            foreach (var prop in queryProps)
+            {
+                sb.AppendLine($"        if (request.{prop.PropertyName} != null)");
+                sb.AppendLine("        {");
+                sb.AppendLine("            route += route.Contains(\"?\") ? \"&\" : \"?\";");
+                sb.AppendLine($"            route += $\"{prop.ParameterName}={{request.{prop.PropertyName}}}\";");
+                sb.AppendLine("        }");
+                sb.AppendLine();
+            }
+        }
+        else
+        {
+            sb.AppendLine();
+        }
         
         // Create HTTP request message
         var httpMethodMapping = GetHttpMethodMapping(httpMethod);
         sb.AppendLine($"        var httpRequest = new global::System.Net.Http.HttpRequestMessage({httpMethodMapping}, route);");
-        sb.AppendLine();
-
+        
         // Add headers
         var headerProps = propertiesList.Where(p => p.ParameterType == HttpParameterType.Header).ToList();
-        foreach (var prop in headerProps)
+        if (headerProps.Count > 0)
         {
-            sb.AppendLine($"        if (request.{prop.PropertyName} != null)");
-            sb.AppendLine($"            httpRequest.Headers.Add(\"{prop.ParameterName}\", request.{prop.PropertyName}.ToString());");
             sb.AppendLine();
+            foreach (var prop in headerProps)
+            {
+                sb.AppendLine($"        if (request.{prop.PropertyName} != null)");
+                sb.AppendLine($"            httpRequest.Headers.Add(\"{prop.ParameterName}\", request.{prop.PropertyName}.ToString());");
+            }
         }
 
-        // Add body
+        // Add body if present
         var bodyProp = propertiesList.FirstOrDefault(p => p.ParameterType == HttpParameterType.Body);
         if (bodyProp != null)
         {
+            sb.AppendLine();
             sb.AppendLine($"        if (request.{bodyProp.PropertyName} != null)");
             sb.AppendLine("        {");
             sb.AppendLine($"            var json = services.Serializer.Serialize(request.{bodyProp.PropertyName});");
             sb.AppendLine("            httpRequest.Content = new global::System.Net.Http.StringContent(json, global::System.Text.Encoding.UTF8, \"application/json\");");
             sb.AppendLine("        }");
-            sb.AppendLine();
         }
+
+        sb.AppendLine();
 
         // Call base handler method
         if (isStreamRequest)
@@ -172,58 +197,43 @@ internal static class HttpHandlerCodeGenerator
         return sb.ToString();
     }
 
-    static string ProcessRoute(string route, IEnumerable<HttpPropertyInfo> properties)
+    static string BuildRouteExpression(string route, IEnumerable<HttpPropertyInfo> properties)
     {
-        // Materialize once to avoid multiple enumeration
         var propertiesList = properties.ToList();
         
-        // Check if route contains any interpolation markers
-        var hasParameters = route.Contains("{") || propertiesList.Any(p => p.ParameterType == HttpParameterType.Query);
-
-        if (!hasParameters)
+        // Check if route contains any path parameters
+        var hasPathParameters = route.Contains("{");
+        
+        if (!hasPathParameters)
         {
             return $"\"{route}\"";
         }
-
+        
+        // Replace path parameters with interpolation
         var result = route;
-        var queryParams = new List<string>();
-
-        foreach (var prop in propertiesList)
+        foreach (var prop in propertiesList.Where(p => p.ParameterType == HttpParameterType.Path))
         {
-            if (prop.ParameterType == HttpParameterType.Path)
+            var routeParam = $"{{{prop.ParameterName}}}";
+            // Check case-insensitive but replace case-sensitive
+            var index = result.IndexOf(routeParam, StringComparison.OrdinalIgnoreCase);
+            if (index >= 0)
             {
-                // Route parameter - use direct interpolation
-                var routeParam = $"{{{prop.ParameterName}}}";
-                if (result.Contains(routeParam))
-                {
-                    result = result.Replace(routeParam, $"{{request.{prop.PropertyName}}}");
-                }
-            }
-            else if (prop.ParameterType == HttpParameterType.Query)
-            {
-                // Query parameter - add to query string
-                queryParams.Add($"{prop.ParameterName}={{global::System.Uri.EscapeDataString(request.{prop.PropertyName}?.ToString() ?? \"\")}}");
+                var actualParam = result.Substring(index, routeParam.Length);
+                result = result.Replace(actualParam, $"{{request.{prop.PropertyName}}}");
             }
         }
-
-        // Add query parameters to route
-        if (queryParams.Count > 0)
-        {
-            var separator = result.Contains("?") ? "&" : "?";
-            result = result + separator + string.Join("&", queryParams);
-        }
-
+        
         return $"$\"{result}\"";
     }
 
-    static string GetHttpMethodMapping(string httpMethod) => httpMethod switch
+    static string GetHttpMethodMapping(string httpMethod) => httpMethod.ToUpper() switch
     {
-        "Get" or "GET" => "global::System.Net.Http.HttpMethod.Get",
-        "Post" or "POST" => "global::System.Net.Http.HttpMethod.Post",
-        "Put" or "PUT" => "global::System.Net.Http.HttpMethod.Put",
-        "Patch" or "PATCH" => "global::System.Net.Http.HttpMethod.Patch",
-        "Delete" or "DELETE" => "global::System.Net.Http.HttpMethod.Delete",
-        _ => "global::System.Net.Http.HttpMethod.Get"
+        "GET" => "global::System.Net.Http.HttpMethod.Get",
+        "POST" => "global::System.Net.Http.HttpMethod.Post",
+        "PUT" => "global::System.Net.Http.HttpMethod.Put",
+        "PATCH" => "global::System.Net.Http.HttpMethod.Patch",
+        "DELETE" => "global::System.Net.Http.HttpMethod.Delete",
+        _ => $"new global::System.Net.Http.HttpMethod(\"{httpMethod}\")"
     };
 }
 

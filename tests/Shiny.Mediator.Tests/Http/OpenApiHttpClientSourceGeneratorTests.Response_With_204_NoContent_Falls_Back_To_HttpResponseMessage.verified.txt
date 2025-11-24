@@ -42,6 +42,7 @@ public partial class PingHandler(global::Shiny.Mediator.Http.HttpHandlerServices
         global::System.Threading.CancellationToken cancellationToken)
     {
         var route = "/ping";
+
         var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Post, route);
 
         return this.HandleRequest<global::TestApi.Ping, global::System.Net.Http.HttpResponseMessage>(
