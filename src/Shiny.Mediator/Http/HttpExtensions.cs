@@ -13,12 +13,25 @@ public static class HttpExtensions
     /// <returns></returns>
     public static ShinyMediatorBuilder AddHttpClientServices(this ShinyMediatorBuilder mediatorBuilder)
     {
-        if (!mediatorBuilder.Services.Any(x => x.ImplementationType == typeof(HttpHandlerServices)))
-        {
-            mediatorBuilder.Services.AddHttpClient();
-            mediatorBuilder.Services.AddSingleton<HttpHandlerServices>();
-        }
+        mediatorBuilder.Services.AddMediatorHttpClientServices();
         return mediatorBuilder;
+    }
+
+
+    /// <summary>
+    /// Add HTTP Client to mediator
+    /// </summary>
+    /// <param name="services"></param>
+    /// <returns></returns>
+    public static IServiceCollection AddMediatorHttpClientServices(this IServiceCollection services)
+    {
+        if (!services.Any(x => x.ImplementationType == typeof(HttpHandlerServices)))
+        {
+            services.AddHttpClient();
+            services.AddSingleton<HttpHandlerServices>();
+        }
+
+        return services;
     }
     
     

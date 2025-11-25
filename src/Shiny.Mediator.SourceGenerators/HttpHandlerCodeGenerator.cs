@@ -167,6 +167,7 @@ internal static class HttpHandlerCodeGenerator
         sb.AppendLine("// </auto-generated>");
         sb.AppendLine("#nullable disable");
         sb.AppendLine();
+        sb.AppendLine("using Shiny.Mediator;");
         sb.AppendLine("using Microsoft.Extensions.DependencyInjection;");
         sb.AppendLine("using Microsoft.Extensions.DependencyInjection.Extensions;");
         sb.AppendLine();
@@ -175,8 +176,15 @@ internal static class HttpHandlerCodeGenerator
         sb.AppendLine(Constants.GeneratedCodeAttributeString);
         sb.AppendLine($"{accessModifier} static class {registrationClassName}");
         sb.AppendLine("{");
+        sb.AppendLine($"    public static global.Shiny.Mediator.ShinyMediatorBuilder {registrationMethodName}(this global::Shiny.Mediator.ShinyMediatorBuilder mediatorBuilder)");
+        sb.AppendLine("    {");
+        sb.AppendLine($"        mediatorBuilder.Services.{registrationMethodName}();");
+        sb.AppendLine("        return mediatorBuilder;");
+        sb.AppendLine("    }");
+        sb.AppendLine();
         sb.AppendLine($"    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection {registrationMethodName}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)");
         sb.AppendLine("    {");
+        sb.AppendLine("        services.AddMediatorHttpClientServices();");
 
         foreach (var handler in handlers)
         {

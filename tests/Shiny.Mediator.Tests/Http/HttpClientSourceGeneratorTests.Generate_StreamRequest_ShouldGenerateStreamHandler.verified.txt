@@ -50,6 +50,7 @@ public partial class StreamEventsRequestStreamHandler(global::Shiny.Mediator.Htt
 // </auto-generated>
 #nullable disable
 
+using Shiny.Mediator;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -58,8 +59,15 @@ namespace TestNamespace;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public static class __ShinyMediatorStrongTypeHttpClient
 {
+    public static global.Shiny.Mediator.ShinyMediatorBuilder AddStrongTypedHttpClient(this global::Shiny.Mediator.ShinyMediatorBuilder mediatorBuilder)
+    {
+        mediatorBuilder.Services.AddStrongTypedHttpClient();
+        return mediatorBuilder;
+    }
+
     public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddStrongTypedHttpClient(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
     {
+        services.AddMediatorHttpClientServices();
         services.TryAddSingleton<global::Shiny.Mediator.IStreamRequestHandler<global::TestNamespace.StreamEventsRequest, global::TestNamespace.EventItem>, global::TestNamespace.StreamEventsRequestStreamHandler>();
         return services;
     }

@@ -1694,6 +1694,7 @@ public partial class GetEntityScheduleYearMonthHandler(global::Shiny.Mediator.Ht
 // </auto-generated>
 #nullable disable
 
+using Shiny.Mediator;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -1702,8 +1703,15 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public static class __ShinyMediatorOpenApiClient
 {
+    public static global.Shiny.Mediator.ShinyMediatorBuilder AddGeneratedOpenApiClient(this global::Shiny.Mediator.ShinyMediatorBuilder mediatorBuilder)
+    {
+        mediatorBuilder.Services.AddGeneratedOpenApiClient();
+        return mediatorBuilder;
+    }
+
     public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddGeneratedOpenApiClient(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
     {
+        services.AddMediatorHttpClientServices();
         services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestApi.GetDestinations, global::TestApi.DestinationsResponse>, global::TestApi.GetDestinationsHandler>();
         services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestApi.GetEntity, global::TestApi.EntityData>, global::TestApi.GetEntityHandler>();
         services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestApi.GetEntityChildren, global::TestApi.EntityChildrenResponse>, global::TestApi.GetEntityChildrenHandler>();
