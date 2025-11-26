@@ -2,8 +2,6 @@ namespace Shiny.Mediator.SourceGenerators;
 
 public class MediatorHttpItemConfig
 {
-    public string RegistrationClassName { get; set; } = null!;
-    public string RegistrationMethodName { get; set; } = null!;
     public string Namespace { get; set; } = null!;
     public string? ContractPrefix { get; set; }
     public string? ContractPostfix { get; set; }

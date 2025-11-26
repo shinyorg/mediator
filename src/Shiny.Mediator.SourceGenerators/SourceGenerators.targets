@@ -21,12 +21,15 @@
     
     <!--mediator http openapi-->
     <ItemGroup>
+        <CompilerVisibleProperty Include="ShinyMediatorOpenApiRegistrationUseInternalClass"/>
+        <CompilerVisibleProperty Include="ShinyMediatorOpenApiRegistrationNamespace"/>
+        <CompilerVisibleProperty Include="ShinyMediatorOpenApiRegistrationClassName"/>
+        <CompilerVisibleProperty Include="ShinyMediatorOpenApiRegistrationMethodName"/>
+        
         <AvailableItemName Include="MediatorHttp"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Uri" Visible="false"/>
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RegistrationClassName" Visible="false"/>
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RegistrationMethodName" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="UseInternalClasses" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateModelsOnly" Visible="false"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateJsonConverters" Visible="false"/>
@@ -38,8 +41,6 @@
         <ItemGroup>
             <AdditionalFiles Include="@(MediatorHttp)"
                              Namespace="%(MediatorHttp.Namespace)"
-                             RegistrationClassName="%(MediatorHttp.RegistrationClassName)"
-                             RegistrationMethodName="%(MediatorHttp.RegistrationMethodName)"
                              Uri="%(MediatorHttp.Uri)"
                              UseInternalClasses="%(MediatorHttp.UseInternalClasses)"
                              GenerateModelsOnly="%(MediatorHttp.GenerateModelsOnly)"

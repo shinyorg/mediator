@@ -21,19 +21,38 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Get the root namespace from MSBuild
         var rootNamespace = context
             .CompilationProvider
             .Combine(context.AnalyzerConfigOptionsProvider)
             .Select((pair, _) =>
             {
                 var (compilation, provider) = pair;
-                
-                provider.GlobalOptions.TryGetValue("build_property.RootNamespace", out var @namespace);
-                if (String.IsNullOrWhiteSpace(@namespace))
-                    @namespace = compilation.AssemblyName;
 
-                return @namespace;
+                var regNamespace = (provider.GlobalOptions.PriorityGetBuildProperty(
+                    "ShinyMediatorOpenApiRegistrationNamespace", 
+                    "RootNamespace"
+                ) ?? compilation.AssemblyName)!;
+                
+                var regClassName = provider.GlobalOptions.GetBuildProperty(
+                    "ShinyMediatorOpenApiRegistrationClassName", 
+                    Constants.DefaultOpenApiRegistrationClassName
+                )!;
+                var regMethodName = provider.GlobalOptions.GetBuildProperty(
+                    "ShinyMediatorOpenApiRegistrationMethodName", 
+                    Constants.DefaultOpenApiRegistrationMethodName
+                )!;
+                
+                var regUseInternal = provider.GlobalOptions.GetBuildProperty(
+                    "build_property.ShinyMediatorOpenApiRegistrationUseInternalClass",
+                    Constants.DefaultOpenApiRegistrationUseInternal.ToString()
+                )!.Equals("true", StringComparison.InvariantCultureIgnoreCase);
+                
+                return new OpenApiRegistrationConfig(
+                    regNamespace,
+                    regClassName,
+                    regMethodName,
+                    regUseInternal
+                ); 
             });
 
         // Find all MediatorHttp items in the project
@@ -59,7 +78,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(combined, (sourceContext, data) =>
         {
-            var (((texts, defaultNamespace), configOptions), compilation) = data;
+            var (((texts, regProperties), configOptions), compilation) = data;
+            var handlers = new List<HandlerRegistrationInfo>();
             
             if (!texts.IsEmpty)
             {
@@ -67,21 +87,11 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                 {
                     try
                     {
-                        var config = GetConfig(configOptions, item, defaultNamespace);
+                        var config = GetConfig(configOptions, item, regProperties.RootNamespace);
 
-                        var handlers = ProcessOpenApiDocument(sourceContext, item, config, configOptions, compilation);
-                        var registrationCode = HttpHandlerCodeGenerator.GenerateRegistration(
-                            handlers,
-                            config.Namespace,
-                            config.RegistrationClassName,
-                            config.RegistrationMethodName,
-                            config.UseInternalClasses
-                        );
-                
-                        sourceContext.AddSource(
-                            config.RegistrationClassName + ".g.cs",
-                            SourceText.From(registrationCode, Encoding.UTF8)
-                        );
+                        var newHandlers = ProcessOpenApiDocument(sourceContext, item, config, configOptions, compilation);
+                        if (newHandlers.Count > 0)
+                            handlers.AddRange(newHandlers);
                     }
                     catch (Exception ex)
                     {
@@ -94,6 +104,22 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                         );
                     }
                 }
+            }
+
+            if (handlers.Count > 0)
+            {
+                var registrationCode = HttpHandlerCodeGenerator.GenerateRegistration(
+                    handlers,
+                    regProperties.RootNamespace,
+                    regProperties.RegistrationClassName,
+                    regProperties.RegistrationMethodName,
+                    regProperties.UseInternalClass
+                );
+                
+                sourceContext.AddSource(
+                    regProperties.RegistrationClassName + ".g.cs",
+                    SourceText.From(registrationCode, Encoding.UTF8)
+                );
             }
         });
     }
@@ -111,8 +137,6 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             Namespace = GetProperty(options, "Namespace", defaultNamespace)!,
             ContractPrefix = GetProperty(options, "ContractPrefix", null),
             ContractPostfix = GetProperty(options, "ContractPostfix", null),
-            RegistrationClassName =  GetProperty(options, "RegistrationClassName", Constants.DefaultOpenApiRegistrationClassName)!,
-            RegistrationMethodName = GetProperty(options, "RegistrationMethodName", Constants.DefaultOpenApiRegistrationMethodName)!,
             GenerateModelsOnly = GetProperty(options, "GenerateModelsOnly", null)?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
             UseInternalClasses = GetProperty(options, "UseInternalClasses", null)?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? Constants.DefaultOpenApiRegistrationUseInternal,
             GenerateJsonConverters = GetProperty(options, "GenerateJsonConverters", null)?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? Constants.DefaultOpenApiGenerateJsonConverters
@@ -642,3 +666,9 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     }
 }
 
+record OpenApiRegistrationConfig(
+    string RootNamespace,
+    string RegistrationClassName,
+    string RegistrationMethodName,
+    bool UseInternalClass
+);

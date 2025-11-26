@@ -176,7 +176,7 @@ internal static class HttpHandlerCodeGenerator
         sb.AppendLine(Constants.GeneratedCodeAttributeString);
         sb.AppendLine($"{accessModifier} static class {registrationClassName}");
         sb.AppendLine("{");
-        sb.AppendLine($"    public static global.Shiny.Mediator.ShinyMediatorBuilder {registrationMethodName}(this global::Shiny.Mediator.ShinyMediatorBuilder mediatorBuilder)");
+        sb.AppendLine($"    public static global::Shiny.Mediator.ShinyMediatorBuilder {registrationMethodName}(this global::Shiny.Mediator.ShinyMediatorBuilder mediatorBuilder)");
         sb.AppendLine("    {");
         sb.AppendLine($"        mediatorBuilder.Services.{registrationMethodName}();");
         sb.AppendLine("        return mediatorBuilder;");

@@ -14,7 +14,7 @@ public static class Constants
     public const bool DefaultHttpRegistrationUseInternal = false;
     public const string DefaultHttpRegistrationClassName = "__ShinyMediatorStrongTypeHttpClient";
     public const string DefaultHttpRegistrationMethodName = "AddStrongTypedHttpClient";
-    
+                                         
     // openapi httpclient
     public const bool DefaultOpenApiRegistrationUseInternal = false;
     public const bool DefaultOpenApiGenerateJsonConverters = false;
