@@ -160,13 +160,19 @@ public abstract class BaseHttpRequestHandler
             {
                 finalResult = (TResult)(object)response;
             }
+            else if (typeof(TResult) == typeof(string))
+            {
+                // Handle plain string responses (not JSON)
+                var stringContent = await response.Content.ReadAsStringAsync(cts.Token).ConfigureAwait(false);
+                finalResult = (TResult)(object)stringContent;
+            }
             else
             {
                 var stringResult = await response
                     .Content
                     .ReadAsStringAsync(cts.Token)
                     .ConfigureAwait(false);
-    
+
                 finalResult = this.services.Serializer.Deserialize<TResult>(stringResult)!;
             }
         }
