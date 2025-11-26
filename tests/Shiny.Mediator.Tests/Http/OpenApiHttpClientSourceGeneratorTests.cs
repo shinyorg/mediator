@@ -19,10 +19,14 @@ public class OpenApiHttpClientSourceGeneratorTests
 
         var buildProps = new Dictionary<string, string>
         {
-            ["build_metadata.AdditionalFiles.SourceItemGroup"] = "MediatorHttp",
-            ["build_metadata.AdditionalFiles.Namespace"] = "TestApi",
+            ["build_property.ShinyMediatorOpenApiRegistrationNamespace"] = "ThisShouldBeTheNamespace",
+            ["build_property.ShinyMediatorOpenApiRegistrationClassName"] = "Hello",
+            ["build_property.ShinyMediatorOpenApiRegistrationMethodName"] = "World",
+            ["build_property.ShinyMediatorOpenApiRegistrationUseInternalClass"] = "TrUE",
             ["build_property.RootNamespace"] = "UnitTests",
-            ["build_property.AssemblyName"] = "UnitTests"
+            ["build_property.AssemblyName"] = "UnitTests",
+            ["build_metadata.AdditionalFiles.SourceItemGroup"] = "MediatorHttp",
+            ["build_metadata.AdditionalFiles.Namespace"] = "TestApi"
         };
 
         var result = RunGenerator(additionalFiles, buildProps);

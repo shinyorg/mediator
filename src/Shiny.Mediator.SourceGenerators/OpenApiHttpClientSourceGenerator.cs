@@ -43,7 +43,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                 )!;
                 
                 var regUseInternal = provider.GlobalOptions.GetBuildProperty(
-                    "build_property.ShinyMediatorOpenApiRegistrationUseInternalClass",
+                    "ShinyMediatorOpenApiRegistrationUseInternalClass",
                     Constants.DefaultOpenApiRegistrationUseInternal.ToString()
                 )!.Equals("true", StringComparison.InvariantCultureIgnoreCase);
                 
