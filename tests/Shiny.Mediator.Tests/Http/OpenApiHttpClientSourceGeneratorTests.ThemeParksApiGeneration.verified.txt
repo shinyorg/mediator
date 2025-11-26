@@ -1361,7 +1361,7 @@ public partial class GetDestinationsHandler(global::Shiny.Mediator.Http.HttpHand
     {
         var route = "/destinations";
 
-        var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
+        var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleRequest<global::TestApi.GetDestinations, global::TestApi.DestinationsResponse>(
             httpRequest,
@@ -1422,7 +1422,7 @@ public partial class GetEntityHandler(global::Shiny.Mediator.Http.HttpHandlerSer
     {
         var route = $"/entity/{request.EntityID}";
 
-        var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
+        var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleRequest<global::TestApi.GetEntity, global::TestApi.EntityData>(
             httpRequest,
@@ -1483,7 +1483,7 @@ public partial class GetEntityChildrenHandler(global::Shiny.Mediator.Http.HttpHa
     {
         var route = $"/entity/{request.EntityID}/children";
 
-        var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
+        var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleRequest<global::TestApi.GetEntityChildren, global::TestApi.EntityChildrenResponse>(
             httpRequest,
@@ -1544,7 +1544,7 @@ public partial class GetEntityLiveDataHandler(global::Shiny.Mediator.Http.HttpHa
     {
         var route = $"/entity/{request.EntityID}/live";
 
-        var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
+        var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleRequest<global::TestApi.GetEntityLiveData, global::TestApi.EntityLiveDataResponse>(
             httpRequest,
@@ -1605,7 +1605,7 @@ public partial class GetEntityScheduleUpcomingHandler(global::Shiny.Mediator.Htt
     {
         var route = $"/entity/{request.EntityID}/schedule";
 
-        var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
+        var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleRequest<global::TestApi.GetEntityScheduleUpcoming, global::TestApi.EntityScheduleResponse>(
             httpRequest,
@@ -1674,7 +1674,7 @@ public partial class GetEntityScheduleYearMonthHandler(global::Shiny.Mediator.Ht
     {
         var route = $"/entity/{request.EntityID}/schedule/{request.Year}/{request.Month}";
 
-        var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
+        var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleRequest<global::TestApi.GetEntityScheduleYearMonth, global::TestApi.EntityScheduleResponse>(
             httpRequest,

@@ -16,19 +16,11 @@ public record HttpHandlerServices(
     IEnumerable<IHttpRequestDecorator> Decorators
 );
 
-public abstract class BaseHttpRequestHandler
+public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
 {
-    readonly HttpHandlerServices services;
-    readonly ILogger logger;
-    
-    
-    protected BaseHttpRequestHandler(HttpHandlerServices services)
-    {
-        this.services = services;
-        this.logger = services.LoggerFactory.CreateLogger<BaseHttpRequestHandler>();
-    }
-    
-    
+    readonly ILogger logger = services.LoggerFactory.CreateLogger<BaseHttpRequestHandler>();
+
+
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     protected virtual async IAsyncEnumerable<TResult> HandleStream<TRequest, TResult>(
         HttpRequestMessage httpRequest,
@@ -38,7 +30,8 @@ public abstract class BaseHttpRequestHandler
         [EnumeratorCancellation] CancellationToken cancellationToken
     )
     {
-        var httpClient = this.CreateHttpClient(context);
+        var httpClient = services.HttpClientFactory.CreateClient();
+        await this.Decorate(context, httpRequest, cancellationToken).ConfigureAwait(false);
         
         var httpResponse = await httpClient
             .SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
@@ -60,7 +53,7 @@ public abstract class BaseHttpRequestHandler
         }
         else
         {
-            await foreach (var obj in this.services.Serializer.DeserlializeAsyncEnumerable<TResult>(responseStream, cancellationToken))
+            await foreach (var obj in services.Serializer.DeserlializeAsyncEnumerable<TResult>(responseStream, cancellationToken))
             { 
                 yield return obj;
             }
@@ -75,7 +68,7 @@ public abstract class BaseHttpRequestHandler
     {
         using var reader = new StreamReader(stream, Encoding.UTF8);
         var sb = new StringBuilder();
-   
+        
         while (!cancellationToken.IsCancellationRequested && !reader.EndOfStream)
         {
             var line = await reader.ReadLineAsync(cancellationToken);
@@ -103,14 +96,14 @@ public abstract class BaseHttpRequestHandler
     
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     protected virtual async Task<TResult> HandleRequest<TRequest, TResult>(
-        HttpRequestMessage httpRequest, 
+        HttpRequestMessage httpRequest,
         TRequest request, 
         IMediatorContext context, 
         CancellationToken cancellationToken
     )
     {
         await this.Decorate(context, httpRequest, cancellationToken).ConfigureAwait(false);
-        var timeoutSeconds = this.services.Configuration.GetValue("Mediator:Http:Timeout", 20);
+        var timeoutSeconds = services.Configuration.GetValue("Mediator:Http:Timeout", 20);
         
         var result = await this
             .Send<TResult>(context, httpRequest, TimeSpan.FromSeconds(timeoutSeconds), cancellationToken)
@@ -120,15 +113,33 @@ public abstract class BaseHttpRequestHandler
     }
 
 
-    protected virtual HttpClient CreateHttpClient(IMediatorContext context)
+    protected virtual HttpRequestMessage CreateHttpRequest(IMediatorContext context, HttpMethod httpMethod, string parsedUrl)
     {
-        var baseUri = this.GetBaseUri(context.Message);
-        var httpClient = this.services.HttpClientFactory.CreateClient();
-        httpClient.BaseAddress = new Uri(baseUri);
+        var url = parsedUrl;
+        if (!parsedUrl.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase) &&
+            !parsedUrl.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase))
+        {
+            var baseUri = this.GetBaseUri(context.Message);
+            if (!baseUri.EndsWith("/"))
+                baseUri += "/";
 
-        return httpClient;
+            url = baseUri + parsedUrl.TrimStart('/');
+        }
+
+        return new HttpRequestMessage(httpMethod, url);
     }
+
     
+        // var route = "/ping";
+
+        // return this.HandleRequest<global::TestApi.Ping, global::System.Net.Http.HttpResponseMessage>(
+        //     global::System.Net.Http.HttpMethod.Post,
+        //     route,
+        //     request,
+        //     context,
+        //     cancellationToken
+        // );
+
     
     protected virtual async Task<TResult> Send<TResult>(
         IMediatorContext context,
@@ -144,7 +155,7 @@ public abstract class BaseHttpRequestHandler
         TResult finalResult = default!;
         try
         {
-            var httpClient = this.CreateHttpClient(context);
+            var httpClient = services.HttpClientFactory.CreateClient();
             var response = await httpClient
                 .SendAsync(httpRequest, cts.Token)
                 .ConfigureAwait(false);
@@ -167,7 +178,7 @@ public abstract class BaseHttpRequestHandler
                     .ReadAsStringAsync(cts.Token)
                     .ConfigureAwait(false);
     
-                finalResult = this.services.Serializer.Deserialize<TResult>(stringResult)!;
+                finalResult = services.Serializer.Deserialize<TResult>(stringResult)!;
             }
         }
         catch (TaskCanceledException ex)
@@ -181,7 +192,7 @@ public abstract class BaseHttpRequestHandler
     
     protected virtual async Task Decorate(IMediatorContext context, HttpRequestMessage httpRequest, CancellationToken cancellationToken)
     {
-        foreach (var decorator in this.services.Decorators)
+        foreach (var decorator in services.Decorators)
         {
             this.logger.LogDebug("Decorating {Type}", decorator.GetType().Name);
             await decorator
@@ -198,7 +209,7 @@ public abstract class BaseHttpRequestHandler
         CancellationToken cancellationToken
     )
     {
-        var debug = this.services.Configuration.GetValue("Mediator:Http:Debug", false);
+        var debug = services.Configuration.GetValue("Mediator:Http:Debug", false);
         if (!debug)
             return;
     
@@ -236,7 +247,7 @@ public abstract class BaseHttpRequestHandler
     
     protected virtual string GetBaseUri(object request)
     {
-        var cfg = this.services.Configuration.GetHandlerSection("Http", request, this);
+        var cfg = services.Configuration.GetHandlerSection("Http", request, this);
         if (cfg == null)
             throw new InvalidOperationException("No base URI configured for: " + request.GetType().FullName);
         

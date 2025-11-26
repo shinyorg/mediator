@@ -95,7 +95,7 @@ internal static class HttpHandlerCodeGenerator
         
         // Create HTTP request message
         var httpMethodMapping = GetHttpMethodMapping(httpMethod);
-        sb.AppendLine($"        var httpRequest = new global::System.Net.Http.HttpRequestMessage({httpMethodMapping}, route);");
+        sb.AppendLine($"        var httpRequest = this.CreateHttpRequest(context, {httpMethodMapping}, route);");
         
         // Add headers
         var headerProps = propertiesList.Where(p => p.ParameterType == HttpParameterType.Header).ToList();

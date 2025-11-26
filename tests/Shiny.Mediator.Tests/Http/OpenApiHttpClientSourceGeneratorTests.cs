@@ -4,13 +4,39 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Shiny.Mediator.SourceGenerators;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 using Shiny.Mediator.Tests.SourceGeneration;
+using ThemeParksApi;
+using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests.Http;
 
 
-public class OpenApiHttpClientSourceGeneratorTests
+public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
 {
+    [Fact]
+    public async Task e2e()
+    {
+        var services = new ServiceCollection();
+        
+        services.AddXUnitLogging(output);
+        services.AddConfiguration(x =>
+        {
+            x.AddInMemoryCollection(new Dictionary<string, string>
+            {
+                {"Mediator:Http:*",  "https://api.themeparks.wiki/v1/"}
+            });
+        });
+        services.AddShinyMediator(x => x.AddGeneratedOpenApiClient());
+
+        var sp = services.BuildServiceProvider();
+        var mediator = sp.GetRequiredService<IMediator>();
+        var result = await mediator.Request(new GetEntityLiveDataHttpRequest
+        {
+            EntityID = "66f5d97a-a530-40bf-a712-a6317c96b06d"
+        });
+    }
+    
     [Fact]
     public Task ThemeParksApiGeneration()
     {
