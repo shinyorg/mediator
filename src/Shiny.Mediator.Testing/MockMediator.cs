@@ -64,6 +64,13 @@ public class MockMediator(
         return Task.FromResult<IMediatorContext>(ctx);
     }
 
+    public void PublishToBackground<TEvent>(TEvent @event, bool executeInParallel = true, Action<IMediatorContext>? configure = null) where TEvent : IEvent
+    {
+        var ctx = new MockMediatorContext(@event);
+        configure?.Invoke(ctx);
+        onPublish?.Invoke(@event, executeInParallel, ctx);
+    }
+
     public IDisposable Subscribe<TEvent>(Func<TEvent, IMediatorContext, CancellationToken, Task> action)
         where TEvent : IEvent => throw new NotImplementedException();
 

@@ -34,7 +34,7 @@ public class LocalEventExecutor(
         var tasks = handlers
             .Select(async handler =>
             {
-                var child = context.CreateChild(null);
+                var child = context.CreateChild(null, false);
                 child.MessageHandler = handler;
                 
                 await this
@@ -63,12 +63,23 @@ public class LocalEventExecutor(
         }
     }
 
+
+    public void PublishToBackground<TEvent>(
+        IMediatorContext context,
+        TEvent @event,
+        bool executeInParallel
+    ) where TEvent : IEvent
+    {
+        _ = this.Publish(context, @event, executeInParallel, CancellationToken.None);
+    }
+
     public IDisposable Subscribe<TEvent>(Func<TEvent, IMediatorContext, CancellationToken, Task> action) where TEvent : IEvent
     {
         var handler = new SubscriptionEventHandler<TEvent>(this.subscriptions);
         handler.OnHandle = action;
         return handler;
     }
+    
 
     public bool CanPublish<TEvent>(TEvent @event) where TEvent : IEvent => true;
     public bool CanPublish(Type eventType) => true;
@@ -85,7 +96,7 @@ public class LocalEventExecutor(
     {
         var handlerDelegate = new EventHandlerDelegate(() =>
         {
-            using (var handlerActivity = context.StartActivity("Handler"))
+            using (context.StartActivity("Handler"))
             {
                 logger.LogDebug(
                     "Executing Event Handler {HandlerType}",
@@ -101,7 +112,7 @@ public class LocalEventExecutor(
                 handlerDelegate, 
                 (next, middleware) => () =>
                 {
-                    using (var midActivity = context.StartActivity("Middleware"))
+                    using (context.StartActivity("Middleware"))
                     {
                         logger.LogDebug(
                             "Executing event middleware {MiddlewareType}",

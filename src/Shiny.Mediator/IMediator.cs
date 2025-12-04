@@ -48,7 +48,7 @@ public interface IMediator
     
     
     /// <summary>
-    /// 
+    /// Publish an event
     /// </summary>
     /// <param name="event"></param>
     /// <param name="executeInParallel"></param>
@@ -63,6 +63,19 @@ public interface IMediator
         Action<IMediatorContext>? configure = null
     ) where TEvent : IEvent;
     
+    
+    /// <summary>
+    /// Publish an event to the background - this will also start a fresh service scope
+    /// </summary>
+    /// <param name="event"></param>
+    /// <param name="executeInParallel"></param>
+    /// <param name="configure"></param>
+    /// <typeparam name="TEvent"></typeparam>
+    void PublishToBackground<TEvent>(
+        TEvent @event,
+        bool executeInParallel = true,
+        Action<IMediatorContext>? configure = null
+    ) where TEvent : IEvent;
     
     /// <summary>
     /// 

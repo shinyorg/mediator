@@ -37,7 +37,7 @@ public class MediatorImpl(
             if (result is IEvent @event)
             {
                 logger.LogDebug("Event Returned by Request - Publishing: {EventType}", @event.GetType().FullName);
-                var child = context.CreateChild(@event);
+                var child = context.CreateChild(@event, false);
                 await director
                     .GetEventExecutor(@event)
                     .Publish(child, @event, true, cancellationToken)
@@ -142,6 +142,29 @@ public class MediatorImpl(
         }
         return context;
     }
+
+    
+    public void PublishToBackground<TEvent>(
+        TEvent @event, 
+        bool executeInParallel = true, 
+        Action<IMediatorContext>? configure = null
+    ) where TEvent : IEvent
+    {
+        using var scope = services.CreateScope();
+        using var activity = MediatorActivitySource.Value.StartActivity()!;
+        
+        var context = new MediatorContext(scope, @event, activity, director);
+        configure?.Invoke(context);
+
+        director
+            .GetEventExecutor(@event)
+            .Publish(context, @event, executeInParallel, CancellationToken.None)
+            .ContinueWith(x =>
+            {
+
+            });
+    }
+    
 
 
     public IDisposable Subscribe<TEvent>(Func<TEvent, IMediatorContext, CancellationToken, Task> action) where TEvent : IEvent

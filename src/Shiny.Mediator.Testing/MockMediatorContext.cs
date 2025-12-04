@@ -6,57 +6,62 @@ namespace Shiny.Mediator.Testing;
 
 public class MockMediatorContext(object message) : IMediatorContext
 {
-    public Guid Id { get; } = Guid.NewGuid();
-    public IServiceScope ServiceScope { get; set; }
-    public Activity? Activity { get; set; }
-    public object Message => message;
-    public object? MessageHandler { get; set; }
+    public virtual Guid Id { get; } = Guid.NewGuid();
+    public virtual IServiceScope ServiceScope { get; set; }
+    public virtual Activity? Activity { get; set; }
+    public virtual object Message => message;
+    public virtual object? MessageHandler { get; set; }
 
     readonly Dictionary<string, object> settableHeaders = new();
-    public IReadOnlyDictionary<string, object> Headers => this.settableHeaders;
-    public void AddHeader(string key, object value) => this.settableHeaders.Add(key, value);
-    public void RemoveHeader(string key) => this.settableHeaders.Remove(key);
-    public void ClearHeaders() => this.settableHeaders.Clear();
+    public virtual IReadOnlyDictionary<string, object> Headers => this.settableHeaders;
+    public virtual void AddHeader(string key, object value) => this.settableHeaders.Add(key, value);
+    public virtual void RemoveHeader(string key) => this.settableHeaders.Remove(key);
+    public virtual void ClearHeaders() => this.settableHeaders.Clear();
 
-    public Exception? Exception { get; set; }
-    public IMediatorContext? Parent { get; }
-    public IReadOnlyList<IMediatorContext> ChildContexts { get; }
-    public DateTimeOffset CreatedAt { get; } = DateTimeOffset.UtcNow;
-    public bool BypassExceptionHandlingEnabled { get; set; }
-    public bool BypassMiddlewareEnabled { get; set; }
-    public IMediatorContext CreateChild(object? newMessage)
+    public virtual Exception? Exception { get; set; }
+    public virtual IMediatorContext? Parent { get; }
+    public virtual IReadOnlyList<IMediatorContext> ChildContexts { get; }
+    public virtual DateTimeOffset CreatedAt { get; } = DateTimeOffset.UtcNow;
+    public virtual bool BypassExceptionHandlingEnabled { get; set; }
+    public virtual bool BypassMiddlewareEnabled { get; set; }
+    public virtual IMediatorContext CreateChild(object? newMessage, bool newScope)
     {
-        throw new NotImplementedException();
+        return this;
     }
 
-    public Activity? StartActivity(string activityName) => null;
+    public virtual Activity? StartActivity(string activityName) => null;
 
-    public T? TryGetValue<T>(string key)
+    public virtual T? TryGetValue<T>(string key)
     {
-        throw new NotImplementedException();
+        return default;
     }
 
-    public void Rebuild(IServiceScope scope, Activity? activity)
+    public virtual void Rebuild(IServiceScope scope, Activity? activity)
     {
         this.Activity = activity;
         this.ServiceScope = scope;
     }
 
-    public Task<TResult> Request<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default, Action<IMediatorContext>? configure = null)
+    public virtual Task<TResult> Request<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default, Action<IMediatorContext>? configure = null)
     {
         throw new NotImplementedException();
     }
 
-    public Task Send<TCommand>(
+    public virtual Task Send<TCommand>(
         TCommand command, 
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
     ) where TCommand : ICommand => Task.CompletedTask;
 
-    public Task Publish<TEvent>(
+    public virtual Task Publish<TEvent>(
         TEvent @event,
         bool executeInParallel = true,
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
     ) where TEvent : IEvent => Task.CompletedTask;
+
+    public virtual void PublishToBackground<TEvent>(TEvent @event, bool executeInParallel = true, Action<IMediatorContext>? configure = null) where TEvent : IEvent
+    {
+        
+    }
 }

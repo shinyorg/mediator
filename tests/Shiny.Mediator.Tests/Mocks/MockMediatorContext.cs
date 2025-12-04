@@ -24,7 +24,7 @@ public class MockMediatorContext : IMediatorContext
     public DateTimeOffset CreatedAt { get; set; }
     public bool BypassExceptionHandlingEnabled { get; set; }
     public bool BypassMiddlewareEnabled { get; set; }
-    public IMediatorContext CreateChild(object? newMessage)
+    public IMediatorContext CreateChild(object? newMessage, bool newScope)
     {
         throw new NotImplementedException();
     }
@@ -72,6 +72,11 @@ public class MockMediatorContext : IMediatorContext
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
     ) where TEvent : IEvent
+    {
+        throw new NotImplementedException();
+    }
+
+    public void PublishToBackground<TEvent>(TEvent @event, bool executeInParallel = true, Action<IMediatorContext>? configure = null) where TEvent : IEvent
     {
         throw new NotImplementedException();
     }

@@ -90,8 +90,9 @@ public interface IMediatorContext
     /// Create a child context with data populated from this parent
     /// </summary>
     /// <param name="newMessage">If you're creating a context for a new message type (ie. Publishing an event from a handler - this would be used)</param>
+    /// <param name="newScope">Will create a new service scope from the current one if true</param>
     /// <returns></returns>
-    IMediatorContext CreateChild(object? newMessage);
+    IMediatorContext CreateChild(object? newMessage, bool newScope);
 
     /// <summary>
     /// Start an instrumentation activity
@@ -163,141 +164,18 @@ public interface IMediatorContext
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
     ) where TEvent : IEvent;
-}
-
-class MediatorContext(
-    IServiceScope scope, 
-    object message,
-    Activity? activity,
-    IMediatorDirector director
-) : IMediatorContext
-{
-    public Guid Id { get; } = Guid.NewGuid();
-    public IServiceScope ServiceScope { get; private set; } = scope;
-    public Activity? Activity { get; private set; } = activity;
-    public object Message => message;
-    public object? MessageHandler { get; set; }
-    public Exception? Exception { get; set; }
-    
-    Dictionary<string, object> store = new();
-    public IReadOnlyDictionary<string, object> Headers => this.store.ToDictionary();
-    public void AddHeader(string key, object value) => this.store.Add(key, value);
-    public void RemoveHeader(string key) => this.store.Remove(key);
-    public void ClearHeaders() => this.store.Clear();
-
-    public bool BypassExceptionHandlingEnabled { get; set; }
-    public bool BypassMiddlewareEnabled { get; set; }
-    
-    public DateTimeOffset CreatedAt { get; } = DateTimeOffset.UtcNow;
-    
-    public IMediatorContext? Parent { get; private init; }
-
-
-    readonly List<IMediatorContext> children = new();
-
-    public IReadOnlyList<IMediatorContext> ChildContexts
-    {
-        get
-        {
-            lock (this.children)
-                return this.children;
-        }
-    }
-
-    
-    public IMediatorContext CreateChild(object? newMessage)
-    {
-        lock (this.children)
-        {
-            var msg = newMessage ?? this.Message;
-            var act = this.StartActivity("child_mediator");
-            
-            var newContext = new MediatorContext(
-                ServiceScope, 
-                msg,
-                act,
-                director
-            )
-            {
-                Parent = this,
-                BypassExceptionHandlingEnabled = this.BypassExceptionHandlingEnabled,
-                BypassMiddlewareEnabled = this.BypassMiddlewareEnabled
-                // store = this.store.ToDictionary() // DO NOT pass headers down to child contexts - crashes cache
-            };
-            this.children.Add(newContext);
-            return newContext;
-        }
-    }
-    
-
-    public Activity? StartActivity(string activityName)
-    {
-        var childActivity = this.Activity?.Start();
-        
-        if (childActivity != null)
-        {
-            childActivity.SetTag("operation_id", this.Id);
-            foreach (var header in this.Headers)
-                childActivity.SetTag(header.Key, header.Value);
-        }
-        return childActivity;
-    }
     
     
-    public T? TryGetValue<T>(string key)
-    {
-        if (this.Headers.TryGetValue(key, out var value) && value is T t)
-            return t;
-
-        return default;
-    }
-
-    public void Rebuild(IServiceScope scope, Activity? activity)
-    {
-        this.ServiceScope = scope;
-        this.Activity = activity;
-    }
-
-
-    public Task<TResult> Request<TResult>(
-        IRequest<TResult> request,
-        CancellationToken cancellationToken = default,
-        Action<IMediatorContext>? configure = null
-    )
-    {
-        var newContext = this.CreateChild(request);
-        configure?.Invoke(newContext);
-        return director
-            .GetRequestExecutor(request)
-            .Request(newContext, request, cancellationToken);
-    }
-
-    
-    public Task Send<TCommand>(
-        TCommand command, 
-        CancellationToken cancellationToken = default, 
-        Action<IMediatorContext>? configure = null
-    ) where TCommand : ICommand
-    {
-        var newContext = this.CreateChild(command);
-        configure?.Invoke(newContext);
-        return director
-            .GetCommandExecutor(command)
-            .Send(newContext, command, cancellationToken);
-    }
-    
-
-    public Task Publish<TEvent>(
+    /// <summary>
+    /// Publish an event to the background - this will also start a fresh service scope
+    /// </summary>
+    /// <param name="event"></param>
+    /// <param name="executeInParallel"></param>
+    /// <param name="configure"></param>
+    /// <typeparam name="TEvent"></typeparam>
+    void PublishToBackground<TEvent>(
         TEvent @event, 
         bool executeInParallel = true,
-        CancellationToken cancellationToken = default, 
         Action<IMediatorContext>? configure = null
-    ) where TEvent : IEvent
-    {
-        var newContext = this.CreateChild(@event);
-        configure?.Invoke(newContext);
-        return director
-            .GetEventExecutor(@event)
-            .Publish(newContext, @event, executeInParallel, cancellationToken);
-    }
+    ) where TEvent : IEvent;
 }

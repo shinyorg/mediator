@@ -18,7 +18,20 @@ public interface IEventExecutor
         bool executeInParallel,
         CancellationToken cancellationToken
     ) where TEvent : IEvent;
-    
+
+
+    /// <summary>
+    /// Publish an event to the background - this will also start a fresh service scope
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="event"></param>
+    /// <param name="executeInParallel"></param>
+    /// <typeparam name="TEvent"></typeparam>
+    void PublishToBackground<TEvent>(
+        IMediatorContext context,
+        TEvent @event,
+        bool executeInParallel
+    ) where TEvent : IEvent;
     
     /// <summary>
     /// Subscribe to an event
