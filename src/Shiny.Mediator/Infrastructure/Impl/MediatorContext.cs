@@ -154,6 +154,6 @@ class MediatorContext(
         configure?.Invoke(newContext);
         director
             .GetEventExecutor(@event)
-            .PublishToBackground(newContext, @event, executeInParallel);
+            .PublishToBackground(newContext, @event, executeInParallel, _ => { });
     }
 }

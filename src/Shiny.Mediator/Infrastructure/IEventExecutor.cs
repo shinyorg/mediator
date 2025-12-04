@@ -26,11 +26,13 @@ public interface IEventExecutor
     /// <param name="context"></param>
     /// <param name="event"></param>
     /// <param name="executeInParallel"></param>
+    /// <param name="onError"></param>
     /// <typeparam name="TEvent"></typeparam>
     void PublishToBackground<TEvent>(
         IMediatorContext context,
         TEvent @event,
-        bool executeInParallel
+        bool executeInParallel,
+        Action<Exception> onError
     ) where TEvent : IEvent;
     
     /// <summary>

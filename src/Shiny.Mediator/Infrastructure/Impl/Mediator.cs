@@ -158,10 +158,9 @@ public class MediatorImpl(
 
         director
             .GetEventExecutor(@event)
-            .Publish(context, @event, executeInParallel, CancellationToken.None)
-            .ContinueWith(x =>
+            .PublishToBackground(context, @event, executeInParallel, ex =>
             {
-
+                _ = this.TryHandle(context, ex);
             });
     }
     
