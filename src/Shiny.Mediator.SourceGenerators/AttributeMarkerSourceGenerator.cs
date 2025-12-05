@@ -18,11 +18,68 @@ public class AttributeMarkerSourceGenerator : IIncrementalGenerator
                 predicate: static (s, _) => IsHandlerCandidate(s),
                 transform: static (ctx, _) => GetHandlerWithAttributes(ctx)
             )
-            .Where(static m => m is not null);
+            .Where(static m => m is not null)
+            .Collect();
 
-        // Generate source for each handler class
-        context.RegisterSourceOutput(handlerClasses, static (spc, handler) => 
-            GenerateAttributeMarker(spc, handler!));
+        // Generate source for each unique handler class (merging partial declarations)
+        context.RegisterSourceOutput(handlerClasses, static (spc, handlers) => 
+        {
+            // Group by fully qualified class name to merge partial class declarations
+            var groupedHandlers = handlers
+                .GroupBy(h => h!.ClassSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                .ToList();
+
+            foreach (var group in groupedHandlers)
+            {
+                var mergedHandler = MergePartialHandlers(group!);
+                if (mergedHandler != null)
+                    GenerateAttributeMarker(spc, mergedHandler);
+            }
+        });
+    }
+
+    static HandlerAttributeInfo? MergePartialHandlers(IEnumerable<HandlerAttributeInfo?> handlers)
+    {
+        var handlerList = handlers.Where(h => h != null).ToList();
+        if (handlerList.Count == 0)
+            return null;
+
+        var first = handlerList[0]!;
+        
+        // Merge all attributes from all partial declarations
+        var mergedAttributes = new Dictionary<string, List<AttributeData>>();
+        var isPartial = false;
+
+        foreach (var handler in handlerList)
+        {
+            if (handler!.IsPartial)
+                isPartial = true;
+
+            foreach (var kvp in handler.AttributesByMessageType)
+            {
+                if (!mergedAttributes.ContainsKey(kvp.Key))
+                {
+                    mergedAttributes[kvp.Key] = new List<AttributeData>();
+                }
+                
+                // Avoid adding duplicate attributes
+                foreach (var attr in kvp.Value)
+                {
+                    if (!mergedAttributes[kvp.Key].Any(existing => 
+                        SymbolEqualityComparer.Default.Equals(existing.AttributeClass, attr.AttributeClass)))
+                    {
+                        mergedAttributes[kvp.Key].Add(attr);
+                    }
+                }
+            }
+        }
+
+        return new HandlerAttributeInfo(
+            ClassSymbol: first.ClassSymbol,
+            ClassDeclaration: first.ClassDeclaration,
+            AttributesByMessageType: mergedAttributes,
+            IsPartial: isPartial
+        );
     }
 
     static bool IsHandlerCandidate(SyntaxNode node)
@@ -216,7 +273,7 @@ public class AttributeMarkerSourceGenerator : IIncrementalGenerator
         {
             sb.AppendLine("}");
         }
-
+        
         var fileName = $"{handler.ClassSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
             .Replace("global::", "")
             .Replace(".", "_")

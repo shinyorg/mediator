@@ -9,7 +9,7 @@ using Shiny.Mediator.Tests.SourceGeneration;
 using ThemeParksApi;
 using Xunit.Abstractions;
 
-namespace Shiny.Mediator.Tests.Http;
+namespace Shiny.Mediator.Tests.SourceGeneration;
 
 
 public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
@@ -40,8 +40,8 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
     [Fact]
     public Task ThemeParksApiGeneration()
     {
-        var content = File.ReadAllText("./Http/themeparksapi.yml");
-        var additionalFiles = new AdditionalText[] { new MockAdditionalText("./Http/themeparksapi.yml", content) };
+        var content = File.ReadAllText("./SourceGeneration/themeparksapi.yml");
+        var additionalFiles = new AdditionalText[] { new MockAdditionalText("./SourceGeneration/themeparksapi.yml", content) };
 
         var buildProps = new Dictionary<string, string>
         {

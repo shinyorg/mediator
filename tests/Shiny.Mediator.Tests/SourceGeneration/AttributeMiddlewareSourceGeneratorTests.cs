@@ -1,8 +1,70 @@
+using System.Reflection;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Shiny.Mediator.SourceGenerators;
+
 namespace Shiny.Mediator.Tests.SourceGeneration;
 
 
 public class AttributeMiddlewareSourceGeneratorTests
 {
+    [Fact]
+    public Task PartialClassWithMultipleDeclarations_GeneratesOnce()
+    {
+        var driver = BuildDriver(@"
+using System.Threading;
+using System.Threading.Tasks;
+using Shiny.Mediator;
+
+public record ConnectivityChanged(bool Connected) : IEvent;
+
+public interface IConnectivityEventHandler : IEventHandler<ConnectivityChanged>;
+
+public abstract partial class ViewModel
+{
+    // Empty partial - simulates primary constructor partial
+}
+
+public abstract partial class ViewModel : IConnectivityEventHandler
+{
+    [OfflineAvailable]
+    public Task Handle(ConnectivityChanged @event, IMediatorContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+}
+");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        // Should generate exactly one file for the merged partial class
+        result.GeneratedSources.Length.ShouldBe(1);
+        return Verify(result);
+    }
+
+    static GeneratorDriver BuildDriver(string sourceCode)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
+        
+        var references = new[]
+        {
+            MetadataReference.CreateFromFile(typeof(IMediator).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IEvent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(OfflineAvailableAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(Task).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(CancellationToken).Assembly.Location),
+            MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
+            MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
+        };
+
+        var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+        var compilation = CSharpCompilation.Create("TestAssembly", [syntaxTree], references, options);
+
+        var generator = new AttributeMarkerSourceGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+        return driver.RunGenerators(compilation);
+    }
+
     [Fact]
     public void SingleRequestHandlerWithSingleAttribute()
     {
@@ -201,4 +263,3 @@ public partial class CommandTestHandler : ICommandHandler<SingleCommand>
         return Task.CompletedTask;
     }
 }
-

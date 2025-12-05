@@ -51,13 +51,11 @@
 
     <ItemGroup>
         <None Remove="Http\*.yml"/>
-        <Content Include="Http\*.yml" CopyToOutputDirectory="Always"/>
-        <None Remove="SourceGeneration\serialization.json"/>
-        <Content Include="SourceGeneration\serialization.json">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
+        <Content Include="SourceGeneration\*.yml" CopyToOutputDirectory="Always"/>
+        <None Remove="SourceGeneration\*.json"/>
+        <Content Include="SourceGeneration\*.json" CopyToOutputDirectory="Always"/>
     </ItemGroup>
-    
+
     <ItemGroup>
         <MediatorHttp Include="OpenApiRemote"
                       Uri="https://api.themeparks.wiki/docs/v1.yaml"

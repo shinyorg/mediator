@@ -28,7 +28,7 @@ public partial class GetUsersRequestHandler(global::Shiny.Mediator.Http.HttpHand
     {
         var route = "/api/users";
 
-        var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Get, route);
+        var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Get, route);
 
         return this.HandleRequest<global::TestNamespace.GetUsersRequest, global::TestNamespace.UserListResult>(
             httpRequest,
@@ -67,7 +67,7 @@ public partial class CreateUserRequestHandler(global::Shiny.Mediator.Http.HttpHa
     {
         var route = "/api/users";
 
-        var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Post, route);
+        var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Post, route);
 
         if (request.Body != null)
         {
@@ -112,7 +112,7 @@ public partial class UpdateUserRequestHandler(global::Shiny.Mediator.Http.HttpHa
     {
         var route = $"/api/users/{request.UserId}";
 
-        var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Put, route);
+        var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Put, route);
 
         if (request.Body != null)
         {
@@ -157,7 +157,7 @@ public partial class DeleteUserRequestHandler(global::Shiny.Mediator.Http.HttpHa
     {
         var route = $"/api/users/{request.UserId}";
 
-        var httpRequest = new global::System.Net.Http.HttpRequestMessage(global::System.Net.Http.HttpMethod.Delete, route);
+        var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Delete, route);
 
         return this.HandleRequest<global::TestNamespace.DeleteUserRequest, global::TestNamespace.DeleteResult>(
             httpRequest,
@@ -186,7 +186,7 @@ namespace TestNamespace;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public static class __ShinyMediatorStrongTypeHttpClient
 {
-    public static global.Shiny.Mediator.ShinyMediatorBuilder AddStrongTypedHttpClient(this global::Shiny.Mediator.ShinyMediatorBuilder mediatorBuilder)
+    public static global::Shiny.Mediator.ShinyMediatorBuilder AddStrongTypedHttpClient(this global::Shiny.Mediator.ShinyMediatorBuilder mediatorBuilder)
     {
         mediatorBuilder.Services.AddStrongTypedHttpClient();
         return mediatorBuilder;

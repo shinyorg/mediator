@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Shiny.Mediator.SourceGenerators;
 
-namespace Shiny.Mediator.Tests.Http;
+namespace Shiny.Mediator.Tests.SourceGeneration;
 
 
 public class HttpClientSourceGeneratorTests
