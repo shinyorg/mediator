@@ -37,11 +37,14 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
         });
     }
     
-    [Fact]
-    public Task ThemeParksApiGeneration()
+    
+    [Theory]
+    [InlineData("./SourceGeneration/themeparksapi.yml")]
+    [InlineData("./SourceGeneration/fleet.json")]
+    public Task TestApis_Generation(string filePath)
     {
-        var content = File.ReadAllText("./SourceGeneration/themeparksapi.yml");
-        var additionalFiles = new AdditionalText[] { new MockAdditionalText("./SourceGeneration/themeparksapi.yml", content) };
+        var content = File.ReadAllText(filePath);
+        var additionalFiles = new AdditionalText[] { new MockAdditionalText(filePath, content) };
 
         var buildProps = new Dictionary<string, string>
         {
@@ -56,7 +59,7 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
         };
 
         var result = RunGenerator(additionalFiles, buildProps);
-        return Verify(result);
+        return Verify(result).UseParameters(filePath);
     }
     
     [Fact]
