@@ -136,7 +136,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         {
             Namespace = GetProperty(options, "Namespace", defaultNamespace)!,
             ContractPrefix = GetProperty(options, "ContractPrefix", null),
-            ContractPostfix = GetProperty(options, "ContractPostfix", null),
+            ContractPostfix = GetProperty(options, "ContractPostfix", "HttpRequest"),
             GenerateModelsOnly = GetProperty(options, "GenerateModelsOnly", null)?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
             UseInternalClasses = GetProperty(options, "UseInternalClasses", null)?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? Constants.DefaultOpenApiRegistrationUseInternal,
             GenerateJsonConverters = GetProperty(options, "GenerateJsonConverters", null)?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? Constants.DefaultOpenApiGenerateJsonConverters
