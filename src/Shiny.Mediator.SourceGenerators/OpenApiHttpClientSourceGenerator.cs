@@ -258,32 +258,31 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                 return handlers;
             }
 
-            // Generate models from components
-            GenerateComponents(context, document, config, compilation);
+            // Create a single model generator to track generated types across components and contracts
+            var modelGenerator = new OpenApiModelGenerator(config, context, compilation);
+            
+            // Generate models from components FIRST
+            GenerateComponents(document, modelGenerator);
 
             // Generate handlers from paths (unless GenerateModelsOnly is true)
             if (!config.GenerateModelsOnly)
-                handlers = GenerateHandlers(context, document, config, compilation);
+                handlers = GenerateHandlers(context, document, config, modelGenerator);
         }
 
         return handlers;
     }
 
     static void GenerateComponents(
-        SourceProductionContext context,
         OpenApiDocument document,
-        MediatorHttpItemConfig config,
-        Compilation compilation
+        OpenApiModelGenerator modelGenerator
     )
     {
         if (document.Components?.Schemas == null)
             return;
-
-        var generator = new OpenApiModelGenerator(config, context, compilation);
         
         foreach (var schema in document.Components.Schemas)
         {
-            generator.GenerateModel(schema.Key, schema.Value);
+            modelGenerator.GenerateModel(schema.Key, schema.Value);
         }
     }
 
@@ -292,7 +291,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         SourceProductionContext context,
         OpenApiDocument document,
         MediatorHttpItemConfig config,
-        Compilation compilation
+        OpenApiModelGenerator modelGenerator
     )
     {
         var handlers = new List<HandlerRegistrationInfo>();
@@ -312,7 +311,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                         operation.Key.ToString(),
                         operation.Value,
                         config,
-                        compilation
+                        modelGenerator
                     );
                     handlers.Add(handler);
                 }
@@ -329,7 +328,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         string operationType,
         OpenApiOperation operation,
         MediatorHttpItemConfig config,
-        Compilation compilation
+        OpenApiModelGenerator modelGenerator
     )
     {
         var opId = operation.OperationId?.Pascalize() ?? $"{operationType.Pascalize()}{String.Concat(path.Split('/').Where(s => !String.IsNullOrWhiteSpace(s)).Select(s => s.Pascalize()))}";
@@ -388,7 +387,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         }
 
         // Generate contract class
-        GenerateContractClass(context, contractName, responseType, operation.Summary, properties, config, compilation);
+        GenerateContractClass(context, contractName, responseType, operation.Summary, properties, config, modelGenerator);
 
         // Determine if this is a stream request (for now, assume non-stream)
         var isStreamRequest = false;
@@ -430,7 +429,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         string? comment,
         List<HttpPropertyInfo> properties,
         MediatorHttpItemConfig config,
-        Compilation compilation
+        OpenApiModelGenerator modelGenerator
     )
     {
         var accessor = config.UseInternalClasses ? "internal" : "public";
@@ -479,6 +478,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         {
             try
             {
+                var compilation = modelGenerator.Compilation;
                 var parseOptions = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions ?? CSharpParseOptions.Default;
                 var syntaxTree = CSharpSyntaxTree.ParseText(
                     contractSource, 
@@ -486,6 +486,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                     cancellationToken: context.CancellationToken
                 );
                 compilation = compilation.AddSyntaxTrees(syntaxTree);
+                modelGenerator.UpdateCompilation(compilation);
                 
                 var fullyQualifiedTypeName = $"{config.Namespace}.{className}";
                 var typeSymbol = compilation.GetTypeByMetadataName(fullyQualifiedTypeName);

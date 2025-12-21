@@ -14,6 +14,12 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
     readonly string accessor = config.UseInternalClasses ? "internal" : "public";
     readonly HashSet<string> generatedTypes = new();
 
+    public MediatorHttpItemConfig Config => config;
+    public SourceProductionContext Context => context;
+    public Compilation Compilation { get; private set; } = compilation;
+
+    public void UpdateCompilation(Compilation newCompilation) => Compilation = newCompilation;
+
 
     public void GenerateModel(string name, IOpenApiSchema schema)
     {
@@ -135,15 +141,21 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
                     var isObject = propSchema.Type?.HasFlag(JsonSchemaType.Object) == true;
                     if (isObject && propSchema.Properties != null && String.IsNullOrEmpty(propSchema.Title))
                     {
-                        // Generate nested type
+                        // Generate nested type (only if not already generated)
                         typeName = className + propertyName;
-                        GenerateClass(typeName, propSchema);
+                        if (generatedTypes.Add(typeName))
+                        {
+                            GenerateClass(typeName, propSchema);
+                        }
                     }
                     else if (propSchema.Enum?.Count > 0 && String.IsNullOrEmpty(propSchema.Title))
                     {
-                        // Generate nested enum
+                        // Generate nested enum (only if not already generated)
                         typeName = className + propertyName;
-                        GenerateEnum(typeName, propSchema);
+                        if (generatedTypes.Add(typeName))
+                        {
+                            GenerateEnum(typeName, propSchema);
+                        }
                     }
                     else
                     {
@@ -175,16 +187,16 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
             try
             {
                 // Parse the generated source code and add it to compilation so we can get the type symbol
-                var parseOptions = compilation.SyntaxTrees.FirstOrDefault()?.Options as Microsoft.CodeAnalysis.CSharp.CSharpParseOptions ?? Microsoft.CodeAnalysis.CSharp.CSharpParseOptions.Default;
+                var parseOptions = Compilation.SyntaxTrees.FirstOrDefault()?.Options as Microsoft.CodeAnalysis.CSharp.CSharpParseOptions ?? Microsoft.CodeAnalysis.CSharp.CSharpParseOptions.Default;
                 var syntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(
                     sb.ToString(), 
                     parseOptions,
                     cancellationToken: context.CancellationToken
                 );
-                var updatedCompilation = compilation.AddSyntaxTrees(syntaxTree);
+                UpdateCompilation(Compilation.AddSyntaxTrees(syntaxTree));
                 
                 var fullyQualifiedTypeName = $"{config.Namespace}.{className}";
-                var typeSymbol = updatedCompilation.GetTypeByMetadataName(fullyQualifiedTypeName);
+                var typeSymbol = Compilation.GetTypeByMetadataName(fullyQualifiedTypeName);
                 
                 if (typeSymbol != null)
                 {
