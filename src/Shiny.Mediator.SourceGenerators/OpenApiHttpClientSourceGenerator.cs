@@ -259,12 +259,11 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             }
 
             // Generate models from components
-            var generatedTypes = new HashSet<string>();
-            GenerateComponents(context, document, config, compilation, generatedTypes);
+            GenerateComponents(context, document, config, compilation);
 
             // Generate handlers from paths (unless GenerateModelsOnly is true)
             if (!config.GenerateModelsOnly)
-                handlers = GenerateHandlers(context, document, config, compilation, generatedTypes);
+                handlers = GenerateHandlers(context, document, config, compilation);
         }
 
         return handlers;
@@ -274,14 +273,13 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         SourceProductionContext context,
         OpenApiDocument document,
         MediatorHttpItemConfig config,
-        Compilation compilation,
-        HashSet<string> generatedTypes
+        Compilation compilation
     )
     {
         if (document.Components?.Schemas == null)
             return;
 
-        var generator = new OpenApiModelGenerator(config, context, compilation, generatedTypes);
+        var generator = new OpenApiModelGenerator(config, context, compilation);
         
         foreach (var schema in document.Components.Schemas)
         {
@@ -294,8 +292,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         SourceProductionContext context,
         OpenApiDocument document,
         MediatorHttpItemConfig config,
-        Compilation compilation,
-        HashSet<string> generatedTypes
+        Compilation compilation
     )
     {
         var handlers = new List<HandlerRegistrationInfo>();
@@ -315,8 +312,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                         operation.Key.ToString(),
                         operation.Value,
                         config,
-                        compilation,
-                        generatedTypes
+                        compilation
                     );
                     handlers.Add(handler);
                 }
@@ -333,8 +329,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         string operationType,
         OpenApiOperation operation,
         MediatorHttpItemConfig config,
-        Compilation compilation,
-        HashSet<string> generatedTypes
+        Compilation compilation
     )
     {
         var opId = operation.OperationId?.Pascalize() ?? $"{operationType.Pascalize()}{String.Concat(path.Split('/').Where(s => !String.IsNullOrWhiteSpace(s)).Select(s => s.Pascalize()))}";
@@ -393,7 +388,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         }
 
         // Generate contract class
-        GenerateContractClass(context, contractName, responseType, operation.Summary, properties, config, compilation, generatedTypes);
+        GenerateContractClass(context, contractName, responseType, operation.Summary, properties, config, compilation);
 
         // Determine if this is a stream request (for now, assume non-stream)
         var isStreamRequest = false;
@@ -435,14 +430,9 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         string? comment,
         List<HttpPropertyInfo> properties,
         MediatorHttpItemConfig config,
-        Compilation compilation,
-        HashSet<string> generatedTypes
+        Compilation compilation
     )
     {
-        // Skip if already generated (e.g., a schema with the same name exists)
-        if (!generatedTypes.Add(className))
-            return;
-            
         var accessor = config.UseInternalClasses ? "internal" : "public";
         
         var sb = new StringBuilder();
