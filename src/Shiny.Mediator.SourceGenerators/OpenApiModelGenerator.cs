@@ -171,7 +171,13 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
                     {
                         var isRequired = schema.Required?.Contains(property.Key) ?? false;
                         var typeIncludesNull = propSchema.Type?.HasFlag(JsonSchemaType.Null) ?? false;
-                        var isNullable = !isRequired || typeIncludesNull;
+                        var isValueType = IsValueType(typeName);
+                        
+                        // Value types are only nullable if schema explicitly includes null
+                        // Reference types are nullable if not required OR schema includes null
+                        var isNullable = isValueType 
+                            ? typeIncludesNull 
+                            : (!isRequired || typeIncludesNull);
                         var nullableSuffix = isNullable ? "?" : String.Empty;
                         
                         sb.AppendLine($"    [global::System.Text.Json.Serialization.JsonPropertyName(\"{property.Key}\")]");
@@ -312,5 +318,14 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         var sanitizedNamespace = config.Namespace.Replace("<", "_").Replace(">", "_");
         return $"{sanitizedNamespace}.{typeName}.g.cs";
     }
+
+    static bool IsValueType(string typeName)
+        => typeName is "bool" or "int" or "long" or "float" or "double" or "decimal"
+            || typeName.StartsWith("global::System.Guid")
+            || typeName.StartsWith("global::System.DateTime")
+            || typeName.StartsWith("global::System.DateTimeOffset")
+            || typeName.StartsWith("global::System.DateOnly")
+            || typeName.StartsWith("global::System.TimeOnly")
+            || typeName.StartsWith("global::System.TimeSpan");
 }
 

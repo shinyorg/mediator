@@ -124,7 +124,7 @@ namespace TestApi;
 public partial class LiveQueueStandby
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("waitTime")]
-    public double? WaitTime { get; set; }
+    public double WaitTime { get; set; }
 
 }
 
@@ -371,10 +371,10 @@ namespace TestApi;
 public partial class EntityDataLocation
 {
     [global::System.Text.Json.Serialization.JsonPropertyName("latitude")]
-    public double? Latitude { get; set; }
+    public double Latitude { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("longitude")]
-    public double? Longitude { get; set; }
+    public double Longitude { get; set; }
 
 }
 
@@ -626,7 +626,7 @@ public partial class SchedulePriceObject
     public global::TestApi.PriceData? Price { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("available")]
-    public bool? Available { get; set; }
+    public bool Available { get; set; }
 
 }
 

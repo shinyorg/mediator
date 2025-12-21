@@ -291,7 +291,7 @@ public partial class ValidateResult
     public global::System.Collections.Generic.Dictionary<string, global::System.Collections.Generic.List<string>> Errors { get; set; }
 
     [global::System.Text.Json.Serialization.JsonPropertyName("isValid")]
-    public bool? IsValid { get; set; }
+    public bool IsValid { get; set; }
 
 }
 
