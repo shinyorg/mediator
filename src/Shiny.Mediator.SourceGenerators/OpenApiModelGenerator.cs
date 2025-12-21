@@ -137,9 +137,14 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
                     var propSchema = property.Value;
                     string? typeName;
 
+                    // Check if this is a reference to a component schema first
+                    if (propSchema is OpenApiSchemaReference)
+                    {
+                        // Use the referenced type name directly
+                        typeName = GetSchemaType(propSchema);
+                    }
                     // Check if this is a nested object (no title means it's inline)
-                    var isObject = propSchema.Type?.HasFlag(JsonSchemaType.Object) == true;
-                    if (isObject && propSchema.Properties != null && String.IsNullOrEmpty(propSchema.Title))
+                    else if (propSchema.Type?.HasFlag(JsonSchemaType.Object) == true && propSchema.Properties != null && String.IsNullOrEmpty(propSchema.Title))
                     {
                         // Generate nested type (only if not already generated)
                         typeName = className + propertyName;
