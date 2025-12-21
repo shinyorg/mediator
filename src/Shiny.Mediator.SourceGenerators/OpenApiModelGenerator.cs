@@ -290,7 +290,11 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
 
     static string GetStringType(IOpenApiSchema schema)
     {
+        // Handle TimeSpan patterns (with or without optional negative sign)
         if (schema.Pattern?.Equals("^-(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$") ?? false)
+            return "global::System.TimeSpan";
+        
+        if (schema.Pattern?.Equals("^-?(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$") ?? false)
             return "global::System.TimeSpan";
 
         return schema.Format switch
