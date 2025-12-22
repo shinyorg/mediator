@@ -354,6 +354,9 @@ public partial class TagData
     [global::System.Text.Json.Serialization.JsonPropertyName("id")]
     public string? Id { get; set; }
 
+    [global::System.Text.Json.Serialization.JsonPropertyName("value")]
+    public string? Value { get; set; }
+
 }
 
     },

@@ -291,6 +291,24 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         {
             type = GetSchemaType(schema.AllOf[0]);
         }
+        else if (schema.OneOf is { Count: > 0 })
+        {
+            // Filter out null types and get the first non-null schema
+            var nonNullSchema = schema.OneOf
+                .Where(s => s is OpenApiSchemaReference || (s.Type?.HasFlag(JsonSchemaType.Null) != true))
+                .FirstOrDefault();
+            if (nonNullSchema != null)
+                type = GetSchemaType(nonNullSchema);
+        }
+        else if (schema.AnyOf is { Count: > 0 })
+        {
+            // Filter out null types and get the first non-null schema
+            var nonNullSchema = schema.AnyOf
+                .Where(s => s is OpenApiSchemaReference || (s.Type?.HasFlag(JsonSchemaType.Null) != true))
+                .FirstOrDefault();
+            if (nonNullSchema != null)
+                type = GetSchemaType(nonNullSchema);
+        }
 
         return type;
     }
