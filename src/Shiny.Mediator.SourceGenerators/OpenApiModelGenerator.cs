@@ -237,13 +237,16 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
             
             type = $"global::{config.Namespace}.{typeName}";
         }
+        // Prioritize format over type - when format indicates a numeric type, use it
+        // This handles cases like "type": ["integer", "string"] with "format": "int32"
+        // Check this BEFORE schema.Type check since Type might be null for multi-type schemas
+        else if (IsNumericFormat(schema.Format))
+        {
+            type = GetNumberType(schema.Format);
+        }
         else if (schema.Type != null)
         {
-            if (schema.Type.Value.HasFlag(JsonSchemaType.String))
-            {
-                type = GetStringType(schema);
-            }
-            else if (schema.Type.Value.HasFlag(JsonSchemaType.Integer))
+            if (schema.Type.Value.HasFlag(JsonSchemaType.Integer))
             {
                 type = GetNumberType(schema.Format);
             }
@@ -260,6 +263,10 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
                 var listType = GetSchemaType(schema.Items);
                 if (listType != null)
                     type = $"global::System.Collections.Generic.List<{listType}>";
+            }
+            else if (schema.Type.Value.HasFlag(JsonSchemaType.String))
+            {
+                type = GetStringType(schema);
             }
             else if (schema.Type.Value.HasFlag(JsonSchemaType.Object))
             {
@@ -287,6 +294,9 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
 
         return type;
     }
+    
+    static bool IsNumericFormat(string? format)
+        => format is "int32" or "int64" or "float" or "double";
 
     static string GetStringType(IOpenApiSchema schema)
     {

@@ -558,7 +558,15 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             var refId = schemaRef.Reference.ReferenceV3?.Split('/').LastOrDefault();
             schemaType = $"global::{config.Namespace}.{refId}";
         }
-        else if (schema.Type!.Value.HasFlag(JsonSchemaType.Object))
+        // Prioritize format over type - when format indicates a numeric type, use it
+        // This handles cases like "type": ["integer", "string"] with "format": "int32"
+        else if (IsNumericFormat(schema.Format))
+        {
+            schemaType = schema.Format == "int64" ? "long" : 
+                         schema.Format == "float" ? "float" : 
+                         schema.Format == "double" ? "double" : "int";
+        }
+        else if (schema.Type?.HasFlag(JsonSchemaType.Object) == true)
         {
             if (schema.AllOf is { Count: > 0 })
             {
@@ -568,62 +576,86 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             }
             else if (schema.OneOf is { Count: > 0 })
             {
-                var first = schema.OneOf.OfType<OpenApiSchema>().FirstOrDefault();
-                if (first != null)
-                    schemaType = GetSchemaType(first, config);
+                // Filter out null types and get the first non-null schema
+                var nonNullSchema = schema.OneOf
+                    .Where(s => s is OpenApiSchemaReference || (s.Type?.HasFlag(JsonSchemaType.Null) != true))
+                    .FirstOrDefault();
+                if (nonNullSchema != null)
+                    schemaType = GetSchemaType(nonNullSchema, config);
             }
             else if (schema.AnyOf is { Count: > 0 })
             {
-                var first = schema.AnyOf.OfType<OpenApiSchema>().FirstOrDefault();
-                if (first != null)
-                    schemaType = GetSchemaType(first, config);
+                // Filter out null types and get the first non-null schema
+                var nonNullSchema = schema.AnyOf
+                    .Where(s => s is OpenApiSchemaReference || (s.Type?.HasFlag(JsonSchemaType.Null) != true))
+                    .FirstOrDefault();
+                if (nonNullSchema != null)
+                    schemaType = GetSchemaType(nonNullSchema, config);
             }
-            // Try to find this schema in the components/schemas by object reference or properties match
-            // else if (document.Components?.Schemas != null)
-            // {
-            //     foreach (var componentSchema in document.Components.Schemas)
-            //     {
-            //         if (componentSchema.Value != null)
-            //         {
-            //             // Check if it's the same object reference
-            //             if (ReferenceEquals(componentSchema.Value, schema))
-            //             {
-            //                 schemaType = $"global::{config.Namespace}.{componentSchema.Key}";
-            //             }
-            //
-            //             // Check if schemas match by comparing key properties
-            //             // This helps when OpenAPI library creates multiple instances for the same schema
-            //             else if (SchemasMatch(componentSchema.Value, schema))
-            //             {
-            //                 schemaType = $"global::{config.Namespace}.{componentSchema.Key}";
-            //             }
-            //         }
-            //     }
-            // }
+            else if (schema.AdditionalProperties != null)
+            {
+                // Dictionary type - object with additionalProperties
+                var valueType = GetSchemaType(schema.AdditionalProperties, config);
+                schemaType = $"global::System.Collections.Generic.Dictionary<string, {valueType}>";
+            }
+            else
+            {
+                // Inline object without a reference - fall back to object
+                schemaType = "object";
+            }
         }
-        else if (schema.Type.Value.HasFlag(JsonSchemaType.String))
-            schemaType = GetStringSchemaType(schema);
-
-        else if (schema.Type.Value.HasFlag(JsonSchemaType.Integer))
+        // Handle oneOf/anyOf at top level (without explicit object type)
+        else if (schema.OneOf is { Count: > 0 })
+        {
+            // Filter out null types and get the first non-null schema
+            var nonNullSchema = schema.OneOf
+                .Where(s => s is OpenApiSchemaReference || (s.Type?.HasFlag(JsonSchemaType.Null) != true))
+                .FirstOrDefault();
+            if (nonNullSchema != null)
+                schemaType = GetSchemaType(nonNullSchema, config);
+        }
+        else if (schema.AnyOf is { Count: > 0 })
+        {
+            // Filter out null types and get the first non-null schema
+            var nonNullSchema = schema.AnyOf
+                .Where(s => s is OpenApiSchemaReference || (s.Type?.HasFlag(JsonSchemaType.Null) != true))
+                .FirstOrDefault();
+            if (nonNullSchema != null)
+                schemaType = GetSchemaType(nonNullSchema, config);
+        }
+        else if (schema.AllOf is { Count: > 0 })
+        {
+            var first = schema.AllOf.OfType<OpenApiSchema>().FirstOrDefault();
+            if (first != null)
+                schemaType = GetSchemaType(first, config);
+        }
+        else if (schema.Type?.HasFlag(JsonSchemaType.Integer) == true)
             schemaType = schema.Format == "int64" ? "long" : "int";
 
-        else if (schema.Type.Value.HasFlag(JsonSchemaType.Number))
+        else if (schema.Type?.HasFlag(JsonSchemaType.Number) == true)
             schemaType = schema.Format == "float" ? "float" : "double";
 
-        else if (schema.Type.Value.HasFlag(JsonSchemaType.Boolean))
+        else if (schema.Type?.HasFlag(JsonSchemaType.Boolean) == true)
             schemaType =  "bool";
 
-        else if (schema.Type.Value.HasFlag(JsonSchemaType.Array))
+        else if (schema.Type?.HasFlag(JsonSchemaType.Array) == true)
         {
             if (schema.Items != null)
                 schemaType = $"global::System.Collections.Generic.List<{GetSchemaType(schema.Items, config)}>";
         }
 
+        else if (schema.Type?.HasFlag(JsonSchemaType.String) == true)
+            schemaType = GetStringSchemaType(schema);
+        
+        // Fallback for unknown or null types
         if (String.IsNullOrEmpty(schemaType))
-            throw new InvalidOperationException("Unable to determine schema type");
+            schemaType = "object";
         
         return schemaType!;
     }
+    
+    static bool IsNumericFormat(string? format)
+        => format is "int32" or "int64" or "float" or "double";
     
     static string GetStringSchemaType(IOpenApiSchema schema) => schema.Format switch
     {
