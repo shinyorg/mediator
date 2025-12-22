@@ -14,6 +14,12 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
     readonly string accessor = config.UseInternalClasses ? "internal" : "public";
     readonly HashSet<string> generatedTypes = new();
 
+    public MediatorHttpItemConfig Config => config;
+    public SourceProductionContext Context => context;
+    public Compilation Compilation { get; private set; } = compilation;
+
+    public void UpdateCompilation(Compilation newCompilation) => Compilation = newCompilation;
+
 
     public void GenerateModel(string name, IOpenApiSchema schema)
     {
@@ -131,19 +137,30 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
                     var propSchema = property.Value;
                     string? typeName;
 
-                    // Check if this is a nested object (no title means it's inline)
-                    var isObject = propSchema.Type?.HasFlag(JsonSchemaType.Object) == true;
-                    if (isObject && propSchema.Properties != null && String.IsNullOrEmpty(propSchema.Title))
+                    // Check if this is a reference to a component schema first
+                    if (propSchema is OpenApiSchemaReference)
                     {
-                        // Generate nested type
+                        // Use the referenced type name directly
+                        typeName = GetSchemaType(propSchema);
+                    }
+                    // Check if this is a nested object (no title means it's inline)
+                    else if (propSchema.Type?.HasFlag(JsonSchemaType.Object) == true && propSchema.Properties != null && String.IsNullOrEmpty(propSchema.Title))
+                    {
+                        // Generate nested type (only if not already generated)
                         typeName = className + propertyName;
-                        GenerateClass(typeName, propSchema);
+                        if (generatedTypes.Add(typeName))
+                        {
+                            GenerateClass(typeName, propSchema);
+                        }
                     }
                     else if (propSchema.Enum?.Count > 0 && String.IsNullOrEmpty(propSchema.Title))
                     {
-                        // Generate nested enum
+                        // Generate nested enum (only if not already generated)
                         typeName = className + propertyName;
-                        GenerateEnum(typeName, propSchema);
+                        if (generatedTypes.Add(typeName))
+                        {
+                            GenerateEnum(typeName, propSchema);
+                        }
                     }
                     else
                     {
@@ -154,7 +171,13 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
                     {
                         var isRequired = schema.Required?.Contains(property.Key) ?? false;
                         var typeIncludesNull = propSchema.Type?.HasFlag(JsonSchemaType.Null) ?? false;
-                        var isNullable = !isRequired || typeIncludesNull;
+                        var isValueType = IsValueType(typeName);
+                        
+                        // Value types are only nullable if schema explicitly includes null
+                        // Reference types are nullable if not required OR schema includes null
+                        var isNullable = isValueType 
+                            ? typeIncludesNull 
+                            : (!isRequired || typeIncludesNull);
                         var nullableSuffix = isNullable ? "?" : String.Empty;
                         
                         sb.AppendLine($"    [global::System.Text.Json.Serialization.JsonPropertyName(\"{property.Key}\")]");
@@ -175,16 +198,16 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
             try
             {
                 // Parse the generated source code and add it to compilation so we can get the type symbol
-                var parseOptions = compilation.SyntaxTrees.FirstOrDefault()?.Options as Microsoft.CodeAnalysis.CSharp.CSharpParseOptions ?? Microsoft.CodeAnalysis.CSharp.CSharpParseOptions.Default;
+                var parseOptions = Compilation.SyntaxTrees.FirstOrDefault()?.Options as Microsoft.CodeAnalysis.CSharp.CSharpParseOptions ?? Microsoft.CodeAnalysis.CSharp.CSharpParseOptions.Default;
                 var syntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(
                     sb.ToString(), 
                     parseOptions,
                     cancellationToken: context.CancellationToken
                 );
-                var updatedCompilation = compilation.AddSyntaxTrees(syntaxTree);
+                UpdateCompilation(Compilation.AddSyntaxTrees(syntaxTree));
                 
                 var fullyQualifiedTypeName = $"{config.Namespace}.{className}";
-                var typeSymbol = updatedCompilation.GetTypeByMetadataName(fullyQualifiedTypeName);
+                var typeSymbol = Compilation.GetTypeByMetadataName(fullyQualifiedTypeName);
                 
                 if (typeSymbol != null)
                 {
@@ -214,13 +237,16 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
             
             type = $"global::{config.Namespace}.{typeName}";
         }
+        // Prioritize format over type - when format indicates a numeric type, use it
+        // This handles cases like "type": ["integer", "string"] with "format": "int32"
+        // Check this BEFORE schema.Type check since Type might be null for multi-type schemas
+        else if (IsNumericFormat(schema.Format))
+        {
+            type = GetNumberType(schema.Format);
+        }
         else if (schema.Type != null)
         {
-            if (schema.Type.Value.HasFlag(JsonSchemaType.String))
-            {
-                type = GetStringType(schema);
-            }
-            else if (schema.Type.Value.HasFlag(JsonSchemaType.Integer))
+            if (schema.Type.Value.HasFlag(JsonSchemaType.Integer))
             {
                 type = GetNumberType(schema.Format);
             }
@@ -237,6 +263,10 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
                 var listType = GetSchemaType(schema.Items);
                 if (listType != null)
                     type = $"global::System.Collections.Generic.List<{listType}>";
+            }
+            else if (schema.Type.Value.HasFlag(JsonSchemaType.String))
+            {
+                type = GetStringType(schema);
             }
             else if (schema.Type.Value.HasFlag(JsonSchemaType.Object))
             {
@@ -261,13 +291,38 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         {
             type = GetSchemaType(schema.AllOf[0]);
         }
+        else if (schema.OneOf is { Count: > 0 })
+        {
+            // Filter out null types and get the first non-null schema
+            var nonNullSchema = schema.OneOf
+                .Where(s => s is OpenApiSchemaReference || (s.Type?.HasFlag(JsonSchemaType.Null) != true))
+                .FirstOrDefault();
+            if (nonNullSchema != null)
+                type = GetSchemaType(nonNullSchema);
+        }
+        else if (schema.AnyOf is { Count: > 0 })
+        {
+            // Filter out null types and get the first non-null schema
+            var nonNullSchema = schema.AnyOf
+                .Where(s => s is OpenApiSchemaReference || (s.Type?.HasFlag(JsonSchemaType.Null) != true))
+                .FirstOrDefault();
+            if (nonNullSchema != null)
+                type = GetSchemaType(nonNullSchema);
+        }
 
         return type;
     }
+    
+    static bool IsNumericFormat(string? format)
+        => format is "int32" or "int64" or "float" or "double";
 
     static string GetStringType(IOpenApiSchema schema)
     {
+        // Handle TimeSpan patterns (with or without optional negative sign)
         if (schema.Pattern?.Equals("^-(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$") ?? false)
+            return "global::System.TimeSpan";
+        
+        if (schema.Pattern?.Equals("^-?(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$") ?? false)
             return "global::System.TimeSpan";
 
         return schema.Format switch
@@ -295,5 +350,14 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         var sanitizedNamespace = config.Namespace.Replace("<", "_").Replace(">", "_");
         return $"{sanitizedNamespace}.{typeName}.g.cs";
     }
+
+    static bool IsValueType(string typeName)
+        => typeName is "bool" or "int" or "long" or "float" or "double" or "decimal"
+            || typeName.StartsWith("global::System.Guid")
+            || typeName.StartsWith("global::System.DateTime")
+            || typeName.StartsWith("global::System.DateTimeOffset")
+            || typeName.StartsWith("global::System.DateOnly")
+            || typeName.StartsWith("global::System.TimeOnly")
+            || typeName.StartsWith("global::System.TimeSpan");
 }
 
