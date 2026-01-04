@@ -379,6 +379,7 @@ public class MediatorEndpointSourceGenerator : IIncrementalGenerator
         sb.AppendLine("// </auto-generated>");
         sb.AppendLine("#nullable enable");
         sb.AppendLine();
+        sb.AppendLine("using Microsoft.AspNetCore.Builder;");
         sb.AppendLine("using Shiny.Mediator;");
         sb.AppendLine();
         sb.AppendLine($"namespace {nameSpace};");
