@@ -94,6 +94,18 @@ public static class MediatorExtensions
     //     return await tcs.Task.ConfigureAwait(false);
     // }
 
+    /// <summary>
+    /// This method unwraps the mediator context from an async enumerable result - useful for outgoing aspnet endpoints
+    /// </summary>
+    /// <param name="source"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static async IAsyncEnumerable<T> UnwrapMediatorAsyncEnumerable<T>(this IAsyncEnumerable<(IMediatorContext Context, T Result)> source)
+    {
+        await foreach (var item in source)
+            yield return item.Result;
+    }
+    
 
     /// <summary>
     /// This method unwraps the mediator context from an async enumerable result - useful for outgoing aspnet endpoints
