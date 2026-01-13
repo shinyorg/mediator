@@ -92,6 +92,23 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
         //     yield return sb.ToString();
         // }
     }
+
+    
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
+    protected virtual async Task HandleCommand(        
+        HttpRequestMessage httpRequest,
+        ICommand command,
+        IMediatorContext context, 
+        CancellationToken cancellationToken
+    )
+    {
+        await this.Decorate(context, httpRequest, cancellationToken).ConfigureAwait(false);
+        var timeoutSeconds = services.Configuration.GetValue("Mediator:Http:Timeout", 20);
+        
+        await this
+            .Send<HttpResponseMessage>(context, httpRequest, TimeSpan.FromSeconds(timeoutSeconds), cancellationToken)
+            .ConfigureAwait(false);
+    }
     
     
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
@@ -128,18 +145,7 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
 
         return new HttpRequestMessage(httpMethod, url);
     }
-
     
-        // var route = "/ping";
-
-        // return this.HandleRequest<global::TestApi.Ping, global::System.Net.Http.HttpResponseMessage>(
-        //     global::System.Net.Http.HttpMethod.Post,
-        //     route,
-        //     request,
-        //     context,
-        //     cancellationToken
-        // );
-
     
     protected virtual async Task<TResult> Send<TResult>(
         IMediatorContext context,

@@ -5,7 +5,7 @@
         <Owners>aritchie;shinylib</Owners>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
-        <PackageVersion>6.0.2</PackageVersion>
+        <PackageVersion>6.1.0</PackageVersion>
         <DisableExtraReferences>False</DisableExtraReferences>
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
         <Description>Shiny Mediator - A mediator pattern for all .NET Apps</Description>
