@@ -40,6 +40,7 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
     [Theory]
     [InlineData("./SourceGeneration/themeparksapi.yml")]
     [InlineData("./SourceGeneration/fleet.json")]
+    [InlineData("./SourceGeneration/test.json")]
     public Task TestApis_Generation(string filePath)
     {
         var content = File.ReadAllText(filePath);

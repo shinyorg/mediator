@@ -1,0 +1,75 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "ShinyFleet.Api | v1",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/properties/{Id}": {
+            "post": {
+                "operationId": "InsertProperty",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdatePropertyRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserInfo"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "operationId": "UpdateProperty",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdatePropertyRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserInfo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "UpdatePropertyRequest": {
+                "properties": {
+                    "title": { "type": "string" },
+                    "address": { "type": "string" }
+                }
+            },
+            "UserInfo": {
+                "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" }
+                }
+            }
+        }
+    }
+}
