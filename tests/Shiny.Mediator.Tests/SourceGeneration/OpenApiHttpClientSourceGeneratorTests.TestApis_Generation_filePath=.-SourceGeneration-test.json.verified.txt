@@ -57,6 +57,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class InsertPropertyHttpRequest : global::Shiny.Mediator.IRequest<global::TestApi.UserInfo>
 {
+    public required string Id { get; set; }
     public global::TestApi.UpdatePropertyRequest? Body { get; set; }
 }
 
@@ -86,7 +87,7 @@ public partial class InsertPropertyHttpRequestHandler(global::Shiny.Mediator.Htt
         global::Shiny.Mediator.IMediatorContext context,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        var route = $"/api/properties/{Id}";
+        var route = $"/api/properties/{request.Id}";
 
         var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Post, route);
 
@@ -118,6 +119,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class UpdatePropertyHttpRequest : global::Shiny.Mediator.IRequest<global::TestApi.UserInfo>
 {
+    public required string Id { get; set; }
     public global::TestApi.UpdatePropertyRequest? Body { get; set; }
 }
 
@@ -147,7 +149,7 @@ public partial class UpdatePropertyHttpRequestHandler(global::Shiny.Mediator.Htt
         global::Shiny.Mediator.IMediatorContext context,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        var route = $"/api/properties/{Id}";
+        var route = $"/api/properties/{request.Id}";
 
         var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Put, route);
 
