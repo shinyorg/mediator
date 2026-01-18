@@ -344,7 +344,11 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         // Extract properties from parameters and request body
         var properties = new List<HttpPropertyInfo>();
         
-        // Process parameters
+        // Extract path parameters from the path string that might not be in operation.Parameters
+        var pathParameterNames = ExtractPathParameterNames(path);
+        var explicitPathParamNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        
+        // Process explicit parameters
         if (operation.Parameters != null)
         {
             foreach (var parameter in operation.Parameters)
@@ -359,6 +363,9 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                         _ => HttpParameterType.Query
                     };
 
+                    if (paramType == HttpParameterType.Path)
+                        explicitPathParamNames.Add(parameter.Name!);
+
                     var propertyType = GetSchemaType(parameter.Schema!, config);
                     properties.Add(new HttpPropertyInfo(
                         parameter.Name!.Pascalize(),
@@ -369,6 +376,22 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                         parameter.Description
                     ));
                 }
+            }
+        }
+        
+        // Add any path parameters from the path string that weren't explicitly defined
+        foreach (var pathParamName in pathParameterNames)
+        {
+            if (!explicitPathParamNames.Contains(pathParamName))
+            {
+                properties.Add(new HttpPropertyInfo(
+                    pathParamName.Pascalize(),
+                    pathParamName,
+                    true, // Path parameters are always required
+                    HttpParameterType.Path,
+                    "string", // Default to string type when not explicitly defined
+                    null
+                ));
             }
         }
 
@@ -665,6 +688,28 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         "time" => "global::System.TimeOnly",
         _ => "string"
     };
+    
+    
+    static List<string> ExtractPathParameterNames(string path)
+    {
+        var parameters = new List<string>();
+        var startIndex = 0;
+        
+        while ((startIndex = path.IndexOf('{', startIndex)) != -1)
+        {
+            var endIndex = path.IndexOf('}', startIndex);
+            if (endIndex == -1)
+                break;
+                
+            var paramName = path.Substring(startIndex + 1, endIndex - startIndex - 1);
+            if (!String.IsNullOrWhiteSpace(paramName))
+                parameters.Add(paramName);
+                
+            startIndex = endIndex + 1;
+        }
+        
+        return parameters;
+    }
     
 
     static void ReportDiagnostic(
