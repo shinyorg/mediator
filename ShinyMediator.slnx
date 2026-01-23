@@ -15,6 +15,7 @@
     <Folder Name="/Solution/">
         <File Path="readme.md" />
         <File Path=".github\workflows\build.yml" />
+        <File Path=".editorconfig" />
         <File Path=".github\ISSUE_TEMPLATE\bug_report.yml" />
         <File Path=".github\ISSUE_TEMPLATE\config.yml" />
         <File Path=".github\ISSUE_TEMPLATE\feature_request.yml" />
