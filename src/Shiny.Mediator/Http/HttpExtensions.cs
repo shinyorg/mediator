@@ -19,6 +19,18 @@ public static class HttpExtensions
 
 
     /// <summary>
+    /// Add HTTP Request Cache Middleware to mediator
+    /// </summary>
+    /// <param name="mediatorBuilder"></param>
+    /// <returns></returns>
+    public static ShinyMediatorBuilder AddHttpCacheMiddleware(this ShinyMediatorBuilder mediatorBuilder)
+    {
+        mediatorBuilder.AddOpenRequestMiddleware(typeof(HttpRequestCacheMiddleware<,>));
+        return mediatorBuilder;
+    }
+
+
+    /// <summary>
     /// Add HTTP Client to mediator
     /// </summary>
     /// <param name="services"></param>

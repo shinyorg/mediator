@@ -14,8 +14,6 @@ public class HttpRequestCacheMiddleware<TRequest, TResult>(
 {
     public async Task<TResult> Process(IMediatorContext context, RequestHandlerDelegate<TResult> next, CancellationToken cancellationToken)
     {
-        // TODO: I only want this for HTTP Requests
-        // TODO: only if BaseHttpRequestHandler? context.MessageHandler
         var contractKey = contractKeyProvider.GetContractKey(context.Message!);
         TResult result = default!;
 
