@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - 'skills/**'
-      - '.claude-plugin/**'
   workflow_dispatch:
 
 jobs:
@@ -33,17 +32,11 @@ jobs:
 
       - name: Sync skills directory
         run: |
-          # Create target directory if it doesn't exist
-          mkdir -p skills-repo/shiny-mediator
-
-          # Copy skills content
-          if [ -d "source/skills" ]; then
-            cp -r source/skills/* skills-repo/shiny-mediator/
-          fi
-
-          # Copy plugin manifest
-          if [ -d "source/.claude-plugin" ]; then
-            cp -r source/.claude-plugin/* skills-repo/shiny-mediator/
+          # Copy skills content only (not plugin manifests)
+          # The target repo has its own plugin structure
+          if [ -d "source/skills/shiny-mediator" ]; then
+            mkdir -p skills-repo/skills
+            cp -r source/skills/shiny-mediator skills-repo/skills/
           fi
 
       - name: Create Pull Request
