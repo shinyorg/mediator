@@ -54,6 +54,19 @@ Always use registration attributes:
 [MediatorScoped]     // Handlers needing per-request services (DbContext)
 ```
 
+**Critical: Partial Class Requirement**
+
+When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`), the handler class **must be declared as `partial`**:
+```csharp
+[MediatorSingleton]
+public partial class MyHandler : IRequestHandler<MyRequest, MyResult>  // partial required!
+{
+    [Cache(AbsoluteExpirationSeconds = 60)]
+    public Task<MyResult> Handle(...) { }
+}
+```
+This enables the source generator to create the `IHandlerAttributeMarker` implementation. Without `partial`, you'll get error `SHINY001`.
+
 ### Basic Setup
 
 **ASP.NET:**
@@ -120,7 +133,19 @@ Apply to handler methods as needed:
 - `[OfflineAvailable]` - Offline storage for mobile
 - `[Resilient("policyName")]` - Retry/timeout policies
 - `[MainThread]` - MAUI main thread execution
+- `[TimerRefresh(milliseconds)]` - Auto-refresh streams
 - `[Validate]` - Data annotation validation
+
+**When using ANY of these attributes, the handler class MUST be `partial`:**
+```csharp
+[MediatorSingleton]
+public partial class CachedHandler : IRequestHandler<MyRequest, MyData>
+{
+    [Cache(AbsoluteExpirationSeconds = 60)]
+    [OfflineAvailable]
+    public Task<MyData> Handle(...) { }
+}
+```
 
 ### 4. File Organization
 
@@ -162,9 +187,10 @@ public async Task<UserDto> Handle(GetUserRequest request, IMediatorContext conte
 1. **Use records for contracts** - Immutable, value equality
 2. **One handler per file** - Focused and testable
 3. **Appropriate lifetime** - Singleton for stateless, Scoped for DbContext
-4. **Chain via context** - Use `context.Request()` not injecting IMediator
-5. **Implement IContractKey** - For custom cache/offline keys
-6. **Always pass CancellationToken** - Respect cancellation
+4. **Use `partial` with middleware attributes** - Required for `[Cache]`, `[OfflineAvailable]`, `[Resilient]`, etc.
+5. **Chain via context** - Use `context.Request()` not injecting IMediator
+6. **Implement IContractKey** - For custom cache/offline keys
+7. **Always pass CancellationToken** - Respect cancellation
 
 ## Reference Files
 

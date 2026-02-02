@@ -1,12 +1,18 @@
 # Middleware Reference
 
+> **Critical: Partial Class Requirement**
+>
+> When using **any middleware attribute** on a handler method, the handler class **must be declared as `partial`**. This enables the source generator to create the `IHandlerAttributeMarker` implementation for runtime attribute lookup.
+>
+> **Without `partial`, you'll get compiler error `SHINY001`.**
+
 ## Built-in Middleware Attributes
 
-Apply middleware to handlers using attributes:
+Apply middleware to handlers using attributes. **Remember: class must be `partial`!**
 
 ```csharp
 [MediatorSingleton]
-public class MyRequestHandler : IRequestHandler<MyRequest, string>
+public partial class MyRequestHandler : IRequestHandler<MyRequest, string>  // MUST be partial!
 {
     [Cache(AbsoluteExpirationSeconds = 300)]  // Cache for 5 minutes
     [OfflineAvailable]                         // Store for offline access
@@ -28,9 +34,9 @@ builder.AddShinyMediator(x => x
     .AddMauiPersistentCache()  // or .AddMemoryCaching()
 );
 
-// Handler
+// Handler - MUST be partial when using [Cache]
 [MediatorSingleton]
-public class CachedHandler : IRequestHandler<MyRequest, MyData>
+public partial class CachedHandler : IRequestHandler<MyRequest, MyData>
 {
     [Cache(AbsoluteExpirationSeconds = 60, SlidingExpirationSeconds = 30)]
     public Task<MyData> Handle(MyRequest request, IMediatorContext context, CancellationToken ct)
@@ -91,9 +97,9 @@ builder.AddShinyMediator(x => x
     }
 }
 
-// Handler
+// Handler - MUST be partial when using [Resilient]
 [MediatorSingleton]
-public class ResilientHandler : IRequestHandler<MyRequest, string>
+public partial class ResilientHandler : IRequestHandler<MyRequest, string>
 {
     [Resilient("default")]
     public Task<string> Handle(MyRequest request, IMediatorContext context, CancellationToken ct)

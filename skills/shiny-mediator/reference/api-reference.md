@@ -181,12 +181,25 @@ public interface IMediatorContext
 - `[MediatorScoped]` - Register handler as scoped
 
 ### Middleware Attributes
+
+> **Important:** When using any of these middleware attributes, the handler class **must be declared as `partial`**. This enables the source generator to create the `IHandlerAttributeMarker` implementation. Without `partial`, you'll get error `SHINY001`.
+
 - `[Cache(AbsoluteExpirationSeconds, SlidingExpirationSeconds)]` - Enable caching
 - `[OfflineAvailable]` - Enable offline storage
 - `[Resilient("policyName")]` - Apply resilience policy
 - `[MainThread]` - Execute on main thread (MAUI)
 - `[TimerRefresh(milliseconds)]` - Auto-refresh streams
 - `[Validate]` - Enable validation
+
+**Example with partial class:**
+```csharp
+[MediatorSingleton]
+public partial class MyHandler : IRequestHandler<MyRequest, MyResult>
+{
+    [Cache(AbsoluteExpirationSeconds = 60)]
+    public Task<MyResult> Handle(...) { }
+}
+```
 
 ### HTTP Attributes
 - `[Get("/route")]`, `[Post("/route")]`, `[Put("/route")]`, `[Delete("/route")]`, `[Patch("/route")]`
@@ -219,6 +232,13 @@ public interface IMediatorContext
 
 ## Troubleshooting
 
+### Error SHINY001: Handler must be partial
+- **Cause:** You're using middleware attributes (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`) but the handler class is not declared as `partial`
+- **Fix:** Add `partial` keyword to the class declaration:
+  ```csharp
+  public partial class MyHandler : IRequestHandler<...>  // Add 'partial'
+  ```
+
 ### Handler Not Found
 - Ensure handler has `[MediatorSingleton]` or `[MediatorScoped]` attribute
 - Verify `AddMediatorRegistry()` is called in setup
@@ -227,6 +247,7 @@ public interface IMediatorContext
 ### Caching Not Working
 - Verify cache middleware is registered (`AddMemoryCaching()` or `AddMauiPersistentCache()`)
 - Check `[Cache]` attribute is on the handler method
+- **Ensure handler class is `partial`**
 - Implement `IContractKey` for custom cache keys
 
 ### Events Not Firing

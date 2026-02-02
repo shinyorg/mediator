@@ -1,5 +1,9 @@
 # Shiny Mediator Code Templates
 
+> **Important: Partial Class Requirement**
+>
+> When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`), the handler class **must be declared as `partial`**. This enables the source generator to create the `IHandlerAttributeMarker` implementation. Without `partial`, you'll get compiler error `SHINY001`.
+
 ## Request Handler Template
 
 When generating a request handler, use this pattern:
@@ -18,7 +22,8 @@ public record {ResultType}({ResultProperties});
 namespace {Namespace}.Handlers;
 
 [Mediator{Lifetime}]  // Singleton or Scoped
-public class {Name}RequestHandler : IRequestHandler<{Name}Request, {ResultType}>
+// Use 'partial' when applying middleware attributes below
+public partial class {Name}RequestHandler : IRequestHandler<{Name}Request, {ResultType}>
 {
     private readonly {Dependencies};
 
@@ -27,7 +32,7 @@ public class {Name}RequestHandler : IRequestHandler<{Name}Request, {ResultType}>
         {DependencyAssignments}
     }
 
-    {MiddlewareAttributes}
+    {MiddlewareAttributes}  // If any attributes used, class MUST be partial
     public async Task<{ResultType}> Handle(
         {Name}Request request,
         IMediatorContext context,
@@ -38,11 +43,12 @@ public class {Name}RequestHandler : IRequestHandler<{Name}Request, {ResultType}>
 }
 ```
 
-**Middleware Attributes to Apply:**
+**Middleware Attributes to Apply (requires `partial` class):**
 - `[Cache(AbsoluteExpirationSeconds = N)]` - For cacheable queries
 - `[OfflineAvailable]` - For offline-capable requests
 - `[Resilient("policyName")]` - For resilience with retry/timeout
 - `[MainThread]` - For MAUI UI thread execution
+- `[TimerRefresh(milliseconds)]` - For auto-refresh streams
 
 ## Command Handler Template
 
@@ -58,7 +64,8 @@ public record {Name}Command({Parameters}) : ICommand;
 namespace {Namespace}.Handlers;
 
 [Mediator{Lifetime}]
-public class {Name}CommandHandler : ICommandHandler<{Name}Command>
+// Use 'partial' when applying middleware attributes
+public partial class {Name}CommandHandler : ICommandHandler<{Name}Command>
 {
     private readonly {Dependencies};
 
@@ -67,7 +74,7 @@ public class {Name}CommandHandler : ICommandHandler<{Name}Command>
         {DependencyAssignments}
     }
 
-    {MiddlewareAttributes}
+    {MiddlewareAttributes}  // If any attributes used, class MUST be partial
     public async Task Handle(
         {Name}Command command,
         IMediatorContext context,
@@ -92,7 +99,8 @@ public record {Name}Event({Parameters}) : IEvent;
 namespace {Namespace}.Handlers;
 
 [Mediator{Lifetime}]
-public class {Name}EventHandler : IEventHandler<{Name}Event>
+// Use 'partial' when applying middleware attributes
+public partial class {Name}EventHandler : IEventHandler<{Name}Event>
 {
     private readonly ILogger<{Name}EventHandler> _logger;
 
@@ -101,6 +109,7 @@ public class {Name}EventHandler : IEventHandler<{Name}Event>
         _logger = logger;
     }
 
+    {MiddlewareAttributes}  // If any attributes used, class MUST be partial
     public Task Handle(
         {Name}Event @event,
         IMediatorContext context,
@@ -127,9 +136,10 @@ public record {Name}StreamRequest({Parameters}) : IStreamRequest<{ResultType}>;
 namespace {Namespace}.Handlers;
 
 [MediatorSingleton]
-public class {Name}StreamHandler : IStreamRequestHandler<{Name}StreamRequest, {ResultType}>
+// Use 'partial' when applying middleware attributes like [TimerRefresh]
+public partial class {Name}StreamHandler : IStreamRequestHandler<{Name}StreamRequest, {ResultType}>
 {
-    {MiddlewareAttributes}
+    {MiddlewareAttributes}  // If any attributes used (e.g., [TimerRefresh]), class MUST be partial
     public async IAsyncEnumerable<{ResultType}> Handle(
         {Name}StreamRequest request,
         IMediatorContext context,
