@@ -35,6 +35,8 @@ jobs:
           # Copy skills content only (not plugin manifests)
           # The target repo has its own plugin structure
           if [ -d "source/skills/shiny-mediator" ]; then
+            # Remove existing skill directory to ensure clean sync
+            rm -rf skills-repo/skills/shiny-mediator
             mkdir -p skills-repo/skills
             cp -r source/skills/shiny-mediator skills-repo/skills/
           fi
