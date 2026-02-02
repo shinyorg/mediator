@@ -11,7 +11,6 @@
     <Folder Name="/Solution/">
         <File Path="readme.md" />
         <File Path=".github\workflows\build.yml" />
-        <File Path=".claude\skills\shiny-mediator\SKILL.md" />
         <File Path=".editorconfig" />
         <File Path=".github\ISSUE_TEMPLATE\bug_report.yml" />
         <File Path=".github\ISSUE_TEMPLATE\config.yml" />
@@ -25,6 +24,16 @@
         <File Path="Build.slnf" />
         <File Path="nuget.config" />
         <File Path="global.json" />
+    </Folder>
+    <Folder Name="/Solution/Skill/">
+        <File Path=".claude-plugin\marketplace.json" />
+        <File Path=".claude-plugin\plugin.json" />
+        <File Path=".github\workflows\sync-skills.yml" />
+        <File Path="skills\shiny-mediator\reference\api-reference.md" />
+        <File Path="skills\shiny-mediator\reference\middleware.md" />
+        <File Path="skills\shiny-mediator\reference\scaffolding.md" />
+        <File Path="skills\shiny-mediator\reference\templates.md" />
+        <File Path="skills\shiny-mediator\SKILL.md" />
     </Folder>
     <Folder Name="/sourcegen/">
         <Project Path="src\Shiny.Mediator.AspNet.SourceGenerators\Shiny.Mediator.AspNet.SourceGenerators.csproj" />

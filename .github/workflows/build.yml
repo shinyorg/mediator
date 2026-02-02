@@ -13,7 +13,10 @@ on:
     - dev
     - preview
     - v*
-    
+    paths-ignore:
+      - '.claude-plugins/**'
+      - 'skills/**'
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
