@@ -1,8 +1,4 @@
 ﻿<Solution>
-    <Folder Name="/AI/">
-        <File Path="claude-skill.md" />
-        <File Path="copilot-skill.md" />
-    </Folder>
     <Folder Name="/Prototypes/">
         <Project Path="src\Shiny.Mediator.RabbitMq\Shiny.Mediator.RabbitMq.csproj" />
     </Folder>
@@ -15,6 +11,7 @@
     <Folder Name="/Solution/">
         <File Path="readme.md" />
         <File Path=".github\workflows\build.yml" />
+        <File Path=".claude\skills\shiny-mediator\SKILL.md" />
         <File Path=".editorconfig" />
         <File Path=".github\ISSUE_TEMPLATE\bug_report.yml" />
         <File Path=".github\ISSUE_TEMPLATE\config.yml" />
