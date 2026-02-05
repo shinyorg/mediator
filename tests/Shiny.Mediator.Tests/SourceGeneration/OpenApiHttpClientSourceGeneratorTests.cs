@@ -139,6 +139,96 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
         return Verify(result);
     }
 
+    [Fact]
+    public Task PathParameters_Should_Not_Appear_In_Generated_Handler_Names()
+    {
+        // This test ensures that when no operationId is specified, path parameters like {id}
+        // are excluded from the generated handler name. Without the fix, this would generate
+        // "GetAds{id}HttpRequestHandler" instead of "GetAdsHttpRequestHandler".
+        var openApi = """
+        openapi: 3.0.1
+        info:
+          title: Test API
+          version: '1.0'
+        paths:
+          /ads/{id}:
+            get:
+              parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+              responses:
+                '200':
+                  description: OK
+                  content:
+                    application/json:
+                      schema:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          title:
+                            type: string
+          /users/{userId}/posts/{postId}:
+            get:
+              parameters:
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: postId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+              responses:
+                '200':
+                  description: OK
+          /items/{itemId}/details:
+            delete:
+              parameters:
+                - name: itemId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+              responses:
+                '204':
+                  description: No Content
+        """;
+
+        var additionalFiles = new AdditionalText[] { new MockAdditionalText("pathparams.yaml", openApi) };
+
+        var buildProps = new Dictionary<string, string>
+        {
+            ["build_metadata.AdditionalFiles.SourceItemGroup"] = "MediatorHttp",
+            ["build_metadata.AdditionalFiles.Namespace"] = "TestApi",
+            ["build_property.RootNamespace"] = "UnitTests",
+            ["build_property.AssemblyName"] = "UnitTests"
+        };
+
+        var result = RunGenerator(additionalFiles, buildProps);
+
+        // Verify that the generated source does NOT contain path parameters in handler names
+        var generatedSources = result.GeneratedSources
+            .Select(s => s.SourceText.ToString())
+            .ToList();
+
+        // Handler names should NOT contain curly braces
+        foreach (var source in generatedSources)
+        {
+            Assert.DoesNotContain("{id}", source);
+            Assert.DoesNotContain("{userId}", source);
+            Assert.DoesNotContain("{postId}", source);
+            Assert.DoesNotContain("{itemId}", source);
+        }
+
+        return Verify(result);
+    }
+
     static GeneratorRunResult RunGenerator(AdditionalText[] additionalFiles, Dictionary<string, string> buildProps)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText("""

@@ -331,7 +331,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         OpenApiModelGenerator modelGenerator
     )
     {
-        var opId = operation.OperationId?.Pascalize() ?? $"{operationType.Pascalize()}{String.Concat(path.Split('/').Where(s => !String.IsNullOrWhiteSpace(s)).Select(s => s.Pascalize()))}";
+        var opId = operation.OperationId?.Pascalize() ?? $"{operationType.Pascalize()}{String.Concat(path.Split('/').Where(s => !String.IsNullOrWhiteSpace(s) && !s.Contains("{")).Select(s => s.Pascalize()))}";
         var contractName = $"{config.ContractPrefix ?? ""}{opId}{config.ContractPostfix ?? ""}";
         var handlerName = $"{contractName}Handler";
 
