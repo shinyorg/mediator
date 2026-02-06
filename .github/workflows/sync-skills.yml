@@ -1,0 +1,63 @@
+name: Sync Skills to Skills Repository
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'skills/**'
+  workflow_dispatch:
+
+jobs:
+  sync-skills:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          path: source
+
+      - name: Checkout skills repository
+        uses: actions/checkout@v4
+        with:
+          repository: shinyorg/skills
+          token: ${{ secrets.SKILLS_REPO_TOKEN }}
+          path: skills-repo
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync skills directory
+        run: |
+          # Copy skills content only (not plugin manifests)
+          # The target repo has its own plugin structure
+          if [ -d "source/skills/shiny-mediator" ]; then
+            # Remove existing skill directory to ensure clean sync
+            rm -rf skills-repo/skills/shiny-mediator
+            mkdir -p skills-repo/skills
+            cp -r source/skills/shiny-mediator skills-repo/skills/
+          fi
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.SKILLS_REPO_TOKEN }}
+          path: skills-repo
+          commit-message: "Update shiny-mediator skill from ShinyMediator repository"
+          title: "Update shiny-mediator skill"
+          body: |
+            This PR updates the shiny-mediator skill from the [ShinyMediator repository](https://github.com/shinyorg/ShinyMediator).
+
+            **Source commit:** ${{ github.sha }}
+            **Triggered by:** @${{ github.actor }}
+
+            ---
+            *This PR was automatically created by the [sync-skills workflow](https://github.com/shinyorg/ShinyMediator/actions/workflows/sync-skills.yml).*
+          branch: update-shiny-mediator-skill
+          delete-branch: true
+          labels: |
+            automated
+            skills-update

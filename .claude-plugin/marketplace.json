@@ -1,0 +1,14 @@
+{
+  "name": "shiny-plugins",
+  "owner": {
+    "name": "Shiny",
+    "email": "hello@shinylib.net"
+  },
+  "plugins": [
+    {
+      "name": "shiny-mediator",
+      "source": "./",
+      "description": "Claude Code plugin for Shiny Mediator - code generation, documentation, and scaffolding for .NET mediator pattern implementation"
+    }
+  ]
+}

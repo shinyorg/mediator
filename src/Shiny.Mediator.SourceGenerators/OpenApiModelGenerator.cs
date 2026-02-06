@@ -23,7 +23,7 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
 
     public void GenerateModel(string name, IOpenApiSchema schema)
     {
-        var className = name.Pascalize();
+        var className = name.Pascalize().ToSafeIdentifier();
 
         if (this.generatedTypes.Add(className))
         {
@@ -130,7 +130,7 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         {
             foreach (var property in schema.Properties)
             {
-                var propertyName = property.Key.Pascalize();
+                var propertyName = property.Key.Pascalize().ToSafeIdentifier();
 
                 if (property.Value != null)
                 {
@@ -229,7 +229,7 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         string? type = null;
         if (schema is OpenApiSchemaReference schemaRef && !String.IsNullOrWhiteSpace(schemaRef.Reference.Id))
         {
-            var typeName = schemaRef.Reference.Id!.Split('/').Last().Pascalize();
+            var typeName = schemaRef.Reference.Id!.Split('/').Last().Pascalize().ToSafeIdentifier();
             // Optionally resolve and generate the referenced schema if needed
             // var resolvedSchema = schemaRef.ResolveReference(/* document context */);
             // if (resolvedSchema != null)
@@ -360,4 +360,3 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
             || typeName.StartsWith("global::System.TimeOnly")
             || typeName.StartsWith("global::System.TimeSpan");
 }
-
