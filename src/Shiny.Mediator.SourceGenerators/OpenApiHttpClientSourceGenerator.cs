@@ -331,8 +331,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         OpenApiModelGenerator modelGenerator
     )
     {
-        var opId = operation.OperationId?.Pascalize() ?? $"{operationType.Pascalize()}{String.Concat(path.Split('/').Where(s => !String.IsNullOrWhiteSpace(s) && !s.Contains("{")).Select(s => s.Pascalize()))}";
-        var contractName = $"{config.ContractPrefix ?? ""}{opId}{config.ContractPostfix ?? ""}";
+        var opId = (operation.OperationId?.Pascalize() ?? $"{operationType.Pascalize()}{String.Concat(path.Split('/').Where(s => !String.IsNullOrWhiteSpace(s) && !s.Contains("{")).Select(s => s.Pascalize()))}").ToSafeIdentifier();
+        var contractName = $"{config.ContractPrefix ?? ""}{opId}{config.ContractPostfix ?? ""}".ToSafeIdentifier();
         var handlerName = $"{contractName}Handler";
 
         // Determine response type
@@ -578,7 +578,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         if (schema is OpenApiSchemaReference schemaRef)
         {
             // Extract the schema name from the reference (e.g., "#/components/schemas/Pet" -> "Pet")
-            var refId = schemaRef.Reference.ReferenceV3?.Split('/').LastOrDefault();
+            var refId = schemaRef.Reference.ReferenceV3?.Split('/').LastOrDefault()?.Pascalize().ToSafeIdentifier();
             schemaType = $"global::{config.Namespace}.{refId}";
         }
         // Prioritize format over type - when format indicates a numeric type, use it

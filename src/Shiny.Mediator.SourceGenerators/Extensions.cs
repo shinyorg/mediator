@@ -10,18 +10,23 @@ static class Extensions
 {
     public static string Pascalize(this string str)
     {
+        if (String.IsNullOrEmpty(str))
+            return str;
+
+        // Split by common separators (underscore, hyphen, space) and pascalize each part
+        var separators = new[] { '_', '-', ' ', '.' };
+
+        if (str.Any(c => separators.Contains(c)))
+        {
+            var parts = str.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            var pascal = parts
+                .Select(s => char.ToUpperInvariant(s[0]) + (s.Length > 1 ? s.Substring(1).ToLower() : ""))
+                .Aggregate(string.Empty, (s1, s2) => s1 + s2);
+            return pascal;
+        }
+
         if (str.All(x => char.IsUpper(x) || !char.IsLetter(x)))
         {
-            if (str.Contains("_"))
-            {
-                var pascal = str.ToLower()
-                    .Split(["_"], StringSplitOptions.RemoveEmptyEntries)
-                    .Select(s => char.ToUpperInvariant(s[0]) + s.Substring(1, s.Length - 1))
-                    .Aggregate(string.Empty, (s1, s2) => s1 + s2);
-
-                return pascal;
-            }
-
             var result = char.ToUpper(str[0]) + str.Substring(1).ToLower();
             return result;
         }
@@ -30,8 +35,36 @@ static class Extensions
             return str;
         
         var r = char.ToUpper(str[0]) + str.Substring(1);
-        r = r.Replace("_", "");
         return r;
+    }
+
+
+    /// <summary>
+    /// Ensures the string is a valid C# identifier by removing invalid characters
+    /// and ensuring it doesn't start with a digit.
+    /// </summary>
+    public static string ToSafeIdentifier(this string str)
+    {
+        if (String.IsNullOrEmpty(str))
+            return "_";
+
+        var sb = new System.Text.StringBuilder();
+        foreach (var c in str)
+        {
+            if (char.IsLetterOrDigit(c) || c == '_')
+                sb.Append(c);
+            // Skip invalid characters
+        }
+
+        var result = sb.ToString();
+        if (result.Length == 0)
+            return "_";
+
+        // If starts with digit, prefix with underscore
+        if (char.IsDigit(result[0]))
+            result = "_" + result;
+
+        return result;
     }
 
     

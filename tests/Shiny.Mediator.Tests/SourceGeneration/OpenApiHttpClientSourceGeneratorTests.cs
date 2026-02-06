@@ -229,6 +229,79 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
         return Verify(result);
     }
 
+    [Fact]
+    public Task Hyphenated_Path_Segments_Should_Generate_Valid_CSharp_Identifiers()
+    {
+        // This test ensures that path segments with hyphens (like "entra-login") are
+        // converted to valid C# identifiers (like "EntraLogin").
+        // Without the fix, "/account/entra-login" would generate "PostAccountEntra-loginHttpRequest"
+        // which is an invalid C# class name.
+        var openApi = """
+        openapi: 3.0.1
+        info:
+          title: Test API
+          version: '1.0'
+        paths:
+          /account/entra-login:
+            post:
+              responses:
+                '200':
+                  description: OK
+                  content:
+                    application/json:
+                      schema:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+          /api/user-management/role-assignments:
+            get:
+              responses:
+                '200':
+                  description: OK
+          /v1/health-check/ping-pong:
+            get:
+              responses:
+                '200':
+                  description: OK
+        """;
+
+        var additionalFiles = new AdditionalText[] { new MockAdditionalText("hyphens.yaml", openApi) };
+
+        var buildProps = new Dictionary<string, string>
+        {
+            ["build_metadata.AdditionalFiles.SourceItemGroup"] = "MediatorHttp",
+            ["build_metadata.AdditionalFiles.Namespace"] = "TestApi",
+            ["build_property.RootNamespace"] = "UnitTests",
+            ["build_property.AssemblyName"] = "UnitTests"
+        };
+
+        var result = RunGenerator(additionalFiles, buildProps);
+
+        // Verify that the generated source does NOT contain hyphens in handler/contract names (class definitions)
+        var generatedSources = result.GeneratedSources
+            .Select(s => s.SourceText.ToString())
+            .ToList();
+
+        // Handler/contract class names should NOT contain hyphens
+        // Check class declarations, not string literals
+        foreach (var source in generatedSources)
+        {
+            // Check that hyphenated names are NOT present as class names
+            Assert.DoesNotContain("class PostAccountEntra-login", source);
+            Assert.DoesNotContain("class GetApiUser-management", source);
+            Assert.DoesNotContain("class GetV1Health-check", source);
+        }
+
+        // Verify that the correctly pascalized names ARE present
+        var allSource = string.Join("\n", generatedSources);
+        Assert.Contains("PostAccountEntraLogin", allSource);
+        Assert.Contains("UserManagementRoleAssignments", allSource);
+        Assert.Contains("HealthCheckPingPong", allSource);
+
+        return Verify(result);
+    }
+
     static GeneratorRunResult RunGenerator(AdditionalText[] additionalFiles, Dictionary<string, string> buildProps)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText("""
