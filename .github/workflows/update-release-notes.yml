@@ -45,7 +45,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: shinyorg/documentation
-        token: ${{ secrets.DOCS_PAT }}
+        token: ${{ secrets.DOCS_DEPLOY_TOKEN }}
         path: documentation
 
     - name: Update release notes
@@ -131,7 +131,7 @@ jobs:
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v7
       with:
-        token: ${{ secrets.DOCS_PAT }}
+        token: ${{ secrets.DOCS_DEPLOY_TOKEN }}
         path: documentation
         branch: release-notes/mediator-v${{ steps.version.outputs.version }}
         title: "docs: update Mediator release notes for v${{ steps.version.outputs.version }}"
