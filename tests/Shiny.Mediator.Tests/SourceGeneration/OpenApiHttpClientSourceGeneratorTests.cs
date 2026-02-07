@@ -302,6 +302,101 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
         return Verify(result);
     }
 
+    [Fact]
+    public Task Generated_Properties_Should_Not_Use_Required_Keyword()
+    {
+        // This test ensures that generated properties do NOT use the C# 'required' keyword
+        // as it breaks JSON converter generation. Properties should only use nullable type markers.
+        var openApi = """
+        openapi: 3.0.1
+        info:
+          title: Test API
+          version: '1.0'
+        paths:
+          /users/{id}:
+            put:
+              parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: filter
+                  in: query
+                  required: true
+                  schema:
+                    type: string
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/UserUpdateRequest'
+              responses:
+                '200':
+                  description: OK
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/User'
+          /items:
+            post:
+              requestBody:
+                required: false
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ItemCreateRequest'
+              responses:
+                '201':
+                  description: Created
+        components:
+          schemas:
+            User:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+            UserUpdateRequest:
+              type: object
+              properties:
+                name:
+                  type: string
+            ItemCreateRequest:
+              type: object
+              properties:
+                title:
+                  type: string
+        """;
+
+        var additionalFiles = new AdditionalText[] { new MockAdditionalText("required.yaml", openApi) };
+
+        var buildProps = new Dictionary<string, string>
+        {
+            ["build_metadata.AdditionalFiles.SourceItemGroup"] = "MediatorHttp",
+            ["build_metadata.AdditionalFiles.Namespace"] = "TestApi",
+            ["build_property.RootNamespace"] = "UnitTests",
+            ["build_property.AssemblyName"] = "UnitTests"
+        };
+
+        var result = RunGenerator(additionalFiles, buildProps);
+
+        // Verify that the generated source does NOT contain the 'required' keyword for properties
+        var generatedSources = result.GeneratedSources
+            .Select(s => s.SourceText.ToString())
+            .ToList();
+
+        foreach (var source in generatedSources)
+        {
+            // The C# 'required' keyword should never appear before property types
+            Assert.DoesNotContain("public required ", source);
+        }
+
+        return Verify(result);
+    }
+
     static GeneratorRunResult RunGenerator(AdditionalText[] additionalFiles, Dictionary<string, string> buildProps)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText("""

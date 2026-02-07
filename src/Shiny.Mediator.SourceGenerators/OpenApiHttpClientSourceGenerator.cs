@@ -485,9 +485,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                 sb.AppendLine( "    /// </summary>");
             }
 
-            var required = prop.IsRequired ? "required " : String.Empty;
             var nullable = prop.IsRequired ? String.Empty : "?";
-            sb.AppendLine($"    public {required}{prop.PropertyType}{nullable} {prop.PropertyName} {{ get; set; }}");
+            sb.AppendLine($"    public {prop.PropertyType}{nullable} {prop.PropertyName} {{ get; set; }}");
         }
 
         sb.AppendLine("}");
