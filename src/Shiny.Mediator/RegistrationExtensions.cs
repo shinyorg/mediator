@@ -137,6 +137,15 @@ public static class RegistrationExtensions
 
 
     /// <summary>
+    /// Adds throttle middleware for events - takes the last event within a time window and triggers the handler
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
+    public static ShinyMediatorBuilder AddThrottleEventMiddleware(this ShinyMediatorBuilder cfg)
+        => cfg.AddOpenEventMiddleware(typeof(ThrottleEventMiddleware<>), ServiceLifetime.Singleton);
+
+
+    /// <summary>
     /// Adds timer calling for async enumerables
     /// </summary>
     /// <param name="cfg"></param>
