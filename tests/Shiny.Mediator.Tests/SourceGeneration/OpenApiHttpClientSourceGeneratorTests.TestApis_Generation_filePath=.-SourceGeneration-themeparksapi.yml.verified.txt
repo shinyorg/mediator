@@ -865,7 +865,7 @@ public partial class GetEntityHttpRequest : global::Shiny.Mediator.IRequest<glob
     /// <summary>
     /// Entity ID (or slug) to fetch
     /// </summary>
-    public required string EntityID { get; set; }
+    public string EntityID { get; set; }
 }
 
     },
@@ -926,7 +926,7 @@ public partial class GetEntityChildrenHttpRequest : global::Shiny.Mediator.IRequ
     /// <summary>
     /// Entity ID (or slug) to fetch
     /// </summary>
-    public required string EntityID { get; set; }
+    public string EntityID { get; set; }
 }
 
     },
@@ -987,7 +987,7 @@ public partial class GetEntityLiveDataHttpRequest : global::Shiny.Mediator.IRequ
     /// <summary>
     /// Entity ID (or slug) to fetch
     /// </summary>
-    public required string EntityID { get; set; }
+    public string EntityID { get; set; }
 }
 
     },
@@ -1048,7 +1048,7 @@ public partial class GetEntityScheduleUpcomingHttpRequest : global::Shiny.Mediat
     /// <summary>
     /// Entity ID (or slug) to fetch
     /// </summary>
-    public required string EntityID { get; set; }
+    public string EntityID { get; set; }
 }
 
     },
@@ -1109,15 +1109,15 @@ public partial class GetEntityScheduleYearMonthHttpRequest : global::Shiny.Media
     /// <summary>
     /// Entity ID (or slug) to fetch
     /// </summary>
-    public required string EntityID { get; set; }
+    public string EntityID { get; set; }
     /// <summary>
     /// Schedule year to fetch
     /// </summary>
-    public required double Year { get; set; }
+    public double Year { get; set; }
     /// <summary>
     /// Schedule month to fetch. Must be a two digit zero-padded month.
     /// </summary>
-    public required double Month { get; set; }
+    public double Month { get; set; }
 }
 
     },

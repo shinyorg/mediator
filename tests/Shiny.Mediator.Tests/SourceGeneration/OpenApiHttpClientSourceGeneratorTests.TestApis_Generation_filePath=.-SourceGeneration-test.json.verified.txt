@@ -57,7 +57,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class InsertPropertyHttpRequest : global::Shiny.Mediator.IRequest<global::TestApi.UserInfo>
 {
-    public required string Id { get; set; }
+    public string Id { get; set; }
     public global::TestApi.UpdatePropertyRequest? Body { get; set; }
 }
 
@@ -119,7 +119,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class UpdatePropertyHttpRequest : global::Shiny.Mediator.IRequest<global::TestApi.UserInfo>
 {
-    public required string Id { get; set; }
+    public string Id { get; set; }
     public global::TestApi.UpdatePropertyRequest? Body { get; set; }
 }
 

@@ -362,7 +362,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class SignUpHttpRequest : global::Shiny.Mediator.IRequest<global::TestApi.ValidateResult>
 {
-    public required global::TestApi.SignUpRequest Body { get; set; }
+    public global::TestApi.SignUpRequest Body { get; set; }
 }
 
     },
@@ -423,7 +423,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class PushRegistrationHttpRequest : global::Shiny.Mediator.IRequest<global::System.Net.Http.HttpResponseMessage>
 {
-    public required global::TestApi.RegisterPush Body { get; set; }
+    public global::TestApi.RegisterPush Body { get; set; }
 }
 
     },
@@ -484,7 +484,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class SignInBackdoorHttpRequest : global::Shiny.Mediator.IRequest<string>
 {
-    public required global::TestApi.DevAuthRequest Body { get; set; }
+    public global::TestApi.DevAuthRequest Body { get; set; }
 }
 
     },
@@ -545,7 +545,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class RefreshAuthenticationHttpRequest : global::Shiny.Mediator.IRequest<global::TestApi.AuthResult>
 {
-    public required global::TestApi.UseRefreshToken Body { get; set; }
+    public global::TestApi.UseRefreshToken Body { get; set; }
 }
 
     },
@@ -606,7 +606,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class SignInHttpRequest : global::Shiny.Mediator.IRequest<global::TestApi.AuthResult>
 {
-    public required global::TestApi.AuthRequest Body { get; set; }
+    public global::TestApi.AuthRequest Body { get; set; }
 }
 
     },
@@ -667,7 +667,7 @@ namespace TestApi;
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
 public partial class SignOutHttpRequest : global::Shiny.Mediator.IRequest<global::System.Net.Http.HttpResponseMessage>
 {
-    public required global::TestApi.SignOut Body { get; set; }
+    public global::TestApi.SignOut Body { get; set; }
 }
 
     },
