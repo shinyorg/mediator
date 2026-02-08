@@ -7,6 +7,7 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Middleware;
 
 
+[MiddlewareOrder(1)]
 public class PerformanceLoggingCommandMiddleware<TCommand>(
     IConfiguration configuration,
     ILogger<TCommand> logger
@@ -53,4 +54,3 @@ public class PerformanceLoggingCommandMiddleware<TCommand>(
         }
     }
 }
-

@@ -42,7 +42,7 @@ public abstract class RequestExecutor : IRequestExecutor
             }
         });
         
-        var result = await middlewares
+        var result = await MiddlewareOrderResolver.OrderMiddleware(middlewares)
             .Reverse()
             .Aggregate(
                 handlerExec, 

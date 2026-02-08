@@ -111,7 +111,7 @@ public class LocalEventExecutor(
             }
         });
            
-        await middlewares
+        await MiddlewareOrderResolver.OrderMiddleware(middlewares)
             .Reverse()
             .Aggregate(
                 handlerDelegate, 

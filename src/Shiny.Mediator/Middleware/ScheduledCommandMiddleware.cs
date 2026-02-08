@@ -4,6 +4,7 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Middleware;
 
 
+[MiddlewareOrder(90)]
 public class ScheduledCommandMiddleware<TCommand>(
     ILogger<ScheduledCommandMiddleware<TCommand>> logger,
     TimeProvider timeProvider,

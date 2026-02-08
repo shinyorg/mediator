@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Middleware;
 
 
+[MiddlewareOrder(50)]
 public class ThrottleEventMiddleware<TEvent>(
     ILogger<ThrottleEventMiddleware<TEvent>> logger,
     IConfiguration configuration

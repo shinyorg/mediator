@@ -66,7 +66,7 @@ public class StreamRequestWrapper<TRequest, TResult>(
         });
         
         var middlewares = context.BypassMiddlewareEnabled ? [] : services.GetServices<IStreamRequestMiddleware<TRequest, TResult>>();
-        var enumerable = middlewares
+        var enumerable = MiddlewareOrderResolver.OrderMiddleware(middlewares)
             .Reverse()
             .Aggregate(
                 handlerExec,

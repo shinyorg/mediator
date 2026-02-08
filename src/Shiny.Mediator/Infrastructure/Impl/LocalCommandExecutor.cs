@@ -36,7 +36,7 @@ public class LocalCommandExecutor : ICommandExecutor
         });
 
         var middlewares = context.BypassMiddlewareEnabled ? [] : services.GetServices<ICommandMiddleware<TCommand>>();
-        await middlewares
+        await MiddlewareOrderResolver.OrderMiddleware(middlewares)
             .Reverse()
             .Aggregate(
                 handlerExec, 
