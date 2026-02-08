@@ -141,11 +141,72 @@ public class CreateUserCommand : ICommand
 builder.AddShinyMediator(x => x.AddFluentValidation());
 ```
 
+## Event Throttling
+
+Throttle rapid event firings so only the last event in a window is processed (debounce pattern).
+
+```csharp
+// Setup
+builder.AddShinyMediator(x => x
+    .AddThrottleEventMiddleware()
+);
+
+// Handler - MUST be partial when using [Throttle]
+[MediatorSingleton]
+public partial class SearchHandler : IEventHandler<SearchChangedEvent>
+{
+    [Throttle(500)]  // 500ms debounce window
+    public Task Handle(SearchChangedEvent @event, IMediatorContext context, CancellationToken ct)
+    {
+        // Only executes after 500ms of no new events
+        return PerformSearch(@event.Query);
+    }
+}
+```
+
 ## Performance Logging
 
 ```csharp
 builder.AddShinyMediator(x => x.AddPerformanceLoggingMiddleware());
 ```
+
+## Middleware Ordering
+
+Control middleware execution order with `[MiddlewareOrder]` on middleware classes. Lower values run first (outermost in pipeline). Default order is 0.
+
+```csharp
+[MiddlewareOrder(-100)]  // Runs first - validation before anything else
+[MediatorSingleton]
+public class ValidationMiddleware<TRequest, TResult> : IRequestMiddleware<TRequest, TResult>
+    where TRequest : IRequest<TResult>
+{
+    public async Task<TResult> Process(
+        IMediatorContext context,
+        RequestHandlerDelegate<TResult> next,
+        CancellationToken cancellationToken)
+    {
+        Validate(context.Message);
+        return await next();
+    }
+}
+
+[MiddlewareOrder(100)]  // Runs last - closest to handler
+[MediatorSingleton]
+public class CachingMiddleware<TRequest, TResult> : IRequestMiddleware<TRequest, TResult>
+    where TRequest : IRequest<TResult>
+{
+    public async Task<TResult> Process(
+        IMediatorContext context,
+        RequestHandlerDelegate<TResult> next,
+        CancellationToken cancellationToken)
+    {
+        // Check cache, call next() on miss
+        return await next();
+    }
+}
+```
+
+Middleware without `[MiddlewareOrder]` defaults to 0. Middleware with the same order preserves DI registration order (stable sort).
 
 ## Custom Middleware
 

@@ -2,7 +2,7 @@
 
 > **Important: Partial Class Requirement**
 >
-> When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`), the handler class **must be declared as `partial`**. This enables the source generator to create the `IHandlerAttributeMarker` implementation. Without `partial`, you'll get compiler error `SHINY001`.
+> When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Throttle]`), the handler class **must be declared as `partial`**. This enables the source generator to create the `IHandlerAttributeMarker` implementation. Without `partial`, you'll get compiler error `SHINY001`.
 
 ## Request Handler Template
 
@@ -49,6 +49,7 @@ public partial class {Name}RequestHandler : IRequestHandler<{Name}Request, {Resu
 - `[Resilient("policyName")]` - For resilience with retry/timeout
 - `[MainThread]` - For MAUI UI thread execution
 - `[TimerRefresh(milliseconds)]` - For auto-refresh streams
+- `[Throttle(milliseconds)]` - For debouncing rapid event firings
 
 ## Command Handler Template
 
@@ -156,10 +157,13 @@ public partial class {Name}StreamHandler : IStreamRequestHandler<{Name}StreamReq
 
 ## Custom Middleware Template
 
+Use `[MiddlewareOrder(n)]` to control execution order. Lower values run first (outermost in pipeline). Default is 0.
+
 ```csharp
 // Middleware/{Name}Middleware.cs
 namespace {Namespace}.Middleware;
 
+[MiddlewareOrder({Order})]  // Optional: controls execution order (lower = runs first, default 0)
 [MediatorSingleton]
 public class {Name}Middleware<TRequest, TResult> : IRequestMiddleware<TRequest, TResult>
     where TRequest : IRequest<TResult>

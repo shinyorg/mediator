@@ -56,7 +56,7 @@ Always use registration attributes:
 
 **Critical: Partial Class Requirement**
 
-When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`), the handler class **must be declared as `partial`**:
+When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Throttle]`), the handler class **must be declared as `partial`**:
 ```csharp
 [MediatorSingleton]
 public partial class MyHandler : IRequestHandler<MyRequest, MyResult>  // partial required!
@@ -134,6 +134,7 @@ Apply to handler methods as needed:
 - `[Resilient("policyName")]` - Retry/timeout policies
 - `[MainThread]` - MAUI main thread execution
 - `[TimerRefresh(milliseconds)]` - Auto-refresh streams
+- `[Throttle(milliseconds)]` - Debounce rapid event firings
 - `[Validate]` - Data annotation validation
 
 **When using ANY of these attributes, the handler class MUST be `partial`:**
@@ -147,7 +148,18 @@ public partial class CachedHandler : IRequestHandler<MyRequest, MyData>
 }
 ```
 
-### 4. File Organization
+### 4. Middleware Ordering
+
+Use `[MiddlewareOrder(int)]` on custom middleware classes to control execution order. Lower values run first (outermost). Default is 0.
+```csharp
+[MiddlewareOrder(-100)]  // Runs before middleware with higher order values
+[MediatorSingleton]
+public class EarlyMiddleware<TRequest, TResult> : IRequestMiddleware<TRequest, TResult>
+    where TRequest : IRequest<TResult>
+{ ... }
+```
+
+### 5. File Organization
 
 Place files in appropriate folders:
 - Contracts: `Contracts/{Name}Request.cs`, `Contracts/{Name}Command.cs`
