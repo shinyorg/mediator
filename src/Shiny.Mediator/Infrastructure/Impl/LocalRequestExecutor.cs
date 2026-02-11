@@ -61,7 +61,7 @@ public class RequestResultWrapper<TRequest, TResult>(
             }
         });
         
-        var result = await middlewares
+        var result = await MiddlewareOrderResolver.OrderMiddleware(middlewares)
             .Reverse()
             .Aggregate(
                 handlerExec, 

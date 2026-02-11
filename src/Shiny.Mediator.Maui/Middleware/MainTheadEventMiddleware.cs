@@ -1,6 +1,6 @@
 namespace Shiny.Mediator.Middleware;
 
-
+[MiddlewareOrder(100)]
 public class MainTheadEventMiddleware<TEvent> : IEventMiddleware<TEvent> where TEvent : IEvent
 {
     public async Task Process(

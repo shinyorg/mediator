@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Shiny.Mediator.Middleware;
 
 
+[MiddlewareOrder(2)]
 public class DataAnnotationsCommandMiddleware<TCommand> : AbstractValidationCommandMiddleware<TCommand> where TCommand : ICommand
 {
     protected override Task Validate(

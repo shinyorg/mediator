@@ -3,6 +3,7 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Middleware;
 
 
+[MiddlewareOrder(1)]
 public class OfflineFlushEventHandlers(IOfflineService offline) : 
     IEventHandler<FlushAllStoresEvent>,
     IEventHandler<FlushStoresEvent>

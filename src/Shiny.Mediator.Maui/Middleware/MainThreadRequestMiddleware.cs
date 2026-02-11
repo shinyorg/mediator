@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Middleware;
 
-
+[MiddlewareOrder(100)]
 public class MainThreadRequestMiddleware<TRequest, TResult>(
     ILogger<MainThreadRequestMiddleware<TRequest, TResult>> logger
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>

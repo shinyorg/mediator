@@ -1,0 +1,143 @@
+name: Update Release Notes
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_notes:
+        description: |
+          Release notes using RN components, one per line. Example:
+          <RN type="feature">My new feature</RN>
+          <RN type="fix">Bug fix description</RN>
+          <RN type="enhancement" breaking={true}>Breaking enhancement</RN>
+        required: true
+        type: string
+
+jobs:
+  update-release-notes:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout mediator repo
+      uses: actions/checkout@v4
+
+    - name: Extract version from Directory.build.props
+      id: version
+      run: |
+        VERSION=$(grep -oP '<PackageVersion>\K[^<]+' Directory.build.props)
+        MAJOR=$(echo "$VERSION" | cut -d. -f1)
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "major=$MAJOR" >> "$GITHUB_OUTPUT"
+        echo "Extracted version: $VERSION (major: $MAJOR)"
+
+    - name: Determine release date
+      id: date
+      run: |
+        BRANCH="${{ github.ref_name }}"
+        if [[ "$BRANCH" == v* ]]; then
+          DATE=$(date +'%B %-d, %Y')
+        else
+          DATE="TBD"
+        fi
+        echo "date=$DATE" >> "$GITHUB_OUTPUT"
+        echo "Release date: $DATE"
+
+    - name: Checkout documentation repo
+      uses: actions/checkout@v4
+      with:
+        repository: shinyorg/documentation
+        token: ${{ secrets.DOCS_DEPLOY_TOKEN }}
+        path: documentation
+
+    - name: Update release notes
+      env:
+        VERSION: ${{ steps.version.outputs.version }}
+        MAJOR: ${{ steps.version.outputs.major }}
+        DATE: ${{ steps.date.outputs.date }}
+        NOTES: ${{ inputs.release_notes }}
+      run: |
+        FILE="documentation/src/content/docs/release-notes/mediator.mdx"
+        HEADER="## v${VERSION} - ${DATE}"
+
+        # Build the notes block (each line from input)
+        NOTES_BLOCK=""
+        while IFS= read -r line; do
+          line="$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+          [ -z "$line" ] && continue
+          NOTES_BLOCK="${NOTES_BLOCK}${line}"$'\n'
+        done <<< "$NOTES"
+
+        VERSION_ESCAPED=$(echo "$VERSION" | sed 's/\./\\./g')
+
+        if grep -qE "^#{2,3} v${VERSION_ESCAPED}( |$)" "$FILE"; then
+          echo "Version v${VERSION} already exists - appending notes"
+
+          # Find the line number of the existing version header
+          LINE_NUM=$(grep -nE "^#{2,3} v${VERSION_ESCAPED}( |$)" "$FILE" | head -1 | cut -d: -f1)
+
+          # Find the next section header after this version (## or ###)
+          NEXT_HEADER=$(awk -v start="$((LINE_NUM + 1))" 'NR > start && /^#{2,3} v[0-9]/ { print NR; exit }' "$FILE")
+
+          if [ -z "$NEXT_HEADER" ]; then
+            # No next header found, append before EOF
+            INSERT_LINE=$(wc -l < "$FILE")
+          else
+            INSERT_LINE=$((NEXT_HEADER - 1))
+          fi
+
+          # Insert the notes before the next section
+          head -n "$INSERT_LINE" "$FILE" > "$FILE.tmp"
+          echo -n "$NOTES_BLOCK" >> "$FILE.tmp"
+          tail -n +"$((INSERT_LINE + 1))" "$FILE" >> "$FILE.tmp"
+          mv "$FILE.tmp" "$FILE"
+        else
+          echo "Version v${VERSION} does not exist - creating new section"
+
+          # Find the major version section (## v{MAJOR})
+          MAJOR_LINE=$(grep -n "^## v${MAJOR}$" "$FILE" | head -1 | cut -d: -f1)
+
+          if [ -z "$MAJOR_LINE" ]; then
+            echo "Major version section v${MAJOR} not found - creating it"
+            # Find the first ## v line to insert before it
+            FIRST_VERSION_LINE=$(grep -n '^## v[0-9]' "$FILE" | head -1 | cut -d: -f1)
+
+            if [ -z "$FIRST_VERSION_LINE" ]; then
+              echo "ERROR: Could not find any version sections in the file"
+              exit 1
+            fi
+
+            # Insert new major section before the first existing one
+            head -n "$((FIRST_VERSION_LINE - 1))" "$FILE" > "$FILE.tmp"
+            echo "## v${MAJOR}" >> "$FILE.tmp"
+            echo "" >> "$FILE.tmp"
+            echo "${HEADER}" >> "$FILE.tmp"
+            echo -n "$NOTES_BLOCK" >> "$FILE.tmp"
+            echo "" >> "$FILE.tmp"
+            tail -n +"$FIRST_VERSION_LINE" "$FILE" >> "$FILE.tmp"
+            mv "$FILE.tmp" "$FILE"
+          else
+            # Insert after the major version header line
+            head -n "$MAJOR_LINE" "$FILE" > "$FILE.tmp"
+            echo "" >> "$FILE.tmp"
+            echo "${HEADER}" >> "$FILE.tmp"
+            echo -n "$NOTES_BLOCK" >> "$FILE.tmp"
+            tail -n +"$((MAJOR_LINE + 1))" "$FILE" >> "$FILE.tmp"
+            mv "$FILE.tmp" "$FILE"
+          fi
+        fi
+
+        echo "--- Updated file content (first 50 lines) ---"
+        head -50 "$FILE"
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v7
+      with:
+        token: ${{ secrets.DOCS_DEPLOY_TOKEN }}
+        path: documentation
+        branch: release-notes/mediator-v${{ steps.version.outputs.version }}
+        title: "docs: update Mediator release notes for v${{ steps.version.outputs.version }}"
+        body: |
+          Automated update of Mediator release notes for **v${{ steps.version.outputs.version }}**.
+
+          Generated from [shinyorg/mediator](https://github.com/shinyorg/mediator).
+        commit-message: "docs: update Mediator release notes for v${{ steps.version.outputs.version }}"
+        delete-branch: true

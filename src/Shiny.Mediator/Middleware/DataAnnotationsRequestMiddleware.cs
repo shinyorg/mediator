@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Shiny.Mediator.Middleware;
 
 
+[MiddlewareOrder(2)]
 public class DataAnnotationsRequestMiddleware<TRequest, TResult> : AbstractValidationRequestMiddleware<TRequest, TResult>
     where TRequest : IRequest<TResult>
 {

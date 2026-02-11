@@ -189,6 +189,7 @@ public interface IMediatorContext
 - `[Resilient("policyName")]` - Apply resilience policy
 - `[MainThread]` - Execute on main thread (MAUI)
 - `[TimerRefresh(milliseconds)]` - Auto-refresh streams
+- `[Throttle(milliseconds)]` - Debounce rapid event firings (last event wins)
 - `[Validate]` - Enable validation
 
 **Example with partial class:**
@@ -200,6 +201,9 @@ public partial class MyHandler : IRequestHandler<MyRequest, MyResult>
     public Task<MyResult> Handle(...) { }
 }
 ```
+
+### Middleware Class Attributes
+- `[MiddlewareOrder(order)]` - Control middleware execution order (lower = runs first, default 0)
 
 ### HTTP Attributes
 - `[Get("/route")]`, `[Post("/route")]`, `[Put("/route")]`, `[Delete("/route")]`, `[Patch("/route")]`
@@ -233,7 +237,7 @@ public partial class MyHandler : IRequestHandler<MyRequest, MyResult>
 ## Troubleshooting
 
 ### Error SHINY001: Handler must be partial
-- **Cause:** You're using middleware attributes (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`) but the handler class is not declared as `partial`
+- **Cause:** You're using middleware attributes (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Throttle]`) but the handler class is not declared as `partial`
 - **Fix:** Add `partial` keyword to the class declaration:
   ```csharp
   public partial class MyHandler : IRequestHandler<...>  // Add 'partial'
@@ -256,6 +260,11 @@ public partial class MyHandler : IRequestHandler<MyRequest, MyResult>
 - For Blazor, call `UseBlazor()` in setup
 
 ### Middleware Not Executing
-- Check middleware registration order
+- Check middleware registration order (or use `[MiddlewareOrder]` to control explicitly)
 - Verify open generic middleware is registered with `AddOpenRequestMiddleware()`
 - Ensure middleware has `[MediatorSingleton]` attribute
+
+### Middleware Running in Wrong Order
+- Use `[MiddlewareOrder(n)]` on middleware classes to control execution order
+- Lower values run first (outermost in pipeline), default is 0
+- Middleware with the same order preserves DI registration order
