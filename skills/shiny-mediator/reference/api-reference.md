@@ -262,15 +262,94 @@ public partial class MyHandler : IRequestHandler<MyRequest, MyResult>
 ### Middleware Class Attributes
 - `[MiddlewareOrder(order)]` - Control middleware execution order (lower = runs first, default 0)
 
-### HTTP Attributes
-- `[Get("/route")]`, `[Post("/route")]`, `[Put("/route")]`, `[Delete("/route")]`, `[Patch("/route")]`
-- `[Query]` - Query string parameter
-- `[Header("name")]` - HTTP header
-- `[Body]` - Request body
+### HTTP Contract Attributes (Client-Side)
+- `[Get("/route")]`, `[Post("/route")]`, `[Put("/route")]`, `[Delete("/route")]`, `[Patch("/route")]` - HTTP method and route
+- `[Query("paramName")]` - Query string parameter (property name used if no explicit name)
+- `[Header("headerName")]` - HTTP header
+- `[Body]` - Request body (only one per contract, serialized as JSON)
+- Route parameters: Properties matching `{ParamName}` in the route are interpolated automatically
 
-### ASP.NET Endpoint Attributes
+**Route parameter resolution:** Properties whose names match `{placeholders}` in the route string are used as path parameters. Remaining properties need `[Query]`, `[Header]`, or `[Body]` attributes.
+
+### ASP.NET Endpoint Attributes (Server-Side)
 - `[MediatorHttpGroup("/route")]` - Group endpoints
 - `[MediatorHttpGet("/route")]`, `[MediatorHttpPost("/route")]`, etc.
+
+## HTTP Client Infrastructure
+
+### BaseHttpRequestHandler
+Base class for all generated HTTP handlers. Handles request execution, response deserialization, SSE parsing, and streaming.
+
+```csharp
+public record HttpHandlerServices(
+    ILoggerFactory LoggerFactory,
+    IConfiguration Configuration,
+    ISerializerService Serializer,
+    IHttpClientFactory HttpClientFactory,
+    IEnumerable<IHttpRequestDecorator> Decorators
+);
+```
+
+### IHttpRequestDecorator
+Customize HTTP requests before they are sent (e.g., add auth headers):
+```csharp
+public interface IHttpRequestDecorator
+{
+    Task Decorate(HttpRequestMessage httpRequest, IMediatorContext context);
+}
+```
+
+### Registration Methods
+```csharp
+// Register manually-written HTTP contract handlers
+builder.Services.AddShinyMediator(x => x.AddStrongTypedHttpClient());
+
+// Register OpenAPI-generated handlers
+builder.Services.AddShinyMediator(x => x.AddGeneratedOpenApiClient());
+```
+
+## OpenAPI Client Generation
+
+Generate strongly-typed mediator contracts and handlers from OpenAPI specs via `<MediatorHttp>` MSBuild items.
+
+### MSBuild Configuration
+```xml
+<ItemGroup>
+    <!-- Remote: Include is a logical name, Uri is the URL -->
+    <MediatorHttp Include="MyApi"
+                  Uri="https://api.example.com/swagger/v1/swagger.json"
+                  Namespace="MyApp.Api"
+                  ContractPostfix="HttpRequest"
+                  GenerateJsonConverters="true"
+                  Visible="false" />
+
+    <!-- Local: Include is the file path, no Uri needed -->
+    <MediatorHttp Include="./specs/openapi.yaml"
+                  Namespace="MyApp.LocalApi"
+                  Visible="false" />
+</ItemGroup>
+```
+
+`Include` can be a **file path** (for local specs) or a **logical name** when `Uri` is set separately.
+
+### MediatorHttp Metadata
+
+| Metadata | Description | Default |
+|----------|-------------|---------|
+| `Uri` | URL or local path to OpenAPI JSON/YAML spec | Required |
+| `Namespace` | C# namespace for generated types | Required |
+| `ContractPrefix` | Prefix for generated contract class names | (none) |
+| `ContractPostfix` | Postfix for generated contract class names | (none) |
+| `UseInternalClasses` | Generate `internal` classes instead of `public` | `false` |
+| `GenerateModelsOnly` | Only generate model classes, skip handlers | `false` |
+| `GenerateJsonConverters` | Generate `JsonConverter` for string enums | `false` |
+
+### What Gets Generated
+- **Models** from `components/schemas` with `[JsonPropertyName]` attributes
+- **Enums** with optional `JsonStringEnumConverter`
+- **Contract classes** implementing `IRequest<TResult>` with route/query/header/body properties
+- **Handler classes** inheriting `BaseHttpRequestHandler`
+- **Registration extension** `AddGeneratedOpenApiClient()`
 
 ## Migration from MediatR
 

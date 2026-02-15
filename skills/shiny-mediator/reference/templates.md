@@ -321,3 +321,61 @@ public record {Name}StreamRequest({Parameters}) : IStreamRequest<{ResultType}>, 
 ```
 
 The `IServerSentEventsStream` marker tells the generated HTTP handler to parse SSE format (`data:` prefixed lines) instead of raw JSON streaming.
+
+## OpenAPI Client Generation Template
+
+Generate contracts, models, and handlers from an OpenAPI/Swagger spec by adding a `<MediatorHttp>` item in your `.csproj`:
+
+```xml
+<!-- In .csproj -->
+<ItemGroup>
+    <!-- Remote spec: Include is a logical name, Uri is the URL -->
+    <MediatorHttp Include="PetStoreApi"
+                  Uri="https://petstore.swagger.io/v2/swagger.json"
+                  Namespace="{Namespace}.PetStore"
+                  ContractPostfix="HttpRequest"
+                  GenerateJsonConverters="true"
+                  Visible="false" />
+
+    <!-- Local spec: Include is the file path, no Uri needed -->
+    <MediatorHttp Include="./specs/openapi.yaml"
+                  Namespace="{Namespace}.LocalApi"
+                  GenerateModelsOnly="false"
+                  UseInternalClasses="false"
+                  Visible="false" />
+</ItemGroup>
+```
+
+`Include` can be a **file path** (for local specs) or a **logical name** when `Uri` is set to a remote URL.
+
+**MediatorHttp metadata options:**
+
+| Metadata | Description | Default |
+|----------|-------------|---------|
+| `Uri` | URL or local path to OpenAPI JSON/YAML spec | Required |
+| `Namespace` | C# namespace for generated types | Required |
+| `ContractPrefix` | Prefix for generated contract class names | (none) |
+| `ContractPostfix` | Postfix for generated contract class names | (none) |
+| `UseInternalClasses` | Generate `internal` classes instead of `public` | `false` |
+| `GenerateModelsOnly` | Only generate model classes, skip handlers | `false` |
+| `GenerateJsonConverters` | Generate `JsonConverter` for string enums | `false` |
+
+**The source generator produces:**
+- Model classes from `components/schemas` with `[JsonPropertyName]` attributes
+- Enum types with optional `JsonStringEnumConverter`
+- Request contract classes implementing `IRequest<TResult>` with route/query/header/body properties
+- Handler classes inheriting `BaseHttpRequestHandler` for each endpoint
+- A registration extension method `AddGeneratedOpenApiClient()`
+
+**Registration:**
+```csharp
+builder.Services.AddShinyMediator(x => x
+    .AddMediatorRegistry()
+    .AddGeneratedOpenApiClient()
+);
+```
+
+**Usage (same as any mediator request):**
+```csharp
+var response = await mediator.Request(new GetPetByIdHttpRequest { PetId = 123 });
+var pet = response.Result;

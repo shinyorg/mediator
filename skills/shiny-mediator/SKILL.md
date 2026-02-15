@@ -22,6 +22,12 @@ triggers:
   - IAsyncEnumerable
   - IStreamRequest
   - IServerSentEventsStream
+  - OpenAPI
+  - HTTP client
+  - MediatorHttp
+  - swagger
+  - contract-first
+  - strongly typed HTTP
 ---
 
 # Shiny Mediator Skill
@@ -38,6 +44,8 @@ Invoke this skill when the user wants to:
 - Configure Shiny Mediator in their application
 - Set up ASP.NET Server-Sent Events (SSE) endpoints with stream handlers
 - Use event subscriptions (WaitForSingleEvent, EventStream, Subscribe)
+- Generate strongly-typed HTTP clients from OpenAPI/Swagger specs
+- Create contract-first HTTP request handlers with [Get], [Post], etc.
 - Migrate from MediatR to Shiny Mediator
 
 ## Library Overview
@@ -270,6 +278,92 @@ public class TickerStreamHandler : IStreamRequestHandler<TickerStreamRequest, in
 **HTTP client-side SSE consumption:** Implement `IServerSentEventsStream` marker on the contract to indicate the server returns SSE format. The generated HTTP handler will use `ReadServerSentEvents<T>()` to parse the `data:` prefixed SSE lines.
 ```csharp
 public record TickerStreamRequest : IStreamRequest<int>, IServerSentEventsStream;
+```
+
+## Contract-First HTTP Clients
+
+Shiny Mediator generates strongly-typed HTTP client handlers from contract classes decorated with HTTP method attributes. No manual `HttpClient` code needed.
+
+### Manual HTTP Contracts
+
+Decorate request classes with `[Get]`, `[Post]`, `[Put]`, `[Delete]`, `[Patch]` and use `[Query]`, `[Header]`, `[Body]` on properties:
+```csharp
+[Get("/api/orders/{OrderId}")]
+public class GetOrderRequest : IRequest<OrderDto>
+{
+    public int OrderId { get; set; }          // Route parameter (matches {OrderId})
+
+    [Query("status")]
+    public string? Status { get; set; }        // ?status=value
+
+    [Header("Authorization")]
+    public string? AuthToken { get; set; }     // HTTP header
+}
+
+[Post("/api/orders")]
+public class CreateOrderRequest : IRequest<OrderDto>
+{
+    [Body]
+    public CreateOrderBody? Body { get; set; } // JSON request body
+}
+```
+
+The source generator creates handler classes inheriting `BaseHttpRequestHandler` that build routes, add query/header parameters, serialize bodies, and call `IHttpClientFactory`.
+
+**Registration:**
+```csharp
+builder.Services.AddShinyMediator(x => x
+    .AddMediatorRegistry()
+    .AddStrongTypedHttpClient()   // Registers generated HTTP handlers
+);
+```
+
+### OpenAPI Client Generation
+
+Generate contracts, models, and handlers directly from OpenAPI/Swagger specs. Add a `<MediatorHttp>` item in your `.csproj`:
+
+```xml
+<ItemGroup>
+    <!-- Remote URL: Include is a logical name, Uri points to the spec -->
+    <MediatorHttp Include="MyApi"
+                  Uri="https://api.example.com/swagger/v1/swagger.json"
+                  Namespace="MyApp.ExternalApi"
+                  ContractPostfix="HttpRequest"
+                  GenerateJsonConverters="true"
+                  Visible="false" />
+
+    <!-- Local file: Include is the file path, no Uri needed -->
+    <MediatorHttp Include="./specs/openapi.yaml"
+                  Namespace="MyApp.LocalApi"
+                  Visible="false" />
+</ItemGroup>
+```
+
+`Include` can be a **file path** (for local specs) or a **logical name** when `Uri` is set separately.
+
+**MediatorHttp metadata options:**
+
+| Metadata | Description |
+|----------|-------------|
+| `Uri` | URL or local path to OpenAPI JSON/YAML spec |
+| `Namespace` | C# namespace for generated types |
+| `ContractPrefix` | Prefix for generated contract class names |
+| `ContractPostfix` | Postfix for generated contract class names |
+| `UseInternalClasses` | Generate internal classes instead of public |
+| `GenerateModelsOnly` | Only generate models, no handlers |
+| `GenerateJsonConverters` | Generate `JsonConverter` implementations for enums |
+
+**Registration of generated OpenAPI client:**
+```csharp
+builder.Services.AddShinyMediator(x => x
+    .AddMediatorRegistry()
+    .AddGeneratedOpenApiClient()   // Registers all OpenAPI-generated handlers
+);
+```
+
+Then use like any other mediator request:
+```csharp
+var result = await mediator.Request(new GetPetsHttpRequest { Status = "available" });
 ```
 
 ## Best Practices
