@@ -15,6 +15,13 @@ triggers:
   - IEvent
   - CQRS
   - Shiny.Mediator
+  - server sent events
+  - SSE
+  - EventStream
+  - WaitForSingleEvent
+  - IAsyncEnumerable
+  - IStreamRequest
+  - IServerSentEventsStream
 ---
 
 # Shiny Mediator Skill
@@ -29,6 +36,8 @@ Invoke this skill when the user wants to:
 - Add middleware (caching, resilience, validation, offline)
 - Scaffold ASP.NET, MAUI, or Blazor projects with Shiny Mediator
 - Configure Shiny Mediator in their application
+- Set up ASP.NET Server-Sent Events (SSE) endpoints with stream handlers
+- Use event subscriptions (WaitForSingleEvent, EventStream, Subscribe)
 - Migrate from MediatR to Shiny Mediator
 
 ## Library Overview
@@ -194,6 +203,75 @@ public async Task<UserDto> Handle(GetUserRequest request, IMediatorContext conte
 }
 ```
 
+### Event Subscriptions & Streaming
+
+**WaitForSingleEvent** - Await a single event occurrence (with optional filter):
+```csharp
+// Wait for a specific event (blocks until event fires or cancellation)
+var evt = await mediator.WaitForSingleEvent<OrderCompletedEvent>(
+    filter: e => e.OrderId == orderId,
+    cancellationToken: ct
+);
+```
+
+**EventStream** - Continuous IAsyncEnumerable stream of events (uses Channels internally):
+```csharp
+// Consume events as an async stream
+await foreach (var evt in mediator.EventStream<PriceUpdatedEvent>(cancellationToken: ct))
+{
+    Console.WriteLine($"New price: {evt.Price}");
+}
+```
+
+**Subscribe** - Manual subscription returning IDisposable:
+```csharp
+var sub = mediator.Subscribe<MyEvent>((ev, ctx, ct) =>
+{
+    Console.WriteLine($"Event received: {ev}");
+    return Task.CompletedTask;
+});
+// Later: sub.Dispose() to unsubscribe
+```
+
+### ASP.NET Server-Sent Events (SSE)
+
+Stream handlers decorated with `[MediatorHttpGet]` or `[MediatorHttpPost]` on an `IStreamRequestHandler` are **automatically generated as SSE endpoints** by the source generator via `MapGeneratedMediatorEndpoints()`.
+
+**Manual SSE endpoint with EventStream:**
+```csharp
+app.MapGet("/events", ([FromServices] IMediator mediator) =>
+    TypedResults.ServerSentEvents(mediator.EventStream<MyEvent>())
+);
+```
+
+**Stream handler as auto-generated SSE endpoint:**
+```csharp
+public record TickerStreamRequest : IStreamRequest<int>;
+
+[MediatorScoped]
+public class TickerStreamHandler : IStreamRequestHandler<TickerStreamRequest, int>
+{
+    [MediatorHttpGet("/ticker")]
+    public async IAsyncEnumerable<int> Handle(
+        TickerStreamRequest request,
+        IMediatorContext context,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var i = 0;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            yield return i++;
+            await Task.Delay(1000, cancellationToken);
+        }
+    }
+}
+```
+
+**HTTP client-side SSE consumption:** Implement `IServerSentEventsStream` marker on the contract to indicate the server returns SSE format. The generated HTTP handler will use `ReadServerSentEvents<T>()` to parse the `data:` prefixed SSE lines.
+```csharp
+public record TickerStreamRequest : IStreamRequest<int>, IServerSentEventsStream;
+```
+
 ## Best Practices
 
 1. **Use records for contracts** - Immutable, value equality
@@ -203,14 +281,17 @@ public async Task<UserDto> Handle(GetUserRequest request, IMediatorContext conte
 5. **Chain via context** - Use `context.Request()` not injecting IMediator
 6. **Implement IContractKey** - For custom cache/offline keys
 7. **Always pass CancellationToken** - Respect cancellation
+8. **Use IServerSentEventsStream marker** - On stream contracts consumed via HTTP SSE
+9. **Stream handlers only support GET/POST** - Other HTTP methods are not valid for SSE endpoints
+10. **Use EventStream for SSE push endpoints** - Combine `mediator.EventStream<T>()` with `TypedResults.ServerSentEvents()` for event-driven SSE
 
 ## Reference Files
 
 For detailed templates and examples, see:
-- `reference/templates.md` - Code generation templates
+- `reference/templates.md` - Code generation templates (includes SSE endpoint templates)
 - `reference/scaffolding.md` - Project structure templates
 - `reference/middleware.md` - Middleware configuration
-- `reference/api-reference.md` - Full API and NuGet packages
+- `reference/api-reference.md` - Full API, event subscriptions, SSE, and NuGet packages
 
 ## Common Packages
 

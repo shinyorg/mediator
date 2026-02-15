@@ -148,11 +148,68 @@ public interface IMediator
     Task<TEvent> WaitForSingleEvent<TEvent>(CancellationToken cancellationToken = default) where TEvent : IEvent;
     IAsyncEnumerable<TEvent> EventStream<TEvent>(CancellationToken cancellationToken = default) where TEvent : IEvent;
 
+    // Stream Requests
+    IAsyncEnumerable<(IMediatorContext Context, TResult Result)> Request<TResult>(IStreamRequest<TResult> request, CancellationToken cancellationToken = default);
+
     // Store Management
     Task FlushAllStores();
     Task FlushStores(string key, bool partialMatch = false);
 }
 ```
+
+### Event Subscription Methods
+
+**WaitForSingleEvent** - Waits for a single event, optionally filtered. Uses `TaskCompletionSource` internally. Returns when the first matching event fires or cancellation is requested.
+```csharp
+// Extension method signature (supports optional filter)
+Task<T> WaitForSingleEvent<T>(Func<T, bool>? filter = null, CancellationToken cancellationToken = default) where T : IEvent;
+
+// Usage
+var evt = await mediator.WaitForSingleEvent<OrderCompletedEvent>(
+    filter: e => e.OrderId == myOrderId,
+    cancellationToken: ct
+);
+```
+
+**EventStream** - Returns an `IAsyncEnumerable<T>` of events using `System.Threading.Channels`. The stream continues until cancellation.
+```csharp
+// Extension method signature (supports optional filter)
+IAsyncEnumerable<T> EventStream<T>(Func<T, bool>? filter = null, CancellationToken cancellationToken = default) where T : IEvent;
+
+// Usage
+await foreach (var evt in mediator.EventStream<PriceUpdatedEvent>(cancellationToken: ct))
+{
+    ProcessPriceUpdate(evt);
+}
+```
+
+**Subscribe** - Manual event subscription returning `IDisposable` for cleanup.
+```csharp
+IDisposable Subscribe<TEvent>(Func<TEvent, IMediatorContext, CancellationToken, Task> handler) where TEvent : IEvent;
+```
+
+### Server-Sent Events (SSE) Interfaces
+
+**IServerSentEventsStream** - Marker interface for stream request contracts consumed via HTTP SSE. Tells the generated HTTP handler to parse SSE `data:` lines.
+```csharp
+public interface IServerSentEventsStream;
+
+// Usage on contract
+public record MyStreamRequest : IStreamRequest<MyData>, IServerSentEventsStream;
+```
+
+### ASP.NET SSE Endpoint Builder Extensions
+
+```csharp
+// Map stream handlers as SSE endpoints (used by source generator, can also be called manually)
+RouteHandlerBuilder MapMediatorServerSentEventsGet<TRequest, TResult>(string pattern, string? eventName = null)
+    where TRequest : IStreamRequest<TResult>;
+
+RouteHandlerBuilder MapMediatorServerSentEventsPost<TRequest, TResult>(string pattern, string? eventName = null)
+    where TRequest : IStreamRequest<TResult>;
+```
+
+These are automatically called by `MapGeneratedMediatorEndpoints()` for stream handlers decorated with `[MediatorHttpGet]` or `[MediatorHttpPost]`. They use `TypedResults.ServerSentEvents()` internally.
 
 ## IMediatorContext Interface
 
