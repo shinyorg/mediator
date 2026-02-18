@@ -5,16 +5,16 @@
         <Owners>aritchie;shinylib</Owners>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
-        <PackageVersion>6.2.0-beta-0003</PackageVersion>
         <DisableExtraReferences>False</DisableExtraReferences>
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+        
+        <PackageVersion>6.2.0-beta-0003</PackageVersion>
         <Description>Shiny Mediator - A mediator pattern for all .NET Apps</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://shinylib.net/mediator</PackageProjectUrl>
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
         <PackageReleaseNotes>https://shinylib.net/release-notes/mediator</PackageReleaseNotes>
-        <PackageProjectUrl>https://shinylib.net</PackageProjectUrl>
         <PackageTags>mediator shiny aspnet maui blazor prism</PackageTags>
         <RepositoryUrl>https://github.com/shinyorg/mediator</RepositoryUrl>
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
