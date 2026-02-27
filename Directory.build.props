@@ -5,16 +5,16 @@
         <Owners>aritchie;shinylib</Owners>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
-        <PackageVersion>6.2.0</PackageVersion>
         <DisableExtraReferences>False</DisableExtraReferences>
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+        
+        <PackageVersion>6.2.1</PackageVersion>
         <Description>Shiny Mediator - A mediator pattern for all .NET Apps</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://shinylib.net/mediator</PackageProjectUrl>
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
         <PackageReleaseNotes>https://shinylib.net/release-notes/mediator</PackageReleaseNotes>
-        <PackageProjectUrl>https://shinylib.net</PackageProjectUrl>
         <PackageTags>mediator shiny aspnet maui blazor prism</PackageTags>
         <RepositoryUrl>https://github.com/shinyorg/mediator</RepositoryUrl>
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
@@ -37,4 +37,10 @@
         <PublishRepositoryUrl>True</PublishRepositoryUrl>
         <EmbedUntrackedSources>True</EmbedUntrackedSources>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)nuget.png" Pack="true" PackagePath="icon.png" />
+        <None Include="$(MSBuildThisFileDirectory)nuget.txt" Pack="true" PackagePath="readme.txt" />
+        <None Include="$(MSBuildThisFileDirectory)readme.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
 </Project>

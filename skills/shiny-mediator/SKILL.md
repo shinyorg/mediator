@@ -15,6 +15,19 @@ triggers:
   - IEvent
   - CQRS
   - Shiny.Mediator
+  - server sent events
+  - SSE
+  - EventStream
+  - WaitForSingleEvent
+  - IAsyncEnumerable
+  - IStreamRequest
+  - IServerSentEventsStream
+  - OpenAPI
+  - HTTP client
+  - MediatorHttp
+  - swagger
+  - contract-first
+  - strongly typed HTTP
 ---
 
 # Shiny Mediator Skill
@@ -29,6 +42,10 @@ Invoke this skill when the user wants to:
 - Add middleware (caching, resilience, validation, offline)
 - Scaffold ASP.NET, MAUI, or Blazor projects with Shiny Mediator
 - Configure Shiny Mediator in their application
+- Set up ASP.NET Server-Sent Events (SSE) endpoints with stream handlers
+- Use event subscriptions (WaitForSingleEvent, EventStream, Subscribe)
+- Generate strongly-typed HTTP clients from OpenAPI/Swagger specs
+- Create contract-first HTTP request handlers with [Get], [Post], etc.
 - Migrate from MediatR to Shiny Mediator
 
 ## Library Overview
@@ -56,7 +73,7 @@ Always use registration attributes:
 
 **Critical: Partial Class Requirement**
 
-When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Throttle]`), the handler class **must be declared as `partial`**:
+When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Sample]`, `[Throttle]`), the handler class **must be declared as `partial`**:
 ```csharp
 [MediatorSingleton]
 public partial class MyHandler : IRequestHandler<MyRequest, MyResult>  // partial required!
@@ -134,7 +151,8 @@ Apply to handler methods as needed:
 - `[Resilient("policyName")]` - Retry/timeout policies
 - `[MainThread]` - MAUI main thread execution
 - `[TimerRefresh(milliseconds)]` - Auto-refresh streams
-- `[Throttle(milliseconds)]` - Debounce rapid event firings
+- `[Sample(milliseconds)]` - Fixed-window sampling (last event in window executes)
+- `[Throttle(milliseconds)]` - True throttle (first event executes, cooldown discards rest)
 - `[Validate]` - Data annotation validation
 
 **When using ANY of these attributes, the handler class MUST be `partial`:**
@@ -194,6 +212,161 @@ public async Task<UserDto> Handle(GetUserRequest request, IMediatorContext conte
 }
 ```
 
+### Event Subscriptions & Streaming
+
+**WaitForSingleEvent** - Await a single event occurrence (with optional filter):
+```csharp
+// Wait for a specific event (blocks until event fires or cancellation)
+var evt = await mediator.WaitForSingleEvent<OrderCompletedEvent>(
+    filter: e => e.OrderId == orderId,
+    cancellationToken: ct
+);
+```
+
+**EventStream** - Continuous IAsyncEnumerable stream of events (uses Channels internally):
+```csharp
+// Consume events as an async stream
+await foreach (var evt in mediator.EventStream<PriceUpdatedEvent>(cancellationToken: ct))
+{
+    Console.WriteLine($"New price: {evt.Price}");
+}
+```
+
+**Subscribe** - Manual subscription returning IDisposable:
+```csharp
+var sub = mediator.Subscribe<MyEvent>((ev, ctx, ct) =>
+{
+    Console.WriteLine($"Event received: {ev}");
+    return Task.CompletedTask;
+});
+// Later: sub.Dispose() to unsubscribe
+```
+
+### ASP.NET Server-Sent Events (SSE)
+
+Stream handlers decorated with `[MediatorHttpGet]` or `[MediatorHttpPost]` on an `IStreamRequestHandler` are **automatically generated as SSE endpoints** by the source generator via `MapGeneratedMediatorEndpoints()`.
+
+**Manual SSE endpoint with EventStream:**
+```csharp
+app.MapGet("/events", ([FromServices] IMediator mediator) =>
+    TypedResults.ServerSentEvents(mediator.EventStream<MyEvent>())
+);
+```
+
+**Stream handler as auto-generated SSE endpoint:**
+```csharp
+public record TickerStreamRequest : IStreamRequest<int>;
+
+[MediatorScoped]
+public class TickerStreamHandler : IStreamRequestHandler<TickerStreamRequest, int>
+{
+    [MediatorHttpGet("/ticker")]
+    public async IAsyncEnumerable<int> Handle(
+        TickerStreamRequest request,
+        IMediatorContext context,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var i = 0;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            yield return i++;
+            await Task.Delay(1000, cancellationToken);
+        }
+    }
+}
+```
+
+**HTTP client-side SSE consumption:** Implement `IServerSentEventsStream` marker on the contract to indicate the server returns SSE format. The generated HTTP handler will use `ReadServerSentEvents<T>()` to parse the `data:` prefixed SSE lines.
+```csharp
+public record TickerStreamRequest : IStreamRequest<int>, IServerSentEventsStream;
+```
+
+## Contract-First HTTP Clients
+
+Shiny Mediator generates strongly-typed HTTP client handlers from contract classes decorated with HTTP method attributes. No manual `HttpClient` code needed.
+
+### Manual HTTP Contracts
+
+Decorate request classes with `[Get]`, `[Post]`, `[Put]`, `[Delete]`, `[Patch]` and use `[Query]`, `[Header]`, `[Body]` on properties:
+```csharp
+[Get("/api/orders/{OrderId}")]
+public class GetOrderRequest : IRequest<OrderDto>
+{
+    public int OrderId { get; set; }          // Route parameter (matches {OrderId})
+
+    [Query("status")]
+    public string? Status { get; set; }        // ?status=value
+
+    [Header("Authorization")]
+    public string? AuthToken { get; set; }     // HTTP header
+}
+
+[Post("/api/orders")]
+public class CreateOrderRequest : IRequest<OrderDto>
+{
+    [Body]
+    public CreateOrderBody? Body { get; set; } // JSON request body
+}
+```
+
+The source generator creates handler classes inheriting `BaseHttpRequestHandler` that build routes, add query/header parameters, serialize bodies, and call `IHttpClientFactory`.
+
+**Registration:**
+```csharp
+builder.Services.AddShinyMediator(x => x
+    .AddMediatorRegistry()
+    .AddStrongTypedHttpClient()   // Registers generated HTTP handlers
+);
+```
+
+### OpenAPI Client Generation
+
+Generate contracts, models, and handlers directly from OpenAPI/Swagger specs. Add a `<MediatorHttp>` item in your `.csproj`:
+
+```xml
+<ItemGroup>
+    <!-- Remote URL: Include is a logical name, Uri points to the spec -->
+    <MediatorHttp Include="MyApi"
+                  Uri="https://api.example.com/swagger/v1/swagger.json"
+                  Namespace="MyApp.ExternalApi"
+                  ContractPostfix="HttpRequest"
+                  GenerateJsonConverters="true"
+                  Visible="false" />
+
+    <!-- Local file: Include is the file path, no Uri needed -->
+    <MediatorHttp Include="./specs/openapi.yaml"
+                  Namespace="MyApp.LocalApi"
+                  Visible="false" />
+</ItemGroup>
+```
+
+`Include` can be a **file path** (for local specs) or a **logical name** when `Uri` is set separately.
+
+**MediatorHttp metadata options:**
+
+| Metadata | Description |
+|----------|-------------|
+| `Uri` | URL or local path to OpenAPI JSON/YAML spec |
+| `Namespace` | C# namespace for generated types |
+| `ContractPrefix` | Prefix for generated contract class names |
+| `ContractPostfix` | Postfix for generated contract class names |
+| `UseInternalClasses` | Generate internal classes instead of public |
+| `GenerateModelsOnly` | Only generate models, no handlers |
+| `GenerateJsonConverters` | Generate `JsonConverter` implementations for enums |
+
+**Registration of generated OpenAPI client:**
+```csharp
+builder.Services.AddShinyMediator(x => x
+    .AddMediatorRegistry()
+    .AddGeneratedOpenApiClient()   // Registers all OpenAPI-generated handlers
+);
+```
+
+Then use like any other mediator request:
+```csharp
+var result = await mediator.Request(new GetPetsHttpRequest { Status = "available" });
+```
+
 ## Best Practices
 
 1. **Use records for contracts** - Immutable, value equality
@@ -203,14 +376,17 @@ public async Task<UserDto> Handle(GetUserRequest request, IMediatorContext conte
 5. **Chain via context** - Use `context.Request()` not injecting IMediator
 6. **Implement IContractKey** - For custom cache/offline keys
 7. **Always pass CancellationToken** - Respect cancellation
+8. **Use IServerSentEventsStream marker** - On stream contracts consumed via HTTP SSE
+9. **Stream handlers only support GET/POST** - Other HTTP methods are not valid for SSE endpoints
+10. **Use EventStream for SSE push endpoints** - Combine `mediator.EventStream<T>()` with `TypedResults.ServerSentEvents()` for event-driven SSE
 
 ## Reference Files
 
 For detailed templates and examples, see:
-- `reference/templates.md` - Code generation templates
+- `reference/templates.md` - Code generation templates (includes SSE endpoint templates)
 - `reference/scaffolding.md` - Project structure templates
 - `reference/middleware.md` - Middleware configuration
-- `reference/api-reference.md` - Full API and NuGet packages
+- `reference/api-reference.md` - Full API, event subscriptions, SSE, and NuGet packages
 
 ## Common Packages
 

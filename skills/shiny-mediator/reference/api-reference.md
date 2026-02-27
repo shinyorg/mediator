@@ -148,11 +148,68 @@ public interface IMediator
     Task<TEvent> WaitForSingleEvent<TEvent>(CancellationToken cancellationToken = default) where TEvent : IEvent;
     IAsyncEnumerable<TEvent> EventStream<TEvent>(CancellationToken cancellationToken = default) where TEvent : IEvent;
 
+    // Stream Requests
+    IAsyncEnumerable<(IMediatorContext Context, TResult Result)> Request<TResult>(IStreamRequest<TResult> request, CancellationToken cancellationToken = default);
+
     // Store Management
     Task FlushAllStores();
     Task FlushStores(string key, bool partialMatch = false);
 }
 ```
+
+### Event Subscription Methods
+
+**WaitForSingleEvent** - Waits for a single event, optionally filtered. Uses `TaskCompletionSource` internally. Returns when the first matching event fires or cancellation is requested.
+```csharp
+// Extension method signature (supports optional filter)
+Task<T> WaitForSingleEvent<T>(Func<T, bool>? filter = null, CancellationToken cancellationToken = default) where T : IEvent;
+
+// Usage
+var evt = await mediator.WaitForSingleEvent<OrderCompletedEvent>(
+    filter: e => e.OrderId == myOrderId,
+    cancellationToken: ct
+);
+```
+
+**EventStream** - Returns an `IAsyncEnumerable<T>` of events using `System.Threading.Channels`. The stream continues until cancellation.
+```csharp
+// Extension method signature (supports optional filter)
+IAsyncEnumerable<T> EventStream<T>(Func<T, bool>? filter = null, CancellationToken cancellationToken = default) where T : IEvent;
+
+// Usage
+await foreach (var evt in mediator.EventStream<PriceUpdatedEvent>(cancellationToken: ct))
+{
+    ProcessPriceUpdate(evt);
+}
+```
+
+**Subscribe** - Manual event subscription returning `IDisposable` for cleanup.
+```csharp
+IDisposable Subscribe<TEvent>(Func<TEvent, IMediatorContext, CancellationToken, Task> handler) where TEvent : IEvent;
+```
+
+### Server-Sent Events (SSE) Interfaces
+
+**IServerSentEventsStream** - Marker interface for stream request contracts consumed via HTTP SSE. Tells the generated HTTP handler to parse SSE `data:` lines.
+```csharp
+public interface IServerSentEventsStream;
+
+// Usage on contract
+public record MyStreamRequest : IStreamRequest<MyData>, IServerSentEventsStream;
+```
+
+### ASP.NET SSE Endpoint Builder Extensions
+
+```csharp
+// Map stream handlers as SSE endpoints (used by source generator, can also be called manually)
+RouteHandlerBuilder MapMediatorServerSentEventsGet<TRequest, TResult>(string pattern, string? eventName = null)
+    where TRequest : IStreamRequest<TResult>;
+
+RouteHandlerBuilder MapMediatorServerSentEventsPost<TRequest, TResult>(string pattern, string? eventName = null)
+    where TRequest : IStreamRequest<TResult>;
+```
+
+These are automatically called by `MapGeneratedMediatorEndpoints()` for stream handlers decorated with `[MediatorHttpGet]` or `[MediatorHttpPost]`. They use `TypedResults.ServerSentEvents()` internally.
 
 ## IMediatorContext Interface
 
@@ -189,7 +246,8 @@ public interface IMediatorContext
 - `[Resilient("policyName")]` - Apply resilience policy
 - `[MainThread]` - Execute on main thread (MAUI)
 - `[TimerRefresh(milliseconds)]` - Auto-refresh streams
-- `[Throttle(milliseconds)]` - Debounce rapid event firings (last event wins)
+- `[Sample(milliseconds)]` - Fixed-window sampling (last event in window executes)
+- `[Throttle(milliseconds)]` - True throttle (first event executes, cooldown discards rest)
 - `[Validate]` - Enable validation
 
 **Example with partial class:**
@@ -205,15 +263,94 @@ public partial class MyHandler : IRequestHandler<MyRequest, MyResult>
 ### Middleware Class Attributes
 - `[MiddlewareOrder(order)]` - Control middleware execution order (lower = runs first, default 0)
 
-### HTTP Attributes
-- `[Get("/route")]`, `[Post("/route")]`, `[Put("/route")]`, `[Delete("/route")]`, `[Patch("/route")]`
-- `[Query]` - Query string parameter
-- `[Header("name")]` - HTTP header
-- `[Body]` - Request body
+### HTTP Contract Attributes (Client-Side)
+- `[Get("/route")]`, `[Post("/route")]`, `[Put("/route")]`, `[Delete("/route")]`, `[Patch("/route")]` - HTTP method and route
+- `[Query("paramName")]` - Query string parameter (property name used if no explicit name)
+- `[Header("headerName")]` - HTTP header
+- `[Body]` - Request body (only one per contract, serialized as JSON)
+- Route parameters: Properties matching `{ParamName}` in the route are interpolated automatically
 
-### ASP.NET Endpoint Attributes
+**Route parameter resolution:** Properties whose names match `{placeholders}` in the route string are used as path parameters. Remaining properties need `[Query]`, `[Header]`, or `[Body]` attributes.
+
+### ASP.NET Endpoint Attributes (Server-Side)
 - `[MediatorHttpGroup("/route")]` - Group endpoints
 - `[MediatorHttpGet("/route")]`, `[MediatorHttpPost("/route")]`, etc.
+
+## HTTP Client Infrastructure
+
+### BaseHttpRequestHandler
+Base class for all generated HTTP handlers. Handles request execution, response deserialization, SSE parsing, and streaming.
+
+```csharp
+public record HttpHandlerServices(
+    ILoggerFactory LoggerFactory,
+    IConfiguration Configuration,
+    ISerializerService Serializer,
+    IHttpClientFactory HttpClientFactory,
+    IEnumerable<IHttpRequestDecorator> Decorators
+);
+```
+
+### IHttpRequestDecorator
+Customize HTTP requests before they are sent (e.g., add auth headers):
+```csharp
+public interface IHttpRequestDecorator
+{
+    Task Decorate(HttpRequestMessage httpRequest, IMediatorContext context);
+}
+```
+
+### Registration Methods
+```csharp
+// Register manually-written HTTP contract handlers
+builder.Services.AddShinyMediator(x => x.AddStrongTypedHttpClient());
+
+// Register OpenAPI-generated handlers
+builder.Services.AddShinyMediator(x => x.AddGeneratedOpenApiClient());
+```
+
+## OpenAPI Client Generation
+
+Generate strongly-typed mediator contracts and handlers from OpenAPI specs via `<MediatorHttp>` MSBuild items.
+
+### MSBuild Configuration
+```xml
+<ItemGroup>
+    <!-- Remote: Include is a logical name, Uri is the URL -->
+    <MediatorHttp Include="MyApi"
+                  Uri="https://api.example.com/swagger/v1/swagger.json"
+                  Namespace="MyApp.Api"
+                  ContractPostfix="HttpRequest"
+                  GenerateJsonConverters="true"
+                  Visible="false" />
+
+    <!-- Local: Include is the file path, no Uri needed -->
+    <MediatorHttp Include="./specs/openapi.yaml"
+                  Namespace="MyApp.LocalApi"
+                  Visible="false" />
+</ItemGroup>
+```
+
+`Include` can be a **file path** (for local specs) or a **logical name** when `Uri` is set separately.
+
+### MediatorHttp Metadata
+
+| Metadata | Description | Default |
+|----------|-------------|---------|
+| `Uri` | URL or local path to OpenAPI JSON/YAML spec | Required |
+| `Namespace` | C# namespace for generated types | Required |
+| `ContractPrefix` | Prefix for generated contract class names | (none) |
+| `ContractPostfix` | Postfix for generated contract class names | (none) |
+| `UseInternalClasses` | Generate `internal` classes instead of `public` | `false` |
+| `GenerateModelsOnly` | Only generate model classes, skip handlers | `false` |
+| `GenerateJsonConverters` | Generate `JsonConverter` for string enums | `false` |
+
+### What Gets Generated
+- **Models** from `components/schemas` with `[JsonPropertyName]` attributes
+- **Enums** with optional `JsonStringEnumConverter`
+- **Contract classes** implementing `IRequest<TResult>` with route/query/header/body properties
+- **Handler classes** inheriting `BaseHttpRequestHandler`
+- **Registration extension** `AddGeneratedOpenApiClient()`
 
 ## Migration from MediatR
 
@@ -237,7 +374,7 @@ public partial class MyHandler : IRequestHandler<MyRequest, MyResult>
 ## Troubleshooting
 
 ### Error SHINY001: Handler must be partial
-- **Cause:** You're using middleware attributes (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Throttle]`) but the handler class is not declared as `partial`
+- **Cause:** You're using middleware attributes (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Sample]`, `[Throttle]`) but the handler class is not declared as `partial`
 - **Fix:** Add `partial` keyword to the class declaration:
   ```csharp
   public partial class MyHandler : IRequestHandler<...>  // Add 'partial'

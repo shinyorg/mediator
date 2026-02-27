@@ -1,17 +1,17 @@
 namespace Shiny.Mediator;
 
 /// <summary>
-/// Applies a debounce/throttle to an event handler method. When events are published rapidly,
-/// only the last event within the specified time window will be processed. Previous pending
-/// events are discarded each time a new event arrives before the delay expires.
+/// Applies true throttle behavior to an event handler method. The first event executes immediately,
+/// then all subsequent events within the cooldown window are discarded. Once the cooldown expires,
+/// the next event will execute immediately again.
 /// The handler class must be declared as <c>partial</c>.
 /// </summary>
-/// <param name="milliseconds">The debounce delay in milliseconds. Only the last event after this period of inactivity is executed.</param>
+/// <param name="milliseconds">The throttle cooldown duration in milliseconds.</param>
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
 public class ThrottleAttribute(long milliseconds) : MediatorMiddlewareAttribute
 {
     /// <summary>
-    /// Gets the debounce delay in milliseconds.
+    /// Gets the throttle cooldown duration in milliseconds.
     /// </summary>
     public long Milliseconds => milliseconds;
 }

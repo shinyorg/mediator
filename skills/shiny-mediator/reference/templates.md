@@ -2,7 +2,7 @@
 
 > **Important: Partial Class Requirement**
 >
-> When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Throttle]`), the handler class **must be declared as `partial`**. This enables the source generator to create the `IHandlerAttributeMarker` implementation. Without `partial`, you'll get compiler error `SHINY001`.
+> When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Sample]`, `[Throttle]`), the handler class **must be declared as `partial`**. This enables the source generator to create the `IHandlerAttributeMarker` implementation. Without `partial`, you'll get compiler error `SHINY001`.
 
 ## Request Handler Template
 
@@ -49,7 +49,8 @@ public partial class {Name}RequestHandler : IRequestHandler<{Name}Request, {Resu
 - `[Resilient("policyName")]` - For resilience with retry/timeout
 - `[MainThread]` - For MAUI UI thread execution
 - `[TimerRefresh(milliseconds)]` - For auto-refresh streams
-- `[Throttle(milliseconds)]` - For debouncing rapid event firings
+- `[Sample(milliseconds)]` - For fixed-window sampling of rapid event firings (last event in window wins)
+- `[Throttle(milliseconds)]` - For throttling rapid event firings (first event executes, rest discarded during cooldown)
 
 ## Command Handler Template
 
@@ -259,3 +260,123 @@ public class {Name}EndpointHandler : IRequestHandler<{Name}Request, {ResultType}
     }
 }
 ```
+
+## ASP.NET SSE Stream Endpoint Template
+
+Stream handlers decorated with `[MediatorHttpGet]` or `[MediatorHttpPost]` are auto-generated as SSE endpoints. Only GET and POST are supported for stream endpoints.
+
+```csharp
+// Contract: Contracts/{Name}StreamRequest.cs
+namespace {Namespace}.Contracts;
+
+public record {Name}StreamRequest({Parameters}) : IStreamRequest<{ResultType}>;
+```
+
+```csharp
+// Handler: Handlers/Endpoints/{Name}StreamHandler.cs
+namespace {Namespace}.Handlers.Endpoints;
+
+[MediatorScoped]
+public class {Name}StreamHandler : IStreamRequestHandler<{Name}StreamRequest, {ResultType}>
+{
+    [MediatorHttpGet("{Route}")]
+    public async IAsyncEnumerable<{ResultType}> Handle(
+        {Name}StreamRequest request,
+        IMediatorContext context,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            yield return {YieldValue};
+            await Task.Delay({DelayMs}, cancellationToken);
+        }
+    }
+}
+```
+
+The source generator produces `MapMediatorServerSentEventsGet<TRequest, TResult>("/route")` for these handlers when `MapGeneratedMediatorEndpoints()` is called.
+
+## ASP.NET Manual SSE with EventStream Template
+
+For pushing mediator events as SSE (not from a stream handler):
+
+```csharp
+// In Program.cs or endpoint configuration
+app.MapGet("/events/{eventType}", ([FromServices] IMediator mediator, CancellationToken ct) =>
+    TypedResults.ServerSentEvents(mediator.EventStream<MyEvent>(cancellationToken: ct))
+);
+```
+
+## HTTP Client SSE Contract Template
+
+For client-side contracts that consume SSE endpoints, add the `IServerSentEventsStream` marker:
+
+```csharp
+// Contracts/Http/{Name}StreamRequest.cs
+namespace {Namespace}.Contracts.Http;
+
+using Shiny.Mediator.Http;
+
+[Get("{Route}")]
+public record {Name}StreamRequest({Parameters}) : IStreamRequest<{ResultType}>, IServerSentEventsStream;
+```
+
+The `IServerSentEventsStream` marker tells the generated HTTP handler to parse SSE format (`data:` prefixed lines) instead of raw JSON streaming.
+
+## OpenAPI Client Generation Template
+
+Generate contracts, models, and handlers from an OpenAPI/Swagger spec by adding a `<MediatorHttp>` item in your `.csproj`:
+
+```xml
+<!-- In .csproj -->
+<ItemGroup>
+    <!-- Remote spec: Include is a logical name, Uri is the URL -->
+    <MediatorHttp Include="PetStoreApi"
+                  Uri="https://petstore.swagger.io/v2/swagger.json"
+                  Namespace="{Namespace}.PetStore"
+                  ContractPostfix="HttpRequest"
+                  GenerateJsonConverters="true"
+                  Visible="false" />
+
+    <!-- Local spec: Include is the file path, no Uri needed -->
+    <MediatorHttp Include="./specs/openapi.yaml"
+                  Namespace="{Namespace}.LocalApi"
+                  GenerateModelsOnly="false"
+                  UseInternalClasses="false"
+                  Visible="false" />
+</ItemGroup>
+```
+
+`Include` can be a **file path** (for local specs) or a **logical name** when `Uri` is set to a remote URL.
+
+**MediatorHttp metadata options:**
+
+| Metadata | Description | Default |
+|----------|-------------|---------|
+| `Uri` | URL or local path to OpenAPI JSON/YAML spec | Required |
+| `Namespace` | C# namespace for generated types | Required |
+| `ContractPrefix` | Prefix for generated contract class names | (none) |
+| `ContractPostfix` | Postfix for generated contract class names | (none) |
+| `UseInternalClasses` | Generate `internal` classes instead of `public` | `false` |
+| `GenerateModelsOnly` | Only generate model classes, skip handlers | `false` |
+| `GenerateJsonConverters` | Generate `JsonConverter` for string enums | `false` |
+
+**The source generator produces:**
+- Model classes from `components/schemas` with `[JsonPropertyName]` attributes
+- Enum types with optional `JsonStringEnumConverter`
+- Request contract classes implementing `IRequest<TResult>` with route/query/header/body properties
+- Handler classes inheriting `BaseHttpRequestHandler` for each endpoint
+- A registration extension method `AddGeneratedOpenApiClient()`
+
+**Registration:**
+```csharp
+builder.Services.AddShinyMediator(x => x
+    .AddMediatorRegistry()
+    .AddGeneratedOpenApiClient()
+);
+```
+
+**Usage (same as any mediator request):**
+```csharp
+var response = await mediator.Request(new GetPetByIdHttpRequest { PetId = 123 });
+var pet = response.Result;
