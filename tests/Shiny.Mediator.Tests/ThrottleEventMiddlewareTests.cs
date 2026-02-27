@@ -40,7 +40,7 @@ public class ThrottleEventMiddlewareTests
     }
 
     [Fact]
-    public async Task Throttle_DelaysExecution()
+    public async Task Throttle_FirstEventExecutesImmediately()
     {
         var context = new MockMediatorContext
         {
@@ -59,16 +59,12 @@ public class ThrottleEventMiddlewareTests
             CancellationToken.None
         );
 
-        // Should not be executed immediately
-        executed.ShouldBeFalse();
-
-        // Wait for throttle delay to pass
-        await Task.Delay(200);
+        // First event should execute immediately
         executed.ShouldBeTrue();
     }
 
     [Fact]
-    public async Task Throttle_LastEventWins()
+    public async Task Throttle_SecondEventWithinWindowIsIgnored()
     {
         var context = new MockMediatorContext
         {
@@ -77,31 +73,69 @@ public class ThrottleEventMiddlewareTests
         };
 
         var executionCount = 0;
-        var lastValue = 0;
 
-        // Fire multiple events in rapid succession
-        for (var i = 1; i <= 5; i++)
+        // First event - should execute immediately
+        await this.middleware.Process(
+            context,
+            () =>
+            {
+                executionCount++;
+                return Task.CompletedTask;
+            },
+            CancellationToken.None
+        );
+        executionCount.ShouldBe(1);
+
+        // Second event within cooldown window - should be discarded
+        await this.middleware.Process(
+            context,
+            () =>
+            {
+                executionCount++;
+                return Task.CompletedTask;
+            },
+            CancellationToken.None
+        );
+        executionCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Throttle_AfterCooldown_NextEventExecutesImmediately()
+    {
+        var context = new MockMediatorContext
         {
-            var capturedI = i;
-            await this.middleware.Process(
-                context,
-                () =>
-                {
-                    executionCount++;
-                    lastValue = capturedI;
-                    return Task.CompletedTask;
-                },
-                CancellationToken.None
-            );
-            await Task.Delay(10); // Small delay between events, but less than throttle
-        }
+            Message = new ThrottleTestEvent(),
+            MessageHandler = new ThrottledEventHandler()
+        };
 
-        // Wait for throttle delay to complete
+        var executionCount = 0;
+
+        // First event - executes immediately
+        await this.middleware.Process(
+            context,
+            () =>
+            {
+                executionCount++;
+                return Task.CompletedTask;
+            },
+            CancellationToken.None
+        );
+        executionCount.ShouldBe(1);
+
+        // Wait for cooldown to expire
         await Task.Delay(200);
 
-        // Only the last event should have been executed
-        executionCount.ShouldBe(1);
-        lastValue.ShouldBe(5);
+        // Next event after cooldown - should execute immediately
+        await this.middleware.Process(
+            context,
+            () =>
+            {
+                executionCount++;
+                return Task.CompletedTask;
+            },
+            CancellationToken.None
+        );
+        executionCount.ShouldBe(2);
     }
 
     [Fact]
@@ -125,6 +159,7 @@ public class ThrottleEventMiddlewareTests
         var executed1 = false;
         var executed2 = false;
 
+        // Both first events should execute immediately
         await this.middleware.Process(
             context1,
             () =>
@@ -145,20 +180,12 @@ public class ThrottleEventMiddlewareTests
             CancellationToken.None
         );
 
-        // Neither should be executed immediately
-        executed1.ShouldBeFalse();
-        executed2.ShouldBeFalse();
-
-        // Wait for throttle to complete
-        await Task.Delay(200);
-
-        // Both should be executed independently
         executed1.ShouldBeTrue();
         executed2.ShouldBeTrue();
     }
 
     [Fact]
-    public async Task Throttle_ReplacesOldPendingExecution()
+    public async Task Throttle_ExceptionDoesNotBreakSubsequentWindows()
     {
         var context = new MockMediatorContext
         {
@@ -166,44 +193,41 @@ public class ThrottleEventMiddlewareTests
             MessageHandler = new ThrottledEventHandler()
         };
 
-        var firstExecuted = false;
-        var secondExecuted = false;
+        // First event throws - but it still executes (throttle passes through)
+        var threw = false;
+        try
+        {
+            await this.middleware.Process(
+                context,
+                () => throw new InvalidOperationException("Test exception"),
+                CancellationToken.None
+            );
+        }
+        catch (InvalidOperationException)
+        {
+            threw = true;
+        }
+        threw.ShouldBeTrue();
 
-        // First event
-        await this.middleware.Process(
-            context,
-            () =>
-            {
-                firstExecuted = true;
-                return Task.CompletedTask;
-            },
-            CancellationToken.None
-        );
-
-        // Small delay
-        await Task.Delay(30);
-
-        // Second event before first throttle completes
-        await this.middleware.Process(
-            context,
-            () =>
-            {
-                secondExecuted = true;
-                return Task.CompletedTask;
-            },
-            CancellationToken.None
-        );
-
-        // Wait for throttle to complete
+        // Wait for cooldown to expire
         await Task.Delay(200);
 
-        // First should be replaced, only second should execute
-        firstExecuted.ShouldBeFalse();
-        secondExecuted.ShouldBeTrue();
+        // Next event should still work
+        var executed = false;
+        await this.middleware.Process(
+            context,
+            () =>
+            {
+                executed = true;
+                return Task.CompletedTask;
+            },
+            CancellationToken.None
+        );
+        executed.ShouldBeTrue();
     }
 
     [Fact]
-    public async Task Throttle_EventsAfterDelayExecuteCorrectly()
+    public async Task Throttle_RapidFire_OnlyFirstExecutes()
     {
         var context = new MockMediatorContext
         {
@@ -213,71 +237,22 @@ public class ThrottleEventMiddlewareTests
 
         var executionCount = 0;
 
-        // First event
-        await this.middleware.Process(
-            context,
-            () =>
-            {
-                executionCount++;
-                return Task.CompletedTask;
-            },
-            CancellationToken.None
-        );
-
-        // Wait for throttle to complete
-        await Task.Delay(200);
-        executionCount.ShouldBe(1);
-
-        // Second event after first throttle completed
-        await this.middleware.Process(
-            context,
-            () =>
-            {
-                executionCount++;
-                return Task.CompletedTask;
-            },
-            CancellationToken.None
-        );
-
-        // Wait for second throttle
-        await Task.Delay(200);
-        executionCount.ShouldBe(2);
-    }
-
-    [Fact]
-    public async Task Throttle_HandlesExceptionsGracefully()
-    {
-        var context = new MockMediatorContext
+        // Fire 5 events rapidly
+        for (var i = 0; i < 5; i++)
         {
-            Message = new ThrottleTestEvent(),
-            MessageHandler = new ThrottledEventHandler()
-        };
+            await this.middleware.Process(
+                context,
+                () =>
+                {
+                    executionCount++;
+                    return Task.CompletedTask;
+                },
+                CancellationToken.None
+            );
+        }
 
-        var secondExecuted = false;
-
-        // First event that throws
-        await this.middleware.Process(
-            context,
-            () => throw new InvalidOperationException("Test exception"),
-            CancellationToken.None
-        );
-
-        // Wait for throttle to complete (and exception to be logged)
-        await Task.Delay(200);
-
-        // Second event should still work
-        await this.middleware.Process(
-            context,
-            () =>
-            {
-                secondExecuted = true;
-                return Task.CompletedTask;
-            },
-            CancellationToken.None
-        );
-
-        await Task.Delay(200);
-        secondExecuted.ShouldBeTrue();
+        // Only the first should have executed
+        executionCount.ShouldBe(1);
     }
 }
 

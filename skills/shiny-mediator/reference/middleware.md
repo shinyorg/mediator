@@ -141,9 +141,32 @@ public class CreateUserCommand : ICommand
 builder.AddShinyMediator(x => x.AddFluentValidation());
 ```
 
+## Event Sampling
+
+Fixed-window sampling for rapid event firings. The first event starts a timer. Subsequent events within the window replace the pending delegate but do not reset the timer. When the timer fires, the **last** event received is executed.
+
+```csharp
+// Setup
+builder.AddShinyMediator(x => x
+    .AddSampleEventMiddleware()
+);
+
+// Handler - MUST be partial when using [Sample]
+[MediatorSingleton]
+public partial class SearchHandler : IEventHandler<SearchChangedEvent>
+{
+    [Sample(500)]  // 500ms fixed window
+    public Task Handle(SearchChangedEvent @event, IMediatorContext context, CancellationToken ct)
+    {
+        // Executes once at the end of the 500ms window with the last event received
+        return PerformSearch(@event.Query);
+    }
+}
+```
+
 ## Event Throttling
 
-Throttle rapid event firings so only the last event in a window is processed (debounce pattern).
+True throttle for rapid event firings. The **first** event executes immediately, then all subsequent events within the cooldown window are discarded. After cooldown expires, the next event executes immediately again.
 
 ```csharp
 // Setup
@@ -153,13 +176,13 @@ builder.AddShinyMediator(x => x
 
 // Handler - MUST be partial when using [Throttle]
 [MediatorSingleton]
-public partial class SearchHandler : IEventHandler<SearchChangedEvent>
+public partial class ButtonClickHandler : IEventHandler<ButtonClickedEvent>
 {
-    [Throttle(500)]  // 500ms debounce window
-    public Task Handle(SearchChangedEvent @event, IMediatorContext context, CancellationToken ct)
+    [Throttle(1000)]  // 1s cooldown
+    public Task Handle(ButtonClickedEvent @event, IMediatorContext context, CancellationToken ct)
     {
-        // Only executes after 500ms of no new events
-        return PerformSearch(@event.Query);
+        // Executes immediately on first event, ignores duplicates for 1s
+        return ProcessClick();
     }
 }
 ```

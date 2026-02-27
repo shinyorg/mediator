@@ -2,7 +2,7 @@
 
 > **Important: Partial Class Requirement**
 >
-> When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Throttle]`), the handler class **must be declared as `partial`**. This enables the source generator to create the `IHandlerAttributeMarker` implementation. Without `partial`, you'll get compiler error `SHINY001`.
+> When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Sample]`, `[Throttle]`), the handler class **must be declared as `partial`**. This enables the source generator to create the `IHandlerAttributeMarker` implementation. Without `partial`, you'll get compiler error `SHINY001`.
 
 ## Request Handler Template
 
@@ -49,7 +49,8 @@ public partial class {Name}RequestHandler : IRequestHandler<{Name}Request, {Resu
 - `[Resilient("policyName")]` - For resilience with retry/timeout
 - `[MainThread]` - For MAUI UI thread execution
 - `[TimerRefresh(milliseconds)]` - For auto-refresh streams
-- `[Throttle(milliseconds)]` - For debouncing rapid event firings
+- `[Sample(milliseconds)]` - For fixed-window sampling of rapid event firings (last event in window wins)
+- `[Throttle(milliseconds)]` - For throttling rapid event firings (first event executes, rest discarded during cooldown)
 
 ## Command Handler Template
 

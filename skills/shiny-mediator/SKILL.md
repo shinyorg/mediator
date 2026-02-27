@@ -73,7 +73,7 @@ Always use registration attributes:
 
 **Critical: Partial Class Requirement**
 
-When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Throttle]`), the handler class **must be declared as `partial`**:
+When using **any middleware attribute** (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Sample]`, `[Throttle]`), the handler class **must be declared as `partial`**:
 ```csharp
 [MediatorSingleton]
 public partial class MyHandler : IRequestHandler<MyRequest, MyResult>  // partial required!
@@ -151,7 +151,8 @@ Apply to handler methods as needed:
 - `[Resilient("policyName")]` - Retry/timeout policies
 - `[MainThread]` - MAUI main thread execution
 - `[TimerRefresh(milliseconds)]` - Auto-refresh streams
-- `[Throttle(milliseconds)]` - Debounce rapid event firings
+- `[Sample(milliseconds)]` - Fixed-window sampling (last event in window executes)
+- `[Throttle(milliseconds)]` - True throttle (first event executes, cooldown discards rest)
 - `[Validate]` - Data annotation validation
 
 **When using ANY of these attributes, the handler class MUST be `partial`:**

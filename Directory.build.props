@@ -8,7 +8,7 @@
         <DisableExtraReferences>False</DisableExtraReferences>
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
         
-        <PackageVersion>6.2.0-beta-0003</PackageVersion>
+        <PackageVersion>6.2.1-beta-0001</PackageVersion>
         <Description>Shiny Mediator - A mediator pattern for all .NET Apps</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://shinylib.net/mediator</PackageProjectUrl>

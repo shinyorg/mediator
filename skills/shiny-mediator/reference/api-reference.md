@@ -246,7 +246,8 @@ public interface IMediatorContext
 - `[Resilient("policyName")]` - Apply resilience policy
 - `[MainThread]` - Execute on main thread (MAUI)
 - `[TimerRefresh(milliseconds)]` - Auto-refresh streams
-- `[Throttle(milliseconds)]` - Debounce rapid event firings (last event wins)
+- `[Sample(milliseconds)]` - Fixed-window sampling (last event in window executes)
+- `[Throttle(milliseconds)]` - True throttle (first event executes, cooldown discards rest)
 - `[Validate]` - Enable validation
 
 **Example with partial class:**
@@ -373,7 +374,7 @@ Generate strongly-typed mediator contracts and handlers from OpenAPI specs via `
 ## Troubleshooting
 
 ### Error SHINY001: Handler must be partial
-- **Cause:** You're using middleware attributes (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Throttle]`) but the handler class is not declared as `partial`
+- **Cause:** You're using middleware attributes (`[Cache]`, `[OfflineAvailable]`, `[Resilient]`, `[MainThread]`, `[TimerRefresh]`, `[Sample]`, `[Throttle]`) but the handler class is not declared as `partial`
 - **Fix:** Add `partial` keyword to the class declaration:
   ```csharp
   public partial class MyHandler : IRequestHandler<...>  // Add 'partial'

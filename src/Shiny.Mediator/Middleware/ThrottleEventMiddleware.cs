@@ -12,59 +12,30 @@ public class ThrottleEventMiddleware<TEvent>(
     IConfiguration configuration
 ) : IEventMiddleware<TEvent> where TEvent : IEvent
 {
-    record ThrottleState(long MillisecondsDelay) : IDisposable
+    record ThrottleState(long MillisecondsDelay)
     {
         readonly Lock syncLock = new();
-        CancellationTokenSource? cts;
-        EventHandlerDelegate? pendingNext;
+        bool inCooldown;
 
-        public void Enqueue(EventHandlerDelegate next, ILogger logger)
+        public bool TryExecute(ILogger logger)
         {
             lock (this.syncLock)
             {
-                this.cts?.Cancel();
-                this.cts?.Dispose();
-                this.cts = new CancellationTokenSource();
-                this.pendingNext = next;
+                if (this.inCooldown)
+                    return false;
 
-                var localCts = this.cts;
+                this.inCooldown = true;
                 _ = Task
-                    .Delay(TimeSpan.FromMilliseconds(this.MillisecondsDelay), localCts.Token)
-                    .ContinueWith(async t =>
+                    .Delay(TimeSpan.FromMilliseconds(this.MillisecondsDelay))
+                    .ContinueWith(_ =>
                     {
-                        if (t.IsCanceled)
-                            return;
-
-                        EventHandlerDelegate? toExecute;
                         lock (this.syncLock)
                         {
-                            toExecute = this.pendingNext;
-                            this.pendingNext = null;
-                        }
-
-                        if (toExecute != null)
-                        {
-                            try
-                            {
-                                await toExecute().ConfigureAwait(false);
-                            }
-                            catch (Exception ex)
-                            {
-                                logger.LogError(ex, "Error executing throttled event handler");
-                            }
+                            this.inCooldown = false;
                         }
                     }, TaskScheduler.Default);
-            }
-        }
 
-        public void Dispose()
-        {
-            lock (this.syncLock)
-            {
-                this.cts?.Cancel();
-                this.cts?.Dispose();
-                this.cts = null;
-                this.pendingNext = null;
+                return true;
             }
         }
     }
@@ -96,11 +67,15 @@ public class ThrottleEventMiddleware<TEvent>(
         var eventType = context.Message.GetType().FullName ?? "unknown";
         var key = $"{eventType}::{handlerType}";
 
-        logger.LogDebug("Throttling event {EventType} for handler {HandlerType} with {Milliseconds}ms delay", eventType, handlerType, milliseconds);
-
         var state = this.states.GetOrAdd(key, _ => new ThrottleState(milliseconds));
-        state.Enqueue(next, logger);
 
+        if (state.TryExecute(logger))
+        {
+            logger.LogDebug("Throttle executing event {EventType} for handler {HandlerType}", eventType, handlerType);
+            return next();
+        }
+
+        logger.LogDebug("Throttle discarding event {EventType} for handler {HandlerType} - in cooldown", eventType, handlerType);
         return Task.CompletedTask;
     }
 }

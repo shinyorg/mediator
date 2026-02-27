@@ -137,7 +137,18 @@ public static class RegistrationExtensions
 
 
     /// <summary>
-    /// Adds throttle middleware for events - takes the last event within a time window and triggers the handler
+    /// Adds sample middleware for events - fixed-window: first event starts a timer, subsequent events replace the
+    /// pending delegate, and the last event received is executed when the timer fires at the end of the window.
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
+    public static ShinyMediatorBuilder AddSampleEventMiddleware(this ShinyMediatorBuilder cfg)
+        => cfg.AddOpenEventMiddleware(typeof(SampleEventMiddleware<>), ServiceLifetime.Singleton);
+
+
+    /// <summary>
+    /// Adds throttle middleware for events - executes the first event immediately, then discards all subsequent
+    /// events within the cooldown window. After cooldown expires, the next event executes immediately again.
     /// </summary>
     /// <param name="cfg"></param>
     /// <returns></returns>
