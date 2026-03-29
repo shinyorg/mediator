@@ -141,17 +141,21 @@ public class CreateUserCommand : ICommand
 builder.AddShinyMediator(x => x.AddFluentValidation());
 ```
 
-## Event Sampling
+## Event Queuing (Sampling & Throttling)
 
-Fixed-window sampling for rapid event firings. The first event starts a timer. Subsequent events within the window replace the pending delegate but do not reset the timer. When the timer fires, the **last** event received is executed.
+A single middleware handles both sampling and throttling of rapid event firings via `[Sample]` and `[Throttle]` attributes.
+
+**Sampling** (`[Sample]`): Fixed-window sampling. The first event starts a timer. Subsequent events within the window replace the pending delegate but do not reset the timer. When the timer fires, the **last** event received is executed.
+
+**Throttling** (`[Throttle]`): The **first** event executes immediately, then all subsequent events within the cooldown window are discarded. After cooldown expires, the next event executes immediately again.
 
 ```csharp
-// Setup
+// Setup - single registration covers both [Sample] and [Throttle]
 builder.AddShinyMediator(x => x
-    .AddSampleEventMiddleware()
+    .AddQueuedEventMiddleware()
 );
 
-// Handler - MUST be partial when using [Sample]
+// Sampling - MUST be partial when using [Sample]
 [MediatorSingleton]
 public partial class SearchHandler : IEventHandler<SearchChangedEvent>
 {
@@ -162,19 +166,8 @@ public partial class SearchHandler : IEventHandler<SearchChangedEvent>
         return PerformSearch(@event.Query);
     }
 }
-```
 
-## Event Throttling
-
-True throttle for rapid event firings. The **first** event executes immediately, then all subsequent events within the cooldown window are discarded. After cooldown expires, the next event executes immediately again.
-
-```csharp
-// Setup
-builder.AddShinyMediator(x => x
-    .AddThrottleEventMiddleware()
-);
-
-// Handler - MUST be partial when using [Throttle]
+// Throttling - MUST be partial when using [Throttle]
 [MediatorSingleton]
 public partial class ButtonClickHandler : IEventHandler<ButtonClickedEvent>
 {

@@ -11,204 +11,201 @@ namespace Shiny.Mediator;
 
 public static class RegistrationExtensions
 {
-    /// <summary>
-    /// Add Shiny Mediator to the service collection
-    /// </summary>
-    /// <param name="services"></param>
-    /// <param name="configurator"></param>
-    /// <param name="includeStandardMiddleware">By default, we will include </param>
-    /// <returns></returns>
-    public static IServiceCollection AddShinyMediator(
-        this IServiceCollection services, 
-        Action<ShinyMediatorBuilder>? configurator = null,
-        bool includeStandardMiddleware = true
-    )
+    extension(ShinyMediatorBuilder mediatorBuilder)
     {
-        var cfg = new ShinyMediatorBuilder(services);
-        configurator?.Invoke(cfg);
-
-        if (includeStandardMiddleware)
+        /// <summary>
+        /// Adds command scheduling
+        /// </summary>
+        /// <typeparam name="TScheduler">The scheduler/execution type for deferred/scheduled commands</typeparam>
+        /// <returns></returns>
+        public ShinyMediatorBuilder AddCommandScheduling<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TScheduler>()
+            where TScheduler : class, ICommandScheduler
         {
-            cfg.AddHttpClientServices();
-            cfg.PreventEventExceptions();
-            cfg.AddTimerRefreshStreamMiddleware();
-        }
-        services.TryAddSingleton<RuntimeEventRegister>();
-        services.TryAddSingleton<ISerializerService, SysTextJsonSerializerService>();
-        services.TryAddSingleton<IMediatorDirector, MediatorDirector>();
-        services.TryAddSingleton<IContractKeyProvider, DefaultContractKeyProvider>();
-        services.TryAddSingleton<IMediator, MediatorImpl>();
-        services.TryAddSingleton(TimeProvider.System);
-        return services;
-    }
-    
-    
-    /// <summary>
-    /// Adds command scheduling
-    /// </summary>
-    /// <param name="mediatorBuilder"></param>
-    /// <typeparam name="TScheduler">The scheduler/execution type for deferred/scheduled commands</typeparam>
-    /// <returns></returns>
-    public static ShinyMediatorBuilder AddCommandScheduling<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TScheduler>(this ShinyMediatorBuilder mediatorBuilder)
-        where TScheduler : class, ICommandScheduler
-    {
-        mediatorBuilder.Services.TryAddSingleton<ICommandScheduler, TScheduler>();
-        mediatorBuilder.Services.TryAddSingleton(TimeProvider.System);
-        mediatorBuilder.AddOpenCommandMiddleware(typeof(ScheduledCommandMiddleware<>));
-        return mediatorBuilder;
-    }
-
-
-    /// <summary>
-    /// Adds in-memory command scheduling
-    /// </summary>
-    /// <param name="mediatorBuilder"></param>
-    /// <returns></returns>
-    public static ShinyMediatorBuilder AddInMemoryCommandScheduling(this ShinyMediatorBuilder mediatorBuilder)
-        => mediatorBuilder.AddCommandScheduling<InMemoryCommandScheduler>();
-
-
-    /// <summary>
-    /// Performance logging middleware
-    /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
-    public static ShinyMediatorBuilder AddPerformanceLoggingMiddleware(this ShinyMediatorBuilder cfg)
-    {
-        cfg.AddOpenRequestMiddleware(typeof(PerformanceLoggingRequestMiddleware<,>));
-        cfg.AddOpenCommandMiddleware(typeof(PerformanceLoggingCommandMiddleware<>));
-        return cfg;
-    }
-
-
-    /// <summary>
-    /// Add global exception handler
-    /// </summary>
-    /// <param name="mediatorBuilder"></param>
-    /// <param name="lifetime"></param>
-    /// <typeparam name="THandler"></typeparam>
-    /// <returns></returns>
-    public static ShinyMediatorBuilder AddExceptionHandler<
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler
-    >(
-        this ShinyMediatorBuilder mediatorBuilder,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton
-    ) where THandler : class, IExceptionHandler
-    {
-        switch (lifetime)
+            mediatorBuilder.Services.TryAddSingleton<ICommandScheduler, TScheduler>();
+            mediatorBuilder.Services.TryAddSingleton(TimeProvider.System);
+            mediatorBuilder.AddOpenCommandMiddleware(typeof(ScheduledCommandMiddleware<>));
+            return mediatorBuilder;
+        } 
+        
+        /// <summary>
+        /// Adds in-memory command scheduling
+        /// </summary>
+        /// <returns></returns>
+        public ShinyMediatorBuilder AddInMemoryCommandScheduling()
+            => mediatorBuilder.AddCommandScheduling<InMemoryCommandScheduler>();
+        
+        /// <summary>
+        /// Performance logging middleware
+        /// </summary>
+        /// <returns></returns>
+        public ShinyMediatorBuilder AddPerformanceLoggingMiddleware()
         {
-            case ServiceLifetime.Singleton:
-                mediatorBuilder.Services.AddSingleton<IExceptionHandler, THandler>();
-                break;
-            
-            case ServiceLifetime.Scoped:
-                mediatorBuilder.Services.AddScoped<IExceptionHandler, THandler>();
-                break;
-            
-            default:
-                throw new InvalidOperationException($"Invalid Lifetime for ExceptionHandler: {lifetime}");
+            mediatorBuilder.AddOpenRequestMiddleware(typeof(PerformanceLoggingRequestMiddleware<,>));
+            mediatorBuilder.AddOpenCommandMiddleware(typeof(PerformanceLoggingCommandMiddleware<>));
+            return mediatorBuilder;
         }
 
+
+        /// <summary>
+        /// Add global exception handler
+        /// </summary>
+        /// <param name="lifetime"></param>
+        /// <typeparam name="THandler"></typeparam>
+        /// <returns></returns>
+        public ShinyMediatorBuilder AddExceptionHandler<
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler
+        >(
+            ServiceLifetime lifetime = ServiceLifetime.Singleton
+        ) where THandler : class, IExceptionHandler
+        {
+            switch (lifetime)
+            {
+                case ServiceLifetime.Singleton:
+                    mediatorBuilder.Services.AddSingleton<IExceptionHandler, THandler>();
+                    break;
+            
+                case ServiceLifetime.Scoped:
+                    mediatorBuilder.Services.AddScoped<IExceptionHandler, THandler>();
+                    break;
+            
+                default:
+                    throw new InvalidOperationException($"Invalid Lifetime for ExceptionHandler: {lifetime}");
+            }
+
         
-        return mediatorBuilder;
+            return mediatorBuilder;
+        }
+
+    
+        /// <summary>
+        /// Adds global exception handling this logs errors in an event handler without allowing it to crash out your app
+        /// </summary>
+        /// <returns></returns>
+        public ShinyMediatorBuilder PreventEventExceptions()
+            => mediatorBuilder.AddExceptionHandler<EventExceptionHandler>();
+        
+        
+        /// <summary>
+        /// Adds data annotation validation to your contracts, request handlers, & command handlers
+        /// </summary>
+        /// <returns></returns>
+        public ShinyMediatorBuilder AddDataAnnotations()
+        {
+            mediatorBuilder.AddOpenRequestMiddleware(typeof(DataAnnotationsRequestMiddleware<,>));
+            mediatorBuilder.AddOpenCommandMiddleware(typeof(DataAnnotationsCommandMiddleware<>));
+            return mediatorBuilder;
+        }
+
+
+        /// <summary>
+        /// Adds queued event middleware that supports both sampling (fixed-window, last-event-wins) and
+        /// throttling (first-event-executes, cooldown-discards) via [Sample] and [Throttle] attributes.
+        /// </summary>
+        /// <returns></returns>
+        public ShinyMediatorBuilder AddQueuedEventMiddleware()
+            => mediatorBuilder.AddOpenEventMiddleware(typeof(QueuedEventMiddleware<>), ServiceLifetime.Singleton);
+
+
+        /// <summary>
+        /// Adds timer calling for async enumerables
+        /// </summary>
+        /// <returns></returns>
+        public ShinyMediatorBuilder AddTimerRefreshStreamMiddleware()
+            => mediatorBuilder.AddOpenStreamMiddleware(typeof(TimerRefreshStreamRequestMiddleware<,>));
     }
 
-    
-    /// <summary>
-    /// Adds global exception handling this logs errors in an event handler without allowing it to crash out your app
-    /// </summary>
-    /// <param name="mediatorBuilder"></param>
-    /// <returns></returns>
-    public static ShinyMediatorBuilder PreventEventExceptions(this ShinyMediatorBuilder mediatorBuilder)
-        => mediatorBuilder.AddExceptionHandler<EventExceptionHandler>();
-    
-    
-    /// <summary>
-    /// Adds data annotation validation to your contracts, request handlers, & command handlers
-    /// </summary>
-    /// <param name="mediatorBuilder"></param>
-    /// <returns></returns>
-    public static ShinyMediatorBuilder AddDataAnnotations(this ShinyMediatorBuilder mediatorBuilder)
+
+    extension(IServiceCollection services)
     {
-        mediatorBuilder.AddOpenRequestMiddleware(typeof(DataAnnotationsRequestMiddleware<,>));
-        mediatorBuilder.AddOpenCommandMiddleware(typeof(DataAnnotationsCommandMiddleware<>));
-        return mediatorBuilder;
-    }
+        /// <summary>
+        /// Add Shiny Mediator to the service collection
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configurator"></param>
+        /// <param name="includeStandardMiddleware">By default, we will include </param>
+        /// <returns></returns>
+        public IServiceCollection AddShinyMediator(
+            Action<ShinyMediatorBuilder>? configurator = null,
+            bool includeStandardMiddleware = true
+        )
+        {
+            var cfg = new ShinyMediatorBuilder(services);
+            configurator?.Invoke(cfg);
 
-
-    /// <summary>
-    /// Adds sample middleware for events - fixed-window: first event starts a timer, subsequent events replace the
-    /// pending delegate, and the last event received is executed when the timer fires at the end of the window.
-    /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
-    public static ShinyMediatorBuilder AddSampleEventMiddleware(this ShinyMediatorBuilder cfg)
-        => cfg.AddOpenEventMiddleware(typeof(SampleEventMiddleware<>), ServiceLifetime.Singleton);
-
-
-    /// <summary>
-    /// Adds throttle middleware for events - executes the first event immediately, then discards all subsequent
-    /// events within the cooldown window. After cooldown expires, the next event executes immediately again.
-    /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
-    public static ShinyMediatorBuilder AddThrottleEventMiddleware(this ShinyMediatorBuilder cfg)
-        => cfg.AddOpenEventMiddleware(typeof(ThrottleEventMiddleware<>), ServiceLifetime.Singleton);
-
-
-    /// <summary>
-    /// Adds timer calling for async enumerables
-    /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
-    public static ShinyMediatorBuilder AddTimerRefreshStreamMiddleware(this ShinyMediatorBuilder cfg)
-        => cfg.AddOpenStreamMiddleware(typeof(TimerRefreshStreamRequestMiddleware<,>));
-    
-    
-    public static IServiceCollection AddSingletonAsImplementedInterfaces<
-        [DynamicallyAccessedMembers(
-            DynamicallyAccessedMemberTypes.PublicConstructors | 
-            DynamicallyAccessedMemberTypes.NonPublicConstructors | 
-            DynamicallyAccessedMemberTypes.Interfaces
-        )] TImplementation
-    >(this IServiceCollection services) where TImplementation : class
-    {
-        // check if implementation is already registered and ignore if it is
-        if (services.Any(x => x.ServiceType == typeof(TImplementation)))
+            if (includeStandardMiddleware)
+            {
+                cfg.AddHttpClientServices();
+                cfg.PreventEventExceptions();
+                cfg.AddTimerRefreshStreamMiddleware();
+                cfg.AddQueuedEventMiddleware();
+            }
+            services.TryAddSingleton<RuntimeEventRegister>();
+            services.TryAddSingleton<ISerializerService, SysTextJsonSerializerService>();
+            services.TryAddSingleton<IMediatorDirector, MediatorDirector>();
+            services.TryAddSingleton<IContractKeyProvider, DefaultContractKeyProvider>();
+            services.TryAddSingleton<IMediator, MediatorImpl>();
+            services.TryAddSingleton(TimeProvider.System);
             return services;
+        }
         
-        var interfaceTypes = typeof(TImplementation).GetInterfaces();
-        if (interfaceTypes.Length == 0)
-            throw new InvalidOperationException(services.GetType().FullName + " does not implement any interfaces");
+        
+        /// <summary>
+        /// Registers a type as itself and all of its implemented interfaces with a scoped lifetime. If the type is already registered, it will not be registered again.
+        /// </summary>
+        /// <typeparam name="TImplementation"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public IServiceCollection AddSingletonAsImplementedInterfaces<
+            [DynamicallyAccessedMembers(
+                DynamicallyAccessedMemberTypes.PublicConstructors | 
+                DynamicallyAccessedMemberTypes.NonPublicConstructors | 
+                DynamicallyAccessedMemberTypes.Interfaces
+            )] TImplementation
+        >() where TImplementation : class
+        {
+            // check if implementation is already registered and ignore if it is
+            if (services.Any(x => x.ServiceType == typeof(TImplementation)))
+                return services;
+            
+            var interfaceTypes = typeof(TImplementation).GetInterfaces();
+            if (interfaceTypes.Length == 0)
+                throw new InvalidOperationException(services.GetType().FullName + " does not implement any interfaces");
 
-        services.AddSingleton<TImplementation>();
-        foreach (var interfaceType in interfaceTypes)
-            services.AddSingleton(interfaceType, sp => sp.GetRequiredService<TImplementation>());
+            services.AddSingleton<TImplementation>();
+            foreach (var interfaceType in interfaceTypes)
+                services.AddSingleton(interfaceType, sp => sp.GetRequiredService<TImplementation>());
 
-        return services;
-    }
-    
-    
-    public static IServiceCollection AddScopedAsImplementedInterfaces<
-        [DynamicallyAccessedMembers(
-            DynamicallyAccessedMemberTypes.PublicConstructors | 
-            DynamicallyAccessedMemberTypes.NonPublicConstructors | 
-            DynamicallyAccessedMemberTypes.Interfaces
-        )] TImplementation
-    >(this IServiceCollection services) where TImplementation : class
-    {
-        // check if implementation is already registered and ignore if it is
-        if (services.Any(x => x.ServiceType == typeof(TImplementation)))
             return services;
+        }
         
-        var interfaceTypes = typeof(TImplementation).GetInterfaces();
-        if (interfaceTypes.Length == 0)
-            throw new InvalidOperationException(services.GetType().FullName + " does not implement any interfaces");
+        
+        /// <summary>
+        /// Registers the implementation as itself and all of its implemented interfaces with a scoped lifetime. If the implementation is already registered, it will not be registered again.
+        /// </summary>
+        /// <typeparam name="TImplementation"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public IServiceCollection AddScopedAsImplementedInterfaces<
+            [DynamicallyAccessedMembers(
+                DynamicallyAccessedMemberTypes.PublicConstructors | 
+                DynamicallyAccessedMemberTypes.NonPublicConstructors | 
+                DynamicallyAccessedMemberTypes.Interfaces
+            )] TImplementation
+        >() where TImplementation : class
+        {
+            // check if implementation is already registered and ignore if it is
+            if (services.Any(x => x.ServiceType == typeof(TImplementation)))
+                return services;
+            
+            var interfaceTypes = typeof(TImplementation).GetInterfaces();
+            if (interfaceTypes.Length == 0)
+                throw new InvalidOperationException(services.GetType().FullName + " does not implement any interfaces");
 
-        services.AddScoped<TImplementation>();
-        foreach (var interfaceType in interfaceTypes)
-            services.AddScoped(interfaceType, sp => sp.GetRequiredService<TImplementation>());
+            services.AddScoped<TImplementation>();
+            foreach (var interfaceType in interfaceTypes)
+                services.AddScoped(interfaceType, sp => sp.GetRequiredService<TImplementation>());
 
-        return services;
+            return services;
+        }
     }
 }
