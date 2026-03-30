@@ -1,11 +1,13 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Middleware;
 
 
+// TODO: this won't execute on the mainthread
 [MiddlewareOrder(50)]
 public class QueuedEventMiddleware<TEvent>(
     ILogger<QueuedEventMiddleware<TEvent>> logger,
@@ -104,7 +106,7 @@ public class QueuedEventMiddleware<TEvent>(
     )
     {
         var sampleAttribute = context.GetHandlerAttribute<SampleAttribute>();
-        if (sampleAttribute != null && sampleAttribute.Milliseconds > 0)
+        if (sampleAttribute is { Milliseconds: > 0 })
         {
             var handlerType = context.MessageHandler?.GetType().FullName ?? "unknown";
             var eventType = context.Message.GetType().FullName ?? "unknown";
@@ -117,9 +119,10 @@ public class QueuedEventMiddleware<TEvent>(
 
             return Task.CompletedTask;
         }
-
+        
+        
         var throttleAttribute = context.GetHandlerAttribute<ThrottleAttribute>();
-        if (throttleAttribute != null && throttleAttribute.Milliseconds > 0)
+        if (throttleAttribute is { Milliseconds: > 0 })
         {
             var handlerType = context.MessageHandler?.GetType().FullName ?? "unknown";
             var eventType = context.Message.GetType().FullName ?? "unknown";
@@ -136,7 +139,16 @@ public class QueuedEventMiddleware<TEvent>(
             logger.LogDebug("Throttle discarding event {EventType} for handler {HandlerType} - in cooldown", eventType, handlerType);
             return Task.CompletedTask;
         }
+        
+        // TODO: the problem is what buffer time to we obey?
+        // var buffered = context.ServiceScope.ServiceProvider.GetServices<IBufferedEventHandler<TEvent>>(); // just resolve to trigger any buffering logic
 
         return next();
     }
 }
+
+
+// public interface IBufferedEventHandler<TEvent>
+// {
+//     Task Process(TEvent[] @events);
+// }
