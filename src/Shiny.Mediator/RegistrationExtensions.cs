@@ -96,16 +96,6 @@ public static class RegistrationExtensions
             return mediatorBuilder;
         }
 
-
-        /// <summary>
-        /// Adds queued event middleware that supports both sampling (fixed-window, last-event-wins) and
-        /// throttling (first-event-executes, cooldown-discards) via [Sample] and [Throttle] attributes.
-        /// </summary>
-        /// <returns></returns>
-        public ShinyMediatorBuilder AddQueuedEventMiddleware()
-            => mediatorBuilder.AddOpenEventMiddleware(typeof(QueuedEventMiddleware<>), ServiceLifetime.Singleton);
-
-
         /// <summary>
         /// Adds timer calling for async enumerables
         /// </summary>
@@ -137,7 +127,6 @@ public static class RegistrationExtensions
                 cfg.AddHttpClientServices();
                 cfg.PreventEventExceptions();
                 cfg.AddTimerRefreshStreamMiddleware();
-                cfg.AddQueuedEventMiddleware();
             }
             services.TryAddSingleton<RuntimeEventRegister>();
             services.TryAddSingleton<ISerializerService, SysTextJsonSerializerService>();

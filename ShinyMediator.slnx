@@ -5,6 +5,7 @@
     <Folder Name="/Samples/">
         <Project Path="samples\Sample.Api\Sample.Api.csproj" />
         <Project Path="samples\Sample.Blazor\Sample.Blazor.csproj" />
+        <Project Path="samples\Sample.CopilotConsole\Sample.CopilotConsole.csproj" />
         <Project Path="samples\Sample.Uno\Sample.Uno.csproj" />
         <Project Path="samples\Sample\Sample.csproj" />
     </Folder>
@@ -24,7 +25,6 @@
         <File Path=".github\workflows\update-release-notes.yml" />
         <File Path="Build.slnf" />
         <File Path="nuget.config" />
-        <File Path="global.json" />
     </Folder>
     <Folder Name="/Solution/Skill/">
         <File Path=".claude-plugin\marketplace.json" />
@@ -39,6 +39,7 @@
     <Folder Name="/sourcegen/">
         <Project Path="src\Shiny.Mediator.AspNet.SourceGenerators\Shiny.Mediator.AspNet.SourceGenerators.csproj" />
         <Project Path="src\Shiny.Mediator.Contracts.SourceGenerators\Shiny.Mediator.Contracts.SourceGenerators.csproj" />
+        <Project Path="src\Shiny.Mediator.MicrosoftAI.SourceGenerators\Shiny.Mediator.MicrosoftAI.SourceGenerators.csproj" />
         <Project Path="src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" />
     </Folder>
     <Folder Name="/tests/">
@@ -46,6 +47,8 @@
         <Project Path="tests\Shiny.Mediator.Maui.Tests\Shiny.Mediator.Maui.Tests.csproj" />
         <Project Path="tests\Shiny.Mediator.Tests\Shiny.Mediator.Tests.csproj" />
     </Folder>
+    <Project Path="src/Shiny.Mediator.GpsBroadcast/Shiny.Mediator.GpsBroadcast.csproj" />
+    <Project Path="src/Shiny.Mediator.HttpTransferBroadcast/Shiny.Mediator.HttpTransferBroadcast.csproj" />
     <Project Path="src\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj" />
     <Project Path="src\Shiny.Mediator.AspNet\Shiny.Mediator.AspNet.csproj" />
     <Project Path="src\Shiny.Mediator.Blazor\Shiny.Mediator.Blazor.csproj" />
@@ -54,6 +57,7 @@
     <Project Path="src\Shiny.Mediator.DapperRequests\Shiny.Mediator.DapperRequests.csproj" />
     <Project Path="src\Shiny.Mediator.FluentValidation\Shiny.Mediator.FluentValidation.csproj" />
     <Project Path="src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj" />
+    <Project Path="src\Shiny.Mediator.MicrosoftAI\Shiny.Mediator.MicrosoftAI.csproj" />
     <Project Path="src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj" />
     <Project Path="src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj" />
     <Project Path="src\Shiny.Mediator.Sentry\Shiny.Mediator.Sentry.csproj" />
