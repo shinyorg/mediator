@@ -17,8 +17,9 @@
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="$(MicrosoftSdkVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftSdkVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftSdkVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftSdkVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="$(MicrosoftSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.AI" Version="10.5.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.5.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftSdkVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Resilience" Version="$(MicrosoftSdkVersion)" />
     <PackageVersion Include="Dapper" Version="2.1.35" />

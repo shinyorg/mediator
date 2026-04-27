@@ -7,8 +7,7 @@ public class GetWeatherRequestHandler : IRequestHandler<GetWeatherRequest, Weath
 {
     static readonly string[] Conditions = ["Sunny", "Cloudy", "Rainy", "Snowy", "Windy", "Partly Cloudy"];
 
-    public Task<WeatherResult> Handle(
-        GetWeatherRequest request, IMediatorContext context, CancellationToken ct)
+    public Task<WeatherResult> Handle(GetWeatherRequest request, IMediatorContext context, CancellationToken ct)
     {
         // Simulated weather data
         var random = new Random(request.City.GetHashCode());

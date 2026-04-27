@@ -28,26 +28,15 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
           fetch-depth: 0
 
     - name: Setup .NET 10.0
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
           dotnet-version: '10.0.x'
-
-#    - uses: AdoptOpenJDK/install-jdk@v1
-#      with:
-#        version: '13'
-#        architecture: x64
-
-#    - name: Add .NET Workloads
-#      run: dotnet workload install maui
-
-#    - name: Setup Nerdbank GitVersioning
-#      uses: dotnet/nbgv@master
-#      id: nbgv
+          workloads: maui
 
     - name: Build
       run: dotnet build Build.slnf /restore -m -property:Configuration=Release

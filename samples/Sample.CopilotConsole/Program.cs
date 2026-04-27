@@ -1,4 +1,6 @@
 using System.ClientModel;
+using System.ClientModel.Primitives;
+using System.Net.Http.Headers;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,15 +23,27 @@ using var http = new HttpClient();
 Console.WriteLine("Authenticating with GitHub Copilot...");
 var session = await GitHubCopilotAuth.GetSessionAsync(http);
 
-// Create OpenAI client pointed at the Copilot endpoint
+// Create a handler that injects the Copilot token and required headers
+var transport = new CopilotTokenHandler(session.Token)
+{
+    InnerHandler = new HttpClientHandler()
+};
+
 var openAiClient = new OpenAIClient(
-    new ApiKeyCredential(session.Token),
-    new OpenAIClientOptions { Endpoint = new Uri(session.Endpoint) }
+    new ApiKeyCredential("copilot-placeholder"),
+    new OpenAIClientOptions
+    {
+        Transport = new HttpClientPipelineTransport(new HttpClient(transport)),
+        Endpoint = new Uri("https://api.githubcopilot.com")
+    }
 );
 
 IChatClient chatClient = openAiClient
-    .GetChatClient("gpt-4o")
-    .AsIChatClient();
+    .GetChatClient("gpt-4.1")
+    .AsIChatClient()
+    .AsBuilder()
+    .UseFunctionInvocation()
+    .Build();
 
 // Get AI tools from mediator
 var tools = host.Services.GetServices<AITool>().ToList();

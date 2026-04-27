@@ -19,6 +19,11 @@
         <CompilerVisibleProperty Include="ShinyMediatorHttpRegistrationMethodName"/>
     </ItemGroup>
     
+    <!--AI tools generation-->
+    <ItemGroup>
+        <CompilerVisibleProperty Include="ShinyMediatorGenerateAITools"/>
+    </ItemGroup>
+
     <!--mediator http openapi-->
     <ItemGroup>
         <CompilerVisibleProperty Include="ShinyMediatorOpenApiRegistrationUseInternalClass"/>

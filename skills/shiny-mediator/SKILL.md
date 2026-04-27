@@ -28,6 +28,11 @@ triggers:
   - swagger
   - contract-first
   - strongly typed HTTP
+  - AI tools
+  - AITool
+  - Microsoft.Extensions.AI
+  - AddGeneratedAITools
+  - ShinyMediatorGenerateAITools
 ---
 
 # Shiny Mediator Skill
@@ -46,6 +51,7 @@ Invoke this skill when the user wants to:
 - Use event subscriptions (WaitForSingleEvent, EventStream, Subscribe)
 - Generate strongly-typed HTTP clients from OpenAPI/Swagger specs
 - Create contract-first HTTP request handlers with [Get], [Post], etc.
+- Expose mediator contracts as AI tools via Microsoft.Extensions.AI
 - Migrate from MediatR to Shiny Mediator
 
 ## Library Overview
@@ -367,6 +373,105 @@ Then use like any other mediator request:
 var result = await mediator.Request(new GetPetsHttpRequest { Status = "available" });
 ```
 
+## AI Tools Integration (Microsoft.Extensions.AI)
+
+Shiny Mediator can expose your request and command contracts as AI-callable tools via `Microsoft.Extensions.AI`. The source generator discovers contracts annotated with `[Description]` and generates `AIFunction` wrappers with JSON schemas automatically.
+
+### Prerequisites
+
+1. Install the `Microsoft.Extensions.AI` NuGet package:
+```bash
+dotnet add package Microsoft.Extensions.AI
+```
+
+2. Enable AI tool generation in your `.csproj`:
+```xml
+<PropertyGroup>
+    <ShinyMediatorGenerateAITools>true</ShinyMediatorGenerateAITools>
+</PropertyGroup>
+```
+
+:::caution
+If `ShinyMediatorGenerateAITools` is enabled but `Microsoft.Extensions.AI` is not referenced, the source generator emits compiler error **SHINYMED100**.
+:::
+
+### Annotating Contracts
+
+Add `[Description]` to your contracts and their properties to make them discoverable by AI:
+
+```csharp
+using System.ComponentModel;
+
+[Description("Gets the weather forecast for a given city")]
+public record GetWeatherRequest(
+    [property: Description("The city name to get weather for")]
+    string City
+) : IRequest<WeatherResult>;
+
+[Description("Performs a mathematical calculation")]
+public record CalculateRequest(
+    [property: Description("First operand")]
+    double A,
+    [property: Description("Math operator: +, -, *, /")]
+    string Operator,
+    [property: Description("Second operand")]
+    double B
+) : IRequest<double>;
+
+[Description("Sends a notification to a user")]
+public record SendNotificationCommand(
+    [property: Description("The user ID to notify")]
+    int UserId,
+    [property: Description("The notification message")]
+    string Message
+) : ICommand;
+```
+
+### Registration
+
+Register the generated AI tools with the mediator builder:
+
+```csharp
+builder.Services.AddShinyMediator(cfg =>
+{
+    cfg.AddMediatorRegistry();
+    cfg.AddGeneratedAITools(); // Registers all [Description]-annotated contracts as AITool instances
+});
+```
+
+### Using with a Chat Client
+
+Retrieve the tools from DI and pass them to any `IChatClient`:
+
+```csharp
+using Microsoft.Extensions.AI;
+
+var tools = host.Services.GetServices<AITool>().ToList();
+var options = new ChatOptions { Tools = tools };
+var response = await chatClient.GetResponseAsync(history, options);
+```
+
+### What Gets Generated
+
+For each contract with `[Description]` that implements `IRequest<T>` or `ICommand`, the source generator produces:
+
+1. **An `AIFunction` class** — wraps the mediator call with a JSON schema built from the contract's properties
+2. **A registration extension method** — `AddGeneratedAITools()` on `ShinyMediatorBuilder` that registers all generated tools as `AITool` singletons
+
+The generated JSON schema includes property types, descriptions, required fields, enum values, and default values.
+
+### Supported Property Types
+
+| Type | JSON Schema Type |
+|:-----|:----------------|
+| `string`, `Guid`, `Uri`, `DateTime`, `DateTimeOffset`, `DateOnly` | `string` |
+| `bool` | `boolean` |
+| `int`, `long`, `short`, `byte` | `integer` |
+| `float`, `double`, `decimal` | `number` |
+| Enums | `string` with `enum` values |
+| Arrays / `IEnumerable<T>` | `array` |
+| Complex types | `object` |
+
 ## Best Practices
 
 1. **Use records for contracts** - Immutable, value equality
@@ -398,4 +503,5 @@ dotnet add package Shiny.Mediator.AspNet                       # ASP.NET
 dotnet add package Shiny.Mediator.Resilience                   # Polly
 dotnet add package Shiny.Mediator.Caching.MicrosoftMemoryCache # Caching
 dotnet add package Shiny.Mediator.AppSupport                   # Offline
+dotnet add package Microsoft.Extensions.AI                     # AI Tools
 ```
