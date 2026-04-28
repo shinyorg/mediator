@@ -1,35 +1,7 @@
 <Project>
+    <Import Project="$(MSBuildThisFileDirectory)Shiny.Mediator.SourceGenerators.targets" />
+
     <ItemGroup Condition=" '$(ImplicitUsings)' == 'true' OR '$(ImplicitUsings)' == 'enable' ">
         <Using Include="Shiny.Mediator" />
     </ItemGroup>
-
-    <ItemGroup>
-        <AvailableItemName Include="MediatorHttp" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <CompilerVisibleProperty Include="RootNamespace" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Namespace" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Uri" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="UseInternalClasses" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateModelsOnly" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateJsonConverters" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPrefix" Visible="false" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ContractPostfix" Visible="false" />
-    </ItemGroup>
-
-    <Target Name="_InjectShinyMediatorAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
-        <ItemGroup>
-            <AdditionalFiles Include="@(MediatorHttp)"
-                             Namespace="%(MediatorHttp.Namespace)"
-                             Uri="%(MediatorHttp.Uri)"
-                             UseInternalClasses="%(MediatorHttp.UseInternalClasses)"
-                             GenerateModelsOnly="%(MediatorHttp.GenerateModelsOnly)"
-                             GenerateJsonConverters="%(MediatorHttp.GenerateJsonConverters)"
-                             ContractPrefix="%(MediatorHttp.ContractPrefix)"
-                             ContractPostfix="%(MediatorHttp.ContractPostfix)"
-                             SourceItemGroup="MediatorHttp" />
-        </ItemGroup>
-    </Target>
 </Project>

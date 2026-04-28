@@ -9,11 +9,14 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
+        <ProjectReference Include="..\Shiny.Mediator.AspNet.SourceGenerators\Shiny.Mediator.AspNet.SourceGenerators.csproj"
+                          ReferenceOutputAssembly="false"
+                          SetTargetFramework="TargetFramework=netstandard2.0" />
         <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="..\Shiny.Mediator.AspNet.SourceGenerators\bin\Release\netstandard2.0\Shiny.Mediator.AspNet.SourceGenerators.dll"
+        <None Include="..\Shiny.Mediator.AspNet.SourceGenerators\bin\$(Configuration)\netstandard2.0\Shiny.Mediator.AspNet.SourceGenerators.dll"
               Pack="true"
               PackagePath="analyzers/dotnet/cs"
               Visible="false" />

@@ -6,8 +6,14 @@
         <RootNamespace>Shiny.Mediator</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Shiny.Mediator.Contracts.SourceGenerators\Shiny.Mediator.Contracts.SourceGenerators.csproj"
+                          ReferenceOutputAssembly="false"
+                          SetTargetFramework="TargetFramework=netstandard2.0" />
+    </ItemGroup>
+
     <PropertyGroup>
-        <SourceGenBinDir>..\Shiny.Mediator.Contracts.SourceGenerators\bin\Release\netstandard2.0</SourceGenBinDir>
+        <SourceGenBinDir>..\Shiny.Mediator.Contracts.SourceGenerators\bin\$(Configuration)\netstandard2.0</SourceGenBinDir>
     </PropertyGroup>
 
     <ItemGroup>
