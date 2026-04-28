@@ -19,10 +19,10 @@ public class MediatorImpl(
     {
         TResult result = default!;
         
-        var scope = services.CreateScope();
+        using var scope = services.CreateScope();
         using var activity = MediatorActivitySource.Value.StartActivity()!;
         var context = new MediatorContext(scope, request, activity, director);
-        configure?.Invoke(context);        
+        configure?.Invoke(context);
         try
         {
             result = await director
@@ -145,23 +145,36 @@ public class MediatorImpl(
 
     
     public void PublishToBackground<TEvent>(
-        TEvent @event, 
-        bool executeInParallel = true, 
+        TEvent @event,
+        bool executeInParallel = true,
         Action<IMediatorContext>? configure = null
     ) where TEvent : IEvent
     {
-        using var scope = services.CreateScope();
-        using var activity = MediatorActivitySource.Value.StartActivity()!;
-        
+        var scope = services.CreateScope();
+        var activity = MediatorActivitySource.Value.StartActivity()!;
+
         var context = new MediatorContext(scope, @event, activity, director);
         configure?.Invoke(context);
 
-        director
-            .GetEventExecutor(@event)
-            .PublishToBackground(context, @event, executeInParallel, ex =>
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await director
+                    .GetEventExecutor(@event)
+                    .Publish(context, @event, executeInParallel, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
             {
                 _ = this.TryHandle(context, ex);
-            });
+            }
+            finally
+            {
+                activity.Dispose();
+                scope.Dispose();
+            }
+        });
     }
     
 

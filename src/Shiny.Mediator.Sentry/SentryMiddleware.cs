@@ -77,16 +77,23 @@ public class SentryStreamRequestMiddleware<TRequest, TResult>(IContractKeyProvid
         var transaction = SentrySdk.StartTransaction("mediator", "stream");
         var span = transaction.StartChild(context.MessageHandler!.GetType().FullName!);
         var nxt = next().GetAsyncEnumerator(cancellationToken);
-        
+
         var requestKey = contractKeyProvider.GetContractKey(context.Message!);
         span.SetData("RequestKey", requestKey);
-        
+
         var moveSpan = span.StartChild("initial_movenext");
-        while (await nxt.MoveNextAsync() && !cancellationToken.IsCancellationRequested)
+        try
         {
-            yield return nxt.Current;
-            moveSpan.Finish();
-            moveSpan = span.StartChild("movenext");
+            while (await nxt.MoveNextAsync() && !cancellationToken.IsCancellationRequested)
+            {
+                yield return nxt.Current;
+                moveSpan.Finish();
+                moveSpan = span.StartChild("movenext");
+            }
+        }
+        finally
+        {
+            await nxt.DisposeAsync().ConfigureAwait(false);
         }
         span.Finish();
         transaction.Finish();
