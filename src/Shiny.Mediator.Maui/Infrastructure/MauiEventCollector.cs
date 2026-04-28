@@ -3,14 +3,14 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure;
 
 
-public class MauiEventCollector(IApplication app, ILogger<MauiEventCollector> logger) : IMauiInitializeService, IEventCollector
+public class MauiEventCollector(ILogger<MauiEventCollector> logger) : IMauiInitializeService, IEventCollector
 {
     readonly Lock sync = new();
     readonly List<Page> trackingPages = new();
 
     public void Initialize(IServiceProvider services)
     {
-        var application = app as Application;
+        var application = services.GetRequiredService<IApplication>() as Application;
         if (application == null)
         {
             logger.LogWarning("Application was not detected properly and cannot be wired");
