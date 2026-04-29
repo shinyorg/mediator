@@ -150,10 +150,8 @@ A single middleware handles both sampling and throttling of rapid event firings 
 **Throttling** (`[Throttle]`): The **first** event executes immediately, then all subsequent events within the cooldown window are discarded. After cooldown expires, the next event executes immediately again.
 
 ```csharp
-// Setup - single registration covers both [Sample] and [Throttle]
-builder.AddShinyMediator(x => x
-    .AddQueuedEventMiddleware()
-);
+// [Sample] and [Throttle] are registered automatically with the default middleware.
+// No explicit registration needed.
 
 // Sampling - MUST be partial when using [Sample]
 [MediatorSingleton]
