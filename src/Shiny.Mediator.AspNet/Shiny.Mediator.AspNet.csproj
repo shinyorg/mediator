@@ -10,8 +10,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
         <ProjectReference Include="..\Shiny.Mediator.AspNet.SourceGenerators\Shiny.Mediator.AspNet.SourceGenerators.csproj"
-                          ReferenceOutputAssembly="false"
-                          SetTargetFramework="TargetFramework=netstandard2.0" />
+                          ReferenceOutputAssembly="false" />
         <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     </ItemGroup>
 

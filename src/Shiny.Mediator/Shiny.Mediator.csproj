@@ -10,8 +10,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj" />
         <ProjectReference Include="..\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
-                          ReferenceOutputAssembly="false"
-                          SetTargetFramework="TargetFramework=netstandard2.0" />
+                          ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>
