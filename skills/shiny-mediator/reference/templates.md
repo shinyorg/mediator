@@ -205,6 +205,66 @@ public class {Name}Middleware<TRequest, TResult> : IRequestMiddleware<TRequest, 
 }
 ```
 
+## AI Tool Contract Template
+
+When generating contracts intended to be exposed as AI tools, annotate with `[Description]`:
+
+```csharp
+// Contracts/{Name}Request.cs
+namespace {Namespace}.Contracts;
+
+using System.ComponentModel;
+
+[Description("{Description of what this tool does for the AI}")]
+public record {Name}Request(
+    [property: Description("{Description of this parameter}")]
+    {ParamType} {ParamName},
+
+    [property: Description("{Description of optional parameter}")]
+    {ParamType}? {OptionalParamName} = {DefaultValue}
+) : IRequest<{ResultType}>;
+```
+
+```csharp
+// Handlers/{Name}RequestHandler.cs
+namespace {Namespace}.Handlers;
+
+[MediatorSingleton]
+public class {Name}RequestHandler : IRequestHandler<{Name}Request, {ResultType}>
+{
+    public Task<{ResultType}> Handle(
+        {Name}Request request,
+        IMediatorContext context,
+        CancellationToken cancellationToken)
+    {
+        // Implementation
+    }
+}
+```
+
+**Setup:**
+```csharp
+builder.Services.AddShinyMediator(cfg =>
+{
+    cfg.AddMediatorRegistry();
+    cfg.AddGeneratedAITools(); // Register all [Description]-annotated contracts as AI tools
+});
+```
+
+**csproj:**
+```xml
+<PropertyGroup>
+    <ShinyMediatorGenerateAITools>true</ShinyMediatorGenerateAITools>
+</PropertyGroup>
+```
+
+**Usage:**
+```csharp
+var tools = host.Services.GetServices<AITool>().ToList();
+var options = new ChatOptions { Tools = tools };
+var response = await chatClient.GetResponseAsync(history, options);
+```
+
 ## HTTP Contract Template
 
 ```csharp

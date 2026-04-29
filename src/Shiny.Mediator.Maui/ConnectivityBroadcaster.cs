@@ -7,22 +7,21 @@ namespace Shiny.Mediator;
 public class ConnectivityBroadcaster(
     ILogger<ConnectivityBroadcaster> logger,
     IMediator mediator,
-    IInternetService internetService,
-    IApplication application
+    IInternetService internetService
 ) : IMauiInitializeService
 {
     bool connected = false;
-    
+
     public void Initialize(IServiceProvider services)
     {
         this.connected = internetService.IsAvailable;
-        
+
         internetService.StateChanged += async (_, conn) => await this.FireMediator(conn).ConfigureAwait(false);
-        
-        var app = application as Application;
+
+        var app = services.GetRequiredService<IApplication>() as Application;
         if (app == null)
         {
-            logger.LogWarning("Application {application} not supported", application.GetType());
+            logger.LogWarning("Application not supported");
         }
         else
         {

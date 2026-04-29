@@ -30,7 +30,14 @@ public class PutAttribute(string route) : Attribute;
 public class HeaderAttribute(string? Name = null) : Attribute;
 
 [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-public class BodyAttribute : Attribute;
+public class BodyAttribute(BodySerialization Serialization = BodySerialization.Json) : Attribute;
 
 [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
 public class QueryAttribute(string? Name = null) : Attribute;
+
+public enum BodySerialization
+{
+    Json,
+    FormUrlEncoded
+    // MultipartFormData
+}

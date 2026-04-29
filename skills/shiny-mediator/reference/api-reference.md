@@ -37,6 +37,7 @@ dotnet add package Shiny.Mediator.AppSupport    # Offline, replay, user notifica
 | `Shiny.Mediator.DapperRequests` | Dapper SQL query handlers |
 | `Shiny.Mediator.Sentry` | Sentry error tracking |
 | `Shiny.Mediator.Testing` | Testing utilities |
+| `Microsoft.Extensions.AI` | AI tool generation (enable via `ShinyMediatorGenerateAITools`) |
 
 ## Core Interfaces
 

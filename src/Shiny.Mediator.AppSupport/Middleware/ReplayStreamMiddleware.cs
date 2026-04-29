@@ -109,23 +109,29 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         var nxt = this.TryNext(next, ct);
         if (nxt != null)
         {
-            while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
+            try
             {
-                if (cache != null)
+                while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
                 {
-                    logger.LogDebug("Updating Cache - {Request}", context.Message);
-                    await cache.Set(requestKey, nxt).ConfigureAwait(false);
+                    if (cache != null)
+                    {
+                        logger.LogDebug("Updating Cache - {Request}", context.Message);
+                        await cache.Set(requestKey, nxt.Current!).ConfigureAwait(false);
+                    }
+
+                    if (offline != null)
+                    {
+                        logger.LogDebug("Updating Offline Store - {Request}", context.Message);
+                        await offline.Set(request, nxt.Current!, ct).ConfigureAwait(false);
+                    }
+
+                    logger.LogDebug("Yielding Final Result - {Request}", context.Message);
+                    yield return nxt.Current;
                 }
-
-
-                if (offline != null)
-                {
-                    logger.LogDebug("Updating Offline Store - {Request}", context.Message);
-                    await offline.Set(request, nxt.Current!, ct).ConfigureAwait(false);
-                }
-
-                logger.LogDebug("Yielding Final Result - {Request}", context.Message);
-                yield return nxt.Current;
+            }
+            finally
+            {
+                await nxt.DisposeAsync().ConfigureAwait(false);
             }
         }
     }

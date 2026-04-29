@@ -71,10 +71,17 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
             // fire initial before waiting
             logger.LogDebug("Firing Timer Request");
             var nxt = next().GetAsyncEnumerator(ct);
-            while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
+            try
             {
-                yield return nxt.Current;
-                logger.LogDebug("Firing Timer Response");
+                while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
+                {
+                    yield return nxt.Current;
+                    logger.LogDebug("Firing Timer Response");
+                }
+            }
+            finally
+            {
+                await nxt.DisposeAsync().ConfigureAwait(false);
             }
 
             // TODO: number of iterations configuration?

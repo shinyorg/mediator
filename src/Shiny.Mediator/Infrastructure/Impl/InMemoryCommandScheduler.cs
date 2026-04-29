@@ -16,14 +16,13 @@ public class InMemoryCommandScheduler(
     
     public Task Schedule(IMediatorContext context, DateTimeOffset dueAt, CancellationToken cancellationToken)
     {
-        var scheduled = false;
         lock (this.commands)
+        {
             this.commands.Add((dueAt, context));
+            this.timer ??= timeProvider.CreateTimer(_ => this.OnTimerElapsed(), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+        }
 
-        scheduled = true;
-        this.timer ??= timeProvider.CreateTimer(_ => this.OnTimerElapsed(), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-
-        return Task.FromResult(scheduled);
+        return Task.FromResult(true);
     }
     
 

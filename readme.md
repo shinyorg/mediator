@@ -25,6 +25,7 @@ We are AOT/Trim friendly in all aspects of how you use Mediator.  We use source 
 ## Features
 - A Mediator for your ALL .NET Apps
 - Fully AOT & Trimming friendly
+- [AI Tool Integration](https://shinylib.net/mediator/extensions/ai) - Expose your contracts as AI-callable tools via Microsoft.Extensions.AI
 - [Request/Response Handling](https://shinylib.net/mediator/requests)
 - [Event Publication](https://shinylib.net/mediator/events)
 - [Async Enumerable Stream Requests](https://shinylib.net/mediator/streams)
