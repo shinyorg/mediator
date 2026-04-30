@@ -257,15 +257,21 @@ public class MediatorAIToolSourceGenerator : IIncrementalGenerator
             case "System.DateTime":
             case "System.DateTimeOffset":
             case "System.DateOnly":
+            case "System.TimeOnly":
+            case "System.TimeSpan":
                 return "string";
 
             case "bool":
                 return "boolean";
 
             case "int":
+            case "uint":
             case "long":
+            case "ulong":
             case "short":
+            case "ushort":
             case "byte":
+            case "sbyte":
                 return "integer";
 
             case "float":
@@ -300,12 +306,19 @@ public class MediatorAIToolSourceGenerator : IIncrementalGenerator
             "string" => "GetString()",
             "bool" => "GetBoolean()",
             "int" => "GetInt32()",
+            "uint" => "GetUInt32()",
             "long" => "GetInt64()",
+            "ulong" => "GetUInt64()",
             "short" => "GetInt16()",
+            "ushort" => "GetUInt16()",
             "byte" => "GetByte()",
+            "sbyte" => "GetSByte()",
             "float" => "GetSingle()",
             "double" => "GetDouble()",
             "decimal" => "GetDecimal()",
+            "System.Guid" => "GetGuid()",
+            "System.DateTime" => "GetDateTime()",
+            "System.DateTimeOffset" => "GetDateTimeOffset()",
             _ => null
         };
 
@@ -317,8 +330,8 @@ public class MediatorAIToolSourceGenerator : IIncrementalGenerator
             return accessor;
         }
 
-        // Special string-parsed types
-        if (display is "System.Guid" or "System.DateTime" or "System.DateTimeOffset" or "System.DateOnly" or "System.Uri")
+        // String-parsed types
+        if (display is "System.DateOnly" or "System.TimeOnly" or "System.TimeSpan" or "System.Uri")
             return null; // handled specially in code gen
 
         if (type.TypeKind == TypeKind.Enum)
@@ -338,7 +351,7 @@ public class MediatorAIToolSourceGenerator : IIncrementalGenerator
         if (value is bool b)
             return b ? "true" : "false";
 
-        if (value is int or long or short or byte)
+        if (value is int or uint or long or ulong or short or ushort or byte or sbyte)
             return value.ToString();
 
         if (value is float f)
@@ -364,12 +377,20 @@ public class MediatorAIToolSourceGenerator : IIncrementalGenerator
 
         if (value is int i)
             return i.ToString();
+        if (value is uint ui)
+            return ui.ToString() + "U";
         if (value is long l)
             return l.ToString() + "L";
+        if (value is ulong ul)
+            return ul.ToString() + "UL";
         if (value is short sh)
             return "(short)" + sh.ToString();
+        if (value is ushort us)
+            return "(ushort)" + us.ToString();
         if (value is byte by)
             return "(byte)" + by.ToString();
+        if (value is sbyte sb2)
+            return "(sbyte)" + sb2.ToString();
 
         if (value is float f)
             return f.ToString(System.Globalization.CultureInfo.InvariantCulture) + "f";
@@ -528,21 +549,17 @@ public class MediatorAIToolSourceGenerator : IIncrementalGenerator
 
         var display = prop.UnderlyingTypeFullName;
 
-        // Guid
-        if (display == "global::System.Guid")
-            return $"global::System.Guid.Parse({elementExpr}.GetString()!)";
-
-        // DateTime
-        if (display == "global::System.DateTime")
-            return $"global::System.DateTime.Parse({elementExpr}.GetString()!)";
-
-        // DateTimeOffset
-        if (display == "global::System.DateTimeOffset")
-            return $"global::System.DateTimeOffset.Parse({elementExpr}.GetString()!)";
-
         // DateOnly
         if (display == "global::System.DateOnly")
             return $"global::System.DateOnly.Parse({elementExpr}.GetString()!)";
+
+        // TimeOnly
+        if (display == "global::System.TimeOnly")
+            return $"global::System.TimeOnly.Parse({elementExpr}.GetString()!)";
+
+        // TimeSpan
+        if (display == "global::System.TimeSpan")
+            return $"global::System.TimeSpan.Parse({elementExpr}.GetString()!)";
 
         // Uri
         if (display == "global::System.Uri")

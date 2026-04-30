@@ -19,6 +19,7 @@ public class EventHandlerTests
     {
         var services = new ServiceCollection();
         services.AddLogging(x => x.AddXUnit(this.helper));
+        services.AddConfiguration();
         services.AddShinyMediator();
         var sp = services.BuildServiceProvider();
         var mediator = sp.GetRequiredService<IMediator>();
@@ -40,6 +41,7 @@ public class EventHandlerTests
     {
         var services = new ServiceCollection();
         services.AddLogging(x => x.AddXUnit(this.helper));
+        services.AddConfiguration();
         services.AddShinyMediator();
         services.AddLogging();
         services.AddSingletonAsImplementedInterfaces<CatchAllEventHandler>();
