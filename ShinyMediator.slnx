@@ -13,7 +13,6 @@
         <File Path=".github\ISSUE_TEMPLATE\config.yml" />
         <File Path=".github\ISSUE_TEMPLATE\feature_request.yml" />
         <File Path="Directory.build.props" />
-        <File Path="Directory.build.targets" />
         <File Path="Directory.packages.props" />
         <File Path="LICENSE" />
         <File Path=".github\PULL_REQUEST_TEMPLATE.md" />
