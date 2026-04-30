@@ -1,6 +1,0 @@
-<Project>
-    <ItemGroup>
-        <None Include="$(MSBuildThisFileDirectory)nuget.png" Pack="true" PackagePath="icon.png" />
-        <None Include="$(MSBuildThisFileDirectory)readme.md" Pack="true" PackagePath="\" />
-    </ItemGroup>
-</Project>
