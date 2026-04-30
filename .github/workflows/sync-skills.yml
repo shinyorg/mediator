@@ -32,13 +32,12 @@ jobs:
 
       - name: Sync skills directory
         run: |
-          # Copy skills content only (not plugin manifests)
-          # The target repo has its own plugin structure
+          # Copy skills content to the shiny-mediator plugin in the skills repo
           if [ -d "source/skills/shiny-mediator" ]; then
             # Remove existing skill directory to ensure clean sync
-            rm -rf skills-repo/skills/shiny-mediator
-            mkdir -p skills-repo/skills
-            cp -r source/skills/shiny-mediator skills-repo/skills/
+            rm -rf skills-repo/plugins/shiny-mediator/skills/shiny-mediator
+            mkdir -p skills-repo/plugins/shiny-mediator/skills
+            cp -r source/skills/shiny-mediator skills-repo/plugins/shiny-mediator/skills/
           fi
 
       - name: Create Pull Request

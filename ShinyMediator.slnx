@@ -16,6 +16,7 @@
         <File Path="Directory.packages.props" />
         <File Path="LICENSE" />
         <File Path=".github\PULL_REQUEST_TEMPLATE.md" />
+        <File Path=".github\workflows\sync-skills.yml" />
         <File Path=".github\workflows\update-release-notes.yml" />
         <File Path="Build.slnf" />
         <File Path="nuget.config" />
