@@ -90,9 +90,9 @@ public interface IMediatorContext
     /// Create a child context with data populated from this parent
     /// </summary>
     /// <param name="newMessage">If you're creating a context for a new message type (ie. Publishing an event from a handler - this would be used)</param>
-    /// <param name="newScope">Will create a new service scope from the current one if true</param>
+    /// <param name="reuseScope">If true, reuses the parent service scope. If false, creates a new service scope (caller is responsible for disposal).</param>
     /// <returns></returns>
-    IMediatorContext CreateChild(object? newMessage, bool newScope);
+    IMediatorContext CreateChild(object? newMessage, bool reuseScope);
 
     /// <summary>
     /// Start an instrumentation activity

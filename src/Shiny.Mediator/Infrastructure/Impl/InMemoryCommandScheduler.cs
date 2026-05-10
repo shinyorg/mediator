@@ -29,25 +29,26 @@ public class InMemoryCommandScheduler(
     protected virtual async void OnTimerElapsed()
     {
         this.timer!.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan); // stop
-        
-        List<(DateTimeOffset DueAt, IMediatorContext Context)> items = null!;
+
+        List<(DateTimeOffset DueAt, IMediatorContext Context)> items;
         lock (this.commands)
             items = this.commands.ToList();
-        
+
         foreach (var item in items)
         {
             var time = timeProvider.GetUtcNow();
             if (item.DueAt < time)
             {
+                var scope = services.CreateScope();
+                var activity = MediatorActivitySource.Value.StartActivity();
                 try
                 {
-                    using var scope = services.CreateScope();
-                    using var activity = MediatorActivitySource.Value.StartActivity()!;
-                    item.Context.Rebuild(scope, activity);
+                    lock (this.commands)
+                        item.Context.Rebuild(scope, activity);
 
                     item.Context.BypassMiddlewareEnabled = true;
                     item.Context.BypassExceptionHandlingEnabled = true;
-                    
+
                     await item
                         .Context
                         .Send((ICommand)item.Context.Message, CancellationToken.None)
@@ -55,9 +56,12 @@ public class InMemoryCommandScheduler(
                 }
                 catch (Exception ex)
                 {
-                    // might be picked up by other middleware
-                    // TODO: retries?
                     logger.LogError(ex, "Error running scheduled command");
+                }
+                finally
+                {
+                    activity?.Dispose();
+                    scope.Dispose();
                 }
                 lock (this.commands)
                     this.commands.Remove(item);

@@ -34,15 +34,15 @@ public class LocalEventExecutor(
         var tasks = handlers
             .Select(async handler =>
             {
-                var child = context.CreateChild(null, false);
+                var child = context.CreateChild(null, true);
                 child.MessageHandler = handler;
-                
+
                 await this
                     .PublishCore(
                         child,
-                        @event, 
-                        handler, 
-                        logger, 
+                        @event,
+                        handler,
+                        logger,
                         middlewares,
                         cancellationToken
                     )

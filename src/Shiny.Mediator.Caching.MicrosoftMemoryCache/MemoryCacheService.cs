@@ -59,12 +59,15 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
         }
         else
         {
-            var entries = cache.GetEntries();
-            foreach (var entry in entries)
-            {
-                if (entry.Key is string key && key.StartsWith(requestKey))
-                    cache.Remove(key); // TODO: altering enumerable
-            }
+            var keysToRemove = cache
+                .GetEntries()
+                .Select(e => e.Key)
+                .OfType<string>()
+                .Where(k => k.StartsWith(requestKey))
+                .ToList();
+
+            foreach (var key in keysToRemove)
+                cache.Remove(key);
         }
 
         return Task.CompletedTask;

@@ -20,21 +20,33 @@ public class StorageCacheService(
     {
         AbsoluteExpiration = TimeSpan.FromMinutes(10)
     };
-    
-    
+
+    readonly SemaphoreSlim getOrCreateLock = new(1, 1);
+
     public async Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> retrieveFunc, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
     {
         var e = await this.TryGet<T>(key, cancellationToken).ConfigureAwait(false);
-        
-        if (e == null)
+        if (e != null)
+            return ToExternal(e);
+
+        await this.getOrCreateLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            var result = await retrieveFunc
-                .Invoke()
-                .ConfigureAwait(false);
-            
-            e = await this
-                .Store(key, result, config, cancellationToken)
-                .ConfigureAwait(false);
+            e = await this.TryGet<T>(key, cancellationToken).ConfigureAwait(false);
+            if (e == null)
+            {
+                var result = await retrieveFunc
+                    .Invoke()
+                    .ConfigureAwait(false);
+
+                e = await this
+                    .Store(key, result, config, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            this.getOrCreateLock.Release();
         }
         return ToExternal(e);
     }

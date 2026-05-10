@@ -43,14 +43,14 @@ class MediatorContext(
     }
 
     
-    public IMediatorContext CreateChild(object? newMessage, bool newScope)
+    public IMediatorContext CreateChild(object? newMessage, bool reuseScope)
     {
         lock (this.children)
         {
             var msg = newMessage ?? this.Message;
             var act = this.StartActivity("child_mediator");
 
-            var scope = newScope
+            var scope = reuseScope
                 ? this.ServiceScope
                 : this.ServiceScope.ServiceProvider.CreateScope();
             
@@ -101,7 +101,7 @@ class MediatorContext(
     }
 
 
-    public Task<TResult> Request<TResult>(
+    public async Task<TResult> Request<TResult>(
         IRequest<TResult> request,
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
@@ -109,38 +109,62 @@ class MediatorContext(
     {
         var newContext = this.CreateChild(request, false);
         configure?.Invoke(newContext);
-        return director
-            .GetRequestExecutor(request)
-            .Request(newContext, request, cancellationToken);
+        try
+        {
+            return await director
+                .GetRequestExecutor(request)
+                .Request(newContext, request, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            newContext.ServiceScope.Dispose();
+        }
     }
 
-    
-    public Task Send<TCommand>(
-        TCommand command, 
-        CancellationToken cancellationToken = default, 
+
+    public async Task Send<TCommand>(
+        TCommand command,
+        CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
     ) where TCommand : ICommand
     {
         var newContext = this.CreateChild(command, false);
         configure?.Invoke(newContext);
-        return director
-            .GetCommandExecutor(command)
-            .Send(newContext, command, cancellationToken);
+        try
+        {
+            await director
+                .GetCommandExecutor(command)
+                .Send(newContext, command, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            newContext.ServiceScope.Dispose();
+        }
     }
-    
-    
-    public Task Publish<TEvent>(
-        TEvent @event, 
+
+
+    public async Task Publish<TEvent>(
+        TEvent @event,
         bool executeInParallel = true,
-        CancellationToken cancellationToken = default, 
+        CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
     ) where TEvent : IEvent
     {
         var newContext = this.CreateChild(@event, false);
         configure?.Invoke(newContext);
-        return director
-            .GetEventExecutor(@event)
-            .Publish(newContext, @event, executeInParallel, cancellationToken);
+        try
+        {
+            await director
+                .GetEventExecutor(@event)
+                .Publish(newContext, @event, executeInParallel, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            newContext.ServiceScope.Dispose();
+        }
     }
 
 

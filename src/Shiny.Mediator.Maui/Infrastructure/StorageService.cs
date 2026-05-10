@@ -33,7 +33,7 @@ public class StorageService(
     protected override Task DeleteFile(string fileName, CancellationToken cancellationToken)
     {
         var path = Path.Combine(this.StoreDirectory, fileName);
-        if (!File.Exists(path))
+        if (File.Exists(path))
             File.Delete(path);
 
         return Task.CompletedTask;

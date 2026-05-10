@@ -125,12 +125,9 @@ public abstract class AbstractFileStorageService(
 
     protected virtual async Task WriteState(CancellationToken cancellationToken)
     {
-        var entered = false;
+        await this.semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await this.semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            entered = true;
-            
             if (this._indexes != null)
             {
                 logger.LogInformation("Writing File Index");
@@ -139,9 +136,8 @@ public abstract class AbstractFileStorageService(
         }
         finally
         {
-            if (entered)
-                this.semaphore.Release();
-        }   
+            this.semaphore.Release();
+        }
     }
 
 
@@ -150,33 +146,45 @@ public abstract class AbstractFileStorageService(
     ConcurrentDictionary<string, ConcurrentDictionary<string, string>>? _indexes;
     protected async Task<ConcurrentDictionary<string, string>> GetIndexCategory(string category, CancellationToken cancellationToken)
     {
-        ConcurrentDictionary<string, string> catIndex = null!;
-        var entered = false;
+        await this.semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await this.semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            entered = true;
-            
             this._indexes ??= await this
                 .GetObject<ConcurrentDictionary<string, ConcurrentDictionary<string, string>>>(IndexFile, cancellationToken)
                 .ConfigureAwait(false);
 
             this._indexes ??= new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
-            catIndex = this._indexes.GetOrAdd(category, _ => new ConcurrentDictionary<string, string>());
+            return this._indexes.GetOrAdd(category, _ => new ConcurrentDictionary<string, string>());
         }
         finally
         {
-            if (entered)
-                this.semaphore.Release();
+            this.semaphore.Release();
         }
-        return catIndex;
     }
-    
-    
+
+
     protected async Task<string> GetFileIndexer(string category, string key, CancellationToken cancellationToken)
     {
-        var dict = await this.GetIndexCategory(category, cancellationToken).ConfigureAwait(false);
-        var fileIndex = dict.GetOrAdd(key, _ => Guid.NewGuid().ToString());
-        return fileIndex;
+        await this.semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var indexes = await this.GetIndexCategoryUnsafe(category, cancellationToken).ConfigureAwait(false);
+            return indexes.GetOrAdd(key, _ => Guid.NewGuid().ToString());
+        }
+        finally
+        {
+            this.semaphore.Release();
+        }
+    }
+
+
+    async Task<ConcurrentDictionary<string, string>> GetIndexCategoryUnsafe(string category, CancellationToken cancellationToken)
+    {
+        this._indexes ??= await this
+            .GetObject<ConcurrentDictionary<string, ConcurrentDictionary<string, string>>>(IndexFile, cancellationToken)
+            .ConfigureAwait(false);
+
+        this._indexes ??= new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
+        return this._indexes.GetOrAdd(category, _ => new ConcurrentDictionary<string, string>());
     }
 }

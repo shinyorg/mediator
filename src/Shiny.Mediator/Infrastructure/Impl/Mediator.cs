@@ -37,7 +37,7 @@ public class MediatorImpl(
             if (result is IEvent @event)
             {
                 logger.LogDebug("Event Returned by Request - Publishing: {EventType}", @event.GetType().FullName);
-                var child = context.CreateChild(@event, false);
+                var child = context.CreateChild(@event, true);
                 await director
                     .GetEventExecutor(@event)
                     .Publish(child, @event, true, cancellationToken)
@@ -167,7 +167,7 @@ public class MediatorImpl(
             }
             catch (Exception ex)
             {
-                _ = this.TryHandle(context, ex);
+                await this.TryHandle(context, ex).ConfigureAwait(false);
             }
             finally
             {

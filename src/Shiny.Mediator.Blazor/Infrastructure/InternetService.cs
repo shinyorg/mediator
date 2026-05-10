@@ -25,27 +25,37 @@ public class InternetService : IInternetService, IDisposable
     {
         this.StateChanged?.Invoke(this, isOnline);
         if (isOnline)
-            this.waitSource?.TrySetResult();
+        {
+            List<TaskCompletionSource> snapshot;
+            lock (this.waiters)
+            {
+                snapshot = this.waiters.ToList();
+                this.waiters.Clear();
+            }
+            foreach (var tcs in snapshot)
+                tcs.TrySetResult();
+        }
     }
 
 
     DotNetObjectReference<InternetService>? dotNetRef;
-    TaskCompletionSource? waitSource;
+    readonly List<TaskCompletionSource> waiters = new();
     public async Task WaitForAvailable(CancellationToken cancelToken = default)
     {
         if (this.IsAvailable)
             return;
 
-        try
+        var tcs = new TaskCompletionSource();
+        lock (this.waiters)
+            this.waiters.Add(tcs);
+
+        await using var _ = cancelToken.Register(() =>
         {
-            await using var _ = cancelToken.Register(() => this.waitSource?.TrySetCanceled());
-            this.waitSource = new();
-            await this.waitSource.Task.ConfigureAwait(false);
-        }
-        finally
-        {
-            this.waitSource = null;
-        }
+            tcs.TrySetCanceled();
+            lock (this.waiters)
+                this.waiters.Remove(tcs);
+        });
+        await tcs.Task.ConfigureAwait(false);
     }
 
 

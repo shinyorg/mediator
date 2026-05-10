@@ -18,6 +18,7 @@ public class QueuedEventMiddleware<TEvent>(
     {
         readonly Lock syncLock = new();
         bool timerRunning;
+        CancellationTokenSource? timerCts;
         EventHandlerDelegate? pendingNext;
 
         public void Enqueue(EventHandlerDelegate next, ILogger logger)
@@ -30,8 +31,11 @@ public class QueuedEventMiddleware<TEvent>(
                     return;
 
                 this.timerRunning = true;
+                this.timerCts = new CancellationTokenSource();
+                var token = this.timerCts.Token;
+
                 _ = Task
-                    .Delay(TimeSpan.FromMilliseconds(this.MillisecondsDelay))
+                    .Delay(TimeSpan.FromMilliseconds(this.MillisecondsDelay), token)
                     .ContinueWith(async _ =>
                     {
                         EventHandlerDelegate? toExecute;
@@ -53,7 +57,7 @@ public class QueuedEventMiddleware<TEvent>(
                                 logger.LogError(ex, "Error executing sampled event handler");
                             }
                         }
-                    }, TaskScheduler.Default);
+                    }, TaskContinuationOptions.OnlyOnRanToCompletion);
             }
         }
 
@@ -61,6 +65,9 @@ public class QueuedEventMiddleware<TEvent>(
         {
             lock (this.syncLock)
             {
+                this.timerCts?.Cancel();
+                this.timerCts?.Dispose();
+                this.timerCts = null;
                 this.pendingNext = null;
                 this.timerRunning = false;
             }
