@@ -48,14 +48,12 @@ public static class MediatorExtensions
                 SingleReader = false,
                 SingleWriter = false
             });
-        
-            var tcs = new TaskCompletionSource<T>();
-            await using var u1 = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
-            using var u2 = mediator.Subscribe<T>((ev, ctx, ct) =>
+
+            using var sub = mediator.Subscribe<T>((ev, ctx, ct) =>
             {
                 if (filter?.Invoke(ev) ?? true)
                     channel.Writer.TryWrite(ev);
-            
+
                 return Task.CompletedTask;
             });
             while (await channel.Reader.WaitToReadAsync(cancellationToken))
