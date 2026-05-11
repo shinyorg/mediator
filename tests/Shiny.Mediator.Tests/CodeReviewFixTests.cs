@@ -172,8 +172,7 @@ public class CodeReviewFixTests(ITestOutputHelper output)
     public async Task Sample_ConsecutiveWindows_EachFireOnce()
     {
         var logger = TestHelpers.CreateLogger<QueuedEventMiddleware<SampleTestEvent>>(output);
-        var config = new ConfigurationManager();
-        var middleware = new QueuedEventMiddleware<SampleTestEvent>(logger, config);
+        var middleware = new QueuedEventMiddleware<SampleTestEvent>(logger);
 
         var context = new MockMediatorContext
         {
@@ -214,8 +213,7 @@ public class CodeReviewFixTests(ITestOutputHelper output)
     public async Task Sample_RapidReenqueue_DoesNotDoubleExecute()
     {
         var logger = TestHelpers.CreateLogger<QueuedEventMiddleware<SampleTestEvent>>(output);
-        var config = new ConfigurationManager();
-        var middleware = new QueuedEventMiddleware<SampleTestEvent>(logger, config);
+        var middleware = new QueuedEventMiddleware<SampleTestEvent>(logger);
 
         var context = new MockMediatorContext
         {

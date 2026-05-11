@@ -24,6 +24,28 @@ public class EventHandlerTests
         return services.BuildServiceProvider().GetRequiredService<IMediator>();
     }
 
+    public record Ping : IEvent;
+    
+    [Fact]
+    public async Task SubscriptionHander_Issue_56()
+    {
+        var services = new ServiceCollection();
+
+        services.AddShinyMediator();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var mediator = serviceProvider.GetService<IMediator>();
+        int pingCount = 0;
+        mediator.Subscribe(async (
+            Ping e,
+            IMediatorContext _,
+            CancellationToken _) => ++pingCount);
+
+        var context = await mediator.Publish(new Ping());
+        context.Exception.ShouldBeNull();
+        
+        pingCount.ShouldBe(1);
+    }
 
     [Fact]
     public async Task SubscriptionFired()
@@ -313,6 +335,30 @@ public class EventHandlerTests
 
         await mediator.Publish(new TestTestEvent());
         CatchAllEventHandler.Executed.ShouldBeTrue();
+    }
+
+
+    [Fact]
+    public async Task BadMiddleware_SetsContextException()
+    {
+        var mediator = this.SetupMediator(s =>
+            s.AddSingleton<IEventMiddleware<TestEvent>, ThrowingEventMiddleware>()
+        );
+
+        mediator.Subscribe<TestEvent>((_, _, _) => Task.CompletedTask);
+
+        var context = await mediator.Publish(new TestEvent());
+        context.Exception.ShouldNotBeNull();
+        context.Exception.ShouldBeOfType<InvalidOperationException>();
+    }
+}
+
+
+public class ThrowingEventMiddleware : IEventMiddleware<TestEvent>
+{
+    public Task Process(IMediatorContext context, EventHandlerDelegate next, CancellationToken cancellationToken)
+    {
+        throw new InvalidOperationException("Middleware exploded");
     }
 }
 

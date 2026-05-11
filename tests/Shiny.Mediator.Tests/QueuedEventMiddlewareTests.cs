@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Shiny.Mediator.Middleware;
 using Shiny.Mediator.Tests.Mocks;
 using Xunit.Abstractions;
@@ -7,17 +6,16 @@ namespace Shiny.Mediator.Tests;
 
 public class QueuedEventMiddlewareTests
 {
-    readonly ConfigurationManager config = new();
     readonly QueuedEventMiddleware<SampleTestEvent> sampleMiddleware;
     readonly QueuedEventMiddleware<ThrottleTestEvent> throttleMiddleware;
 
     public QueuedEventMiddlewareTests(ITestOutputHelper output)
     {
         var sampleLogger = TestHelpers.CreateLogger<QueuedEventMiddleware<SampleTestEvent>>(output);
-        this.sampleMiddleware = new QueuedEventMiddleware<SampleTestEvent>(sampleLogger, this.config);
+        this.sampleMiddleware = new QueuedEventMiddleware<SampleTestEvent>(sampleLogger);
 
         var throttleLogger = TestHelpers.CreateLogger<QueuedEventMiddleware<ThrottleTestEvent>>(output);
-        this.throttleMiddleware = new QueuedEventMiddleware<ThrottleTestEvent>(throttleLogger, this.config);
+        this.throttleMiddleware = new QueuedEventMiddleware<ThrottleTestEvent>(throttleLogger);
     }
 
     // ── Sample tests ────────────────────────────────────────────────────

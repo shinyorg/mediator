@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Middleware;
@@ -10,8 +9,7 @@ namespace Shiny.Mediator.Middleware;
 // TODO: this won't execute on the mainthread
 [MiddlewareOrder(50)]
 public class QueuedEventMiddleware<TEvent>(
-    ILogger<QueuedEventMiddleware<TEvent>> logger,
-    IConfiguration configuration
+    ILogger<QueuedEventMiddleware<TEvent>> logger
 ) : IEventMiddleware<TEvent> where TEvent : IEvent
 {
     record SampleState(long MillisecondsDelay) : IDisposable
@@ -146,9 +144,6 @@ public class QueuedEventMiddleware<TEvent>(
             logger.LogDebug("Throttle discarding event {EventType} for handler {HandlerType} - in cooldown", eventType, handlerType);
             return Task.CompletedTask;
         }
-
-        // TODO: the problem is what buffer time to we obey?
-        // var buffered = context.ServiceScope.ServiceProvider.GetServices<IBufferedEventHandler<TEvent>>(); // just resolve to trigger any buffering logic
 
         return next();
     }
