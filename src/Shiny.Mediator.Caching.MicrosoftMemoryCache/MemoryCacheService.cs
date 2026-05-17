@@ -6,30 +6,33 @@ namespace Shiny.Mediator;
 
 public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) : ICacheService
 {
-    public Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> retrieveFunc, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
-        => cache.GetOrCreateAsync(
-            key, 
-            async _ =>
-            {
-                var result = await retrieveFunc.Invoke().ConfigureAwait(false);
-                return new CacheEntry<T>(
-                    key,
-                    result,
-                    timeProvider.GetUtcNow()
-                );
-            }, 
-            new MemoryCacheEntryOptions
+    readonly KeyedLocker locker = new();
+
+    public async Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> retrieveFunc, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
+    {
+        if (cache.TryGetValue(key, out var existing) && existing is CacheEntry<T> hit)
+            return hit;
+
+        using (await this.locker.LockAsync(key, cancellationToken).ConfigureAwait(false))
+        {
+            if (cache.TryGetValue(key, out existing) && existing is CacheEntry<T> hit2)
+                return hit2;
+
+            var result = await retrieveFunc.Invoke().ConfigureAwait(false);
+            var entry = new CacheEntry<T>(key, result, timeProvider.GetUtcNow());
+            cache.Set(key, entry, new MemoryCacheEntryOptions
             {
                 Priority = CacheItemPriority.Normal,
                 AbsoluteExpirationRelativeToNow = config?.AbsoluteExpiration,
                 SlidingExpiration = config?.SlidingExpiration
-            }
-        );
-    
+            });
+            return entry;
+        }
+    }
+
 
     public Task<CacheEntry<T>> Set<T>(string key, T value, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
     {
-        // TODO: what if entry already exists?
         var entryValue = new CacheEntry<T>(key, value, timeProvider.GetUtcNow());
         var opts = new MemoryCacheEntryOptions
         {
@@ -37,11 +40,11 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
             SlidingExpiration = config?.SlidingExpiration
         };
         cache.Set(key, entryValue, opts);
-        
+
         return Task.FromResult(entryValue);
     }
 
-    
+
     public Task<CacheEntry<T>?> Get<T>(string key, CancellationToken cancellationToken)
     {
         if (cache.TryGetValue(key, out var result) && result is CacheEntry<T> entry)

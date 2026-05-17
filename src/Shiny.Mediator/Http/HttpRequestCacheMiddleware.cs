@@ -12,6 +12,8 @@ public class HttpRequestCacheMiddleware<TRequest, TResult>(
 ) : IRequestMiddleware<TRequest, TResult>
     where TRequest : IRequest<TResult>
 {
+    readonly KeyedLocker locker = new();
+
     public async Task<TResult> Process(IMediatorContext context, RequestHandlerDelegate<TResult> next, CancellationToken cancellationToken)
     {
         var contractKey = contractKeyProvider.GetContractKey(context.Message!);
@@ -27,18 +29,21 @@ public class HttpRequestCacheMiddleware<TRequest, TResult>(
         }
         else
         {
-            logger.LogDebug("HTTP Cache Hit Attempt - {Request} ({ContractKey})", context.Message, contractKey);
-            var entry = await cacheService.Get<TResult>(contractKey, cancellationToken);
-            if (entry != null)
+            using (await this.locker.LockAsync(contractKey, cancellationToken).ConfigureAwait(false))
             {
-                logger.LogInformation("HTTP Cache Hit Successfully - {Request} ({ContractKey})", context.Message, contractKey);
-                result = entry.Value;
-            }
-            else
-            {
-                logger.LogInformation("HTTP Cache Miss - {Request} ({ContractKey})", context.Message, contractKey);
-                result = await next().ConfigureAwait(false);
-                await this.TryCacheEntry(result, context, contractKey, cancellationToken).ConfigureAwait(false);
+                logger.LogDebug("HTTP Cache Hit Attempt - {Request} ({ContractKey})", context.Message, contractKey);
+                var entry = await cacheService.Get<TResult>(contractKey, cancellationToken).ConfigureAwait(false);
+                if (entry != null)
+                {
+                    logger.LogInformation("HTTP Cache Hit Successfully - {Request} ({ContractKey})", context.Message, contractKey);
+                    result = entry.Value;
+                }
+                else
+                {
+                    logger.LogInformation("HTTP Cache Miss - {Request} ({ContractKey})", context.Message, contractKey);
+                    result = await next().ConfigureAwait(false);
+                    await this.TryCacheEntry(result, context, contractKey, cancellationToken).ConfigureAwait(false);
+                }
             }
         }
         return result;
@@ -61,11 +66,7 @@ public class HttpRequestCacheMiddleware<TRequest, TResult>(
 
             await cacheService.Set(
                 contractKey,
-                new CacheEntry<TResult>(
-                    contractKey,
-                    result,
-                    timeProvider.GetUtcNow()
-                ),
+                result,
                 new CacheItemConfig
                 {
                     AbsoluteExpiration = cc.MaxAge!.Value

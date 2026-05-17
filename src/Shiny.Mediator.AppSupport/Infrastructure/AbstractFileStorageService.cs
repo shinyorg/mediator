@@ -12,33 +12,45 @@ public abstract class AbstractFileStorageService(
     protected abstract Task WriteFile(string fileName, string content, CancellationToken cancellationToken);
     protected abstract Task<string?> ReadFile(string fileName, CancellationToken cancellationToken);
     protected abstract Task DeleteFile(string fileName, CancellationToken cancellationToken);
-    
-    
+
+
     public async Task Set<T>(string category, string key, T value, CancellationToken cancellationToken)
     {
         var fileName = await this.GetFileIndexer(category, key, cancellationToken).ConfigureAwait(false);
-        logger.LogInformation("Setting {Category}-{key} to {File}", category, key, fileName);
-        await this.WriteObject(fileName, value, cancellationToken).ConfigureAwait(false);
-        await this.WriteState(cancellationToken).ConfigureAwait(false);
+        using (await this.keyLocker.LockAsync(LockKey(category, key), cancellationToken).ConfigureAwait(false))
+        {
+            logger.LogInformation("Setting {Category}-{key} to {File}", category, key, fileName);
+            await this.WriteObject(fileName, value, cancellationToken).ConfigureAwait(false);
+            await this.WriteState(cancellationToken).ConfigureAwait(false);
+        }
     }
 
 
     public async Task<T?> Get<T>(string category, string key, CancellationToken cancellationToken)
     {
-        try
+        var fileName = await this.GetFileIndexer(category, key, cancellationToken).ConfigureAwait(false);
+        T? obj = default;
+        var recover = false;
+
+        using (await this.keyLocker.LockAsync(LockKey(category, key), cancellationToken).ConfigureAwait(false))
         {
-            var fileName = await this.GetFileIndexer(category, key, cancellationToken).ConfigureAwait(false);
-            var obj = await this.GetObject<T>(fileName, cancellationToken).ConfigureAwait(false);
-            return obj;
+            try
+            {
+                obj = await this.GetObject<T>(fileName, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error getting {Category}-{Key}", category, key);
+                recover = true;
+            }
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error getting {Category}-{Key}", category, key);
-            await this.Remove(category, key).ConfigureAwait(false); // serialization was messed up? let's remove it
-            return default;
-        }
+
+        if (recover)
+            await this.Remove(category, key, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        return obj;
     }
-    
+
 
     public async Task Remove(string category, string requestKey, bool partialMatch = false, CancellationToken cancellationToken = default)
     {
@@ -47,7 +59,12 @@ public abstract class AbstractFileStorageService(
         if (!partialMatch)
         {
             if (indexes.TryGetValue(requestKey, out var fileName))
-                await this.DoRemove(indexes, category, requestKey, fileName, true, cancellationToken).ConfigureAwait(false);
+            {
+                using (await this.keyLocker.LockAsync(LockKey(category, requestKey), cancellationToken).ConfigureAwait(false))
+                {
+                    await this.DoRemove(indexes, category, requestKey, fileName, true, cancellationToken).ConfigureAwait(false);
+                }
+            }
         }
         else
         {
@@ -59,9 +76,12 @@ public abstract class AbstractFileStorageService(
                 if (!String.IsNullOrWhiteSpace(key) && key.StartsWith(requestKey))
                 {
                     changed = true;
-                    await this
-                        .DoRemove(indexes, category, key, value, false, cancellationToken)
-                        .ConfigureAwait(false);
+                    using (await this.keyLocker.LockAsync(LockKey(category, key), cancellationToken).ConfigureAwait(false))
+                    {
+                        await this
+                            .DoRemove(indexes, category, key, value, false, cancellationToken)
+                            .ConfigureAwait(false);
+                    }
                 }
             }
 
@@ -78,19 +98,24 @@ public abstract class AbstractFileStorageService(
         {
             var copy = indexes.ToList();
             foreach (var (key, fn) in copy)
-                await this.DoRemove(indexes, category, key, fn, false, cancellationToken).ConfigureAwait(false);
+            {
+                using (await this.keyLocker.LockAsync(LockKey(category, key), cancellationToken).ConfigureAwait(false))
+                {
+                    await this.DoRemove(indexes, category, key, fn, false, cancellationToken).ConfigureAwait(false);
+                }
+            }
 
             indexes.Clear();
             await this.WriteState(cancellationToken).ConfigureAwait(false);
         }
     }
 
-    
+
     async Task DoRemove(
-        ConcurrentDictionary<string, string> indexes, 
-        string category, 
-        string requestKey, 
-        string fileName, 
+        ConcurrentDictionary<string, string> indexes,
+        string category,
+        string requestKey,
+        string fileName,
         bool writeState,
         CancellationToken cancellationToken
     )
@@ -101,14 +126,14 @@ public abstract class AbstractFileStorageService(
         if (writeState)
             await this.WriteState(cancellationToken).ConfigureAwait(false);
     }
-    
+
     protected virtual async Task WriteObject<T>(string fileName, T value, CancellationToken cancellationToken)
     {
         var content = serializer.Serialize(value);
         await this.WriteFile(fileName, content, cancellationToken).ConfigureAwait(false);
     }
-    
-    
+
+
     protected virtual async Task<T?> GetObject<T>(string fileName, CancellationToken cancellationToken)
     {
         var content = await this.ReadFile(fileName, cancellationToken).ConfigureAwait(false);
@@ -121,7 +146,7 @@ public abstract class AbstractFileStorageService(
         var obj = serializer.Deserialize<T>(content);
         return obj;
     }
-    
+
 
     protected virtual async Task WriteState(CancellationToken cancellationToken)
     {
@@ -141,8 +166,11 @@ public abstract class AbstractFileStorageService(
     }
 
 
+    static string LockKey(string category, string key) => category + "" + key;
+
     protected const string IndexFile = "indexes.mediator";
     readonly SemaphoreSlim semaphore = new(1, 1);
+    readonly KeyedLocker keyLocker = new();
     ConcurrentDictionary<string, ConcurrentDictionary<string, string>>? _indexes;
     protected async Task<ConcurrentDictionary<string, string>> GetIndexCategory(string category, CancellationToken cancellationToken)
     {

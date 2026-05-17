@@ -21,18 +21,13 @@ public class StorageCacheService(
         AbsoluteExpiration = TimeSpan.FromMinutes(10)
     };
 
-    readonly SemaphoreSlim getOrCreateLock = new(1, 1);
+    readonly KeyedLocker locker = new();
 
     public async Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> retrieveFunc, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
     {
-        var e = await this.TryGet<T>(key, cancellationToken).ConfigureAwait(false);
-        if (e != null)
-            return ToExternal(e);
-
-        await this.getOrCreateLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
+        using (await this.locker.LockAsync(key, cancellationToken).ConfigureAwait(false))
         {
-            e = await this.TryGet<T>(key, cancellationToken).ConfigureAwait(false);
+            var e = await this.TryGet<T>(key, cancellationToken).ConfigureAwait(false);
             if (e == null)
             {
                 var result = await retrieveFunc
@@ -43,37 +38,39 @@ public class StorageCacheService(
                     .Store(key, result, config, cancellationToken)
                     .ConfigureAwait(false);
             }
+            return ToExternal(e);
         }
-        finally
-        {
-            this.getOrCreateLock.Release();
-        }
-        return ToExternal(e);
     }
 
 
     public async Task<CacheEntry<T>> Set<T>(string key, T value, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
     {
-        var intCache = await this.Store(key, value, config, cancellationToken).ConfigureAwait(false);
-        var entry = ToExternal(intCache);
-        return entry!;
+        using (await this.locker.LockAsync(key, cancellationToken).ConfigureAwait(false))
+        {
+            var intCache = await this.Store(key, value, config, cancellationToken).ConfigureAwait(false);
+            var entry = ToExternal(intCache);
+            return entry!;
+        }
     }
 
 
     public async Task<CacheEntry<T>?> Get<T>(string key, CancellationToken cancellationToken)
     {
-        var e = await this
-            .TryGet<T>(key, cancellationToken)
-            .ConfigureAwait(false);
+        using (await this.locker.LockAsync(key, cancellationToken).ConfigureAwait(false))
+        {
+            var e = await this
+                .TryGet<T>(key, cancellationToken)
+                .ConfigureAwait(false);
 
-        return ToExternal(e);
+            return ToExternal(e);
+        }
     }
-    
+
 
     public Task Remove(string requestKey, bool partialMatch = false, CancellationToken cancellationToken = default)
         => storage.Remove(Category, requestKey, partialMatch, cancellationToken);
 
-    
+
     public Task Clear(CancellationToken cancellationToken) => storage.Clear(Category, cancellationToken);
 
 
@@ -90,11 +87,11 @@ public class StorageCacheService(
         var e = await storage
             .Get<InternalCacheEntry<T>>(Category, key, cancellationToken)
             .ConfigureAwait(false);
-        
+
         if (e != null)
         {
             var now = timeProvider.GetUtcNow();
-            
+
             if (e.ExpiresAt != null && e.ExpiresAt < now)
             {
                 await storage.Remove(Category, e.Key, false, cancellationToken).ConfigureAwait(false);
@@ -110,18 +107,18 @@ public class StorageCacheService(
 
         return e;
     }
-    
+
     async Task<InternalCacheEntry<T>> Store<T>(string key, T result, CacheItemConfig? config, CancellationToken cancellationToken)
     {
         DateTimeOffset? expiresAt = null;
         var now = timeProvider.GetUtcNow();
-        
+
         if (config != null)
         {
             if (config.AbsoluteExpiration != null)
             {
                 expiresAt = now.Add(config.AbsoluteExpiration.Value);
-            }   
+            }
             else if (config.SlidingExpiration != null)
             {
                 expiresAt = now.Add(config.SlidingExpiration.Value);
@@ -135,7 +132,7 @@ public class StorageCacheService(
             config ?? DefaultCache
         );
         await storage.Set(Category, key, e, cancellationToken).ConfigureAwait(false);
-        
+
         return e;
     }
 }
