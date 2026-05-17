@@ -10,12 +10,22 @@ record InternalCacheEntry<T>(
 );
 
 
+/// <summary>
+/// <see cref="ICacheService"/> implementation that persists entries to an
+/// <see cref="IStorageService"/> (typically a file-backed store). All operations
+/// against a single key are serialized via an internal <see cref="KeyedLocker"/>
+/// so that the factory in <see cref="GetOrCreate{T}"/> runs exactly once and
+/// sliding-expiration writes performed during reads cannot race.
+/// </summary>
 public class StorageCacheService(
     IStorageService storage,
     TimeProvider timeProvider
 ) : ICacheService
 {
+    /// <summary>The storage category under which cache entries are written.</summary>
     public const string Category = "Cache";
+
+    /// <summary>Default cache configuration applied when none is supplied (10 minute absolute expiration).</summary>
     public static CacheItemConfig DefaultCache = new CacheItemConfig
     {
         AbsoluteExpiration = TimeSpan.FromMinutes(10)
@@ -23,6 +33,7 @@ public class StorageCacheService(
 
     readonly KeyedLocker locker = new();
 
+    /// <inheritdoc/>
     public async Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> retrieveFunc, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
     {
         using (await this.locker.LockAsync(key, cancellationToken).ConfigureAwait(false))
@@ -43,6 +54,7 @@ public class StorageCacheService(
     }
 
 
+    /// <inheritdoc/>
     public async Task<CacheEntry<T>> Set<T>(string key, T value, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
     {
         using (await this.locker.LockAsync(key, cancellationToken).ConfigureAwait(false))
@@ -54,6 +66,7 @@ public class StorageCacheService(
     }
 
 
+    /// <inheritdoc/>
     public async Task<CacheEntry<T>?> Get<T>(string key, CancellationToken cancellationToken)
     {
         using (await this.locker.LockAsync(key, cancellationToken).ConfigureAwait(false))
@@ -67,10 +80,12 @@ public class StorageCacheService(
     }
 
 
+    /// <inheritdoc/>
     public Task Remove(string requestKey, bool partialMatch = false, CancellationToken cancellationToken = default)
         => storage.Remove(Category, requestKey, partialMatch, cancellationToken);
 
 
+    /// <inheritdoc/>
     public Task Clear(CancellationToken cancellationToken) => storage.Clear(Category, cancellationToken);
 
 

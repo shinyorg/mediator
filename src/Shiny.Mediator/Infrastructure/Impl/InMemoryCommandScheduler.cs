@@ -4,6 +4,10 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
+/// <summary>
+/// In-memory <see cref="ICommandScheduler"/> that polls every minute and dispatches deferred commands when
+/// their due time elapses. Scheduled commands do not survive process restarts.
+/// </summary>
 public class InMemoryCommandScheduler(
     ILogger<ICommandScheduler> logger,
     TimeProvider timeProvider,
@@ -12,8 +16,9 @@ public class InMemoryCommandScheduler(
 {
     readonly List<(DateTimeOffset DueAt, IMediatorContext Context)> commands = new();
     ITimer? timer;
-    
-    
+
+
+    /// <inheritdoc/>
     public Task Schedule(IMediatorContext context, DateTimeOffset dueAt, CancellationToken cancellationToken)
     {
         lock (this.commands)
@@ -26,6 +31,10 @@ public class InMemoryCommandScheduler(
     }
     
 
+    /// <summary>
+    /// Timer tick callback that scans pending commands and dispatches any whose
+    /// <c>DueAt</c> has elapsed. Subclasses may override to customize scheduling behavior.
+    /// </summary>
     protected virtual async void OnTimerElapsed()
     {
         this.timer!.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan); // stop

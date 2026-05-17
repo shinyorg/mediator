@@ -1,16 +1,13 @@
 namespace Shiny.Mediator;
 
 /// <summary>
-/// 
+/// Handles published events of type <typeparamref name="TEvent"/>. Any number of handlers may be registered;
+/// all are invoked when the event is published.
 /// </summary>
-/// <typeparam name="TEvent"></typeparam>
 public interface IEventHandler<TEvent> where TEvent : IEvent
 {
     /// <summary>
-    /// /
+    /// Processes a published event after all event middleware has run.
     /// </summary>
-    /// <param name="event"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
     Task Handle(TEvent @event, IMediatorContext context, CancellationToken cancellationToken);
 }

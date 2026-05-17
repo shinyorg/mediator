@@ -3,9 +3,14 @@ using System.ComponentModel.DataAnnotations;
 namespace Shiny.Mediator.Middleware;
 
 
+/// <summary>
+/// Command-validation middleware that runs <see cref="System.ComponentModel.DataAnnotations"/> attributes
+/// (e.g. <c>[Required]</c>, <c>[Range]</c>) against the incoming command. Registered by <c>AddDataAnnotations</c>.
+/// </summary>
 [MiddlewareOrder(2)]
 public class DataAnnotationsCommandMiddleware<TCommand> : AbstractValidationCommandMiddleware<TCommand> where TCommand : ICommand
 {
+    /// <inheritdoc/>
     protected override Task Validate(
         TCommand command, 
         Dictionary<string, List<string>> populate, 

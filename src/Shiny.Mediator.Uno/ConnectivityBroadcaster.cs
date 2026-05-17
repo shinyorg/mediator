@@ -5,12 +5,17 @@ using Uno.Extensions.Hosting;
 namespace Shiny.Mediator;
 
 
+/// <summary>
+/// Uno <see cref="IServiceInitialize"/> that publishes a <see cref="ConnectivityChanged"/> event
+/// through the mediator whenever the device's internet availability changes.
+/// </summary>
 public class ConnectivityBroadcaster(
     ILogger<ConnectivityBroadcaster> logger,
     IMediator mediator,
     IInternetService internetService
 ) : IServiceInitialize
 {
+    /// <inheritdoc/>
     public void Initialize()
     {
         internetService.StateChanged += async (_, connected) =>
@@ -27,4 +32,8 @@ public class ConnectivityBroadcaster(
     }
 }
 
+/// <summary>
+/// Mediator event published by <see cref="ConnectivityBroadcaster"/> when the device's internet
+/// availability changes; <c>Connected</c> reflects the new state.
+/// </summary>
 public record ConnectivityChanged(bool Connected) : IEvent;

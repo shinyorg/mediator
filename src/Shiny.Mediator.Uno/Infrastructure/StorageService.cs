@@ -5,11 +5,17 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure;
 
 
+/// <summary>
+/// Uno file-based <see cref="IStorageService"/> implementation that persists serialized values
+/// to <see cref="ApplicationData.LocalFolder"/>. Suitable for backing
+/// <see cref="StorageCacheService"/> with cache that survives app restarts.
+/// </summary>
 public class StorageService(
     ISerializerService serializer,
     ILogger<StorageService> logger
 ) : AbstractFileStorageService(serializer, logger)
 {
+    /// <inheritdoc/>
     protected override async Task WriteFile(string fileName, string content, CancellationToken cancellationToken)
     {
         var local = ApplicationData.Current.LocalFolder;
@@ -17,7 +23,8 @@ public class StorageService(
         await FileIO.WriteTextAsync(file, content);
     }
 
-    
+
+    /// <inheritdoc/>
     protected override async Task<string?> ReadFile(string fileName, CancellationToken cancellationToken)
     {
         var local = ApplicationData.Current.LocalFolder;
@@ -29,8 +36,9 @@ public class StorageService(
         var content = await FileIO.ReadTextAsync(file);
         return content;
     }
-    
 
+
+    /// <inheritdoc/>
     protected override async Task DeleteFile(string fileName, CancellationToken cancellationToken)
     {
         var local = ApplicationData.Current.LocalFolder;

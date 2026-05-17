@@ -4,12 +4,18 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
+/// <summary>
+/// Default in-process <see cref="IEventExecutor"/>. Combines DI-registered <see cref="IEventHandler{TEvent}"/>
+/// instances with handlers contributed by every registered <see cref="IEventCollector"/>, runs the event-middleware
+/// pipeline once per handler, and supports runtime subscriptions via <see cref="Subscribe{TEvent}"/>.
+/// </summary>
 public class LocalEventExecutor(
     IEnumerable<IEventCollector> collectors
 ) : IEventExecutor
 {
     readonly SubscriptionEventCollector subscriptions = new();
 
+    /// <inheritdoc/>
     public async Task Publish<TEvent>(
         IMediatorContext context,
         TEvent @event,
@@ -64,6 +70,7 @@ public class LocalEventExecutor(
     }
 
 
+    /// <inheritdoc/>
     public void PublishToBackground<TEvent>(
         IMediatorContext context,
         TEvent @event,
@@ -78,15 +85,21 @@ public class LocalEventExecutor(
         });
     }
 
+    /// <inheritdoc/>
     public IDisposable Subscribe<TEvent>(Func<TEvent, IMediatorContext, CancellationToken, Task> action) where TEvent : IEvent
     {
         var handler = new SubscriptionEventHandler<TEvent>(this.subscriptions);
         handler.OnHandle = action;
         return handler;
     }
-    
 
+
+    /// <summary>
+    /// Returns true; the local executor accepts every event type.
+    /// </summary>
     public bool CanPublish<TEvent>(TEvent @event) where TEvent : IEvent => true;
+
+    /// <inheritdoc/>
     public bool CanPublish(Type eventType) => true;
 
 

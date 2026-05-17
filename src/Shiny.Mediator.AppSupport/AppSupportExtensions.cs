@@ -6,13 +6,16 @@ using Shiny.Mediator.Middleware;
 namespace Shiny.Mediator;
 
 
+/// <summary>
+/// Mediator builder extensions that register the app-support middleware bundle: user error notifications,
+/// offline availability, and stream replay.
+/// </summary>
 public static class AppSupportExtensions
 {
     /// <summary>
-    /// Adds standard app support middleware - offline, replay stream, & user notification
+    /// Registers the full app-support middleware set: user error notifications, offline availability for requests,
+    /// and replay caching for streams. Call this when wiring a mobile or desktop client.
     /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
     public static ShinyMediatorBuilder AddStandardAppSupportMiddleware(this ShinyMediatorBuilder cfg)
     {
         cfg.AddUserErrorNotificationsHandling();
@@ -20,41 +23,38 @@ public static class AppSupportExtensions
         cfg.AddReplayStreamMiddleware();
         return cfg;
     }
-    
-    
+
+
     /// <summary>
-    /// Allows you to configure error handling on your request handlers which logs an error & displays an alert to the user
-    /// to show a customized message
+    /// Registers <see cref="UserNotificationExceptionHandler"/> so unhandled handler exceptions surface to the user
+    /// via <see cref="IAlertDialogService"/> using localized titles and messages drawn from configuration.
     /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
     public static ShinyMediatorBuilder AddUserErrorNotificationsHandling(this ShinyMediatorBuilder cfg)
     {
         cfg.Services.AddScoped<IExceptionHandler, UserNotificationExceptionHandler>();
         return cfg;
     }
-    
-    
+
+
     /// <summary>
-    /// Allows your request /w result handlers to return a stored value when offline is detected
+    /// Registers the open-generic offline availability request middleware along with <see cref="IOfflineService"/>
+    /// and the flush event handlers. Handlers marked with <see cref="OfflineAvailableAttribute"/> (or enabled via
+    /// configuration) return stored results when the network is unavailable or the call times out.
     /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
     public static ShinyMediatorBuilder AddOfflineAvailabilityMiddleware(this ShinyMediatorBuilder cfg)
     {
         cfg.Services.TryAddSingleton<IOfflineService, OfflineService>();
         cfg.Services.AddSingletonAsImplementedInterfaces<OfflineFlushEventHandlers>();
         cfg.AddOpenRequestMiddleware(typeof(OfflineAvailableRequestMiddleware<,>));
-        
+
         return cfg;
     }
-    
-    
+
+
     /// <summary>
-    /// Plays the last value for the request while requesting the next value
+    /// Registers the open-generic stream replay middleware so stream handlers can yield the most recently stored
+    /// value to subscribers immediately, before producing the next live value.
     /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
     public static ShinyMediatorBuilder AddReplayStreamMiddleware(this ShinyMediatorBuilder cfg)
     {
         cfg.AddOpenStreamMiddleware(typeof(ReplayStreamMiddleware<,>));

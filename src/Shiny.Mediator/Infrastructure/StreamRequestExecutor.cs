@@ -4,17 +4,28 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure;
 
 
+/// <summary>
+/// Base class for custom <see cref="IStreamRequestExecutor"/> implementations. Exposes a virtual
+/// <see cref="Execute{TRequest,TResult}"/> helper that resolves the registered stream handler and runs it
+/// through the ordered middleware chain - reuse it when implementing alternative dispatch strategies.
+/// </summary>
 public abstract class StreamRequestExecutor : IStreamRequestExecutor
 {
+    /// <inheritdoc/>
     public abstract IAsyncEnumerable<TResult> Request<TResult>(
         IMediatorContext context,
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken
     );
-    
+
+    /// <inheritdoc/>
     public abstract bool CanRequest<TResult>(IStreamRequest<TResult> request);
 
 
+    /// <summary>
+    /// Runs the strongly-typed stream request through its handler and middleware. Use this from
+    /// <see cref="Request{TResult}"/> overrides when you need the standard local dispatch behaviour.
+    /// </summary>
     public virtual IAsyncEnumerable<TResult> Execute<TRequest, TResult>(
         IMediatorContext context,
         TRequest request,

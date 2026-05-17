@@ -1,69 +1,76 @@
 namespace Shiny.Mediator.Infrastructure;
 
+/// <summary>
+/// Configuration for a single cache entry's expiration policy.
+/// </summary>
+/// <param name="AbsoluteExpiration">Absolute time-to-live measured from creation. Null disables absolute expiration.</param>
+/// <param name="SlidingExpiration">Sliding time-to-live reset on each access. Null disables sliding expiration.</param>
 public record CacheItemConfig(
-    TimeSpan? AbsoluteExpiration = null, 
+    TimeSpan? AbsoluteExpiration = null,
     TimeSpan? SlidingExpiration = null
 );
 
+/// <summary>
+/// A typed cache entry returned by <see cref="ICacheService"/>.
+/// </summary>
+/// <param name="Key">The full cache key.</param>
+/// <param name="Value">The cached value.</param>
+/// <param name="CreatedAt">UTC time the entry was first created.</param>
 public record CacheEntry<T>(
     string Key,
     T Value,
     DateTimeOffset CreatedAt
 );
 
+/// <summary>
+/// Abstraction over the cache backend used by mediator caching middleware. Implementations may use in-memory
+/// storage, distributed caches, or persistent stores.
+/// </summary>
 public interface ICacheService
 {
     /// <summary>
-    /// This will retrieve the data from the factory if not present in cache and then add it to the cache once retrieved
+    /// Returns the cached entry for <paramref name="key"/>, or invokes <paramref name="factory"/> and stores its result.
     /// </summary>
-    /// <param name="key"></param>
-    /// <param name="factory"></param>
-    /// <param name="config"></param>
+    /// <param name="key">The cache key.</param>
+    /// <param name="factory">Producer invoked on a cache miss.</param>
+    /// <param name="config">Optional expiration configuration; defaults are used when null.</param>
     /// <param name="cancellationToken"></param>
-    /// <typeparam name="T">Configuration of cache, assumes default if not set</typeparam>
-    /// <returns></returns>
     Task<CacheEntry<T>?> GetOrCreate<T>(
-        string key, 
+        string key,
         Func<Task<T>> factory,
         CacheItemConfig? config = null,
         CancellationToken cancellationToken = default
     );
-    
+
     /// <summary>
-    /// Manually insert or overwrite an item in cache
+    /// Inserts or overwrites the value at <paramref name="key"/>.
     /// </summary>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <param name="config">Configuration of cache, assumes default if not set</param>
+    /// <param name="key">The cache key.</param>
+    /// <param name="value">The value to store.</param>
+    /// <param name="config">Optional expiration configuration; defaults are used when null.</param>
     /// <param name="cancellationToken"></param>
     Task<CacheEntry<T>> Set<T>(
-        string key, 
-        T value, 
+        string key,
+        T value,
         CacheItemConfig? config = null,
         CancellationToken cancellationToken = default
     );
 
     /// <summary>
-    /// Retrieves a cached value, null if not found
+    /// Returns the cached entry for <paramref name="key"/>, or <c>null</c> when absent.
     /// </summary>
-    /// <param name="key"></param>
-    /// <param name="cancellationToken"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
     Task<CacheEntry<T>?> Get<T>(string key, CancellationToken cancellationToken);
-    
+
     /// <summary>
-    /// Clears cache keys starting with prefix
+    /// Removes entries matching <paramref name="requestKey"/>.
     /// </summary>
-    /// <param name="requestKey"></param>
-    /// <param name="partialMatch">If true, uses StartsWith on requestKey, otherwise looks for exact match</param>
+    /// <param name="requestKey">The exact key or key prefix to remove.</param>
+    /// <param name="partialMatch">When true, treat <paramref name="requestKey"/> as a prefix (StartsWith) and remove all matches.</param>
     /// <param name="cancellationToken"></param>
     Task Remove(string requestKey, bool partialMatch = false, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Clears the cache
+    /// Removes every entry from the cache.
     /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
     Task Clear(CancellationToken cancellationToken);
 }

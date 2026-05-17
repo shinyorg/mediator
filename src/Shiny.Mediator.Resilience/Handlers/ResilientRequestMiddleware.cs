@@ -6,12 +6,19 @@ using Polly.Registry;
 namespace Shiny.Mediator.Resilience.Handlers;
 
 
+/// <summary>
+/// Request middleware that wraps the downstream handler in a named Polly
+/// <see cref="ResiliencePipeline"/> resolved from either the handler's <c>Resilience</c>
+/// configuration section or a <see cref="ResilientAttribute"/>. When no pipeline is configured,
+/// the request flows through unchanged.
+/// </summary>
 public class ResilientRequestMiddleware<TRequest, TResult>(
     ILogger<ResilientRequestMiddleware<TRequest, TResult>> logger,
     IConfiguration configuration,
     ResiliencePipelineProvider<string> pipelineProvider
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
+    /// <inheritdoc/>
     public async Task<TResult> Process(
         IMediatorContext context,
         RequestHandlerDelegate<TResult> next,
@@ -20,7 +27,7 @@ public class ResilientRequestMiddleware<TRequest, TResult>(
     {
         ResiliencePipeline? pipeline = null;
         var section = context.GetHandlerSection(configuration, "Resilience");
-        
+
         if (section != null)
         {
             pipeline = pipelineProvider.GetPipeline(section.Key.ToLower());
@@ -39,7 +46,7 @@ public class ResilientRequestMiddleware<TRequest, TResult>(
         var result = await pipeline
             .ExecuteAsync(async _ => await next(), cancellationToken)
             .ConfigureAwait(false);
-        
+
         return result;
     }
 }

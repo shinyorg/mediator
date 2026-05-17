@@ -4,10 +4,17 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator;
 
 
+/// <summary>
+/// <see cref="ICacheService"/> implementation backed by <see cref="IMemoryCache"/>.
+/// Uses an internal per-key lock to provide cache-stampede protection on
+/// <see cref="GetOrCreate{T}"/> (the underlying <c>GetOrCreateAsync</c> does not
+/// serialize concurrent factory invocations on its own).
+/// </summary>
 public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) : ICacheService
 {
     readonly KeyedLocker locker = new();
 
+    /// <inheritdoc/>
     public async Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> retrieveFunc, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
     {
         if (cache.TryGetValue(key, out var existing) && existing is CacheEntry<T> hit)
@@ -31,6 +38,7 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
     }
 
 
+    /// <inheritdoc/>
     public Task<CacheEntry<T>> Set<T>(string key, T value, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
     {
         var entryValue = new CacheEntry<T>(key, value, timeProvider.GetUtcNow());
@@ -45,6 +53,7 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
     }
 
 
+    /// <inheritdoc/>
     public Task<CacheEntry<T>?> Get<T>(string key, CancellationToken cancellationToken)
     {
         if (cache.TryGetValue(key, out var result) && result is CacheEntry<T> entry)
@@ -54,6 +63,7 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
     }
 
 
+    /// <inheritdoc/>
     public Task Remove(string requestKey, bool partialMatch = false, CancellationToken cancellationToken = default)
     {
         if (!partialMatch)
@@ -76,6 +86,7 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc/>
     public Task Clear(CancellationToken cancellationToken)
     {
         cache.Clear();

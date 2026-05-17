@@ -3,9 +3,16 @@ using Windows.Networking.Connectivity;
 namespace Shiny.Mediator.Infrastructure;
 
 
+/// <summary>
+/// Uno <see cref="IInternetService"/> backed by <see cref="NetworkInformation"/>. Subscribes to
+/// <see cref="NetworkInformation.NetworkStatusChanged"/> only while there are active
+/// <see cref="StateChanged"/> subscribers.
+/// </summary>
 public class InternetService : IInternetService
 {
     EventHandler<bool>? handler;
+
+    /// <inheritdoc/>
     public event EventHandler<bool>? StateChanged
     {
         add
@@ -29,6 +36,7 @@ public class InternetService : IInternetService
     void OnNetowrkStatusChanged(object sender) => this.handler?.Invoke(sender, this.IsAvailable);
 
 
+    /// <inheritdoc/>
     public bool IsAvailable
     {
         get
@@ -41,8 +49,9 @@ public class InternetService : IInternetService
             return level == NetworkConnectivityLevel.InternetAccess;
         }
     }
-    
-    
+
+
+    /// <inheritdoc/>
     public async Task WaitForAvailable(CancellationToken cancelToken = default)
     {
         if (this.IsAvailable)

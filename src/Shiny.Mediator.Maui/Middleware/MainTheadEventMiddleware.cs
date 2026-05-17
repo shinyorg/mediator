@@ -1,10 +1,16 @@
 namespace Shiny.Mediator.Middleware;
 
+/// <summary>
+/// MAUI event middleware that, when the target event handler is decorated with
+/// <see cref="MainThreadAttribute"/>, marshals invocation onto the UI thread via
+/// <see cref="MainThread.BeginInvokeOnMainThread(Action)"/>.
+/// </summary>
 [MiddlewareOrder(100)]
 public class MainTheadEventMiddleware<TEvent> : IEventMiddleware<TEvent> where TEvent : IEvent
 {
+    /// <inheritdoc/>
     public async Task Process(
-        IMediatorContext context, 
+        IMediatorContext context,
         EventHandlerDelegate next,
         CancellationToken cancellationToken
     )

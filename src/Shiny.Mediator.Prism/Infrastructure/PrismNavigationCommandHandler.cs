@@ -1,11 +1,19 @@
 namespace Shiny.Mediator.Prism.Infrastructure;
 
 
+/// <summary>
+/// Open-generic <see cref="ICommandHandler{TCommand}"/> that executes
+/// <see cref="IPrismNavigationCommand"/> by composing the navigation URI, populating Prism
+/// <c>NavigationParameters</c> (modal/animated flags, command payload), and dispatching the
+/// navigation on the UI thread. Falls back to <see cref="IGlobalNavigationService"/> when the
+/// command supplies no <see cref="IPrismNavigationCommand.Navigator"/>.
+/// </summary>
 public class PrismNavigationCommandHandler<TCommand>(
     IGlobalNavigationService navigator,
     IDispatcher dispatcher
 ) : ICommandHandler<TCommand> where TCommand : IPrismNavigationCommand
 {
+    /// <inheritdoc/>
     public Task Handle(TCommand command, IMediatorContext context, CancellationToken cancellationToken)
     {
         var pn = command.NavigationParameterName ?? command.GetType().Name;

@@ -1,16 +1,21 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Shiny.Mediator.Sentry;
 
 namespace Shiny.Mediator;
 
 
+/// <summary>
+/// Registration extensions for the Sentry integration with Shiny Mediator.
+/// </summary>
 public static class MediatorExtensions
 {
     /// <summary>
-    /// Wires up Sentry to Mediator middleware - be sure to call UseSentry on your hosting provider
+    /// Registers Sentry-backed exception handling and middleware that emit transactions and spans
+    /// around every request, command, event, and stream dispatch. Call <c>UseSentry</c> on your
+    /// host builder separately to initialize the Sentry SDK itself.
     /// </summary>
-    /// <param name="configurator"></param>
-    /// <returns></returns>
+    /// <param name="configurator">The mediator builder to wire into.</param>
+    /// <returns>The same builder for chaining.</returns>
     public static ShinyMediatorBuilder UseSentry(this ShinyMediatorBuilder configurator)
     {
         configurator.AddExceptionHandler<SentryExceptionHandler>();
@@ -19,5 +24,5 @@ public static class MediatorExtensions
         configurator.AddOpenRequestMiddleware(typeof(SentryRequestMiddleware<,>), ServiceLifetime.Singleton);
         configurator.AddOpenStreamMiddleware(typeof(SentryStreamRequestMiddleware<,>), ServiceLifetime.Singleton);
         return configurator;
-    }  
+    }
 }

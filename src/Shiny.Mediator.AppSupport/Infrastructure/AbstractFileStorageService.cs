@@ -4,16 +4,30 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure;
 
 
+/// <summary>
+/// Abstract file-backed <see cref="IStorageService"/>. Subclasses provide the
+/// platform-specific file I/O via <see cref="WriteFile"/>, <see cref="ReadFile"/>,
+/// and <see cref="DeleteFile"/>. The shared index file is guarded by a single
+/// semaphore, while each <c>(category, key)</c> pair has its own
+/// <see cref="KeyedLocker"/> lock so concurrent writes to different keys
+/// proceed in parallel without tearing.
+/// </summary>
 public abstract class AbstractFileStorageService(
     ISerializerService serializer,
     ILogger logger
 ) : IStorageService
 {
+    /// <summary>Writes <paramref name="content"/> to the platform store under <paramref name="fileName"/>, overwriting any existing data.</summary>
     protected abstract Task WriteFile(string fileName, string content, CancellationToken cancellationToken);
+
+    /// <summary>Reads the contents of <paramref name="fileName"/> from the platform store; returns <c>null</c> when the file is absent.</summary>
     protected abstract Task<string?> ReadFile(string fileName, CancellationToken cancellationToken);
+
+    /// <summary>Deletes <paramref name="fileName"/> from the platform store. No-op when the file is absent.</summary>
     protected abstract Task DeleteFile(string fileName, CancellationToken cancellationToken);
 
 
+    /// <inheritdoc/>
     public async Task Set<T>(string category, string key, T value, CancellationToken cancellationToken)
     {
         var fileName = await this.GetFileIndexer(category, key, cancellationToken).ConfigureAwait(false);
@@ -26,6 +40,7 @@ public abstract class AbstractFileStorageService(
     }
 
 
+    /// <inheritdoc/>
     public async Task<T?> Get<T>(string category, string key, CancellationToken cancellationToken)
     {
         var fileName = await this.GetFileIndexer(category, key, cancellationToken).ConfigureAwait(false);
@@ -52,6 +67,7 @@ public abstract class AbstractFileStorageService(
     }
 
 
+    /// <inheritdoc/>
     public async Task Remove(string category, string requestKey, bool partialMatch = false, CancellationToken cancellationToken = default)
     {
         var indexes = await this.GetIndexCategory(category, cancellationToken).ConfigureAwait(false);
@@ -91,6 +107,7 @@ public abstract class AbstractFileStorageService(
     }
 
 
+    /// <inheritdoc/>
     public async Task Clear(string category, CancellationToken cancellationToken)
     {
         var indexes = await this.GetIndexCategory(category, cancellationToken).ConfigureAwait(false);
@@ -127,6 +144,10 @@ public abstract class AbstractFileStorageService(
             await this.WriteState(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Serializes <paramref name="value"/> via <see cref="ISerializerService"/> and writes
+    /// the result to <paramref name="fileName"/> through <see cref="WriteFile"/>.
+    /// </summary>
     protected virtual async Task WriteObject<T>(string fileName, T value, CancellationToken cancellationToken)
     {
         var content = serializer.Serialize(value);
@@ -134,6 +155,10 @@ public abstract class AbstractFileStorageService(
     }
 
 
+    /// <summary>
+    /// Reads <paramref name="fileName"/> via <see cref="ReadFile"/> and deserializes the
+    /// contents into <typeparamref name="T"/>. Returns <c>default</c> when the file is empty or missing.
+    /// </summary>
     protected virtual async Task<T?> GetObject<T>(string fileName, CancellationToken cancellationToken)
     {
         var content = await this.ReadFile(fileName, cancellationToken).ConfigureAwait(false);
@@ -148,6 +173,10 @@ public abstract class AbstractFileStorageService(
     }
 
 
+    /// <summary>
+    /// Persists the in-memory category/key → file-name index to <see cref="IndexFile"/>
+    /// under the shared semaphore. Called after mutations to keep the on-disk index in sync.
+    /// </summary>
     protected virtual async Task WriteState(CancellationToken cancellationToken)
     {
         await this.semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -168,10 +197,16 @@ public abstract class AbstractFileStorageService(
 
     static string LockKey(string category, string key) => category + "" + key;
 
+    /// <summary>File name used to persist the category/key → file-name index.</summary>
     protected const string IndexFile = "indexes.mediator";
     readonly SemaphoreSlim semaphore = new(1, 1);
     readonly KeyedLocker keyLocker = new();
     ConcurrentDictionary<string, ConcurrentDictionary<string, string>>? _indexes;
+
+    /// <summary>
+    /// Returns the key → file-name map for <paramref name="category"/>, lazily loading
+    /// the index from disk on first access. Subsequent calls return the cached in-memory copy.
+    /// </summary>
     protected async Task<ConcurrentDictionary<string, string>> GetIndexCategory(string category, CancellationToken cancellationToken)
     {
         await this.semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -191,6 +226,10 @@ public abstract class AbstractFileStorageService(
     }
 
 
+    /// <summary>
+    /// Returns the on-disk file name for <paramref name="key"/> in <paramref name="category"/>,
+    /// allocating a new <see cref="Guid"/>-based name and recording it in the index on first use.
+    /// </summary>
     protected async Task<string> GetFileIndexer(string category, string key, CancellationToken cancellationToken)
     {
         await this.semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);

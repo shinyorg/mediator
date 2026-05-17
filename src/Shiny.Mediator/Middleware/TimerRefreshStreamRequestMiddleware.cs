@@ -6,12 +6,19 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Middleware;
 
 
+/// <summary>
+/// Stream middleware that repeats the underlying handler on a fixed interval. The interval (in seconds) is
+/// resolved from the context header first, then <c>Mediator:TimerRefresh</c> configuration, then a
+/// <see cref="TimerRefreshAttribute"/> on the handler method. When the interval is zero or negative, the
+/// middleware passes through without iterating.
+/// </summary>
 public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
     ILogger<TimerRefreshStreamRequestMiddleware<TRequest, TResult>> logger,
     IConfiguration configuration
-) : IStreamRequestMiddleware<TRequest, TResult> 
+) : IStreamRequestMiddleware<TRequest, TResult>
     where TRequest : IStreamRequest<TResult>
 {
+    /// <inheritdoc/>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue<int> is safe for trimming")]
     public IAsyncEnumerable<TResult> Process(
         IMediatorContext context, 

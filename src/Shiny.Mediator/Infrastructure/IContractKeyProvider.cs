@@ -2,14 +2,14 @@ namespace Shiny.Mediator.Infrastructure;
 
 
 /// <summary>
-/// Provides a way to 
+/// Produces a stable string key for a contract instance. Used by caching, offline storage, and replay
+/// middleware to uniquely identify a request/command/event payload. Implementations may honour
+/// <see cref="IContractKey"/> on the contract itself or fall back to reflection.
 /// </summary>
 public interface IContractKeyProvider
 {
     /// <summary>
-    /// Builds a key that can be used for caching/offline/storage unique identification
+    /// Returns a string key that uniquely identifies <paramref name="contract"/> for cache and storage purposes.
     /// </summary>
-    /// <param name="obj"></param>
-
     string GetContractKey(object contract);
 }

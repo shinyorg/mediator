@@ -1,53 +1,40 @@
 namespace Shiny.Mediator.Infrastructure;
 
 
+/// <summary>
+/// Persistent key/value storage abstraction used by the offline and cache subsystems. Values are partitioned by
+/// a category (e.g. <c>Offline</c>, <c>Cache</c>) so independent modules can safely share request key namespaces.
+/// </summary>
 public interface IStorageService
 {
     /// <summary>
-    /// Sets an object into the store
+    /// Stores <paramref name="value"/> under the given category and key, overwriting any existing entry.
     /// </summary>
-    /// <param name="category">
-    /// Offline, Cache, Other
-    /// This allows modules to stay disconnected since Request Keys can be the same
-    /// </param>
-    /// <param name="key">Request Key</param>
-    /// <param name="value">Value to store</param>
-    /// <param name="cancellationToken"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
+    /// <param name="category">Logical partition such as <c>Offline</c> or <c>Cache</c>.</param>
+    /// <param name="key">The request key identifying the entry within the category.</param>
+    /// <param name="value">The value to serialize and persist.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
     Task Set<T>(string category, string key, T value, CancellationToken cancellationToken);
-    
+
     /// <summary>
-    /// Gets an object by key, returns null if not found
+    /// Retrieves a previously stored value, or returns <c>default</c> when no entry exists for the key.
     /// </summary>
-    /// <param name="category">
-    /// Offline, Cache, Other
-    /// This allows modules to stay disconnected since Request Keys can be the same
-    /// </param>
-    /// <param name="key"></param>
-    /// <param name="cancellationToken"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
+    /// <param name="category">Logical partition such as <c>Offline</c> or <c>Cache</c>.</param>
+    /// <param name="key">The request key identifying the entry within the category.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
     Task<T?> Get<T>(string category, string key, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Performs various checks - pass null for type & prefix to clear all
+    /// Removes one or more entries from a category.
     /// </summary>
-    /// <param name="category">
-    /// Offline, Cache, Other
-    /// This allows modules to stay disconnected since Request Keys can be the same
-    /// </param>
-    /// <param name="requestKey"></param>
-    /// <param name="partialMatchKey">Performs a "startsWith" if true, otherwise, performs equal match</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="category">Logical partition such as <c>Offline</c> or <c>Cache</c>.</param>
+    /// <param name="requestKey">The request key to match.</param>
+    /// <param name="partialMatchKey">When <c>true</c>, removes every entry whose key starts with <paramref name="requestKey"/>; otherwise only exact matches are removed.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
     Task Remove(string category, string requestKey, bool partialMatchKey = false, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Removes all stores for a category
+    /// Removes every entry in the given category.
     /// </summary>
-    /// <param name="category"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
     Task Clear(string category, CancellationToken cancellationToken);
 }

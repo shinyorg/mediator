@@ -7,6 +7,12 @@ namespace Shiny.Mediator.Middleware;
 
 
 // TODO: this won't execute on the mainthread
+/// <summary>
+/// Event middleware that applies sampling (<see cref="SampleAttribute"/>) and throttling
+/// (<see cref="ThrottleAttribute"/>) policies on a per handler-method basis. Sampling collects the last event
+/// within a window and runs it when the timer fires; throttling runs the first event immediately and discards
+/// subsequent ones until the cooldown expires.
+/// </summary>
 [MiddlewareOrder(50)]
 public class QueuedEventMiddleware<TEvent>(
     ILogger<QueuedEventMiddleware<TEvent>> logger
@@ -103,6 +109,7 @@ public class QueuedEventMiddleware<TEvent>(
     readonly ConcurrentDictionary<string, SampleState> sampleStates = new();
     readonly ConcurrentDictionary<string, ThrottleState> throttleStates = new();
 
+    /// <inheritdoc/>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue<long> is safe for trimming")]
     public Task Process(
         IMediatorContext context,

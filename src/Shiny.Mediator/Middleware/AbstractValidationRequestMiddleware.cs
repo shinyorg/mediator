@@ -3,9 +3,15 @@ using System.Reflection;
 namespace Shiny.Mediator.Middleware;
 
 
+/// <summary>
+/// Base class for request-validation middleware. Skips when the request's contract type is not decorated with
+/// <c>[Validate]</c>. Otherwise calls <see cref="Validate"/>; when errors are reported, returns a
+/// <c>ValidateResult</c> if <typeparamref name="TResult"/> is <c>ValidateResult</c>, else throws <c>ValidateException</c>.
+/// </summary>
 public abstract class AbstractValidationRequestMiddleware<TRequest, TResult> : IRequestMiddleware<TRequest, TResult>
     where TRequest : IRequest<TResult>
 {
+    /// <inheritdoc/>
     public async Task<TResult> Process(
         IMediatorContext context,
         RequestHandlerDelegate<TResult> next,
@@ -37,6 +43,9 @@ public abstract class AbstractValidationRequestMiddleware<TRequest, TResult> : I
     }
 
 
+    /// <summary>
+    /// Helper for derived validators to append an error message keyed by member name.
+    /// </summary>
     protected static void AddError(string key, string error, Dictionary<string, List<string>> populate)
     {
         if (!populate.ContainsKey(key))
@@ -44,7 +53,10 @@ public abstract class AbstractValidationRequestMiddleware<TRequest, TResult> : I
 
         populate[key].Add(error);
     }
-    
-    
+
+
+    /// <summary>
+    /// Performs the actual validation work. Add any errors discovered to <paramref name="populate"/>.
+    /// </summary>
     protected abstract Task Validate(TRequest request, Dictionary<string, List<string>> populate, CancellationToken cancellationToken);
 }

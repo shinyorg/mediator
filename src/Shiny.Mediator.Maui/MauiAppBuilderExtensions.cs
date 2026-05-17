@@ -7,15 +7,22 @@ using Shiny.Mediator.Middleware;
 namespace Shiny.Mediator;
 
 
+/// <summary>
+/// <see cref="MauiAppBuilder"/> and <see cref="ShinyMediatorBuilder"/> extensions that register
+/// Shiny Mediator services, MAUI-specific infrastructure (storage, connectivity, dialogs),
+/// HTTP request decoration, Shell navigation, and the <see cref="MainThreadAttribute"/> middleware.
+/// </summary>
 public static class MauiAppBuilderExtensions
 {
     /// <summary>
-    /// Easier path to add Shiny Mediator to Maui
+    /// Registers Shiny Mediator on a .NET MAUI app builder. Internally calls <see cref="UseMaui"/>
+    /// to install the MAUI event collector and, when <paramref name="includeStandardMiddleware"/>
+    /// is <c>true</c>, the standard app-support middleware stack (exception handling, main thread,
+    /// timed requests, offline availability).
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="configAction"></param>
-    /// <param name="includeStandardMiddleware"></param>
-    /// <returns></returns>
+    /// <param name="builder">The MAUI app builder.</param>
+    /// <param name="configAction">Optional callback to register handlers and additional middleware.</param>
+    /// <param name="includeStandardMiddleware">When <c>true</c> (default), installs the standard middleware stack.</param>
     public static MauiAppBuilder AddShinyMediator(
         this MauiAppBuilder builder,
         Action<ShinyMediatorBuilder>? configAction = null,
@@ -32,10 +39,10 @@ public static class MauiAppBuilderExtensions
 
 
     /// <summary>
-    /// Adds a file based caching service - ideal for cache surviving across app sessions
+    /// Registers a file-based <see cref="StorageCacheService"/> backed by MAUI's
+    /// <see cref="IFileSystem.CacheDirectory"/> so cached responses survive across app sessions.
+    /// Also wires the MAUI infrastructure services required by the cache store.
     /// </summary>
-    /// <param name="mediatorBuilder"></param>
-    /// <returns></returns>
     public static ShinyMediatorBuilder AddMauiPersistentCache(this ShinyMediatorBuilder mediatorBuilder)
     {
         mediatorBuilder.AddMauiInfrastructure();
@@ -45,10 +52,11 @@ public static class MauiAppBuilderExtensions
 
     
     /// <summary>
-    /// Adds connectivity broadcaster
+    /// Registers <see cref="ConnectivityBroadcaster"/> as an <see cref="IMauiInitializeService"/>
+    /// so a <c>ConnectivityChanged</c> event is published through the mediator whenever the
+    /// device's internet availability changes, and re-broadcast to handlers on the appearing
+    /// page or its binding context.
     /// </summary>
-    /// <param name="mediatorBuilder"></param>
-    /// <returns></returns>
     public static ShinyMediatorBuilder AddConnectivityBroadcaster(this ShinyMediatorBuilder mediatorBuilder)
     {
         mediatorBuilder.AddMauiInfrastructure();
@@ -58,11 +66,12 @@ public static class MauiAppBuilderExtensions
     
 
     /// <summary>
-    /// Adds Maui Event Collector to mediator
+    /// Registers the MAUI event collector (<see cref="MauiEventCollector"/>) and, when
+    /// <paramref name="includeStandardMiddleware"/> is <c>true</c>, the MAUI infrastructure
+    /// services along with main-thread and standard app-support middleware.
     /// </summary>
-    /// <param name="cfg"></param>
-    /// <param name="includeStandardMiddleware">If true, event exception handling, main thread event handling, timed requests, and offline availability middle is installed</param>
-    /// <returns></returns>
+    /// <param name="cfg">The mediator builder.</param>
+    /// <param name="includeStandardMiddleware">If <c>true</c>, event exception handling, main-thread event handling, timed requests, and offline availability middleware is installed.</param>
     public static ShinyMediatorBuilder UseMaui(this ShinyMediatorBuilder cfg, bool includeStandardMiddleware = true)
     {
         cfg.Services.AddSingletonAsImplementedInterfaces<MauiEventCollector>();
@@ -78,10 +87,13 @@ public static class MauiAppBuilderExtensions
 
 
     /// <summary>
-    /// Ensures all necessary MAUI services are installed for middleware
+    /// Ensures all MAUI infrastructure services required by Shiny Mediator middleware are
+    /// registered: <see cref="IStorageService"/>, <see cref="IInternetService"/>,
+    /// <see cref="IAlertDialogService"/>, and MAUI Essentials singletons
+    /// (<see cref="FileSystem"/>, <see cref="AppInfo"/>, <see cref="DeviceDisplay"/>,
+    /// <see cref="DeviceInfo"/>, <see cref="Geolocation"/>, <see cref="Connectivity"/>).
+    /// Uses <c>TryAdd</c> so existing registrations are preserved.
     /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
     public static ShinyMediatorBuilder AddMauiInfrastructure(this ShinyMediatorBuilder cfg)
     {
         cfg.Services.TryAddSingleton<IStorageService, StorageService>();
@@ -98,10 +110,10 @@ public static class MauiAppBuilderExtensions
 
     
     /// <summary>
-    /// This appends app version, device info, and culture to the HTTP request handling framework
+    /// Registers <see cref="MauiHttpRequestDecorator"/> which appends app identifier, app version,
+    /// device manufacturer/model/platform/version, accept-language, and (when permitted) GPS
+    /// coordinates to outbound HTTP requests issued through the mediator HTTP pipeline.
     /// </summary>
-    /// <param name="mediatorBuilder"></param>
-    /// <returns></returns>
     public static ShinyMediatorBuilder AddMauiHttpDecorator(this ShinyMediatorBuilder mediatorBuilder)
     {
         mediatorBuilder.AddMauiInfrastructure();
@@ -111,10 +123,10 @@ public static class MauiAppBuilderExtensions
 
     
     /// <summary>
-    /// Add Strongly Typed Shell Navigator
+    /// Registers the open-generic <see cref="ShellNavigationCommandHandler{TCommand}"/> so any
+    /// command implementing <see cref="IShellNavigationCommand"/> can be dispatched through the
+    /// mediator to perform MAUI Shell navigation.
     /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
     public static ShinyMediatorBuilder AddShellNavigation(this ShinyMediatorBuilder cfg)
     {
         cfg.Services.AddSingleton(typeof(ICommandHandler<>), typeof(ShellNavigationCommandHandler<>));
@@ -123,10 +135,10 @@ public static class MauiAppBuilderExtensions
 
 
     /// <summary>
-    /// Allows for [MainThread] marking on Request & Event Handlers
+    /// Registers the event, request, and command middleware that observes the
+    /// <see cref="MainThreadAttribute"/> on handlers and marshals their execution to the MAUI
+    /// UI thread via <see cref="MainThread.BeginInvokeOnMainThread(Action)"/>.
     /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
     public static ShinyMediatorBuilder AddMainThreadMiddleware(this ShinyMediatorBuilder cfg)
     {
         cfg.AddOpenEventMiddleware(typeof(MainTheadEventMiddleware<>));

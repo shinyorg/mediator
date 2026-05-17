@@ -6,12 +6,19 @@ using Polly.Registry;
 namespace Shiny.Mediator.Resilience.Handlers;
 
 
+/// <summary>
+/// Command middleware that wraps the downstream handler in a named Polly
+/// <see cref="ResiliencePipeline"/> resolved from either the handler's <c>Resilience</c>
+/// configuration section or a <see cref="ResilientAttribute"/>. When no pipeline is configured,
+/// the command flows through unchanged.
+/// </summary>
 public class ResilientCommandMiddleware<TCommand>(
     ILogger<ResilientCommandMiddleware<TCommand>> logger,
     IConfiguration configuration,
     ResiliencePipelineProvider<string> pipelineProvider
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
+    /// <inheritdoc/>
     public async Task Process(
         IMediatorContext context,
         CommandHandlerDelegate next,
@@ -20,7 +27,7 @@ public class ResilientCommandMiddleware<TCommand>(
     {
         ResiliencePipeline? pipeline = null;
         var section = configuration.GetHandlerSection("Resilience", context.Message, context.MessageHandler);
-        
+
         if (section != null)
         {
             pipeline = pipelineProvider.GetPipeline(section.Key.ToLower());

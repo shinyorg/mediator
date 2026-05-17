@@ -4,18 +4,20 @@ using System.Threading.Channels;
 namespace Shiny.Mediator;
 
 
+/// <summary>
+/// Convenience helpers built on top of <see cref="IMediator"/>, including event awaiting,
+/// event streaming, and tuple unwrapping for async-enumerable request results.
+/// </summary>
 public static class MediatorExtensions
 {
-    /// <param name="mediator"></param>
     extension(IMediator mediator)
     {
         /// <summary>
-        /// Wait for event handler to fire
+        /// Subscribes to events of <typeparamref name="T"/> and returns when the first matching event arrives.
+        /// The subscription is removed before returning.
         /// </summary>
-        /// <param name="filter">Allows you to filter the event instead of completing</param>
+        /// <param name="filter">Optional predicate; only events matching it complete the task.</param>
         /// <param name="cancellationToken"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public async Task<T> WaitForSingleEvent<T>(Func<T, bool>? filter = null,
             CancellationToken cancellationToken = default
         ) where T : IEvent
@@ -33,12 +35,11 @@ public static class MediatorExtensions
         }
 
         /// <summary>
-        /// Continues to wait for event handler responses
+        /// Subscribes to events of <typeparamref name="T"/> and yields each published event until the
+        /// <paramref name="cancellationToken"/> is cancelled.
         /// </summary>
-        /// <param name="filter">Allows you to filter the event before streaming it</param>
+        /// <param name="filter">Optional predicate; only events matching it are yielded.</param>
         /// <param name="cancellationToken"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public async IAsyncEnumerable<T> EventStream<T>(Func<T, bool>? filter = null,
             [EnumeratorCancellation] CancellationToken cancellationToken = default
         ) where T : IEvent
@@ -64,7 +65,7 @@ public static class MediatorExtensions
         }
     }
 
-    
+
     // TODO: mediatorcontext does not have a subscribe
     // /// <summary>
     // /// Wait for event handler to fire
@@ -75,7 +76,7 @@ public static class MediatorExtensions
     // /// <typeparam name="T"></typeparam>
     // /// <returns></returns>
     // public static async Task<T> WaitForSingleEvent<T>(
-    //     this IMediatorContext context, 
+    //     this IMediatorContext context,
     //     Func<T, bool>? filter = null,
     //     CancellationToken cancellationToken = default
     // ) where T : IEvent
@@ -93,24 +94,21 @@ public static class MediatorExtensions
     // }
 
     /// <summary>
-    /// This method unwraps the mediator context from an async enumerable result - useful for outgoing aspnet endpoints
+    /// Strips the <see cref="IMediatorContext"/> from a mediator stream-request result, leaving only the
+    /// result values. Useful when projecting the stream to an ASP.NET endpoint or other consumer that
+    /// expects a plain <see cref="IAsyncEnumerable{T}"/>.
     /// </summary>
-    /// <param name="source"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
     public static async IAsyncEnumerable<T> UnwrapMediatorAsyncEnumerable<T>(this IAsyncEnumerable<(IMediatorContext Context, T Result)> source)
     {
         await foreach (var item in source)
             yield return item.Result;
     }
-    
+
 
     /// <summary>
-    /// This method unwraps the mediator context from an async enumerable result - useful for outgoing aspnet endpoints
+    /// Strips the <see cref="IMediatorContext"/> from a configured-cancellable mediator stream-request result,
+    /// leaving only the result values.
     /// </summary>
-    /// <param name="source"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
     public static async IAsyncEnumerable<T> UnwrapMediatorAsyncEnumerable<T>(this ConfiguredCancelableAsyncEnumerable<(IMediatorContext Context, T Result)> source)
     {
         await foreach (var item in source)

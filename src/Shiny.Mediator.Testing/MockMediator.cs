@@ -2,6 +2,15 @@
 
 namespace Shiny.Mediator;
 
+/// <summary>
+/// In-memory <see cref="IMediator"/> implementation for unit tests. Routes requests, commands, stream requests,
+/// and publishes through caller-supplied callbacks instead of the real pipeline, letting tests verify mediator
+/// interactions without registering handlers or middleware.
+/// </summary>
+/// <param name="onRequest">Callback invoked for <see cref="IRequest{TResult}"/> calls; must return a value assignable to the requested result type.</param>
+/// <param name="onStreamRequest">Callback invoked for <see cref="IStreamRequest{TResult}"/> calls; must return an async sequence of results.</param>
+/// <param name="onCommand">Callback invoked for <see cref="ICommand"/> sends.</param>
+/// <param name="onPublish">Callback invoked for event publishes; the boolean indicates whether parallel execution was requested.</param>
 public class MockMediator(
     Func<object, IMediatorContext, object>? onRequest = null,
     Func<object, IMediatorContext, IAsyncEnumerable<object>>? onStreamRequest = null,
@@ -9,7 +18,8 @@ public class MockMediator(
     Action<object, bool, IMediatorContext>? onPublish = null
 ) : IMediator
 {
-    
+
+    /// <inheritdoc/>
     public Task<IMediatorContext> Send<TCommand>(TCommand command, CancellationToken cancellationToken = default, Action<IMediatorContext>? configure = null) where TCommand : ICommand
     {
         var ctx = new MockMediatorContext(command);
@@ -19,6 +29,7 @@ public class MockMediator(
         return Task.FromResult<IMediatorContext>(ctx);
     }
 
+    /// <inheritdoc/>
     public Task<(IMediatorContext Context, TResult Result)> Request<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default, Action<IMediatorContext>? configure = null)
     {
         if (onRequest == null)
@@ -33,6 +44,7 @@ public class MockMediator(
         throw new InvalidOperationException($"Expected response of type {typeof(TResult).Name}, but got {response?.GetType().Name ?? "null"}");
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<(IMediatorContext Context, TResult Result)> Request<TResult>(
         IStreamRequest<TResult> request, 
         CancellationToken cancellationToken = default,
@@ -50,6 +62,7 @@ public class MockMediator(
             yield return (ctx, (TResult)item);
     }
 
+    /// <inheritdoc/>
     public Task<IMediatorContext> Publish<TEvent>(
         TEvent @event, 
         CancellationToken cancellationToken = default, 
@@ -64,6 +77,7 @@ public class MockMediator(
         return Task.FromResult<IMediatorContext>(ctx);
     }
 
+    /// <inheritdoc/>
     public void PublishToBackground<TEvent>(TEvent @event, bool executeInParallel = true, Action<IMediatorContext>? configure = null) where TEvent : IEvent
     {
         var ctx = new MockMediatorContext(@event);
@@ -71,6 +85,7 @@ public class MockMediator(
         onPublish?.Invoke(@event, executeInParallel, ctx);
     }
 
+    /// <inheritdoc/>
     public IDisposable Subscribe<TEvent>(Func<TEvent, IMediatorContext, CancellationToken, Task> action)
         where TEvent : IEvent => throw new NotImplementedException();
 

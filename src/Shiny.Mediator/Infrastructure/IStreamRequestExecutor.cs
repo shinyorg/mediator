@@ -1,27 +1,26 @@
 namespace Shiny.Mediator.Infrastructure;
 
 
+/// <summary>
+/// Pluggable executor that runs a stream request and its middleware pipeline. The default in-process
+/// implementation is <c>LocalStreamRequestExecutor</c>; alternate executors can route certain stream
+/// request types elsewhere (e.g. RPC).
+/// </summary>
 public interface IStreamRequestExecutor
 {
     /// <summary>
-    /// Requests a stream of data from a message
+    /// Dispatches <paramref name="request"/> using <paramref name="context"/>'s service scope and returns
+    /// the async sequence of results.
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
     IAsyncEnumerable<TResult> Request<TResult>(
         IMediatorContext context,
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken
     );
-    
+
     /// <summary>
-    /// Can request the request type
+    /// Returns true if this executor can handle <paramref name="request"/>. Used by <see cref="IMediatorDirector"/>
+    /// to select an executor at dispatch time.
     /// </summary>
-    /// <param name="request"></param>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
     bool CanRequest<TResult>(IStreamRequest<TResult> request);
 }

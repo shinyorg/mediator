@@ -7,12 +7,17 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Middleware;
 
 
+/// <summary>
+/// Times each command execution and logs a warning when it exceeds the configured threshold. The threshold
+/// is read from <c>Mediator:PerformanceLogging</c> configuration; the breach duration is also recorded on the context.
+/// </summary>
 [MiddlewareOrder(1)]
 public class PerformanceLoggingCommandMiddleware<TCommand>(
     IConfiguration configuration,
     ILogger<TCommand> logger
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
+    /// <inheritdoc/>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     public async Task Process(
         IMediatorContext context, 
