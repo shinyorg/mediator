@@ -1,12 +1,14 @@
 namespace Shiny.Mediator.Infrastructure;
 
+/// <summary>
+/// Supplies additional <see cref="IEventHandler{TEvent}"/> instances to be invoked at publish time alongside
+/// the DI-registered handlers. Implementations can hold runtime-registered subscribers or remote handlers.
+/// </summary>
 public interface IEventCollector
 {
     /// <summary>
-    /// Collects IEventHandler types that may be out-of-proc and not part of dependency injection
+    /// Returns the handlers known to this collector for <typeparamref name="TEvent"/>.
     /// </summary>
-    /// <typeparam name="TEvent"></typeparam>
-    /// <returns></returns>
     IReadOnlyList<IEventHandler<TEvent>> GetHandlers<TEvent>() where TEvent : IEvent;
 
 

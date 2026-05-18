@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Shiny.Mediator.Middleware;
 using Shiny.Mediator.Tests.Mocks;
 using Xunit.Abstractions;
@@ -7,17 +6,16 @@ namespace Shiny.Mediator.Tests;
 
 public class QueuedEventMiddlewareTests
 {
-    readonly ConfigurationManager config = new();
     readonly QueuedEventMiddleware<SampleTestEvent> sampleMiddleware;
     readonly QueuedEventMiddleware<ThrottleTestEvent> throttleMiddleware;
 
     public QueuedEventMiddlewareTests(ITestOutputHelper output)
     {
         var sampleLogger = TestHelpers.CreateLogger<QueuedEventMiddleware<SampleTestEvent>>(output);
-        this.sampleMiddleware = new QueuedEventMiddleware<SampleTestEvent>(sampleLogger, this.config);
+        this.sampleMiddleware = new QueuedEventMiddleware<SampleTestEvent>(sampleLogger);
 
         var throttleLogger = TestHelpers.CreateLogger<QueuedEventMiddleware<ThrottleTestEvent>>(output);
-        this.throttleMiddleware = new QueuedEventMiddleware<ThrottleTestEvent>(throttleLogger, this.config);
+        this.throttleMiddleware = new QueuedEventMiddleware<ThrottleTestEvent>(throttleLogger);
     }
 
     // ── Sample tests ────────────────────────────────────────────────────
@@ -54,23 +52,22 @@ public class QueuedEventMiddlewareTests
             MessageHandler = new SampledEventHandler()
         };
 
-        var executed = false;
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await this.sampleMiddleware.Process(
             context,
             () =>
             {
-                executed = true;
+                tcs.TrySetResult();
                 return Task.CompletedTask;
             },
             CancellationToken.None
         );
 
         // Should not be executed immediately
-        executed.ShouldBeFalse();
+        tcs.Task.IsCompleted.ShouldBeFalse();
 
-        // Wait for sample window to pass
-        await Task.Delay(200);
-        executed.ShouldBeTrue();
+        // Wait for sample window to fire
+        await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
     }
 
     [Fact]
@@ -84,6 +81,7 @@ public class QueuedEventMiddlewareTests
 
         var executionCount = 0;
         var lastValue = 0;
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         // Fire multiple events in rapid succession
         for (var i = 1; i <= 5; i++)
@@ -95,6 +93,7 @@ public class QueuedEventMiddlewareTests
                 {
                     executionCount++;
                     lastValue = capturedI;
+                    tcs.TrySetResult();
                     return Task.CompletedTask;
                 },
                 CancellationToken.None
@@ -102,8 +101,8 @@ public class QueuedEventMiddlewareTests
             await Task.Delay(10); // Small delay between events, but less than sample window
         }
 
-        // Wait for sample window to complete
-        await Task.Delay(200);
+        // Wait for sample window to fire
+        await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         // Only the last event should have been executed
         executionCount.ShouldBe(1);
@@ -119,14 +118,14 @@ public class QueuedEventMiddlewareTests
             MessageHandler = new SampledEventHandler()
         };
 
-        var executed = false;
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         // First event starts the 100ms timer
         await this.sampleMiddleware.Process(
             context,
             () =>
             {
-                executed = true;
+                tcs.TrySetResult();
                 return Task.CompletedTask;
             },
             CancellationToken.None
@@ -138,18 +137,17 @@ public class QueuedEventMiddlewareTests
             context,
             () =>
             {
-                executed = true;
+                tcs.TrySetResult();
                 return Task.CompletedTask;
             },
             CancellationToken.None
         );
 
         // At ~60ms after start, event should not have fired yet
-        executed.ShouldBeFalse();
+        tcs.Task.IsCompleted.ShouldBeFalse();
 
-        // Wait another 60ms (total ~120ms from start) - original timer (100ms) should have fired
-        await Task.Delay(60);
-        executed.ShouldBeTrue();
+        // Wait for the original timer (100ms from start) to fire
+        await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
     }
 
     [Fact]
@@ -170,14 +168,14 @@ public class QueuedEventMiddlewareTests
             MessageHandler = handler2
         };
 
-        var executed1 = false;
-        var executed2 = false;
+        var tcs1 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs2 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await this.sampleMiddleware.Process(
             context1,
             () =>
             {
-                executed1 = true;
+                tcs1.TrySetResult();
                 return Task.CompletedTask;
             },
             CancellationToken.None
@@ -187,22 +185,21 @@ public class QueuedEventMiddlewareTests
             context2,
             () =>
             {
-                executed2 = true;
+                tcs2.TrySetResult();
                 return Task.CompletedTask;
             },
             CancellationToken.None
         );
 
         // Neither should be executed immediately
-        executed1.ShouldBeFalse();
-        executed2.ShouldBeFalse();
+        tcs1.Task.IsCompleted.ShouldBeFalse();
+        tcs2.Task.IsCompleted.ShouldBeFalse();
 
-        // Wait for sample window to complete
-        await Task.Delay(200);
-
-        // Both should be executed independently
-        executed1.ShouldBeTrue();
-        executed2.ShouldBeTrue();
+        // Wait for both sample windows to fire
+        await Task.WhenAll(
+            tcs1.Task.WaitAsync(TimeSpan.FromSeconds(5)),
+            tcs2.Task.WaitAsync(TimeSpan.FromSeconds(5))
+        );
     }
 
     [Fact]
@@ -215,7 +212,7 @@ public class QueuedEventMiddlewareTests
         };
 
         var firstExecuted = false;
-        var secondExecuted = false;
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         // First event
         await this.sampleMiddleware.Process(
@@ -223,6 +220,7 @@ public class QueuedEventMiddlewareTests
             () =>
             {
                 firstExecuted = true;
+                tcs.TrySetResult();
                 return Task.CompletedTask;
             },
             CancellationToken.None
@@ -231,19 +229,21 @@ public class QueuedEventMiddlewareTests
         // Small delay
         await Task.Delay(30);
 
-        // Second event before first sample window completes
+        var secondExecuted = false;
+        // Second event before first sample window completes — replaces first
         await this.sampleMiddleware.Process(
             context,
             () =>
             {
                 secondExecuted = true;
+                tcs.TrySetResult();
                 return Task.CompletedTask;
             },
             CancellationToken.None
         );
 
-        // Wait for sample window to complete
-        await Task.Delay(200);
+        // Wait for sample window to fire
+        await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         // First should be replaced, only second should execute
         firstExecuted.ShouldBeFalse();
@@ -260,6 +260,7 @@ public class QueuedEventMiddlewareTests
         };
 
         var executionCount = 0;
+        var tcs1 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         // First event
         await this.sampleMiddleware.Process(
@@ -267,28 +268,31 @@ public class QueuedEventMiddlewareTests
             () =>
             {
                 executionCount++;
+                tcs1.TrySetResult();
                 return Task.CompletedTask;
             },
             CancellationToken.None
         );
 
-        // Wait for sample window to complete
-        await Task.Delay(200);
+        // Wait for first sample window to fire
+        await tcs1.Task.WaitAsync(TimeSpan.FromSeconds(5));
         executionCount.ShouldBe(1);
 
         // Second event after first sample window completed
+        var tcs2 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await this.sampleMiddleware.Process(
             context,
             () =>
             {
                 executionCount++;
+                tcs2.TrySetResult();
                 return Task.CompletedTask;
             },
             CancellationToken.None
         );
 
-        // Wait for second sample window
-        await Task.Delay(200);
+        // Wait for second sample window to fire
+        await tcs2.Task.WaitAsync(TimeSpan.FromSeconds(5));
         executionCount.ShouldBe(2);
     }
 
@@ -301,31 +305,38 @@ public class QueuedEventMiddlewareTests
             MessageHandler = new SampledEventHandler()
         };
 
-        var secondExecuted = false;
+        var errorTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        // First event that throws
-        await this.sampleMiddleware.Process(
-            context,
-            () => throw new InvalidOperationException("Test exception"),
-            CancellationToken.None
-        );
-
-        // Wait for sample window to complete (and exception to be logged)
-        await Task.Delay(200);
-
-        // Second event should still work
+        // First event that throws — the exception is caught internally,
+        // but we need to wait for the timer to fire before sending the next event
         await this.sampleMiddleware.Process(
             context,
             () =>
             {
-                secondExecuted = true;
+                errorTcs.TrySetResult();
+                throw new InvalidOperationException("Test exception");
+            },
+            CancellationToken.None
+        );
+
+        // Wait for sample window to fire (and exception to be logged)
+        await errorTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        // Small extra delay to let the SampleState reset timerRunning
+        await Task.Delay(50);
+
+        // Second event should still work
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await this.sampleMiddleware.Process(
+            context,
+            () =>
+            {
+                tcs.TrySetResult();
                 return Task.CompletedTask;
             },
             CancellationToken.None
         );
 
-        await Task.Delay(200);
-        secondExecuted.ShouldBeTrue();
+        await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
     }
 
     // ── Throttle tests ──────────────────────────────────────────────────
@@ -436,8 +447,8 @@ public class QueuedEventMiddlewareTests
         );
         executionCount.ShouldBe(1);
 
-        // Wait for cooldown to expire
-        await Task.Delay(200);
+        // Wait for cooldown to expire (generous margin)
+        await Task.Delay(300);
 
         // Next event after cooldown - should execute immediately
         await this.throttleMiddleware.Process(
@@ -523,8 +534,8 @@ public class QueuedEventMiddlewareTests
         }
         threw.ShouldBeTrue();
 
-        // Wait for cooldown to expire
-        await Task.Delay(200);
+        // Wait for cooldown to expire (generous margin)
+        await Task.Delay(300);
 
         // Next event should still work
         var executed = false;

@@ -24,26 +24,29 @@ public interface IScheduledCommand : ICommand
 public interface IEvent;
 
 /// <summary>
-/// Request a stream of data from a handler
+/// Marks a contract that requests an asynchronous stream of values from a handler.
+/// Dispatched through the mediator's stream request pipeline and consumed as an <see cref="IAsyncEnumerable{T}"/>.
 /// </summary>
-/// <typeparam name="TResult"></typeparam>
-public interface IStreamRequest<out TResult>; 
+/// <typeparam name="TResult">The element type produced by the stream.</typeparam>
+public interface IStreamRequest<out TResult>;
 
 /// <summary>
-/// Request data from a mediator handler
+/// Marks a contract that requests a single result from a mediator handler.
+/// Each request type is bound to exactly one handler that produces a <typeparamref name="TResult"/>.
 /// </summary>
-/// <typeparam name="TResult"></typeparam>
+/// <typeparam name="TResult">The result type returned by the handler.</typeparam>
 public interface IRequest<out TResult>;
 
 /// <summary>
-/// This is viewed by replay, cache, and various other services where you can control an entry
-/// Simply mark your IRequest or IStreamRequest and provide the necessary key to determine uniqueness
+/// Implemented by a contract to provide a custom identity key consumed by replay, cache, and other
+/// middleware that need to determine uniqueness of an <see cref="IRequest{TResult}"/> or
+/// <see cref="IStreamRequest{TResult}"/> instance.
 /// </summary>
 public interface IContractKey
 {
     /// <summary>
-    /// Return your custom key to determine how this contract response is cached or replayed
+    /// Returns the key used by middleware (cache, replay, etc.) to identify this contract instance.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A string uniquely identifying the contract for storage and lookup purposes.</returns>
     string GetKey();
 }

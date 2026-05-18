@@ -1,9 +1,16 @@
 namespace Shiny.Mediator.Infrastructure;
 
 
+/// <summary>
+/// MAUI <see cref="IInternetService"/> backed by <see cref="IConnectivity"/>. Subscribes to
+/// <see cref="IConnectivity.ConnectivityChanged"/> only while there are active <see cref="StateChanged"/>
+/// subscribers.
+/// </summary>
 public class InternetService(IConnectivity connectivity) : IInternetService
 {
     EventHandler<bool>? handler;
+
+    /// <inheritdoc/>
     public event EventHandler<bool>? StateChanged
     {
         add
@@ -26,7 +33,10 @@ public class InternetService(IConnectivity connectivity) : IInternetService
     
     
     
+    /// <inheritdoc/>
     public bool IsAvailable => connectivity.NetworkAccess == NetworkAccess.Internet;
+
+    /// <inheritdoc/>
     public async Task WaitForAvailable(CancellationToken cancelToken = default)
     {
         if (this.IsAvailable)

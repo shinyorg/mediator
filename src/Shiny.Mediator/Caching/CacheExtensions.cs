@@ -6,8 +6,19 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator;
 
 
+/// <summary>
+/// Registration helpers for the mediator caching subsystem.
+/// </summary>
 public static class CacheExtensions
 {
+    /// <summary>
+    /// Registers <typeparamref name="TCache"/> as the single <see cref="ICacheService"/>
+    /// for mediator caching, wires up the <c>CachingRequestMiddleware</c>, and
+    /// registers the cache-flush event handlers. Throws
+    /// <see cref="InvalidOperationException"/> if a cache service is already registered —
+    /// only one is supported.
+    /// </summary>
+    /// <typeparam name="TCache">A concrete <see cref="ICacheService"/> implementation registered as a singleton.</typeparam>
     public static ShinyMediatorBuilder AddCaching<
         [DynamicallyAccessedMembers(
             DynamicallyAccessedMemberTypes.PublicConstructors |

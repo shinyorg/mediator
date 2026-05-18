@@ -5,8 +5,13 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
+/// <summary>
+/// Default <see cref="IContractKeyProvider"/> registered by <c>AddShinyMediator</c>. Uses <see cref="IContractKey.GetKey"/>
+/// when implemented; otherwise falls back to a reflection-based key built from the full type name and public property values.
+/// </summary>
 public class DefaultContractKeyProvider(ILogger<DefaultContractKeyProvider> logger) : IContractKeyProvider
 {
+    /// <inheritdoc/>
     public string GetContractKey(object contract)
     {
         if (contract is IContractKey key)

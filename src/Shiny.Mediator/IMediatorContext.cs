@@ -5,176 +5,158 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator;
 
 
+/// <summary>
+/// Per-execution context carried through the mediator pipeline. Holds the originating message, the
+/// resolved handler, the service scope, headers, observability state, and links to parent/child contexts.
+/// Middleware reads and writes this to share state along the call chain.
+/// </summary>
 public interface IMediatorContext
 {
     /// <summary>
-    /// Id of request train
+    /// Unique identifier for this execution. Children created via <see cref="CreateChild"/> receive their own ids.
     /// </summary>
     Guid Id { get; }
-    
+
     /// <summary>
-    /// Current service scope
+    /// The DI scope used to resolve handlers and middleware for this execution.
     /// </summary>
     IServiceScope ServiceScope { get; }
-    
+
     /// <summary>
-    /// If an exception was thrown during the request, this will be populated
-    /// It does not mean the exception was handled, just that it was thrown
+    /// The exception thrown during execution, if any. Set whether or not an exception handler ultimately handled it.
     /// </summary>
     Exception? Exception { get; }
-    
+
     /// <summary>
-    /// Assigned activity source for observability
+    /// The <see cref="Activity"/> assigned to this execution for diagnostics/tracing, if one was started.
     /// </summary>
     Activity? Activity { get; }
-    
+
     /// <summary>
-    /// Message
+    /// The originating message (command, request, or event) being processed.
     /// </summary>
     object Message { get; }
-    
+
     /// <summary>
-    /// Message Handler
+    /// The resolved handler instance for <see cref="Message"/>. Set by the executor before middleware/handler invocation.
     /// </summary>
     object? MessageHandler { get; set; }
 
     /// <summary>
-    /// Readonly headers
+    /// Read-only view of headers attached to this context.
     /// </summary>
     IReadOnlyDictionary<string, object> Headers { get; }
-    
+
     /// <summary>
-    /// Add Header
+    /// Adds a header value used to share state between middleware and handlers.
     /// </summary>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
     void AddHeader(string key, object value);
-    
+
     /// <summary>
-    /// Remove Header by key
+    /// Removes a header by key.
     /// </summary>
-    /// <param name="key"></param>
     void RemoveHeader(string key);
-    
+
     /// <summary>
-    /// Clear headers
+    /// Removes all headers from this context.
     /// </summary>
     void ClearHeaders();
-    
+
     /// <summary>
-    /// The parent of this context
+    /// The parent context, or <c>null</c> if this is a root context created directly by the mediator.
     /// </summary>
     IMediatorContext? Parent { get; }
-    
+
     /// <summary>
-    /// All child contexts under this parent
+    /// All child contexts created from this context via <see cref="CreateChild"/>.
     /// </summary>
     IReadOnlyList<IMediatorContext> ChildContexts { get; }
 
     /// <summary>
-    /// The timestamp of when this context was created
+    /// UTC timestamp captured when this context was created.
     /// </summary>
     DateTimeOffset CreatedAt { get; }
-    
+
     /// <summary>
-    /// Allows you to bypass all exception handlers for this call
+    /// When true, registered <see cref="IExceptionHandler"/> instances are skipped for this execution
+    /// and exceptions propagate to the caller.
     /// </summary>
     bool BypassExceptionHandlingEnabled { get; set; }
-    
+
     /// <summary>
-    /// Allows you to disable allow middleware for this call
+    /// When true, no middleware runs for this execution and the handler is invoked directly.
     /// </summary>
     bool BypassMiddlewareEnabled { get; set; }
-    
+
     /// <summary>
     /// Create a child context with data populated from this parent
     /// </summary>
     /// <param name="newMessage">If you're creating a context for a new message type (ie. Publishing an event from a handler - this would be used)</param>
-    /// <param name="newScope">Will create a new service scope from the current one if true</param>
-    /// <returns></returns>
-    IMediatorContext CreateChild(object? newMessage, bool newScope);
+    /// <param name="reuseScope">If true, reuses the parent service scope. If false, creates a new service scope (caller is responsible for disposal).</param>
+    IMediatorContext CreateChild(object? newMessage, bool reuseScope);
 
     /// <summary>
-    /// Start an instrumentation activity
+    /// Starts a child <see cref="Activity"/> on the context's <see cref="Activity"/> for instrumentation.
     /// </summary>
-    /// <param name="activityName"></param>
-    /// <returns></returns>
+    /// <param name="activityName">Name applied to the child activity.</param>
     Activity? StartActivity(string activityName);
-    
+
     /// <summary>
-    /// Try to get value from mediator headers
+    /// Returns the header value for <paramref name="key"/> cast to <typeparamref name="T"/>, or <c>default</c> if missing or of a different type.
     /// </summary>
-    /// <param name="key"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
     T? TryGetValue<T>(string key);
 
 
     /// <summary>
-    /// This is meant to rebuild a context if the service scope has died (ie. deferred command)
+    /// Restores a fresh service scope and activity onto this context. Used when an execution is resumed
+    /// after the original scope has been disposed (e.g. a scheduled command firing later).
     /// </summary>
-    /// 
-    /// <param name="scope"></param>
-    /// <param name="activity"></param>
     void Rebuild(IServiceScope scope, Activity? activity);
-    
-    
+
+
     /// <summary>
-    /// Send a request in the same scope
+    /// Dispatches a request as a child of this context. The child uses a new service scope which is disposed when the call completes.
     /// </summary>
-    /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
-    /// <param name="configure"></param>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
     Task<TResult> Request<TResult>(
-        IRequest<TResult> request, 
-        CancellationToken cancellationToken = default, 
+        IRequest<TResult> request,
+        CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
     );
-    
-    
+
+
     /// <summary>
-    /// Send a command in the same scope
+    /// Dispatches a command as a child of this context. The child uses a new service scope which is disposed when the call completes.
     /// </summary>
-    /// <param name="command"></param>
-    /// <param name="cancellationToken"></param>
-    /// <param name="configure"></param>
-    /// <typeparam name="TCommand"></typeparam>
-    /// <returns></returns>
     Task Send<TCommand>(
-        TCommand command, 
+        TCommand command,
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
     ) where TCommand : ICommand;
-    
-    
+
+
     /// <summary>
-    /// Publish a command within the same scope
+    /// Publishes an event as a child of this context. The child uses a new service scope which is disposed when the call completes.
     /// </summary>
-    /// <param name="event"></param>
-    /// <param name="executeInParallel"></param>
+    /// <param name="event">The event to publish.</param>
+    /// <param name="executeInParallel">When true, handlers run concurrently; when false, they run sequentially.</param>
     /// <param name="cancellationToken"></param>
-    /// <param name="configure"></param>
-    /// <typeparam name="TEvent"></typeparam>
-    /// <returns></returns>
+    /// <param name="configure">Optional callback to configure the child context.</param>
     Task Publish<TEvent>(
-        TEvent @event, 
+        TEvent @event,
         bool executeInParallel = true,
         CancellationToken cancellationToken = default,
         Action<IMediatorContext>? configure = null
     ) where TEvent : IEvent;
-    
-    
+
+
     /// <summary>
-    /// Publish an event to the background - this will also start a fresh service scope
+    /// Fires an event to the background as a child of this context without awaiting handlers.
     /// </summary>
-    /// <param name="event"></param>
-    /// <param name="executeInParallel"></param>
-    /// <param name="configure"></param>
-    /// <typeparam name="TEvent"></typeparam>
+    /// <param name="event">The event to publish.</param>
+    /// <param name="executeInParallel">When true, handlers run concurrently; when false, they run sequentially.</param>
+    /// <param name="configure">Optional callback to configure the child context.</param>
     void PublishToBackground<TEvent>(
-        TEvent @event, 
+        TEvent @event,
         bool executeInParallel = true,
         Action<IMediatorContext>? configure = null
     ) where TEvent : IEvent;

@@ -3,11 +3,18 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure;
 
 
+/// <summary>
+/// MAUI <see cref="IEventCollector"/> that tracks every <see cref="Page"/> attached to the
+/// application's visual tree (via <c>DescendantAdded</c>/<c>DescendantRemoved</c>), then resolves
+/// <see cref="IEventHandler{TEvent}"/> implementations from each page and its binding context
+/// when events are dispatched.
+/// </summary>
 public class MauiEventCollector(ILogger<MauiEventCollector> logger) : IMauiInitializeService, IEventCollector
 {
     readonly Lock sync = new();
     readonly List<Page> trackingPages = new();
 
+    /// <inheritdoc/>
     public void Initialize(IServiceProvider services)
     {
         var application = services.GetRequiredService<IApplication>() as Application;
@@ -39,6 +46,7 @@ public class MauiEventCollector(ILogger<MauiEventCollector> logger) : IMauiIniti
     }
 
 
+    /// <inheritdoc/>
     public IReadOnlyList<IEventHandler<TEvent>> GetHandlers<TEvent>() where TEvent : IEvent
     {
         logger.LogDebug("Collecting MAUI Pages/binding contexts for Event Handler Type: {type}", typeof(TEvent).FullName);

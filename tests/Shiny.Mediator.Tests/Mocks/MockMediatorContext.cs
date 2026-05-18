@@ -24,7 +24,7 @@ public class MockMediatorContext : IMediatorContext
     public DateTimeOffset CreatedAt { get; set; }
     public bool BypassExceptionHandlingEnabled { get; set; }
     public bool BypassMiddlewareEnabled { get; set; }
-    public IMediatorContext CreateChild(object? newMessage, bool newScope)
+    public IMediatorContext CreateChild(object? newMessage, bool reuseScope)
     {
         throw new NotImplementedException();
     }

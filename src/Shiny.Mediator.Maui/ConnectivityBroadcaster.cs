@@ -4,6 +4,11 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator;
 
 
+/// <summary>
+/// MAUI initialize service that publishes <c>ConnectivityChanged</c> events through the mediator
+/// when device internet availability changes, and re-fires the current state to each appearing
+/// page (and its binding context) that implements <see cref="IEventHandler{T}"/> for that event.
+/// </summary>
 public class ConnectivityBroadcaster(
     ILogger<ConnectivityBroadcaster> logger,
     IMediator mediator,
@@ -12,6 +17,7 @@ public class ConnectivityBroadcaster(
 {
     bool connected = false;
 
+    /// <inheritdoc/>
     public void Initialize(IServiceProvider services)
     {
         this.connected = internetService.IsAvailable;

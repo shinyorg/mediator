@@ -6,6 +6,12 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Http;
 
 
+/// <summary>
+/// <see cref="IHttpRequestDecorator"/> that appends MAUI app identity (<c>AppId</c>, <c>AppVersion</c>),
+/// device metadata (manufacturer/model/platform/version), <c>Accept-Language</c> from the current
+/// culture, and — when <c>LocationWhenInUse</c> permission is granted — a <c>GpsCoords</c> header
+/// to outbound HTTP requests issued through the mediator HTTP pipeline.
+/// </summary>
 public class MauiHttpRequestDecorator(
     ILogger<MauiHttpRequestDecorator> logger,
     IAppInfo appInfo,
@@ -13,6 +19,7 @@ public class MauiHttpRequestDecorator(
     IGeolocation geolocation
 ) : IHttpRequestDecorator
 {
+    /// <inheritdoc/>
     public async Task Decorate(HttpRequestMessage httpMessage, IMediatorContext context, CancellationToken cancellationToken)
     {
         httpMessage.Headers.Add("AppId", appInfo.PackageName);

@@ -6,12 +6,19 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure;
 
 
+/// <summary>
+/// Mediator exception handler that surfaces handler failures to the user as a localized alert dialog.
+/// Title and message text are resolved from configuration under <c>UserErrorNotifications</c>, keyed by the
+/// current UI culture (with <c>*</c> as a fallback locale). Child contexts and contexts without matching
+/// configuration are ignored.
+/// </summary>
 public class UserNotificationExceptionHandler(
     ILogger<UserNotificationExceptionHandler> logger,
     IConfiguration configuration,
     IAlertDialogService alerts
 ) : IExceptionHandler
 {
+    /// <inheritdoc/>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Get will not be trimmed")]
     public Task<bool> Handle(IMediatorContext context, Exception exception)
     {
@@ -56,5 +63,9 @@ public class UserNotificationExceptionHandler(
         return Task.FromResult(handled);
     }
     
+    /// <summary>
+    /// Returns the culture code used to look up the localized notification text. Defaults to the current UI
+    /// culture name in lowercase. Override to source the locale from app preferences instead.
+    /// </summary>
     protected virtual string GetCultureCode() => CultureInfo.CurrentUICulture.Name.ToLower();
 }

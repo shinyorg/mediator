@@ -5,12 +5,18 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
+/// <summary>
+/// Default <see cref="IMediator"/> implementation. Creates a service scope and root
+/// <see cref="IMediatorContext"/> for each dispatch, defers to the <see cref="IMediatorDirector"/>
+/// to pick an executor, and routes thrown exceptions through the registered <see cref="IExceptionHandler"/> chain.
+/// </summary>
 public class MediatorImpl(
     ILogger<MediatorImpl> logger,
     IServiceProvider services,
     IMediatorDirector director
 ) : IMediator
 {
+    /// <inheritdoc/>
     public async Task<(IMediatorContext Context, TResult Result)> Request<TResult>(
         IRequest<TResult> request, 
         CancellationToken cancellationToken = default,
@@ -37,7 +43,7 @@ public class MediatorImpl(
             if (result is IEvent @event)
             {
                 logger.LogDebug("Event Returned by Request - Publishing: {EventType}", @event.GetType().FullName);
-                var child = context.CreateChild(@event, false);
+                var child = context.CreateChild(@event, true);
                 await director
                     .GetEventExecutor(@event)
                     .Publish(child, @event, true, cancellationToken)
@@ -57,6 +63,7 @@ public class MediatorImpl(
     }
 
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<(IMediatorContext Context, TResult Result)> Request<TResult>(
         IStreamRequest<TResult> request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default,
@@ -79,6 +86,7 @@ public class MediatorImpl(
     }
 
 
+    /// <inheritdoc/>
     public async Task<IMediatorContext> Send<TCommand>(
         TCommand command,
         CancellationToken cancellationToken = default,
@@ -112,6 +120,7 @@ public class MediatorImpl(
     }
 
 
+    /// <inheritdoc/>
     public async Task<IMediatorContext> Publish<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default,
@@ -144,6 +153,7 @@ public class MediatorImpl(
     }
 
     
+    /// <inheritdoc/>
     public void PublishToBackground<TEvent>(
         TEvent @event,
         bool executeInParallel = true,
@@ -167,7 +177,7 @@ public class MediatorImpl(
             }
             catch (Exception ex)
             {
-                _ = this.TryHandle(context, ex);
+                await this.TryHandle(context, ex).ConfigureAwait(false);
             }
             finally
             {
@@ -179,6 +189,7 @@ public class MediatorImpl(
     
 
 
+    /// <inheritdoc/>
     public IDisposable Subscribe<TEvent>(Func<TEvent, IMediatorContext, CancellationToken, Task> action) where TEvent : IEvent
         => director.GetEventExecutor<TEvent>().Subscribe(action);
 

@@ -5,13 +5,17 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator;
 
 
+/// <summary>
+/// <see cref="IHostBuilder"/> and <see cref="ShinyMediatorBuilder"/> extensions that register
+/// Shiny Mediator in Uno Platform apps along with Uno-specific infrastructure (Windows storage,
+/// network information, popup dialogs) and the standard app-support middleware.
+/// </summary>
 public static class UnoExtensions
 {
     /// <summary>
-    /// Add Default Uno Support to Mediator
+    /// Registers the standard app-support middleware and Uno infrastructure services
+    /// (storage, internet, dialog) on the mediator builder.
     /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
     public static ShinyMediatorBuilder UseUno(this ShinyMediatorBuilder cfg)
     {
         cfg.AddStandardAppSupportMiddleware();
@@ -21,10 +25,10 @@ public static class UnoExtensions
 
 
     /// <summary>
-    /// 
+    /// Registers a <see cref="StorageCacheService"/> backed by the Uno file-based storage service
+    /// so cached responses survive across app sessions. Also wires the Uno infrastructure
+    /// services required by the cache store.
     /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
     public static ShinyMediatorBuilder AddUnoPersistentCache(this ShinyMediatorBuilder cfg)
     {
         cfg.AddUnoInfrastructure();
@@ -34,12 +38,13 @@ public static class UnoExtensions
     
     
     /// <summary>
-    /// Add Shiny Mediator to Uno
+    /// Registers Shiny Mediator on an Uno <see cref="IHostBuilder"/>. When
+    /// <paramref name="includeStandardMiddleware"/> is <c>true</c>, calls <see cref="UseUno"/>
+    /// to install the Uno event/infrastructure services and the standard app-support middleware.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="configure"></param>
-    /// <param name="includeStandardMiddleware"></param>
-    /// <returns></returns>
+    /// <param name="builder">The Uno host builder.</param>
+    /// <param name="configure">Optional callback to register handlers and additional middleware.</param>
+    /// <param name="includeStandardMiddleware">When <c>true</c> (default), installs the standard middleware stack.</param>
     public static IHostBuilder AddShinyMediator(
         this IHostBuilder builder, 
         Action<ShinyMediatorBuilder>? configure = null, 
@@ -60,10 +65,12 @@ public static class UnoExtensions
 
 
     /// <summary>
-    /// Adds necessary infrastructure for standard app middleware
+    /// Ensures the Uno infrastructure services required by Shiny Mediator middleware are
+    /// registered: <see cref="IAlertDialogService"/> (Windows <c>MessageDialog</c>),
+    /// <see cref="IInternetService"/> (Windows <c>NetworkInformation</c>), and
+    /// <see cref="IStorageService"/> (Windows <c>ApplicationData.LocalFolder</c>).
+    /// Uses <c>TryAdd</c> so existing registrations are preserved.
     /// </summary>
-    /// <param name="cfg"></param>
-    /// <returns></returns>
     public static ShinyMediatorBuilder AddUnoInfrastructure(this ShinyMediatorBuilder cfg)
     {
         // if (cfg.Services.Any(x => x.ImplementationType == typeof(UnoEventCollector)))

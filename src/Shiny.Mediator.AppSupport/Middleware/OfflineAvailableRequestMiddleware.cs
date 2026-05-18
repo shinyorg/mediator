@@ -6,14 +6,20 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Middleware;
 
 
+/// <summary>
+/// Request middleware that returns the last stored result when the device is offline or the handler times out,
+/// and refreshes the offline store whenever the handler executes successfully. Activated by
+/// <see cref="OfflineAvailableAttribute"/> on the handler method or by an <c>Offline</c> configuration section.
+/// </summary>
 public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
     ILogger<OfflineAvailableRequestMiddleware<TRequest, TResult>> logger,
-    IInternetService connectivity, 
+    IInternetService connectivity,
     IOfflineService offline,
     IConfiguration configuration
 ) : IRequestMiddleware<TRequest, TResult>
     where TRequest : IRequest<TResult>
 {
+    /// <inheritdoc/>
     public async Task<TResult> Process(
         IMediatorContext context,
         RequestHandlerDelegate<TResult> next,

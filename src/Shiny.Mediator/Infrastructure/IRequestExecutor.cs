@@ -1,28 +1,25 @@
 namespace Shiny.Mediator.Infrastructure;
 
 
+/// <summary>
+/// Pluggable executor that runs a request and its middleware pipeline. The default in-process implementation
+/// is <c>LocalRequestExecutor</c>; alternate executors can route certain request types elsewhere (e.g. RPC).
+/// </summary>
 public interface IRequestExecutor
 {
     /// <summary>
-    /// This will send a request and return the context of the request with the result
+    /// Dispatches <paramref name="request"/> using <paramref name="context"/>'s service scope and returns its result.
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
     Task<TResult> Request<TResult>(
         IMediatorContext context,
         IRequest<TResult> request,
         CancellationToken cancellationToken
     );
-    
-    
+
+
     /// <summary>
-    /// Can handle the request type
+    /// Returns true if this executor can handle <paramref name="request"/>. Used by <see cref="IMediatorDirector"/>
+    /// to select an executor at dispatch time.
     /// </summary>
-    /// <param name="request"></param>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
     bool CanHandle<TResult>(IRequest<TResult> request);
 }

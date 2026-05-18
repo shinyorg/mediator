@@ -6,14 +6,19 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Caching.Infrastructure;
 
 
+/// <summary>
+/// Request middleware that caches handler results via the registered <see cref="ICacheService"/>. Cache settings
+/// are resolved in priority order from the context, configuration, then a <see cref="CacheAttribute"/> on the handler method.
+/// </summary>
 public class CachingRequestMiddleware<TRequest, TResult>(
     ILogger<CachingRequestMiddleware<TRequest, TResult>> logger,
     IConfiguration configuration,
     ICacheService cacheService,
     IContractKeyProvider contractKeyProvider
-) 
+)
 : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
+    /// <inheritdoc/>
     public async Task<TResult> Process(
         IMediatorContext context,
         RequestHandlerDelegate<TResult> next,
@@ -61,6 +66,11 @@ public class CachingRequestMiddleware<TRequest, TResult>(
     }
 
 
+    /// <summary>
+    /// Resolves the effective cache configuration for the current request, in priority order:
+    /// (1) explicit context override, (2) configuration <c>Cache</c> section for the handler,
+    /// (3) <see cref="CacheAttribute"/> on the handler. Returns <c>null</c> when caching is disabled.
+    /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     protected virtual CacheItemConfig? GetItemConfig(IMediatorContext context, TRequest request)
     {

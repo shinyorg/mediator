@@ -8,6 +8,10 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Http;
 
 
+/// <summary>
+/// Services bundle injected into mediator-generated HTTP handlers. Aggregates the
+/// dependencies needed to send HTTP requests and deserialize responses.
+/// </summary>
 public record HttpHandlerServices(
     ILoggerFactory LoggerFactory,
     IConfiguration Configuration,
@@ -16,11 +20,19 @@ public record HttpHandlerServices(
     IEnumerable<IHttpRequestDecorator> Decorators
 );
 
+/// <summary>
+/// Base class for mediator-generated HTTP handlers. Centralizes request decoration, debug logging,
+/// streaming/SSE deserialization, timeout handling, and base-URI resolution from configuration.
+/// </summary>
 public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
 {
     readonly ILogger logger = services.LoggerFactory.CreateLogger<BaseHttpRequestHandler>();
 
 
+    /// <summary>
+    /// Sends <paramref name="httpRequest"/> and yields deserialized items from the response body,
+    /// either as a JSON async-enumerable or as Server-Sent Events when <paramref name="useServerSentEvents"/> is true.
+    /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     protected virtual async IAsyncEnumerable<TResult> HandleStream<TRequest, TResult>(
         HttpRequestMessage httpRequest,
@@ -61,6 +73,10 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
     }
     
     
+    /// <summary>
+    /// Reads a Server-Sent Events (<c>text/event-stream</c>) response, accumulates each
+    /// <c>data:</c> block, and yields deserialized objects per event.
+    /// </summary>
     protected virtual async IAsyncEnumerable<T> ReadServerSentEvents<T>(
         Stream stream, 
         [EnumeratorCancellation] CancellationToken cancellationToken = default
@@ -94,6 +110,10 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
     }
 
     
+    /// <summary>
+    /// Sends <paramref name="httpRequest"/> for a fire-and-forget mediator command.
+    /// Applies decoration and the configured <c>Mediator:Http:Timeout</c>.
+    /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     protected virtual async Task HandleCommand(        
         HttpRequestMessage httpRequest,
@@ -111,6 +131,11 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
     }
     
     
+    /// <summary>
+    /// Sends <paramref name="httpRequest"/> for a mediator request and deserializes the
+    /// response into <typeparamref name="TResult"/>. Applies decoration and the
+    /// configured <c>Mediator:Http:Timeout</c>.
+    /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     protected virtual async Task<TResult> HandleRequest<TRequest, TResult>(
         HttpRequestMessage httpRequest,
@@ -130,6 +155,11 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
     }
 
 
+    /// <summary>
+    /// Builds the <see cref="HttpRequestMessage"/> for an outgoing call. Absolute URLs
+    /// are used as-is; relative URLs are resolved against the base URI from
+    /// <see cref="GetBaseUri"/>.
+    /// </summary>
     protected virtual HttpRequestMessage CreateHttpRequest(IMediatorContext context, HttpMethod httpMethod, string parsedUrl)
     {
         var url = parsedUrl;
@@ -147,6 +177,12 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
     }
     
     
+    /// <summary>
+    /// Sends <paramref name="httpRequest"/> with a hard <paramref name="timeout"/>,
+    /// surfaces a <see cref="TimeoutException"/> if the timeout fires (vs. a caller cancel),
+    /// captures the response on <paramref name="context"/>, and deserializes the body.
+    /// When <typeparamref name="TResult"/> is <see cref="HttpResponseMessage"/> the raw response is returned.
+    /// </summary>
     protected virtual async Task<TResult> Send<TResult>(
         IMediatorContext context,
         HttpRequestMessage httpRequest, 
@@ -196,6 +232,11 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
     }
 
     
+    /// <summary>
+    /// Runs every registered <see cref="IHttpRequestDecorator"/> against
+    /// <paramref name="httpRequest"/> in order, allowing decorators to add headers,
+    /// authentication, or mutate the request before it is sent.
+    /// </summary>
     protected virtual async Task Decorate(IMediatorContext context, HttpRequestMessage httpRequest, CancellationToken cancellationToken)
     {
         foreach (var decorator in services.Decorators)
@@ -208,6 +249,10 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
     }
 
     
+    /// <summary>
+    /// When <c>Mediator:Http:Debug</c> is enabled in configuration, logs the request body
+    /// along with request/response headers and status info under a logger scope.
+    /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue will not be trimmed")]
     protected virtual async ValueTask WriteDebugIfEnable(
         HttpRequestMessage request, 
@@ -251,6 +296,11 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
     }
 
     
+    /// <summary>
+    /// Resolves the base URI for <paramref name="request"/> from the handler's
+    /// configuration <c>Http</c> section. Throws <see cref="InvalidOperationException"/>
+    /// when no base URI is configured.
+    /// </summary>
     protected virtual string GetBaseUri(object request)
     {
         var cfg = services.Configuration.GetHandlerSection("Http", request, this);

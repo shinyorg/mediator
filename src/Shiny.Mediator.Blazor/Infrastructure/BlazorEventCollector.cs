@@ -4,11 +4,18 @@ using Shiny.Mediator.Infrastructure;
 namespace Shiny.Mediator.Blazor.Infrastructure;
 
 
+/// <summary>
+/// Blazor <see cref="IEventCollector"/> that also acts as the framework's
+/// <see cref="IComponentActivator"/>: every activated <see cref="IComponent"/> implementing
+/// <see cref="IEventHandler{TEvent}"/> is tracked via a <see cref="WeakReference{T}"/> so events
+/// can be dispatched to live components without leaking disposed ones.
+/// </summary>
 public class BlazorEventCollector : IEventCollector, IComponentActivator
 {
     readonly List<WeakReference<IComponent>> components = new();
-    
-    
+
+
+    /// <inheritdoc/>
     public IReadOnlyList<IEventHandler<TEvent>> GetHandlers<TEvent>() where TEvent : IEvent
     {
         var returns = new List<IEventHandler<TEvent>>();
@@ -37,6 +44,7 @@ public class BlazorEventCollector : IEventCollector, IComponentActivator
     }
 
     
+    /// <inheritdoc/>
     public IComponent CreateInstance(Type componentType)
     {
         var component = (IComponent)Activator.CreateInstance(componentType)!;

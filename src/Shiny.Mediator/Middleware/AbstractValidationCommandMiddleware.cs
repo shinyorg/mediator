@@ -2,8 +2,13 @@ using System.Reflection;
 
 namespace Shiny.Mediator.Middleware;
 
+/// <summary>
+/// Base class for command-validation middleware. Skips when the command's contract type is not decorated with
+/// <c>[Validate]</c>; otherwise calls <see cref="Validate"/> and throws <c>ValidateException</c> when errors are reported.
+/// </summary>
 public abstract class AbstractValidationCommandMiddleware<TCommand> : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
+    /// <inheritdoc/>
     public async Task Process(IMediatorContext context, CommandHandlerDelegate next, CancellationToken cancellationToken)
     {
         if (context.Message!.GetType().GetCustomAttribute<ValidateAttribute>() == null)
@@ -29,6 +34,9 @@ public abstract class AbstractValidationCommandMiddleware<TCommand> : ICommandMi
         throw new ValidateException(validationResults);
     }
     
+    /// <summary>
+    /// Helper for derived validators to append an error message keyed by member name.
+    /// </summary>
     protected static void AddError(string key, string error, Dictionary<string, List<string>> populate)
     {
         if (!populate.ContainsKey(key))
@@ -36,6 +44,9 @@ public abstract class AbstractValidationCommandMiddleware<TCommand> : ICommandMi
 
         populate[key].Add(error);
     }
-    
+
+    /// <summary>
+    /// Performs the actual validation work. Add any errors discovered to <paramref name="populate"/>.
+    /// </summary>
     protected abstract Task Validate(TCommand command, Dictionary<string, List<string>> populate, CancellationToken cancellationToken);
 }

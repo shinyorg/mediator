@@ -1,41 +1,35 @@
 namespace Shiny.Mediator.Infrastructure;
 
+/// <summary>
+/// Selects the appropriate executor for each message dispatched through the mediator. Custom executors
+/// are queried first via their <c>CanHandle</c>/<c>CanSend</c>/<c>CanPublish</c>/<c>CanRequest</c> hooks;
+/// the built-in local executor is the fallback.
+/// </summary>
 public interface IMediatorDirector
 {
     /// <summary>
-    /// Get the request executor for the given request
+    /// Returns the <see cref="IRequestExecutor"/> that will handle <paramref name="request"/>.
     /// </summary>
-    /// <param name="request"></param>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
     IRequestExecutor GetRequestExecutor<TResult>(IRequest<TResult> request);
-    
+
     /// <summary>
-    /// Get the command executor for the given command
+    /// Returns the <see cref="ICommandExecutor"/> that will handle <paramref name="command"/>.
     /// </summary>
-    /// <param name="command"></param>
-    /// <returns></returns>
     ICommandExecutor GetCommandExecutor(ICommand command);
-    
+
     /// <summary>
-    /// Get the event executor for the given event
+    /// Returns the <see cref="IEventExecutor"/> that will publish <paramref name="event"/>.
     /// </summary>
-    /// <param name="event"></param>
-    /// <returns></returns>
     IEventExecutor GetEventExecutor(IEvent @event);
-    
+
     /// <summary>
-    /// Gets the event executor for the given event type
+    /// Returns the <see cref="IEventExecutor"/> for events of <typeparamref name="TEvent"/>, regardless of instance.
+    /// Used when no event instance is available (e.g. for <c>Subscribe</c>).
     /// </summary>
-    /// <typeparam name="TEvent"></typeparam>
-    /// <returns></returns>
     IEventExecutor GetEventExecutor<TEvent>() where TEvent : IEvent;
-    
+
     /// <summary>
-    /// Get the stream request executor for the given request
+    /// Returns the <see cref="IStreamRequestExecutor"/> that will handle <paramref name="request"/>.
     /// </summary>
-    /// <param name="request"></param>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
     IStreamRequestExecutor GetStreamRequestExecutor<TResult>(IStreamRequest<TResult> request);
 }

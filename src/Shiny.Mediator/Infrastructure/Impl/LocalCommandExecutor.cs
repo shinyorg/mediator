@@ -4,11 +4,16 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
+/// <summary>
+/// Default in-process <see cref="ICommandExecutor"/>. Resolves the registered <see cref="ICommandHandler{TCommand}"/>
+/// and runs it through the ordered middleware chain.
+/// </summary>
 public class LocalCommandExecutor : ICommandExecutor
 {
+    /// <inheritdoc/>
     public async Task Send<TCommand>(
         IMediatorContext context,
-        TCommand command, 
+        TCommand command,
         CancellationToken cancellationToken
     ) where TCommand : ICommand
     {
@@ -61,5 +66,6 @@ public class LocalCommandExecutor : ICommandExecutor
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public bool CanSend<TCommand>(TCommand command) where TCommand : ICommand => true;
 }

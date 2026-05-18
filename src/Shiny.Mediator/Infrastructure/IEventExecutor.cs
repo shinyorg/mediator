@@ -1,17 +1,19 @@
 namespace Shiny.Mediator.Infrastructure;
 
 
+/// <summary>
+/// Pluggable executor that fans an event out to its handlers. The default in-process implementation is
+/// <c>LocalEventExecutor</c>; alternate executors can route certain event types elsewhere.
+/// </summary>
 public interface IEventExecutor
 {
     /// <summary>
-    /// Publish an event
+    /// Publishes <paramref name="event"/> to every applicable handler.
     /// </summary>
     /// <param name="context"></param>
-    /// <param name="event"></param>
-    /// <param name="executeInParallel"></param>
+    /// <param name="event">The event to publish.</param>
+    /// <param name="executeInParallel">When true, handlers run concurrently; when false, they run sequentially.</param>
     /// <param name="cancellationToken"></param>
-    /// <typeparam name="TEvent"></typeparam>
-    /// <returns></returns>
     Task Publish<TEvent>(
         IMediatorContext context,
         TEvent @event,
@@ -21,35 +23,31 @@ public interface IEventExecutor
 
 
     /// <summary>
-    /// Publish an event to the background - this will also start a fresh service scope
+    /// Fires the event without awaiting handlers, isolating their execution from the caller's lifetime.
     /// </summary>
     /// <param name="context"></param>
-    /// <param name="event"></param>
-    /// <param name="executeInParallel"></param>
-    /// <param name="onError"></param>
-    /// <typeparam name="TEvent"></typeparam>
+    /// <param name="event">The event to publish.</param>
+    /// <param name="executeInParallel">When true, handlers run concurrently; when false, they run sequentially.</param>
+    /// <param name="onError">Callback invoked if the background publish faults.</param>
     void PublishToBackground<TEvent>(
         IMediatorContext context,
         TEvent @event,
         bool executeInParallel,
         Action<Exception> onError
     ) where TEvent : IEvent;
-    
+
     /// <summary>
-    /// Subscribe to an event
+    /// Subscribes a delegate-based handler for <typeparamref name="TEvent"/> in this executor's local scope.
     /// </summary>
-    /// <param name="action">The action to execute when the event is published</param>
-    /// <typeparam name="TEvent">The event type to subscribe to</typeparam>
-    /// <returns>A disposable to unsubscribe</returns>
+    /// <returns>A disposable handle that removes the subscription when disposed.</returns>
     IDisposable Subscribe<TEvent>(
         Func<TEvent, IMediatorContext, CancellationToken, Task> action
     ) where TEvent : IEvent;
-    
-    
+
+
     /// <summary>
-    /// Can publish the event type
+    /// Returns true if this executor can publish events of <paramref name="eventType"/>. Used by
+    /// <see cref="IMediatorDirector"/> to select an executor at publish time.
     /// </summary>
-    /// <param name="eventType"></param>
-    /// <returns></returns>
     bool CanPublish(Type eventType);
 }

@@ -4,8 +4,13 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Mediator.Infrastructure.Impl;
 
 
+/// <summary>
+/// Default in-process <see cref="IStreamRequestExecutor"/>. Resolves the registered
+/// <see cref="IStreamRequestHandler{TRequest,TResult}"/> and runs it through the ordered middleware chain.
+/// </summary>
 public class LocalStreamRequestExecutor : IStreamRequestExecutor
 {
+    /// <inheritdoc/>
     public virtual IAsyncEnumerable<TResult> Request<TResult>(
         IMediatorContext context,
         IStreamRequest<TResult> request,
@@ -23,8 +28,12 @@ public class LocalStreamRequestExecutor : IStreamRequestExecutor
         return execution;
     }
 
+    /// <inheritdoc/>
     public bool CanRequest<TResult>(IStreamRequest<TResult> request) => true;
 
+    /// <summary>
+    /// Directly handles a strongly-typed stream request without going through the wrapper dispatch.
+    /// </summary>
     public virtual IAsyncEnumerable<TResult> Handle<TRequest, TResult>(
         IMediatorContext context,
         TRequest request,
@@ -32,17 +41,28 @@ public class LocalStreamRequestExecutor : IStreamRequestExecutor
     ) where TRequest : IStreamRequest<TResult> => new StreamRequestWrapper<TRequest, TResult>(context, request, cancellationToken).Handle();
 }
 
+/// <summary>
+/// Internal wrapper that bridges a non-generic stream dispatch entry point to the closed-generic stream handler pipeline.
+/// </summary>
 public interface IStreamRequestWrapper<TResult>
 {
+    /// <summary>
+    /// Executes the wrapped stream request and returns its async sequence of results.
+    /// </summary>
     IAsyncEnumerable<TResult> Handle();
 }
 
+/// <summary>
+/// Closed-generic wrapper used by <see cref="LocalStreamRequestExecutor"/> to resolve and invoke the
+/// strongly-typed <see cref="IStreamRequestHandler{TRequest,TResult}"/> for a stream request.
+/// </summary>
 public class StreamRequestWrapper<TRequest, TResult>(
     IMediatorContext context,
     TRequest request,
     CancellationToken cancellationToken
 ) : IStreamRequestWrapper<TResult> where TRequest : IStreamRequest<TResult>
 {
+    /// <inheritdoc/>
     public IAsyncEnumerable<TResult> Handle()
     {
         var services = context.ServiceScope.ServiceProvider;

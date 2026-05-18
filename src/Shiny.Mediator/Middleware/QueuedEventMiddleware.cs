@@ -1,23 +1,28 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Middleware;
 
 
 // TODO: this won't execute on the mainthread
+/// <summary>
+/// Event middleware that applies sampling (<see cref="SampleAttribute"/>) and throttling
+/// (<see cref="ThrottleAttribute"/>) policies on a per handler-method basis. Sampling collects the last event
+/// within a window and runs it when the timer fires; throttling runs the first event immediately and discards
+/// subsequent ones until the cooldown expires.
+/// </summary>
 [MiddlewareOrder(50)]
 public class QueuedEventMiddleware<TEvent>(
-    ILogger<QueuedEventMiddleware<TEvent>> logger,
-    IConfiguration configuration
+    ILogger<QueuedEventMiddleware<TEvent>> logger
 ) : IEventMiddleware<TEvent> where TEvent : IEvent
 {
     record SampleState(long MillisecondsDelay) : IDisposable
     {
         readonly Lock syncLock = new();
         bool timerRunning;
+        CancellationTokenSource? timerCts;
         EventHandlerDelegate? pendingNext;
 
         public void Enqueue(EventHandlerDelegate next, ILogger logger)
@@ -30,8 +35,11 @@ public class QueuedEventMiddleware<TEvent>(
                     return;
 
                 this.timerRunning = true;
+                this.timerCts = new CancellationTokenSource();
+                var token = this.timerCts.Token;
+
                 _ = Task
-                    .Delay(TimeSpan.FromMilliseconds(this.MillisecondsDelay))
+                    .Delay(TimeSpan.FromMilliseconds(this.MillisecondsDelay), token)
                     .ContinueWith(async _ =>
                     {
                         EventHandlerDelegate? toExecute;
@@ -53,7 +61,7 @@ public class QueuedEventMiddleware<TEvent>(
                                 logger.LogError(ex, "Error executing sampled event handler");
                             }
                         }
-                    }, TaskScheduler.Default);
+                    }, TaskContinuationOptions.OnlyOnRanToCompletion);
             }
         }
 
@@ -61,6 +69,9 @@ public class QueuedEventMiddleware<TEvent>(
         {
             lock (this.syncLock)
             {
+                this.timerCts?.Cancel();
+                this.timerCts?.Dispose();
+                this.timerCts = null;
                 this.pendingNext = null;
                 this.timerRunning = false;
             }
@@ -98,6 +109,7 @@ public class QueuedEventMiddleware<TEvent>(
     readonly ConcurrentDictionary<string, SampleState> sampleStates = new();
     readonly ConcurrentDictionary<string, ThrottleState> throttleStates = new();
 
+    /// <inheritdoc/>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "GetValue<long> is safe for trimming")]
     public Task Process(
         IMediatorContext context,
@@ -139,9 +151,6 @@ public class QueuedEventMiddleware<TEvent>(
             logger.LogDebug("Throttle discarding event {EventType} for handler {HandlerType} - in cooldown", eventType, handlerType);
             return Task.CompletedTask;
         }
-
-        // TODO: the problem is what buffer time to we obey?
-        // var buffered = context.ServiceScope.ServiceProvider.GetServices<IBufferedEventHandler<TEvent>>(); // just resolve to trigger any buffering logic
 
         return next();
     }
