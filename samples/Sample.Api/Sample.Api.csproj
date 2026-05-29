@@ -15,11 +15,14 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Scalar.AspNetCore"/>
+        <PackageReference Include="TickerQ.EntityFrameworkCore"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.AspNet\Shiny.Mediator.AspNet.csproj"/>
+        <ProjectReference Include="..\..\src\Shiny.Mediator.TickerQ\Shiny.Mediator.TickerQ.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false"/>

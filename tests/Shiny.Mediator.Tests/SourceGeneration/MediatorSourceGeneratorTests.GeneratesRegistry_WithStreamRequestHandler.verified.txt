@@ -73,6 +73,7 @@ internal class GeneratedMediatorStreamRequestExecutor : global::Shiny.Mediator.I
 // </auto-generated>
 #nullable disable
 
+using Shiny;
 using Shiny.Mediator;
 using Microsoft.Extensions.DependencyInjection;
 

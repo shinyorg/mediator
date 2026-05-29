@@ -11,8 +11,7 @@ namespace Shiny.Mediator;
 
 /// <summary>
 /// Registration helpers for Shiny Mediator on top of <see cref="IServiceCollection"/> and
-/// <see cref="ShinyMediatorBuilder"/> - wiring up the mediator itself, built-in middleware, and
-/// helpers for registering implementations under all their interfaces.
+/// <see cref="ShinyMediatorBuilder"/> - wiring up the mediator itself and the built-in middleware.
 /// </summary>
 public static class RegistrationExtensions
 {
@@ -144,64 +143,6 @@ public static class RegistrationExtensions
             services.TryAddSingleton<IContractKeyProvider, DefaultContractKeyProvider>();
             services.TryAddSingleton<IMediator, MediatorImpl>();
             services.TryAddSingleton(TimeProvider.System);
-            return services;
-        }
-
-
-        /// <summary>
-        /// Registers <typeparamref name="TImplementation"/> as a singleton both by its concrete type and by every
-        /// interface it implements (sharing the same instance). No-op if the type is already registered.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown when the type implements no interfaces.</exception>
-        public IServiceCollection AddSingletonAsImplementedInterfaces<
-            [DynamicallyAccessedMembers(
-                DynamicallyAccessedMemberTypes.PublicConstructors |
-                DynamicallyAccessedMemberTypes.NonPublicConstructors |
-                DynamicallyAccessedMemberTypes.Interfaces
-            )] TImplementation
-        >() where TImplementation : class
-        {
-            // check if implementation is already registered and ignore if it is
-            if (services.Any(x => x.ServiceType == typeof(TImplementation)))
-                return services;
-
-            var interfaceTypes = typeof(TImplementation).GetInterfaces();
-            if (interfaceTypes.Length == 0)
-                throw new InvalidOperationException(services.GetType().FullName + " does not implement any interfaces");
-
-            services.AddSingleton<TImplementation>();
-            foreach (var interfaceType in interfaceTypes)
-                services.AddSingleton(interfaceType, sp => sp.GetRequiredService<TImplementation>());
-
-            return services;
-        }
-
-
-        /// <summary>
-        /// Registers <typeparamref name="TImplementation"/> as scoped both by its concrete type and by every
-        /// interface it implements (sharing the same scoped instance). No-op if the type is already registered.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown when the type implements no interfaces.</exception>
-        public IServiceCollection AddScopedAsImplementedInterfaces<
-            [DynamicallyAccessedMembers(
-                DynamicallyAccessedMemberTypes.PublicConstructors |
-                DynamicallyAccessedMemberTypes.NonPublicConstructors |
-                DynamicallyAccessedMemberTypes.Interfaces
-            )] TImplementation
-        >() where TImplementation : class
-        {
-            // check if implementation is already registered and ignore if it is
-            if (services.Any(x => x.ServiceType == typeof(TImplementation)))
-                return services;
-
-            var interfaceTypes = typeof(TImplementation).GetInterfaces();
-            if (interfaceTypes.Length == 0)
-                throw new InvalidOperationException(services.GetType().FullName + " does not implement any interfaces");
-
-            services.AddScoped<TImplementation>();
-            foreach (var interfaceType in interfaceTypes)
-                services.AddScoped(interfaceType, sp => sp.GetRequiredService<TImplementation>());
-
             return services;
         }
     }

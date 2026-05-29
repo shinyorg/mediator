@@ -40,7 +40,13 @@ public class ScheduledCommandMiddleware<TCommand>(
         {
             logger.LogInformation("Command '{message}' scheduled for {dueAt}", context.Message, dueAt);
             await scheduler
-                .Schedule(context, dueAt.Value, cancellationToken)
+                .Schedule(
+                    context,
+                    dueAt.Value,
+                    // capture TCommand at compile time so the scheduler can fire without reflection
+                    (ctx, ct) => ctx.Send((TCommand)ctx.Message, ct),
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
         }
     }

@@ -50,7 +50,7 @@ public class CommandSchedulingTests(ITestOutputHelper output)
     }
     
     
-    [Fact(Skip = "Broken test to come back to")]
+    [Fact]
     public async Task EndToEndTest()
     {
         MyScheduleCommandHandler.Received = false;
@@ -71,10 +71,10 @@ public class CommandSchedulingTests(ITestOutputHelper output)
         var mediator = sp.GetRequiredService<IMediator>();
         await mediator.Send(new MySchedule
         {
-            DueAt = time.GetUtcNow().AddMinutes(1)
+            DueAt = time.GetUtcNow().AddSeconds(30)
         });
         MyScheduleCommandHandler.Waiter.Task.IsCompleted.ShouldBeFalse();
-        time.Advance(TimeSpan.FromMinutes(1.5));
+        time.Advance(TimeSpan.FromMinutes(1));
 
         await MyScheduleCommandHandler.Waiter.Task.WaitAsync(TimeSpan.FromSeconds(3));
     }
@@ -83,7 +83,12 @@ public class CommandSchedulingTests(ITestOutputHelper output)
 file class MockCommandScheduler : ICommandScheduler
 {
     public static bool ScheduleReply { get; set; }
-    public Task Schedule(IMediatorContext context, DateTimeOffset dueAt, CancellationToken cancellationToken)
+    public Task Schedule(
+        IMediatorContext context,
+        DateTimeOffset dueAt,
+        Func<IMediatorContext, CancellationToken, Task> dispatch,
+        CancellationToken cancellationToken
+    )
     {
         throw new NotImplementedException();
     }
