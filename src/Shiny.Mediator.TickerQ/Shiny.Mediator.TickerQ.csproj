@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>$(BaseTargetFramework)</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Shiny.Mediator</RootNamespace>
+        <!-- Scheduled commands are rehydrated by runtime type via reflection and serialization,
+             and TickerQ persists via EF Core/Redis - none of which is trim/AOT safe. -->
+        <EnableAotAnalyzer>false</EnableAotAnalyzer>
+        <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+        <EnableSingleFileAnalyzer>false</EnableSingleFileAnalyzer>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj" />
+        <PackageReference Include="TickerQ" />
+    </ItemGroup>
+
+</Project>

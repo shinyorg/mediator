@@ -36,8 +36,6 @@
         <Project Path="tests\Shiny.Mediator.Maui.Tests\Shiny.Mediator.Maui.Tests.csproj" />
         <Project Path="tests\Shiny.Mediator.Tests\Shiny.Mediator.Tests.csproj" />
     </Folder>
-    <Project Path="src/Shiny.Mediator.GpsBroadcast/Shiny.Mediator.GpsBroadcast.csproj" />
-    <Project Path="src/Shiny.Mediator.HttpTransferBroadcast/Shiny.Mediator.HttpTransferBroadcast.csproj" />
     <Project Path="src\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj" />
     <Project Path="src\Shiny.Mediator.AspNet.SourceGenerators\Shiny.Mediator.AspNet.SourceGenerators.csproj" />
     <Project Path="src\Shiny.Mediator.AspNet\Shiny.Mediator.AspNet.csproj" />
@@ -52,6 +50,7 @@
     <Project Path="src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj" />
     <Project Path="src\Shiny.Mediator.Sentry\Shiny.Mediator.Sentry.csproj" />
     <Project Path="src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" />
+    <Project Path="src\Shiny.Mediator.TickerQ\Shiny.Mediator.TickerQ.csproj" />
     <Project Path="src\Shiny.Mediator.Testing\Shiny.Mediator.Testing.csproj" />
     <Project Path="src\Shiny.Mediator.Uno\Shiny.Mediator.Uno.csproj" />
     <Project Path="src\Shiny.Mediator\Shiny.Mediator.csproj" />

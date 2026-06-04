@@ -81,6 +81,7 @@ internal class GeneratedMediatorRequestExecutor : global::Shiny.Mediator.Infrast
 // </auto-generated>
 #nullable disable
 
+using Shiny;
 using Shiny.Mediator;
 using Microsoft.Extensions.DependencyInjection;
 

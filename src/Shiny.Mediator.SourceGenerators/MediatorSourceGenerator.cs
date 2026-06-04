@@ -444,6 +444,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         sb.AppendLine("// </auto-generated>");
         sb.AppendLine("#nullable disable");
         sb.AppendLine();
+        sb.AppendLine("using Shiny;");
         sb.AppendLine("using Shiny.Mediator;");
         sb.AppendLine("using Microsoft.Extensions.DependencyInjection;");
         sb.AppendLine();
