@@ -127,6 +127,27 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         return "class"; // fallback
     }
 
+    static ITypeSymbol? UnwrapNullableEnum(ITypeSymbol? type)
+    {
+        if (type is null)
+            return null;
+
+        if (type.TypeKind == TypeKind.Enum)
+            return type;
+
+        // Nullable<T> where T is an enum
+        if (type is INamedTypeSymbol named &&
+            named.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
+            named.TypeArguments.Length == 1 &&
+            named.TypeArguments[0].TypeKind == TypeKind.Enum)
+        {
+            return named.TypeArguments[0];
+        }
+
+        return null;
+    }
+
+
     static bool IsNullableType(ITypeSymbol type)
     {
         // Check if it's a nullable value type (e.g., int?, DateTime?)
@@ -422,14 +443,16 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
     {
         // Remove global:: prefix and nullable annotations for type matching
         var cleanTypeName = typeName.Replace("global::", "").Replace("?", "");
-        
-        // Check if it's an enum type
-        if (typeSymbol is { TypeKind: TypeKind.Enum })
+
+        var enumSymbol = UnwrapNullableEnum(typeSymbol);
+
+        // Check if it's an enum type (or Nullable<TEnum>)
+        if (enumSymbol is not null)
         {
             // Check if the enum has a JsonConverter attribute
-            var hasJsonConverter = typeSymbol.GetAttributes()
+            var hasJsonConverter = enumSymbol.GetAttributes()
                 .Any(attr => attr.AttributeClass?.ToDisplayString().Contains("JsonConverter") == true);
-            
+
             if (!hasJsonConverter)
             {
                 // Treat enum as string by default
@@ -475,14 +498,16 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
     {
         // Remove global:: prefix and nullable annotations for type matching
         var cleanTypeName = typeName.Replace("global::", "").Replace("?", "");
-        
-        // Check if it's an enum type
-        if (typeSymbol != null && typeSymbol.TypeKind == TypeKind.Enum)
+
+        var enumSymbol = UnwrapNullableEnum(typeSymbol);
+
+        // Check if it's an enum type (or Nullable<TEnum>)
+        if (enumSymbol is not null)
         {
             // Check if the enum has a JsonConverter attribute
-            var hasJsonConverter = typeSymbol.GetAttributes()
+            var hasJsonConverter = enumSymbol.GetAttributes()
                 .Any(attr => attr.AttributeClass?.ToDisplayString().Contains("JsonConverter") == true);
-            
+
             if (!hasJsonConverter)
             {
                 // Treat enum as string by default

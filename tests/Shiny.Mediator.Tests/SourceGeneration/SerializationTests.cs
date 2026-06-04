@@ -99,7 +99,7 @@ public class SerializationTests
         // Arrange
         var source = """
             using System;
-            
+
             [SourceGenerateJsonConverter]
             public partial record VehicleResult(int Id, string Manufacturer, string Model)
             {
@@ -112,6 +112,60 @@ public class SerializationTests
 
         // Assert
         return Verify(result);
+    }
+
+    [Fact]
+    public Task GenerateJsonConverter_ForNullableEnum_ShouldEmitEnumParseAndAvoidNullableConverter()
+    {
+        // Regression: previously the generator detected only typeSymbol.TypeKind == Enum.
+        // For Nullable<TEnum> the symbol is Nullable<T> (TypeKind.Struct), so the generator
+        // fell through to JsonSerializer.Deserialize<TEnum?>(...) and JsonSerializer.Serialize(...).
+        // At runtime under NativeAOT, STJ resolves NullableConverter<TEnum> via reflection and
+        // throws "missing native code or metadata". The fix unwraps Nullable<TEnum> and emits
+        // inline Enum.Parse<TEnum>(reader.GetString()!) cast to TEnum?.
+        var source = """
+            using System;
+
+            public enum Status { Open, Closed }
+
+            [SourceGenerateJsonConverter]
+            public partial class Entity
+            {
+                public Status Required { get; set; }
+                public Status? Optional { get; set; }
+            }
+            """;
+
+        var result = TestHelper.RunSourceGenerator(source);
+        return Verify(result);
+    }
+
+    [Fact]
+    public void NullableEnumRoundtrip_PopulatedValue()
+    {
+        var json = """{"Required":"Closed","Optional":"Open"}""";
+        var entity = JsonSerializer.Deserialize<TestModels.Entity>(json);
+
+        entity.ShouldNotBeNull();
+        entity.Required.ShouldBe(TestModels.Status.Closed);
+        entity.Optional.ShouldBe(TestModels.Status.Open);
+
+        var roundtrip = JsonSerializer.Serialize(entity);
+        roundtrip.ShouldBe(json);
+    }
+
+    [Fact]
+    public void NullableEnumRoundtrip_NullValue()
+    {
+        var json = """{"Required":"Open","Optional":null}""";
+        var entity = JsonSerializer.Deserialize<TestModels.Entity>(json);
+
+        entity.ShouldNotBeNull();
+        entity.Required.ShouldBe(TestModels.Status.Open);
+        entity.Optional.ShouldBeNull();
+
+        var roundtrip = JsonSerializer.Serialize(entity);
+        roundtrip.ShouldBe(json);
     }
 
     [Fact]
