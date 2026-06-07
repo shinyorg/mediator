@@ -36,10 +36,18 @@ public class MockStorageService : IStorageService
     
     public Task Remove(string category, string requestKey, bool partialMatchKey = false, CancellationToken cancellationToken = default)
     {
-        // TODO: implement partialMatchKey
-        if (this.Items.ContainsKey(category))
+        if (this.Items.TryGetValue(category, out var cat))
         {
-            this.Items[category].Remove(requestKey);
+            if (partialMatchKey)
+            {
+                var toRemove = cat.Keys.Where(k => k.StartsWith(requestKey)).ToList();
+                foreach (var k in toRemove)
+                    cat.Remove(k);
+            }
+            else
+            {
+                cat.Remove(requestKey);
+            }
         }
         return Task.CompletedTask;
     }

@@ -45,7 +45,7 @@ public static class MemoryCacheExtensions
     {
         GetEntries(cache)
             .Select(x => x.Key as string)
-            .Where(x => x != null)
+            .Where(x => x != null && x.StartsWith(key))
             .ToList()
             .ForEach(x => cache.Remove(x!));
     }

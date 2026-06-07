@@ -69,6 +69,50 @@ public abstract class BaseCacheServiceTests
     
 
     [Fact]
+    public async Task Remove_ExactKey_RemovesOnlyThatEntry()
+    {
+        var cache = this.CreateService(this.FakeTimeProvider);
+        await cache.Set("a", "1");
+        await cache.Set("b", "2");
+
+        await cache.Remove("a");
+
+        (await cache.Get<string>("a", CancellationToken.None)).ShouldBeNull();
+        (await cache.Get<string>("b", CancellationToken.None))!.Value.ShouldBe("2");
+    }
+
+
+    [Fact]
+    public async Task Remove_PartialMatch_RemovesPrefixedEntriesOnly()
+    {
+        var cache = this.CreateService(this.FakeTimeProvider);
+        await cache.Set("user:1", "a");
+        await cache.Set("user:2", "b");
+        await cache.Set("order:1", "c");
+
+        await cache.Remove("user:", partialMatch: true);
+
+        (await cache.Get<string>("user:1", CancellationToken.None)).ShouldBeNull();
+        (await cache.Get<string>("user:2", CancellationToken.None)).ShouldBeNull();
+        (await cache.Get<string>("order:1", CancellationToken.None))!.Value.ShouldBe("c");
+    }
+
+
+    [Fact]
+    public async Task Clear_RemovesAllEntries()
+    {
+        var cache = this.CreateService(this.FakeTimeProvider);
+        await cache.Set("a", "1");
+        await cache.Set("b", "2");
+
+        await cache.Clear(CancellationToken.None);
+
+        (await cache.Get<string>("a", CancellationToken.None)).ShouldBeNull();
+        (await cache.Get<string>("b", CancellationToken.None)).ShouldBeNull();
+    }
+
+
+    [Fact]
     public async Task GetOrCreate_ShouldReturn_NotFromCache_Expired()
     {
         var cfg = new CacheItemConfig

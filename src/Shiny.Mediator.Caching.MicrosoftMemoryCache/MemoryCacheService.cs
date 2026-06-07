@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Caching.Memory;
 using Shiny.Mediator.Infrastructure;
 
@@ -8,11 +9,14 @@ namespace Shiny.Mediator;
 /// <see cref="ICacheService"/> implementation backed by <see cref="IMemoryCache"/>.
 /// Uses an internal per-key lock to provide cache-stampede protection on
 /// <see cref="GetOrCreate{T}"/> (the underlying <c>GetOrCreateAsync</c> does not
-/// serialize concurrent factory invocations on its own).
+/// serialize concurrent factory invocations on its own), and tracks issued keys
+/// in a side index so prefix-removal works without reflecting over
+/// <see cref="MemoryCache"/> internals.
 /// </summary>
 public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) : ICacheService
 {
     readonly KeyedLocker locker = new();
+    readonly ConcurrentDictionary<string, byte> keys = new();
 
     /// <inheritdoc/>
     public async Task<CacheEntry<T>?> GetOrCreate<T>(string key, Func<Task<T>> retrieveFunc, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
@@ -27,12 +31,7 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
 
             var result = await retrieveFunc.Invoke().ConfigureAwait(false);
             var entry = new CacheEntry<T>(key, result, timeProvider.GetUtcNow());
-            cache.Set(key, entry, new MemoryCacheEntryOptions
-            {
-                Priority = CacheItemPriority.Normal,
-                AbsoluteExpirationRelativeToNow = config?.AbsoluteExpiration,
-                SlidingExpiration = config?.SlidingExpiration
-            });
+            this.Insert(key, entry, config);
             return entry;
         }
     }
@@ -42,12 +41,7 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
     public Task<CacheEntry<T>> Set<T>(string key, T value, CacheItemConfig? config = null, CancellationToken cancellationToken = default)
     {
         var entryValue = new CacheEntry<T>(key, value, timeProvider.GetUtcNow());
-        var opts = new MemoryCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = config?.AbsoluteExpiration,
-            SlidingExpiration = config?.SlidingExpiration
-        };
-        cache.Set(key, entryValue, opts);
+        this.Insert(key, entryValue, config);
 
         return Task.FromResult(entryValue);
     }
@@ -72,15 +66,11 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
         }
         else
         {
-            var keysToRemove = cache
-                .GetEntries()
-                .Select(e => e.Key)
-                .OfType<string>()
-                .Where(k => k.StartsWith(requestKey))
-                .ToList();
-
-            foreach (var key in keysToRemove)
-                cache.Remove(key);
+            foreach (var key in this.keys.Keys)
+            {
+                if (key.StartsWith(requestKey))
+                    cache.Remove(key);
+            }
         }
 
         return Task.CompletedTask;
@@ -89,7 +79,32 @@ public class MemoryCacheService(IMemoryCache cache, TimeProvider timeProvider) :
     /// <inheritdoc/>
     public Task Clear(CancellationToken cancellationToken)
     {
-        cache.Clear();
+        foreach (var key in this.keys.Keys)
+            cache.Remove(key);
+
+        this.keys.Clear();
         return Task.CompletedTask;
+    }
+
+
+    void Insert<T>(string key, CacheEntry<T> entry, CacheItemConfig? config)
+    {
+        var opts = new MemoryCacheEntryOptions
+        {
+            Priority = CacheItemPriority.Normal,
+            AbsoluteExpirationRelativeToNow = config?.AbsoluteExpiration,
+            SlidingExpiration = config?.SlidingExpiration
+        };
+        opts.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration
+        {
+            EvictionCallback = (k, _, _, _) =>
+            {
+                if (k is string s)
+                    this.keys.TryRemove(s, out _);
+            }
+        });
+
+        this.keys[key] = 0;
+        cache.Set(key, entry, opts);
     }
 }
