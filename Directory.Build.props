@@ -8,10 +8,7 @@
         <DisableExtraReferences>False</DisableExtraReferences>
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
         
-        <PackageVersion>6.6.0-beta.{height}</PackageVersion>
-        <!-- Local-dev override: {height} is meant to be substituted by Nerdbank.GitVersioning in CI;
-             outside CI we fall back to a literal so restore doesn't reject the version string. -->
-        <PackageVersion Condition="'$(GITHUB_ACTIONS)' != 'true'">6.6.0-beta.0</PackageVersion>
+        <PackageVersion>6.6.0-beta-0001</PackageVersion>
         <Description>Shiny Mediator - A mediator pattern for all .NET Apps</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://shinylib.net/mediator</PackageProjectUrl>
