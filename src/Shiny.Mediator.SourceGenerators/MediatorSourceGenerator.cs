@@ -50,21 +50,27 @@ public class MediatorSourceGenerator : IIncrementalGenerator
             .Select((pair, _) =>
             {
                 var (compilation, provider) = pair;
-                
+
                 provider.GlobalOptions.TryGetValue("build_property.RootNamespace", out var rootNamespace);
                 provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorRequestExecutorClassName", out var requestExecutorClassName);
                 provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorStreamRequestExecutorClassName", out var streamRequestExecutorClassName);
                 provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorRegistryMethodName", out var registryMethodName);
                 provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorRegistryUseInternalClass", out var useInternalString);
+                provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorGenerateJsonContext", out var generateJsonContextString);
 
                 var useInternal = useInternalString?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? Constants.DefaultRegistryUseInternal;
-                
+                // Default ON — every contract a registered handler touches becomes part of the
+                // generated JsonTypeInfoResolver. Set ShinyMediatorGenerateJsonContext=false to opt out
+                // and manage your own JsonSerializerContext.
+                var generateJsonContext = !"false".Equals(generateJsonContextString, StringComparison.OrdinalIgnoreCase);
+
                 return new MsBuildOptions(
                     Namespace: (rootNamespace ?? compilation.AssemblyName)!,
                     RequestExecutorClassName: String.IsNullOrWhiteSpace(requestExecutorClassName) ? Constants.DefaultRequestExecutorClassName : requestExecutorClassName!,
                     StreamRequestExecutorClassName: String.IsNullOrWhiteSpace(streamRequestExecutorClassName) ? Constants.DefaultStreamRequestExecutorClassName : streamRequestExecutorClassName!,
                     RegistryMethodName: String.IsNullOrWhiteSpace(registryMethodName) ? Constants.DefaultRegistryRegistrationMethodName : registryMethodName!,
-                    UseInternalAccessModifier: useInternal
+                    UseInternalAccessModifier: useInternal,
+                    GenerateJsonContext: generateJsonContext
                 );
             });
 
@@ -96,7 +102,8 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                 }
 
                 return (
-                    Handlers: handlers.ToImmutableArray(), 
+                    Compilation: compilation,
+                    Handlers: handlers.ToImmutableArray(),
                     Middleware: middleware.ToImmutableArray()
                 );
             });
@@ -118,6 +125,18 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                 options,
                 spc
             );
+
+            if (options.GenerateJsonContext && !handlersAndMiddleware.Handlers.IsEmpty)
+            {
+                MediatorContractsJsonResolverGenerator.Generate(
+                    spc,
+                    handlersAndMiddleware.Compilation,
+                    handlersAndMiddleware.Handlers
+                        .Select(h => (h.RequestType, h.ResultType))
+                        .ToList(),
+                    options.Namespace
+                );
+            }
         });
     }
 
@@ -594,7 +613,10 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         string RequestExecutorClassName,
         string StreamRequestExecutorClassName,
         string RegistryMethodName,
-        bool UseInternalAccessModifier
+        bool UseInternalAccessModifier,
+        bool GenerateJsonContext
     );
 }
+
+
 

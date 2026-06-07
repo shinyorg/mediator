@@ -166,6 +166,20 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
 
 
     public static void GenerateJsonConverter(SourceProductionContext context, INamedTypeSymbol typeSymbol)
+        => GenerateJsonConverter(context, typeSymbol, attachAttribute: true);
+
+
+    /// <summary>
+    /// Emits the per-type <see cref="System.Text.Json.Serialization.JsonConverter{T}"/> class for
+    /// <paramref name="typeSymbol"/>. When <paramref name="attachAttribute"/> is true (the legacy
+    /// <c>[SourceGenerateJsonConverter]</c> path), a partial type declaration carrying
+    /// <c>[JsonConverter(typeof(TJsonConverter))]</c> is also emitted — this requires class types
+    /// to be partial. When false, only the converter class is emitted; the user's type does not
+    /// need to be partial because the converter is wired via
+    /// <see cref="System.Text.Json.Serialization.Metadata.JsonMetadataServices.CreateValueInfo{T}(System.Text.Json.JsonSerializerOptions,System.Text.Json.Serialization.JsonConverter)"/>
+    /// inside an <see cref="System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver"/>.
+    /// </summary>
+    public static void GenerateJsonConverter(SourceProductionContext context, INamedTypeSymbol typeSymbol, bool attachAttribute)
     {
         // Get the syntax node for the type symbol to check if it's partial
         var syntaxReferences = typeSymbol.DeclaringSyntaxReferences;
@@ -211,8 +225,9 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
             typeKind
         );
 
-        // Validate that classes are partial (structs don't need to be partial)
-        if (typeInfo is { IsClass: true, IsPartial: false })
+        // The partial check only matters when we want to attach a [JsonConverter] attribute via a
+        // partial declaration of the type. The converter class itself works without partial.
+        if (attachAttribute && typeInfo is { IsClass: true, IsPartial: false })
         {
             var diagnostic = Diagnostic.Create(
                 new DiagnosticDescriptor(
@@ -227,12 +242,12 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
                 typeInfo.Name
             );
             context.ReportDiagnostic(diagnostic);
+            return;
         }
-        else
-        {
-            GenerateJsonConverter(context, typeInfo);
+
+        GenerateJsonConverter(context, typeInfo);
+        if (attachAttribute)
             GeneratePartialTypeWithAttribute(context, typeInfo);
-        }
     }
     
 

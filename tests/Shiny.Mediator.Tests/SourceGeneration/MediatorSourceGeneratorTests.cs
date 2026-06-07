@@ -340,6 +340,34 @@ public class Request2Handler : IRequestHandler<Request2, int>
 //         return Verify(result);
 //     }
 
+    [Fact(DisplayName = "Resolver covers nested in-assembly property types transitively (RideTime → Position)")]
+    public Task GeneratesJsonResolver_WithTransitiveNestedTypes()
+    {
+        var driver = BuildDriver(@"
+using System.Collections.Generic;
+using Shiny.Mediator;
+
+
+namespace TestApp;
+
+public record GetRides : IRequest<IReadOnlyList<RideTime>>;
+
+public record RideTime(string Id, string Name, Position? Position);
+
+public record Position(double Latitude, double Longitude);
+
+[MediatorSingleton]
+public class GetRidesHandler : IRequestHandler<GetRides, IReadOnlyList<RideTime>>
+{
+    public Task<IReadOnlyList<RideTime>> Handle(GetRides request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<RideTime>>(new List<RideTime>());
+}");
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        return Verify(result);
+    }
+
+
     [Fact]
     public Task DoesNotGenerate_WithoutMediatorAttribute()
     {
