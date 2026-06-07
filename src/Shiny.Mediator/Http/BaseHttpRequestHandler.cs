@@ -15,7 +15,7 @@ namespace Shiny.Mediator.Http;
 public record HttpHandlerServices(
     ILoggerFactory LoggerFactory,
     IConfiguration Configuration,
-    ISerializerService Serializer,
+    Shiny.ISerializer Serializer,
     IHttpClientFactory HttpClientFactory,
     IEnumerable<IHttpRequestDecorator> Decorators
 );
@@ -65,9 +65,9 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
         }
         else
         {
-            await foreach (var obj in services.Serializer.DeserlializeAsyncEnumerable<TResult>(responseStream, cancellationToken))
-            { 
-                yield return obj;
+            await foreach (var obj in services.Serializer.DeserializeAsyncEnumerable<TResult>(responseStream, cancellationToken))
+            {
+                yield return obj!;
             }
         }
     }

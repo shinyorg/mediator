@@ -17,7 +17,7 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
     public async Task e2e()
     {
         var services = new ServiceCollection();
-        
+
         services.AddXUnitLogging(output);
         services.AddConfiguration(x =>
         {
@@ -35,8 +35,38 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
             EntityID = "66f5d97a-a530-40bf-a712-a6317c96b06d"
         });
     }
-    
-    
+
+
+    [Fact(DisplayName = "OpenAPI - generator-emitted IJsonTypeInfoResolver wires response types end-to-end (no reflection fallback)")]
+    public async Task e2e_GeneratedResolver_NoReflectionFallback()
+    {
+        // Sanity check: the generator must have emitted a resolver. Asserted by reflecting on the
+        // user-namespace type, which depends on the ThemeParksApiGenerated.* generated source.
+        var resolverType = typeof(ThemeParksApiGenerated.EntityLiveDataResponse).Assembly
+            .GetType("ThemeParksApiGenerated.ThemeParksApiGeneratedJsonResolver");
+        resolverType.ShouldNotBeNull("generator should have emitted ThemeParksApiGeneratedJsonResolver");
+
+        // Resolver registers itself with Shiny.Json via a [ModuleInitializer]. To prove the wiring
+        // works without the AssemblyInit reflection fallback masking the result, build a fresh
+        // serializer + chain that contains ONLY our generated resolver, then deserialize a real
+        // response from the wire.
+        var serializer = new Shiny.Impl.DefaultJsonSerializer();
+        serializer.Options.TypeInfoResolverChain.Add(
+            (System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver)resolverType
+                .GetField("Instance", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
+                .GetValue(null)!
+        );
+
+        using var http = new HttpClient();
+        var json = await http.GetStringAsync("https://api.themeparks.wiki/v1/entity/66f5d97a-a530-40bf-a712-a6317c96b06d/live");
+
+        var result = serializer.Deserialize<ThemeParksApiGenerated.EntityLiveDataResponse>(json);
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe("66f5d97a-a530-40bf-a712-a6317c96b06d");
+    }
+
+
+
     [Theory]
     [InlineData("./SourceGeneration/themeparksapi.yml")]
     [InlineData("./SourceGeneration/fleet.json")]

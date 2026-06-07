@@ -1,5 +1,4 @@
 using Shiny.Mediator.Infrastructure;
-using Shiny.Mediator.Infrastructure.Impl;
 using Shiny.Mediator.Tests.Mocks;
 using TickerQ.Utilities;
 using TickerQ.Utilities.Entities;
@@ -14,7 +13,7 @@ namespace Shiny.Mediator.Tests;
 
 public class TickerQCommandSchedulerTests(ITestOutputHelper output)
 {
-    readonly SysTextJsonSerializerService serializer = new();
+    readonly Shiny.ISerializer serializer = TestHelpers.CreateTestSerializer();
 
 
     [Fact]

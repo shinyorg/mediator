@@ -14,7 +14,7 @@ namespace Shiny.Mediator.Infrastructure;
 /// </summary>
 public class TickerQCommandScheduler(
     ITimeTickerManager<TimeTickerEntity> tickerManager,
-    ISerializerService serializer,
+    Shiny.ISerializer serializer,
     ILogger<TickerQCommandScheduler> logger
 ) : ICommandScheduler
 {
@@ -35,8 +35,10 @@ public class TickerQCommandScheduler(
         var payload = new ScheduledCommandPayload
         {
             CommandType = commandType.AssemblyQualifiedName!,
-            // serialize against the runtime type - serializer.Serialize(command) would bind T to object and emit "{}"
-            CommandJson = (string)serializer.Serialize((dynamic)command)
+            // Runtime-typed serialize: the static type here is ICommand and a generic Serialize<T>(T) would
+            // bind T to ICommand/object and emit "{}". Dispatch by Type via the extension so we serialize
+            // against the concrete command shape.
+            CommandJson = serializer.Serialize(command, commandType)
         };
 
         logger.LogInformation(

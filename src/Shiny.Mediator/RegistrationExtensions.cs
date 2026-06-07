@@ -138,7 +138,7 @@ public static class RegistrationExtensions
                 cfg.AddQueuedEventMiddleware();
             }
             services.TryAddSingleton<RuntimeEventRegister>();
-            services.TryAddSingleton<ISerializerService, SysTextJsonSerializerService>();
+            services.AddJsonSerialization();
             services.TryAddSingleton<IMediatorDirector, MediatorDirector>();
             services.TryAddSingleton<IContractKeyProvider, DefaultContractKeyProvider>();
             services.TryAddSingleton<IMediator, MediatorImpl>();

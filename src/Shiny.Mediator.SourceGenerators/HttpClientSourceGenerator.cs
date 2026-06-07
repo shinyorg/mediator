@@ -365,14 +365,21 @@ public class HttpClientSourceGenerator : IIncrementalGenerator
 
         // Generate registration extension method using HttpHandlerCodeGenerator
         var registrationCode = HttpHandlerCodeGenerator.GenerateRegistration(
-            allHandlers, 
+            allHandlers,
             options.Namespace,
             options.ClassName,
             options.MethodName,
             options.UseInternalAccessModifier
         );
-        
+
         context.AddSource(options.ClassName + ".g.cs", SourceText.From(registrationCode, Encoding.UTF8));
+
+        // NOTE: No JsonSerializerContext auto-emission here. Request and result types are user-written,
+        // so we have no per-type JsonConverter to wire via CreateValueInfo, and a generator-emitted
+        // partial JsonSerializerContext can't be filled in by STJ's own source generator (they don't
+        // see each other's output in the same compilation). Users must declare their own
+        // [ShinyJsonContext]-tagged JsonSerializerContext with [JsonSerializable(typeof(T))] entries
+        // for their request, body, and result types.
     }
 
     static List<HttpPropertyInfo> ConvertToHttpPropertyInfo(ImmutableArray<PropertyInfo> properties, string route)

@@ -233,7 +233,7 @@ public static class EndpointRouteBuilderExtensions
                 async (
                     HttpContext http,
                     [FromServices] IMediator mediator,
-                    [FromServices] ISerializerService serializer,
+                    [FromServices] Shiny.ISerializer serializer,
                     [AsParameters] TRequest request,
                     CancellationToken cancellationToken
                 ) =>
@@ -265,7 +265,7 @@ public static class EndpointRouteBuilderExtensions
                 async (
                     HttpContext http,
                     [FromServices] IMediator mediator,
-                    [FromServices] ISerializerService serializer,
+                    [FromServices] Shiny.ISerializer serializer,
                     [AsParameters] TRequest request,
                     CancellationToken cancellationToken
                 ) =>

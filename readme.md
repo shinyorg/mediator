@@ -14,6 +14,8 @@ were aimed more at server scenarios, while also adding some features we feel ben
 
 We are AOT/Trim friendly in all aspects of how you use Mediator.  We use source generators for almost everything (attribute registration, JSON serialization, dependency injection registration, & more)
 
+Starting in v6.6 JSON flows through [`Shiny.Extensions.Serialization`](https://www.nuget.org/packages/Shiny.Extensions.Serialization) — register your contracts in a `[ShinyJsonContext] partial class : JsonSerializerContext` (auto-wired via a `[ModuleInitializer]`) and OpenAPI HTTP clients with `GenerateJsonConverters="true"` are AOT-clean end-to-end with zero setup.
+
 ## Samples & Documentation
 - Docs
   - [Main](https://shinylib.net/mediator/)

@@ -14,7 +14,7 @@ public class ScheduledCommandPayload
     public string CommandType { get; set; } = null!;
 
     /// <summary>
-    /// The command instance serialized via the mediator's <see cref="ISerializerService"/>.
+    /// The command instance serialized via the mediator's <see cref="Shiny.ISerializer"/>.
     /// </summary>
     public string CommandJson { get; set; } = null!;
 }

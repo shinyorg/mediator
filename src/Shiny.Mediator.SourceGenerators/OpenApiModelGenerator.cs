@@ -13,10 +13,33 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
 {
     readonly string accessor = config.UseInternalClasses ? "internal" : "public";
     readonly HashSet<string> generatedTypes = new();
+    readonly HashSet<string> convertedTypes = new();
+    readonly Dictionary<string, bool> enumTypes = new();
 
     public MediatorHttpItemConfig Config => config;
     public SourceProductionContext Context => context;
     public Compilation Compilation { get; private set; } = compilation;
+
+    /// <summary>Names (unqualified) of every type the model generator has emitted for this item.</summary>
+    public IReadOnlyCollection<string> GeneratedTypeNames => this.generatedTypes;
+
+    /// <summary>
+    /// Fully-qualified names (without the leading <c>global::</c>) of every type for which a
+    /// per-type <see cref="System.Text.Json.Serialization.JsonConverter{T}"/> was emitted via
+    /// <see cref="JsonConverterSourceGenerator.GenerateJsonConverter"/>. The OpenAPI resolver
+    /// emitter consumes this set to know which types it can wire via
+    /// <see cref="System.Text.Json.Serialization.Metadata.JsonMetadataServices.CreateValueInfo{T}(System.Text.Json.JsonSerializerOptions,System.Text.Json.Serialization.JsonConverter)"/>.
+    /// </summary>
+    public ISet<string> ConvertedTypeNames => this.convertedTypes;
+
+    /// <summary>
+    /// Map of FQN → isStringEnum for every enum the model generator has emitted. The OpenAPI
+    /// resolver emitter uses this to register enum types with the right converter
+    /// (<see cref="System.Text.Json.Serialization.JsonStringEnumConverter{T}"/> for string enums,
+    /// <see cref="System.Text.Json.Serialization.Metadata.JsonMetadataServices.GetEnumConverter{T}"/>
+    /// for numeric enums) and to wire their <c>Nullable&lt;TEnum&gt;</c> counterparts.
+    /// </summary>
+    public IDictionary<string, bool> EnumTypeNames => this.enumTypes;
 
     public void UpdateCompilation(Compilation newCompilation) => Compilation = newCompilation;
 
@@ -53,6 +76,9 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         // Check if the first enum value is a string-based value
         var firstValue = schema.Enum?.FirstOrDefault();
         var isStringEnum = firstValue != null && firstValue.GetValueKind() == System.Text.Json.JsonValueKind.String;
+
+        // Track the enum so the resolver emitter can wire its converter + nullable counterpart.
+        this.enumTypes[$"{config.Namespace}.{enumName}"] = isStringEnum;
 
         if (isStringEnum)
         {
@@ -212,6 +238,7 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
                 if (typeSymbol != null)
                 {
                     JsonConverterSourceGenerator.GenerateJsonConverter(context, typeSymbol);
+                    this.convertedTypes.Add(fullyQualifiedTypeName);
                 }
             }
             catch

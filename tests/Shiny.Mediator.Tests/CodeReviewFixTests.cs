@@ -35,7 +35,7 @@ public class CodeReviewFixTests(ITestOutputHelper output)
     public async Task FileStorageService_DeleteFile_CalledForExistingFiles()
     {
         var storage = new TrackingStorageService(
-            new SysTextJsonSerializerService(),
+            TestHelpers.CreateTestSerializer(),
             TestHelpers.CreateLogger<TrackingStorageService>(output)
         );
 
@@ -264,7 +264,7 @@ public class CodeReviewFixTests(ITestOutputHelper output)
     public async Task FileStorageService_ConcurrentSetAndClear_NoDeadlock()
     {
         var storage = new TrackingStorageService(
-            new SysTextJsonSerializerService(),
+            TestHelpers.CreateTestSerializer(),
             TestHelpers.CreateLogger<TrackingStorageService>(output)
         );
 
@@ -283,7 +283,7 @@ public class CodeReviewFixTests(ITestOutputHelper output)
     public async Task FileStorageService_ConcurrentGetFileIndexer_SameKeyGetsSameFile()
     {
         var storage = new TrackingStorageService(
-            new SysTextJsonSerializerService(),
+            TestHelpers.CreateTestSerializer(),
             TestHelpers.CreateLogger<TrackingStorageService>(output)
         );
 
@@ -326,7 +326,7 @@ file class TrackingExceptionHandler : IExceptionHandler
 }
 
 file class TrackingStorageService(
-    ISerializerService serializer,
+    Shiny.ISerializer serializer,
     ILogger<TrackingStorageService> logger
 ) : AbstractFileStorageService(serializer, logger)
 {

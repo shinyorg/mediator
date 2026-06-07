@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Shiny.Mediator.Infrastructure;
-using Shiny.Mediator.Infrastructure.Impl;
 using Xunit.Abstractions;
 
 namespace Shiny.Mediator.Tests;
@@ -12,7 +11,7 @@ public class StorageServiceTests(ITestOutputHelper output)
     public async Task Issue_40_NoDeadlock()
     {
         var storage = new TestStorageService(
-            new SysTextJsonSerializerService(),
+            TestHelpers.CreateTestSerializer(),
             TestHelpers.CreateLogger<TestStorageService>(output)
         );
 
@@ -38,7 +37,7 @@ file class TestClass
 }
 
 file class TestStorageService(
-    ISerializerService serializer, 
+    Shiny.ISerializer serializer,
     ILogger<TestStorageService> logger
 ) : AbstractFileStorageService(serializer, logger)
 {

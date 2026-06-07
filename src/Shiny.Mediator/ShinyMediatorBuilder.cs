@@ -28,18 +28,6 @@ public sealed class ShinyMediatorBuilder(IServiceCollection services)
 
 
     /// <summary>
-    /// Replaces the registered <see cref="ISerializerService"/> used by mediator infrastructure (HTTP, caching, etc.).
-    /// </summary>
-    public ShinyMediatorBuilder SetSerializer<
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSerializer
-    >() where TSerializer : class, ISerializerService
-    {
-        this.Services.AddSingleton<ISerializerService, TSerializer>();
-        return this;
-    }
-
-
-    /// <summary>
     /// Registers a closed-generic <see cref="IRequestMiddleware{TRequest,TResult}"/> targeting a specific request/result pair.
     /// </summary>
     /// <param name="lifetime">DI lifetime for the middleware instance.</param>

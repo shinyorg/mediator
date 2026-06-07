@@ -9,7 +9,8 @@
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftSdkVersion)"/>
         <PackageVersion Include="Microsoft.Extensions.Diagnostics" Version="$(MicrosoftSdkVersion)"/>
         <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Shiny.Extensions.DependencyInjection" Version="4.1.0"/>
+        <PackageVersion Include="Shiny.Extensions.DependencyInjection" Version="5.0.0-beta-0051"/>
+        <PackageVersion Include="Shiny.Extensions.Serialization" Version="5.0.0-beta-0051"/>
         <PackageVersion Include="TickerQ" Version="10.4.0"/>
         <PackageVersion Include="TickerQ.EntityFrameworkCore" Version="10.4.0"/>
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.8"/>

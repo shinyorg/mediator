@@ -13,7 +13,7 @@ namespace Shiny.Mediator.Infrastructure;
 /// proceed in parallel without tearing.
 /// </summary>
 public abstract class AbstractFileStorageService(
-    ISerializerService serializer,
+    Shiny.ISerializer serializer,
     ILogger logger
 ) : IStorageService
 {
@@ -145,7 +145,7 @@ public abstract class AbstractFileStorageService(
     }
 
     /// <summary>
-    /// Serializes <paramref name="value"/> via <see cref="ISerializerService"/> and writes
+    /// Serializes <paramref name="value"/> via <see cref="Shiny.ISerializer"/> and writes
     /// the result to <paramref name="fileName"/> through <see cref="WriteFile"/>.
     /// </summary>
     protected virtual async Task WriteObject<T>(string fileName, T value, CancellationToken cancellationToken)

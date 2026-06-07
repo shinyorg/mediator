@@ -11,7 +11,7 @@ namespace Shiny.Mediator.Infrastructure;
 /// <see cref="StorageCacheService"/> with cache that survives app restarts.
 /// </summary>
 public class StorageService(
-    ISerializerService serializer,
+    Shiny.ISerializer serializer,
     ILogger<StorageService> logger
 ) : AbstractFileStorageService(serializer, logger)
 {

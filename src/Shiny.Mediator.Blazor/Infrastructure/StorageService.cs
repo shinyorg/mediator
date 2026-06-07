@@ -13,7 +13,7 @@ namespace Shiny.Mediator.Blazor.Infrastructure;
 public class StorageService(
     ILogger<StorageService> logger,
     IJSRuntime jsruntime,
-    ISerializerService serializer
+    Shiny.ISerializer serializer
 ) : IStorageService
 {
     /// <inheritdoc/>

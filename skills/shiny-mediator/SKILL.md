@@ -33,6 +33,14 @@ triggers:
   - Microsoft.Extensions.AI
   - AddGeneratedAITools
   - ShinyMediatorGenerateAITools
+  - ISerializer
+  - ISerializerService
+  - JsonSerializerContext
+  - ShinyJsonContext
+  - ShinyJsonInclude
+  - SourceGenerateJsonConverter
+  - No JsonTypeInfo registered
+  - Shiny.Extensions.Serialization
 ---
 
 # Shiny Mediator Skill
@@ -118,6 +126,69 @@ builder.Services.AddShinyMediator(x => x
     .PreventEventExceptions()
 );
 ```
+
+## JSON Serialization (v6.6+)
+
+Mediator uses `Shiny.ISerializer` from `Shiny.Extensions.Serialization`. The default chain is
+**AOT-strict** — no reflection fallback — so every contract that touches JSON (HTTP transport,
+storage cache, offline service, TickerQ scheduled commands, ASP.NET endpoints) must be in a
+registered `JsonSerializerContext`. Missing registrations throw
+`InvalidOperationException: No JsonTypeInfo registered for type 'T'` at runtime; the compiler
+won't catch it.
+
+**Default pattern when generating contracts.** Always emit a `[ShinyJsonContext]`-tagged partial
+`JsonSerializerContext` alongside the contracts and list every request, response, event, and
+scheduled-command type:
+
+```csharp
+using System.Text.Json.Serialization;
+using Shiny;
+
+[ShinyJsonContext]
+[JsonSerializable(typeof(GetCustomerRequest))]
+[JsonSerializable(typeof(CustomerResponse))]
+[JsonSerializable(typeof(OrderPlacedEvent))]
+internal partial class AppJsonContext : JsonSerializerContext;
+```
+
+The `[ModuleInitializer]` emitted by the extensions generator registers this context with
+`Shiny.Json` before `Main` runs — no `services.AddJsonContext(...)` call needed.
+
+**Collections (`List<T>`, `T[]`, `IAsyncEnumerable<T>`, etc.) of a contract type.** Mark the
+element type with `[ShinyJsonInclude]`:
+
+```csharp
+[ShinyJsonInclude]
+public partial class Customer { /* ... */ }
+```
+
+**OpenAPI HTTP clients with `GenerateJsonConverters="true"`:** the OpenAPI generator emits a
+custom `IJsonTypeInfoResolver` covering every generated model + contract + enum
+(including `Nullable<TEnum>` / `List<T>` / `T[]` shapes) plus a `[ModuleInitializer]`. Users don't
+need `[ShinyJsonContext]` for OpenAPI-generated types.
+
+**Attribute-driven HTTP clients (`[Get]` / `[Post]` / `[Body]`):** user-written types; require
+explicit `[ShinyJsonContext]` registration.
+
+**Migration from v5/early-v6:**
+- `ISerializerService` was removed — replace with `Shiny.ISerializer` (Shiny namespace, from
+  `Shiny.Extensions.Serialization`).
+- `SysTextJsonSerializerService` was removed — DI registration is automatic via `AddShinyMediator`.
+- `ShinyMediatorBuilder.SetSerializer<T>()` was removed — replace by either registering a different
+  `Shiny.ISerializer` in DI before `AddShinyMediator`, or calling `Shiny.Json.AddContext` /
+  `Shiny.Json.AddResolver`.
+- The legacy `[SourceGenerateJsonConverter]` attribute still works for backward compatibility but
+  new code should use `[ShinyJsonContext]` + `[JsonSerializable]` instead — it gives first-class
+  AOT coverage of collection shapes.
+
+**Tests / development scenarios that need reflection fallback** (ad-hoc / anonymous types):
+
+```csharp
+// In an [assembly: ...] or a [ModuleInitializer]
+Shiny.Json.AddResolver(new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver());
+```
+
+This is not AOT-safe — use only in test fixtures or non-production code.
 
 ## Code Generation Instructions
 

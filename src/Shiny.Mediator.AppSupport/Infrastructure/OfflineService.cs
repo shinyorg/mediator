@@ -46,12 +46,12 @@ public record OfflineResult<TResult>(
 
 /// <summary>
 /// Default <see cref="IOfflineService"/> implementation that serializes results through
-/// <see cref="ISerializerService"/> and persists them via <see cref="IStorageService"/> under the
+/// <see cref="Shiny.ISerializer"/> and persists them via <see cref="IStorageService"/> under the
 /// <see cref="Category"/> partition.
 /// </summary>
 public class OfflineService(
     IStorageService storage,
-    ISerializerService serializer,
+    Shiny.ISerializer serializer,
     TimeProvider timeProvider,
     IContractKeyProvider contractKeyProvider
 ) : IOfflineService

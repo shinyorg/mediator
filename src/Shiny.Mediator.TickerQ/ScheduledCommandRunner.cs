@@ -12,7 +12,7 @@ namespace Shiny.Mediator.Infrastructure;
 /// </summary>
 public class ScheduledCommandRunner(
     IMediator mediator,
-    ISerializerService serializer,
+    Shiny.ISerializer serializer,
     ILogger<ScheduledCommandRunner> logger
 )
 {
