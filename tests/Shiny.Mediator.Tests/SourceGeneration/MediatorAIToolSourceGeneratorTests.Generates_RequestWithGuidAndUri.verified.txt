@@ -30,11 +30,27 @@ internal sealed class IdentifierRequestAIFunction : global::Microsoft.Extensions
         global::Microsoft.Extensions.AI.AIFunctionArguments arguments,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        var json = global::System.Text.Json.JsonSerializer.SerializeToElement(arguments);
+        arguments.TryGetValue("id", out var __raw_id);
+        global::System.Guid __val_id = __raw_id switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'id'"),
+            global::System.Guid __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetGuid(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'id'")
+        };
+
+        arguments.TryGetValue("endpoint", out var __raw_endpoint);
+        Uri __val_endpoint = __raw_endpoint switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'endpoint'"),
+            Uri __v => __v,
+            global::System.Text.Json.JsonElement __e => global::System.Text.Json.JsonSerializer.Deserialize(__e, (global::System.Text.Json.Serialization.Metadata.JsonTypeInfo<Uri>)global::Shiny.Json.Default.Options.GetTypeInfo(typeof(Uri)))!,
+            _ => throw new global::System.ArgumentException("Missing required argument 'endpoint'")
+        };
 
         var contract = new global::TestApp.IdentifierRequest(
-            Id: json.GetProperty("id").GetGuid(),
-            Endpoint: json.GetProperty("endpoint").Deserialize<Uri>()
+            Id: __val_id,
+            Endpoint: __val_endpoint
         );
 
         var (_, result) = await _mediator.Request<string>(contract, cancellationToken).ConfigureAwait(false);

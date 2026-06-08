@@ -90,7 +90,7 @@ public class CodeReviewFixTests(ITestOutputHelper output)
     {
         var fakeStore = new MockStorageService();
         var timeProvider = new FakeTimeProvider(new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero));
-        var cache = new StorageCacheService(fakeStore, timeProvider);
+        var cache = new StorageCacheService(fakeStore, TestHelpers.CreateTestSerializer(), timeProvider);
 
         int factoryCallCount = 0;
         var barrier = new Barrier(10);

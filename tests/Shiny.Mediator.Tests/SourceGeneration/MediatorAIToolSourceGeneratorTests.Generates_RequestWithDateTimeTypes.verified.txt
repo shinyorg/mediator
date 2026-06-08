@@ -30,14 +30,60 @@ internal sealed class DateTimeRequestAIFunction : global::Microsoft.Extensions.A
         global::Microsoft.Extensions.AI.AIFunctionArguments arguments,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        var json = global::System.Text.Json.JsonSerializer.SerializeToElement(arguments);
+        arguments.TryGetValue("when", out var __raw_when);
+        global::System.DateTime __val_when = __raw_when switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'when'"),
+            global::System.DateTime __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetDateTime(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'when'")
+        };
+
+        arguments.TryGetValue("whenOffset", out var __raw_whenOffset);
+        global::System.DateTimeOffset __val_whenOffset = __raw_whenOffset switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'whenOffset'"),
+            global::System.DateTimeOffset __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetDateTimeOffset(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'whenOffset'")
+        };
+
+        arguments.TryGetValue("justDate", out var __raw_justDate);
+        global::System.DateOnly __val_justDate = __raw_justDate switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'justDate'"),
+            global::System.DateOnly __v => __v,
+            string __s => global::System.DateOnly.Parse(__s),
+            global::System.Text.Json.JsonElement __e => global::System.DateOnly.Parse(__e.GetString()!),
+            _ => throw new global::System.ArgumentException("Missing required argument 'justDate'")
+        };
+
+        arguments.TryGetValue("justTime", out var __raw_justTime);
+        global::System.TimeOnly __val_justTime = __raw_justTime switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'justTime'"),
+            global::System.TimeOnly __v => __v,
+            string __s => global::System.TimeOnly.Parse(__s),
+            global::System.Text.Json.JsonElement __e => global::System.TimeOnly.Parse(__e.GetString()!),
+            _ => throw new global::System.ArgumentException("Missing required argument 'justTime'")
+        };
+
+        arguments.TryGetValue("duration", out var __raw_duration);
+        global::System.TimeSpan __val_duration = __raw_duration switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'duration'"),
+            global::System.TimeSpan __v => __v,
+            string __s => global::System.TimeSpan.Parse(__s),
+            global::System.Text.Json.JsonElement __e => global::System.TimeSpan.Parse(__e.GetString()!),
+            _ => throw new global::System.ArgumentException("Missing required argument 'duration'")
+        };
 
         var contract = new global::TestApp.DateTimeRequest(
-            When: json.GetProperty("when").GetDateTime(),
-            WhenOffset: json.GetProperty("whenOffset").GetDateTimeOffset(),
-            JustDate: global::System.DateOnly.Parse(json.GetProperty("justDate").GetString()!),
-            JustTime: global::System.TimeOnly.Parse(json.GetProperty("justTime").GetString()!),
-            Duration: global::System.TimeSpan.Parse(json.GetProperty("duration").GetString()!)
+            When: __val_when,
+            WhenOffset: __val_whenOffset,
+            JustDate: __val_justDate,
+            JustTime: __val_justTime,
+            Duration: __val_duration
         );
 
         var (_, result) = await _mediator.Request<string>(contract, cancellationToken).ConfigureAwait(false);

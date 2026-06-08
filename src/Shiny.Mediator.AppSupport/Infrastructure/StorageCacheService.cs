@@ -1,9 +1,15 @@
 namespace Shiny.Mediator.Infrastructure;
 
 
-record InternalCacheEntry<T>(
+/// <summary>
+/// Wire envelope persisted by <see cref="StorageCacheService"/>. The cached value is stored as a
+/// pre-serialized JSON string so the storage layer only needs to know how to serialize this single
+/// non-generic record — eliminating the need for <c>InternalCacheEntry&lt;T&gt;</c> registrations
+/// per response type. The two-phase pattern mirrors <see cref="OfflineStore"/>.
+/// </summary>
+public record InternalCacheEntry(
     string Key,
-    T Value,
+    string ValueJson,
     DateTimeOffset CreatedAt,
     DateTimeOffset? ExpiresAt,
     CacheItemConfig? Config
@@ -19,6 +25,7 @@ record InternalCacheEntry<T>(
 /// </summary>
 public class StorageCacheService(
     IStorageService storage,
+    Shiny.ISerializer serializer,
     TimeProvider timeProvider
 ) : ICacheService
 {
@@ -38,18 +45,17 @@ public class StorageCacheService(
     {
         using (await this.locker.LockAsync(key, cancellationToken).ConfigureAwait(false))
         {
-            var e = await this.TryGet<T>(key, cancellationToken).ConfigureAwait(false);
-            if (e == null)
-            {
-                var result = await retrieveFunc
-                    .Invoke()
-                    .ConfigureAwait(false);
+            var hit = await this.TryGet<T>(key, cancellationToken).ConfigureAwait(false);
+            if (hit != null)
+                return hit;
 
-                e = await this
-                    .Store(key, result, config, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            return ToExternal(e);
+            var result = await retrieveFunc
+                .Invoke()
+                .ConfigureAwait(false);
+
+            return await this
+                .StoreAndReturn(key, result, config, cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 
@@ -59,8 +65,10 @@ public class StorageCacheService(
     {
         using (await this.locker.LockAsync(key, cancellationToken).ConfigureAwait(false))
         {
-            var intCache = await this.Store(key, value, config, cancellationToken).ConfigureAwait(false);
-            var entry = ToExternal(intCache);
+            var entry = await this
+                .StoreAndReturn(key, value, config, cancellationToken)
+                .ConfigureAwait(false);
+
             return entry!;
         }
     }
@@ -71,11 +79,9 @@ public class StorageCacheService(
     {
         using (await this.locker.LockAsync(key, cancellationToken).ConfigureAwait(false))
         {
-            var e = await this
+            return await this
                 .TryGet<T>(key, cancellationToken)
                 .ConfigureAwait(false);
-
-            return ToExternal(e);
         }
     }
 
@@ -89,65 +95,55 @@ public class StorageCacheService(
     public Task Clear(CancellationToken cancellationToken) => storage.Clear(Category, cancellationToken);
 
 
-    static CacheEntry<T>? ToExternal<T>(InternalCacheEntry<T>? e)
+    async Task<CacheEntry<T>?> TryGet<T>(string key, CancellationToken cancellationToken)
     {
-        if (e == null)
-            return null;
-
-        return new(e.Key, e.Value, e.CreatedAt);
-    }
-
-    async Task<InternalCacheEntry<T>?> TryGet<T>(string key, CancellationToken cancellationToken)
-    {
-        var e = await storage
-            .Get<InternalCacheEntry<T>>(Category, key, cancellationToken)
+        var envelope = await storage
+            .Get<InternalCacheEntry>(Category, key, cancellationToken)
             .ConfigureAwait(false);
 
-        if (e != null)
-        {
-            var now = timeProvider.GetUtcNow();
+        if (envelope is null)
+            return null;
 
-            if (e.ExpiresAt != null && e.ExpiresAt < now)
-            {
-                await storage.Remove(Category, e.Key, false, cancellationToken).ConfigureAwait(false);
-                e = null;
-            }
-            else if (e.Config?.SlidingExpiration != null)
-            {
-                var expiresAt = now.Add(e.Config.SlidingExpiration.Value);
-                e = e with { ExpiresAt = expiresAt };
-                await storage.Set(Category, e.Key, e, cancellationToken).ConfigureAwait(false);
-            }
+        var now = timeProvider.GetUtcNow();
+
+        if (envelope.ExpiresAt is not null && envelope.ExpiresAt < now)
+        {
+            await storage.Remove(Category, envelope.Key, false, cancellationToken).ConfigureAwait(false);
+            return null;
         }
 
-        return e;
+        if (envelope.Config?.SlidingExpiration is not null)
+        {
+            var expiresAt = now.Add(envelope.Config.SlidingExpiration.Value);
+            envelope = envelope with { ExpiresAt = expiresAt };
+            await storage.Set(Category, envelope.Key, envelope, cancellationToken).ConfigureAwait(false);
+        }
+
+        var value = serializer.Deserialize<T>(envelope.ValueJson);
+        return new CacheEntry<T>(envelope.Key, value, envelope.CreatedAt);
     }
 
-    async Task<InternalCacheEntry<T>> Store<T>(string key, T result, CacheItemConfig? config, CancellationToken cancellationToken)
+
+    async Task<CacheEntry<T>> StoreAndReturn<T>(string key, T result, CacheItemConfig? config, CancellationToken cancellationToken)
     {
         DateTimeOffset? expiresAt = null;
         var now = timeProvider.GetUtcNow();
+        var effectiveConfig = config ?? DefaultCache;
 
-        if (config != null)
-        {
-            if (config.AbsoluteExpiration != null)
-            {
-                expiresAt = now.Add(config.AbsoluteExpiration.Value);
-            }
-            else if (config.SlidingExpiration != null)
-            {
-                expiresAt = now.Add(config.SlidingExpiration.Value);
-            }
-        }
-        var e = new InternalCacheEntry<T>(
-            key,
-            result,
-            now,
-            expiresAt,
-            config ?? DefaultCache
-        );
-        await storage.Set(Category, key, e, cancellationToken).ConfigureAwait(false);
+        if (effectiveConfig.AbsoluteExpiration is not null)
+            expiresAt = now.Add(effectiveConfig.AbsoluteExpiration.Value);
+        else if (effectiveConfig.SlidingExpiration is not null)
+            expiresAt = now.Add(effectiveConfig.SlidingExpiration.Value);
 
-        return e;
+        // Pre-serialize the value to JSON so the persisted envelope (InternalCacheEntry) is
+        // non-generic — the storage layer never sees the closed-generic shape of the cached value
+        // and the resolver only needs the user's TResponse registered (which the mediator
+        // generator already does).
+        var valueJson = serializer.Serialize(result);
+        var envelope = new InternalCacheEntry(key, valueJson, now, expiresAt, effectiveConfig);
+
+        await storage.Set(Category, key, envelope, cancellationToken).ConfigureAwait(false);
+
+        return new CacheEntry<T>(key, result, now);
     }
 }

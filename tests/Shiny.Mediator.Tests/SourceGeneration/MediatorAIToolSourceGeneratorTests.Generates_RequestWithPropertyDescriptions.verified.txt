@@ -30,11 +30,28 @@ internal sealed class SearchUsersRequestAIFunction : global::Microsoft.Extension
         global::Microsoft.Extensions.AI.AIFunctionArguments arguments,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        var json = global::System.Text.Json.JsonSerializer.SerializeToElement(arguments);
+        arguments.TryGetValue("query", out var __raw_query);
+        string __val_query = __raw_query switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'query'"),
+            string __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetString()!,
+            _ => throw new global::System.ArgumentException("Missing required argument 'query'")
+        };
+
+        arguments.TryGetValue("limit", out var __raw_limit);
+        int __val_limit = __raw_limit switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'limit'"),
+            int __v => __v,
+            long __l => (int)__l,
+            global::System.Text.Json.JsonElement __e => __e.GetInt32(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'limit'")
+        };
 
         var contract = new global::TestApp.SearchUsersRequest(
-            Query: json.GetProperty("query").GetString()!,
-            Limit: json.GetProperty("limit").GetInt32()
+            Query: __val_query,
+            Limit: __val_limit
         );
 
         var (_, result) = await _mediator.Request<string>(contract, cancellationToken).ConfigureAwait(false);

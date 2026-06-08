@@ -30,13 +30,48 @@ internal sealed class NullableRequestAIFunction : global::Microsoft.Extensions.A
         global::Microsoft.Extensions.AI.AIFunctionArguments arguments,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        var json = global::System.Text.Json.JsonSerializer.SerializeToElement(arguments);
+        arguments.TryGetValue("name", out var __raw_name);
+        string? __val_name = __raw_name switch
+        {
+            null => null,
+            string __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetString(),
+            _ => null
+        };
+
+        arguments.TryGetValue("count", out var __raw_count);
+        int? __val_count = __raw_count switch
+        {
+            null => null,
+            int __v => __v,
+            long __l => (int)__l,
+            global::System.Text.Json.JsonElement __e => __e.GetInt32(),
+            _ => null
+        };
+
+        arguments.TryGetValue("when", out var __raw_when);
+        global::System.DateTime? __val_when = __raw_when switch
+        {
+            null => null,
+            global::System.DateTime __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetDateTime(),
+            _ => null
+        };
+
+        arguments.TryGetValue("id", out var __raw_id);
+        global::System.Guid? __val_id = __raw_id switch
+        {
+            null => null,
+            global::System.Guid __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetGuid(),
+            _ => null
+        };
 
         var contract = new global::TestApp.NullableRequest(
-            Name: json.TryGetProperty("name", out var _name) && _name.ValueKind != global::System.Text.Json.JsonValueKind.Null ? _name.GetString() : null,
-            Count: json.TryGetProperty("count", out var _count) && _count.ValueKind != global::System.Text.Json.JsonValueKind.Null ? _count.GetInt32() : null,
-            When: json.TryGetProperty("when", out var _when) && _when.ValueKind != global::System.Text.Json.JsonValueKind.Null ? _when.GetDateTime() : null,
-            Id: json.TryGetProperty("id", out var _id) && _id.ValueKind != global::System.Text.Json.JsonValueKind.Null ? _id.GetGuid() : null
+            Name: __val_name,
+            Count: __val_count,
+            When: __val_when,
+            Id: __val_id
         );
 
         var (_, result) = await _mediator.Request<string>(contract, cancellationToken).ConfigureAwait(false);

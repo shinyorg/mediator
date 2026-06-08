@@ -30,13 +30,48 @@ internal sealed class DefaultsRequestAIFunction : global::Microsoft.Extensions.A
         global::Microsoft.Extensions.AI.AIFunctionArguments arguments,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        var json = global::System.Text.Json.JsonSerializer.SerializeToElement(arguments);
+        arguments.TryGetValue("name", out var __raw_name);
+        string __val_name = __raw_name switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'name'"),
+            string __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetString()!,
+            _ => throw new global::System.ArgumentException("Missing required argument 'name'")
+        };
+
+        arguments.TryGetValue("page", out var __raw_page);
+        int __val_page = __raw_page switch
+        {
+            null => 1,
+            int __v => __v,
+            long __l => (int)__l,
+            global::System.Text.Json.JsonElement __e => __e.GetInt32(),
+            _ => 1
+        };
+
+        arguments.TryGetValue("active", out var __raw_active);
+        bool __val_active = __raw_active switch
+        {
+            null => true,
+            bool __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetBoolean(),
+            _ => true
+        };
+
+        arguments.TryGetValue("sort", out var __raw_sort);
+        string __val_sort = __raw_sort switch
+        {
+            null => "name",
+            string __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetString()!,
+            _ => "name"
+        };
 
         var contract = new global::TestApp.DefaultsRequest(
-            Name: json.GetProperty("name").GetString()!,
-            Page: json.TryGetProperty("page", out var _page) && _page.ValueKind != global::System.Text.Json.JsonValueKind.Null ? _page.GetInt32() : 1,
-            Active: json.TryGetProperty("active", out var _active) && _active.ValueKind != global::System.Text.Json.JsonValueKind.Null ? _active.GetBoolean() : true,
-            Sort: json.TryGetProperty("sort", out var _sort) && _sort.ValueKind != global::System.Text.Json.JsonValueKind.Null ? _sort.GetString()! : "name"
+            Name: __val_name,
+            Page: __val_page,
+            Active: __val_active,
+            Sort: __val_sort
         );
 
         var (_, result) = await _mediator.Request<string>(contract, cancellationToken).ConfigureAwait(false);

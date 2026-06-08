@@ -30,10 +30,17 @@ internal sealed class DeleteCommandAIFunction : global::Microsoft.Extensions.AI.
         global::Microsoft.Extensions.AI.AIFunctionArguments arguments,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        var json = global::System.Text.Json.JsonSerializer.SerializeToElement(arguments);
+        arguments.TryGetValue("id", out var __raw_id);
+        global::System.Guid __val_id = __raw_id switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'id'"),
+            global::System.Guid __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetGuid(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'id'")
+        };
 
         var contract = new global::TestApp.DeleteCommand(
-            Id: json.GetProperty("id").GetGuid()
+            Id: __val_id
         );
 
         await _mediator.Send(contract, cancellationToken).ConfigureAwait(false);

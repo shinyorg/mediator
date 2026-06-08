@@ -30,10 +30,18 @@ internal sealed class GetThingRequestAIFunction : global::Microsoft.Extensions.A
         global::Microsoft.Extensions.AI.AIFunctionArguments arguments,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        var json = global::System.Text.Json.JsonSerializer.SerializeToElement(arguments);
+        arguments.TryGetValue("id", out var __raw_id);
+        int __val_id = __raw_id switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'id'"),
+            int __v => __v,
+            long __l => (int)__l,
+            global::System.Text.Json.JsonElement __e => __e.GetInt32(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'id'")
+        };
 
         var contract = new global::TestApp.GetThingRequest(
-            Id: json.GetProperty("id").GetInt32()
+            Id: __val_id
         );
 
         var (_, result) = await _mediator.Request<string>(contract, cancellationToken).ConfigureAwait(false);
@@ -71,10 +79,18 @@ internal sealed class DeleteThingCommandAIFunction : global::Microsoft.Extension
         global::Microsoft.Extensions.AI.AIFunctionArguments arguments,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        var json = global::System.Text.Json.JsonSerializer.SerializeToElement(arguments);
+        arguments.TryGetValue("id", out var __raw_id);
+        int __val_id = __raw_id switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'id'"),
+            int __v => __v,
+            long __l => (int)__l,
+            global::System.Text.Json.JsonElement __e => __e.GetInt32(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'id'")
+        };
 
         var contract = new global::TestApp.DeleteThingCommand(
-            Id: json.GetProperty("id").GetInt32()
+            Id: __val_id
         );
 
         await _mediator.Send(contract, cancellationToken).ConfigureAwait(false);

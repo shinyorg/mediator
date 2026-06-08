@@ -491,30 +491,22 @@ public class MediatorAIToolSourceGenerator : IIncrementalGenerator
         sb.AppendLine("        global::Microsoft.Extensions.AI.AIFunctionArguments arguments,");
         sb.AppendLine("        global::System.Threading.CancellationToken cancellationToken)");
         sb.AppendLine("    {");
-        sb.AppendLine("        var json = global::System.Text.Json.JsonSerializer.SerializeToElement(arguments);");
-        sb.AppendLine();
-
-        // Construct the contract
+        // Read each contract property directly from the AIFunctionArguments dictionary so we never
+        // do `JsonSerializer.SerializeToElement(arguments)` — that path is reflection-based and
+        // throws under AOT. Values in the dictionary may be already-typed primitives (string, long,
+        // double, bool) or a JsonElement when the LLM/runtime hands us a structured payload;
+        // EmitArgumentReadBlock handles both shapes.
         if (contract.Properties.Count > 0)
         {
+            foreach (var prop in contract.Properties)
+                EmitArgumentReadBlock(sb, prop);
+
             sb.AppendLine($"        var contract = new {contract.ContractType}(");
             for (var i = 0; i < contract.Properties.Count; i++)
             {
                 var prop = contract.Properties[i];
                 var comma = i < contract.Properties.Count - 1 ? "," : "";
-
-                if (prop.HasDefault || prop.IsNullable)
-                {
-                    var varName = $"_{prop.CamelName}";
-                    var accessor = GeneratePropertyAccessor(prop, varName);
-                    var fallback = prop.HasDefault ? prop.DefaultCSharpLiteral : "null";
-                    sb.AppendLine($"            {prop.Name}: json.TryGetProperty(\"{prop.CamelName}\", out var {varName}) && {varName}.ValueKind != global::System.Text.Json.JsonValueKind.Null ? {accessor} : {fallback}{comma}");
-                }
-                else
-                {
-                    var accessor = GeneratePropertyAccessor(prop, $"json.GetProperty(\"{prop.CamelName}\")");
-                    sb.AppendLine($"            {prop.Name}: {accessor}{comma}");
-                }
+                sb.AppendLine($"            {prop.Name}: __val_{prop.CamelName}{comma}");
             }
             sb.AppendLine("        );");
         }
@@ -542,35 +534,183 @@ public class MediatorAIToolSourceGenerator : IIncrementalGenerator
         return sb.ToString();
     }
 
-    static string GeneratePropertyAccessor(AIToolPropertyInfo prop, string elementExpr)
+    /// <summary>
+    /// Emits the multi-line read+coerce block for a single contract property. Output declares
+    /// <c>__val_{camelName}</c> typed as the property's declared type; downstream code references
+    /// that variable when constructing the contract. The block handles three runtime shapes the
+    /// dictionary value can take:
+    /// <list type="bullet">
+    /// <item>Already-typed primitive (string / int / long / double / bool / etc.)</item>
+    /// <item>A <c>JsonElement</c> wrapping a structured value (the LLM/runtime path)</item>
+    /// <item>null — falls back to the property default, or <c>null</c> for nullable types, or
+    /// throws for required non-nullable properties</item>
+    /// </list>
+    /// </summary>
+    static void EmitArgumentReadBlock(StringBuilder sb, AIToolPropertyInfo prop)
     {
-        if (prop.JsonElementAccessor is not null)
-            return $"{elementExpr}.{prop.JsonElementAccessor}";
+        var raw = $"__raw_{prop.CamelName}";
+        var val = $"__val_{prop.CamelName}";
+        var name = prop.CamelName;
+        var t = prop.UnderlyingTypeFullName;
+        var typeRef = (prop.HasDefault || prop.IsNullable) && !prop.IsEnum && t != "string" && !t.StartsWith("global::")
+            ? $"{t}?" : (prop.IsNullable && !IsReferenceLike(t) ? $"{t}?" : t);
+        // Reference-like (string, complex, Uri) declared as nullable when IsNullable so we can
+        // hold null; value types are widened to T? for nullable-from-source.
+        if (prop.IsNullable && IsValueLike(t))
+            typeRef = $"{t}?";
+        else if (prop.IsNullable && IsReferenceLike(t))
+            typeRef = $"{t}?";
+        else
+            typeRef = t;
 
-        var display = prop.UnderlyingTypeFullName;
+        var fallback = prop.HasDefault
+            ? prop.DefaultCSharpLiteral
+            : prop.IsNullable
+                ? "null"
+                : $"throw new global::System.ArgumentException(\"Missing required argument '{name}'\")";
 
-        // DateOnly
-        if (display == "global::System.DateOnly")
-            return $"global::System.DateOnly.Parse({elementExpr}.GetString()!)";
+        sb.AppendLine($"        arguments.TryGetValue(\"{name}\", out var {raw});");
+        sb.AppendLine($"        {typeRef} {val} = {raw} switch");
+        sb.AppendLine("        {");
+        sb.AppendLine($"            null => {fallback},");
+        EmitSwitchArmsForType(sb, prop, raw, fallback);
+        sb.AppendLine("        };");
+        sb.AppendLine();
+    }
 
-        // TimeOnly
-        if (display == "global::System.TimeOnly")
-            return $"global::System.TimeOnly.Parse({elementExpr}.GetString()!)";
 
-        // TimeSpan
-        if (display == "global::System.TimeSpan")
-            return $"global::System.TimeSpan.Parse({elementExpr}.GetString()!)";
+    static bool IsReferenceLike(string typeFullName)
+        => typeFullName == "string"
+        || typeFullName == "global::System.Uri"
+        || typeFullName.StartsWith("global::System.Text.Json.")
+        || (typeFullName.StartsWith("global::") && !IsValueLike(typeFullName));
 
-        // Uri
-        if (display == "global::System.Uri")
-            return $"new global::System.Uri({elementExpr}.GetString()!)";
 
-        // Enum
+    static bool IsValueLike(string typeFullName)
+        => typeFullName is "bool" or "int" or "uint" or "long" or "ulong" or "short" or "ushort"
+            or "byte" or "sbyte" or "float" or "double" or "decimal"
+            or "global::System.Guid"
+            or "global::System.DateTime"
+            or "global::System.DateTimeOffset"
+            or "global::System.DateOnly"
+            or "global::System.TimeOnly"
+            or "global::System.TimeSpan";
+
+
+    /// <summary>
+    /// Per-type switch arms covering both the JsonElement path (from a structured tool call) and
+    /// the already-boxed primitive path. Complex types route through Shiny.Json.Default.Options so
+    /// the chain (which the mediator generator wires) provides the JsonTypeInfo.
+    /// </summary>
+    static void EmitSwitchArmsForType(StringBuilder sb, AIToolPropertyInfo prop, string rawVar, string fallback)
+    {
+        var t = prop.UnderlyingTypeFullName;
+        const string JE = "global::System.Text.Json.JsonElement";
+
+        // Enums (string-encoded). Generated schema declares enums as strings, so JsonElement comes
+        // through as a string; boxed values may already be the enum.
         if (prop.IsEnum)
-            return $"global::System.Enum.Parse<{prop.UnderlyingTypeFullName}>({elementExpr}.GetString()!)";
+        {
+            sb.AppendLine($"            {t} __enumVal => __enumVal,");
+            sb.AppendLine($"            string __s => global::System.Enum.Parse<{t}>(__s),");
+            sb.AppendLine($"            {JE} __e => global::System.Enum.Parse<{t}>(__e.GetString()!),");
+            sb.AppendLine($"            _ => {fallback}");
+            return;
+        }
 
-        // Fallback for complex types - use JsonElement deserialization
-        return $"{elementExpr}.Deserialize<{prop.UnderlyingTypeFullName}>()";
+        // String-parsed value types
+        switch (t)
+        {
+            case "global::System.DateOnly":
+                sb.AppendLine($"            global::System.DateOnly __v => __v,");
+                sb.AppendLine($"            string __s => global::System.DateOnly.Parse(__s),");
+                sb.AppendLine($"            {JE} __e => global::System.DateOnly.Parse(__e.GetString()!),");
+                sb.AppendLine($"            _ => {fallback}");
+                return;
+
+            case "global::System.TimeOnly":
+                sb.AppendLine($"            global::System.TimeOnly __v => __v,");
+                sb.AppendLine($"            string __s => global::System.TimeOnly.Parse(__s),");
+                sb.AppendLine($"            {JE} __e => global::System.TimeOnly.Parse(__e.GetString()!),");
+                sb.AppendLine($"            _ => {fallback}");
+                return;
+
+            case "global::System.TimeSpan":
+                sb.AppendLine($"            global::System.TimeSpan __v => __v,");
+                sb.AppendLine($"            string __s => global::System.TimeSpan.Parse(__s),");
+                sb.AppendLine($"            {JE} __e => global::System.TimeSpan.Parse(__e.GetString()!),");
+                sb.AppendLine($"            _ => {fallback}");
+                return;
+
+            case "global::System.Uri":
+                sb.AppendLine($"            global::System.Uri __v => __v,");
+                sb.AppendLine($"            string __s => new global::System.Uri(__s),");
+                sb.AppendLine($"            {JE} __e => new global::System.Uri(__e.GetString()!),");
+                sb.AppendLine($"            _ => {fallback}");
+                return;
+        }
+
+        // Primitives — accept the already-typed boxed value OR a JsonElement. JsonElementAccessor
+        // already encodes the trailing "!" for non-nullable string (see GetJsonElementAccessor).
+        if (prop.JsonElementAccessor is not null)
+        {
+            sb.AppendLine($"            {t} __v => __v,");
+            // Numeric widening — long/double can come through where int/float was declared.
+            EmitNumericWidening(sb, t);
+            sb.AppendLine($"            {JE} __e => __e.{prop.JsonElementAccessor},");
+            sb.AppendLine($"            _ => {fallback}");
+            return;
+        }
+
+        // Complex / collection types: must come as JsonElement. Use Shiny.Json's chain to deserialize
+        // (the mediator contracts resolver registers JsonTypeInfo for contract types and their
+        // transitively-discovered nested types).
+        sb.AppendLine($"            {t} __v => __v,");
+        sb.AppendLine($"            {JE} __e => global::System.Text.Json.JsonSerializer.Deserialize(__e, (global::System.Text.Json.Serialization.Metadata.JsonTypeInfo<{t}>)global::Shiny.Json.Default.Options.GetTypeInfo(typeof({t})))!,");
+        sb.AppendLine($"            _ => {fallback}");
+    }
+
+
+    /// <summary>
+    /// Emits switch arms that widen common JSON-deserialized numeric boxings to the declared
+    /// property type — e.g. when the dict holds a <c>long</c> but the property is <c>int</c>.
+    /// </summary>
+    static void EmitNumericWidening(StringBuilder sb, string t)
+    {
+        switch (t)
+        {
+            case "int":
+                sb.AppendLine("            long __l => (int)__l,");
+                break;
+            case "uint":
+                sb.AppendLine("            long __l => (uint)__l,");
+                break;
+            case "short":
+                sb.AppendLine("            long __l => (short)__l,");
+                break;
+            case "ushort":
+                sb.AppendLine("            long __l => (ushort)__l,");
+                break;
+            case "byte":
+                sb.AppendLine("            long __l => (byte)__l,");
+                break;
+            case "sbyte":
+                sb.AppendLine("            long __l => (sbyte)__l,");
+                break;
+            case "float":
+                sb.AppendLine("            double __d => (float)__d,");
+                break;
+            case "decimal":
+                sb.AppendLine("            double __d => (decimal)__d,");
+                sb.AppendLine("            long __l => (decimal)__l,");
+                break;
+            case "long":
+                sb.AppendLine("            int __i => (long)__i,");
+                break;
+            case "double":
+                sb.AppendLine("            long __l => (double)__l,");
+                break;
+        }
     }
 
     static string BuildSchemaJson(AIToolContractInfo contract)

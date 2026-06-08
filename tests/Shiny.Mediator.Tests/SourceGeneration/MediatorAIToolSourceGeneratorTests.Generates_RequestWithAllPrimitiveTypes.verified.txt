@@ -30,22 +30,148 @@ internal sealed class PrimitivesRequestAIFunction : global::Microsoft.Extensions
         global::Microsoft.Extensions.AI.AIFunctionArguments arguments,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        var json = global::System.Text.Json.JsonSerializer.SerializeToElement(arguments);
+        arguments.TryGetValue("name", out var __raw_name);
+        string __val_name = __raw_name switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'name'"),
+            string __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetString()!,
+            _ => throw new global::System.ArgumentException("Missing required argument 'name'")
+        };
+
+        arguments.TryGetValue("active", out var __raw_active);
+        bool __val_active = __raw_active switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'active'"),
+            bool __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetBoolean(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'active'")
+        };
+
+        arguments.TryGetValue("age", out var __raw_age);
+        byte __val_age = __raw_age switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'age'"),
+            byte __v => __v,
+            long __l => (byte)__l,
+            global::System.Text.Json.JsonElement __e => __e.GetByte(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'age'")
+        };
+
+        arguments.TryGetValue("signedByte", out var __raw_signedByte);
+        sbyte __val_signedByte = __raw_signedByte switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'signedByte'"),
+            sbyte __v => __v,
+            long __l => (sbyte)__l,
+            global::System.Text.Json.JsonElement __e => __e.GetSByte(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'signedByte'")
+        };
+
+        arguments.TryGetValue("smallNumber", out var __raw_smallNumber);
+        short __val_smallNumber = __raw_smallNumber switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'smallNumber'"),
+            short __v => __v,
+            long __l => (short)__l,
+            global::System.Text.Json.JsonElement __e => __e.GetInt16(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'smallNumber'")
+        };
+
+        arguments.TryGetValue("unsignedSmall", out var __raw_unsignedSmall);
+        ushort __val_unsignedSmall = __raw_unsignedSmall switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'unsignedSmall'"),
+            ushort __v => __v,
+            long __l => (ushort)__l,
+            global::System.Text.Json.JsonElement __e => __e.GetUInt16(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'unsignedSmall'")
+        };
+
+        arguments.TryGetValue("count", out var __raw_count);
+        int __val_count = __raw_count switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'count'"),
+            int __v => __v,
+            long __l => (int)__l,
+            global::System.Text.Json.JsonElement __e => __e.GetInt32(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'count'")
+        };
+
+        arguments.TryGetValue("unsignedCount", out var __raw_unsignedCount);
+        uint __val_unsignedCount = __raw_unsignedCount switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'unsignedCount'"),
+            uint __v => __v,
+            long __l => (uint)__l,
+            global::System.Text.Json.JsonElement __e => __e.GetUInt32(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'unsignedCount'")
+        };
+
+        arguments.TryGetValue("bigNumber", out var __raw_bigNumber);
+        long __val_bigNumber = __raw_bigNumber switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'bigNumber'"),
+            long __v => __v,
+            int __i => (long)__i,
+            global::System.Text.Json.JsonElement __e => __e.GetInt64(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'bigNumber'")
+        };
+
+        arguments.TryGetValue("unsignedBig", out var __raw_unsignedBig);
+        ulong __val_unsignedBig = __raw_unsignedBig switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'unsignedBig'"),
+            ulong __v => __v,
+            global::System.Text.Json.JsonElement __e => __e.GetUInt64(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'unsignedBig'")
+        };
+
+        arguments.TryGetValue("rate", out var __raw_rate);
+        float __val_rate = __raw_rate switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'rate'"),
+            float __v => __v,
+            double __d => (float)__d,
+            global::System.Text.Json.JsonElement __e => __e.GetSingle(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'rate'")
+        };
+
+        arguments.TryGetValue("precise", out var __raw_precise);
+        double __val_precise = __raw_precise switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'precise'"),
+            double __v => __v,
+            long __l => (double)__l,
+            global::System.Text.Json.JsonElement __e => __e.GetDouble(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'precise'")
+        };
+
+        arguments.TryGetValue("price", out var __raw_price);
+        decimal __val_price = __raw_price switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'price'"),
+            decimal __v => __v,
+            double __d => (decimal)__d,
+            long __l => (decimal)__l,
+            global::System.Text.Json.JsonElement __e => __e.GetDecimal(),
+            _ => throw new global::System.ArgumentException("Missing required argument 'price'")
+        };
 
         var contract = new global::TestApp.PrimitivesRequest(
-            Name: json.GetProperty("name").GetString()!,
-            Active: json.GetProperty("active").GetBoolean(),
-            Age: json.GetProperty("age").GetByte(),
-            SignedByte: json.GetProperty("signedByte").GetSByte(),
-            SmallNumber: json.GetProperty("smallNumber").GetInt16(),
-            UnsignedSmall: json.GetProperty("unsignedSmall").GetUInt16(),
-            Count: json.GetProperty("count").GetInt32(),
-            UnsignedCount: json.GetProperty("unsignedCount").GetUInt32(),
-            BigNumber: json.GetProperty("bigNumber").GetInt64(),
-            UnsignedBig: json.GetProperty("unsignedBig").GetUInt64(),
-            Rate: json.GetProperty("rate").GetSingle(),
-            Precise: json.GetProperty("precise").GetDouble(),
-            Price: json.GetProperty("price").GetDecimal()
+            Name: __val_name,
+            Active: __val_active,
+            Age: __val_age,
+            SignedByte: __val_signedByte,
+            SmallNumber: __val_smallNumber,
+            UnsignedSmall: __val_unsignedSmall,
+            Count: __val_count,
+            UnsignedCount: __val_unsignedCount,
+            BigNumber: __val_bigNumber,
+            UnsignedBig: __val_unsignedBig,
+            Rate: __val_rate,
+            Precise: __val_precise,
+            Price: __val_price
         );
 
         var (_, result) = await _mediator.Request<string>(contract, cancellationToken).ConfigureAwait(false);

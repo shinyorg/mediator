@@ -30,10 +30,18 @@ internal sealed class EnumRequestAIFunction : global::Microsoft.Extensions.AI.AI
         global::Microsoft.Extensions.AI.AIFunctionArguments arguments,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        var json = global::System.Text.Json.JsonSerializer.SerializeToElement(arguments);
+        arguments.TryGetValue("level", out var __raw_level);
+        global::TestApp.Priority __val_level = __raw_level switch
+        {
+            null => throw new global::System.ArgumentException("Missing required argument 'level'"),
+            global::TestApp.Priority __enumVal => __enumVal,
+            string __s => global::System.Enum.Parse<global::TestApp.Priority>(__s),
+            global::System.Text.Json.JsonElement __e => global::System.Enum.Parse<global::TestApp.Priority>(__e.GetString()!),
+            _ => throw new global::System.ArgumentException("Missing required argument 'level'")
+        };
 
         var contract = new global::TestApp.EnumRequest(
-            Level: global::System.Enum.Parse<global::TestApp.Priority>(json.GetProperty("level").GetString()!)
+            Level: __val_level
         );
 
         var (_, result) = await _mediator.Request<string>(contract, cancellationToken).ConfigureAwait(false);
