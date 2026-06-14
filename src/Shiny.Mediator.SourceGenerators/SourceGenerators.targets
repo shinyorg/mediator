@@ -11,6 +11,11 @@
         <CompilerVisibleProperty Include="ShinyMediatorStreamRequestExecutorClassName"/>
     </ItemGroup>
 
+    <!--request/result auto JSON serialization (opt-in: set ShinyMediatorGenerateJsonContext=true)-->
+    <ItemGroup>
+        <CompilerVisibleProperty Include="ShinyMediatorGenerateJsonContext"/>
+    </ItemGroup>
+
     <!--user httpclient registration variables-->
     <ItemGroup>
         <CompilerVisibleProperty Include="ShinyMediatorHttpRegistrationUseInternalClass"/>

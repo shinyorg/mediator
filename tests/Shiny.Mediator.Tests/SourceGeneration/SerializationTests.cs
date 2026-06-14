@@ -115,6 +115,62 @@ public class SerializationTests
     }
 
     [Fact]
+    public Task GenerateJsonConverter_ForRecordWithInitProperties_ShouldUseObjectInitializer()
+    {
+        // Regression: a record declared with a body and init-only properties has no positional
+        // primary constructor, only a parameterless one. The generator previously emitted
+        // `new AnchorPointDto(x, y)` (CS1729 — no such constructor). It must now construct via an
+        // object initializer: `new AnchorPointDto() { X = x, Y = y }`. [JsonPropertyName] is also
+        // honored, so the wire names are lowercase "x"/"y".
+        var source = """
+            using System.Text.Json.Serialization;
+
+            [SourceGenerateJsonConverter]
+            public partial record AnchorPointDto
+            {
+                [JsonPropertyName("x")]
+                public float X { get; init; }
+
+                [JsonPropertyName("y")]
+                public float Y { get; init; }
+            }
+            """;
+
+        var result = TestHelper.RunSourceGenerator(source);
+        return Verify(result);
+    }
+
+    [Fact]
+    public void RecordWithInitProperties_GeneratedConverter_RoundTrips()
+    {
+        // Proves the generated converter both compiles (the assembly wouldn't build otherwise) and
+        // round-trips through the lowercase [JsonPropertyName] wire names.
+        var json = """{"x":1.5,"y":2.5}""";
+        var point = JsonSerializer.Deserialize<TestModels.AnchorPointDto>(json);
+
+        point.ShouldNotBeNull();
+        point.X.ShouldBe(1.5f);
+        point.Y.ShouldBe(2.5f);
+
+        JsonSerializer.Serialize(point).ShouldBe(json);
+    }
+
+    [Fact]
+    public void RecordWithInitProperties_SystemTextJson_RoundTrips()
+    {
+        // Baseline: System.Text.Json handles the init-only record + [JsonPropertyName] on its own
+        // (no generated converter on AnchorPointStj). The generated converter must match this.
+        var json = """{"x":1.5,"y":2.5}""";
+        var point = JsonSerializer.Deserialize<TestModels.AnchorPointStj>(json);
+
+        point.ShouldNotBeNull();
+        point.X.ShouldBe(1.5f);
+        point.Y.ShouldBe(2.5f);
+
+        JsonSerializer.Serialize(point).ShouldBe(json);
+    }
+
+    [Fact]
     public Task GenerateJsonConverter_ForNullableEnum_ShouldEmitEnumParseAndAvoidNullableConverter()
     {
         // Regression: previously the generator detected only typeSymbol.TypeKind == Enum.
@@ -260,6 +316,12 @@ public static class TestHelper
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(System.Text.Json.JsonSerializer).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(System.Text.Json.Serialization.JsonConverterAttribute).Assembly.Location),
+            // System.Runtime / netstandard are required for attribute applications (e.g.
+            // [JsonPropertyName("x")]) to bind their constructor arguments — without them the
+            // attribute resolves as an error type and the generator silently falls back to the C#
+            // property name instead of the JSON name.
+            MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Runtime").Location),
+            MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("netstandard").Location),
         };
 
         return CSharpCompilation.Create(

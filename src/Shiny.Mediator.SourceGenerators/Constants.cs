@@ -4,6 +4,9 @@ public static class Constants
 {
     public const string GeneratedCodeAttributeString = "[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Shiny.Mediator.SourceGenerators\", \"6.0.0\")]";
     
+    // request/result auto JSON serialization (opt-in)
+    public const bool DefaultGenerateJsonContext = false;
+
     // registry defaults
     public const bool DefaultRegistryUseInternal = false;
     public const string DefaultRegistryRegistrationMethodName = "AddMediatorRegistry";

@@ -59,10 +59,12 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                 provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorGenerateJsonContext", out var generateJsonContextString);
 
                 var useInternal = useInternalString?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? Constants.DefaultRegistryUseInternal;
-                // Default ON — every contract a registered handler touches becomes part of the
-                // generated JsonTypeInfoResolver. Set ShinyMediatorGenerateJsonContext=false to opt out
-                // and manage your own JsonSerializerContext.
-                var generateJsonContext = !"false".Equals(generateJsonContextString, StringComparison.OrdinalIgnoreCase);
+                // Opt-in (default OFF) — auto request/result JSON serialization is generated only when
+                // ShinyMediatorGenerateJsonContext=true. When enabled, every contract a registered
+                // handler touches becomes part of the generated JsonTypeInfoResolver. Kept opt-in so
+                // there is always an escape hatch if the generated resolver misbehaves; leave it off to
+                // manage your own JsonSerializerContext.
+                var generateJsonContext = "true".Equals(generateJsonContextString, StringComparison.OrdinalIgnoreCase) || Constants.DefaultGenerateJsonContext;
 
                 return new MsBuildOptions(
                     Namespace: (rootNamespace ?? compilation.AssemblyName)!,

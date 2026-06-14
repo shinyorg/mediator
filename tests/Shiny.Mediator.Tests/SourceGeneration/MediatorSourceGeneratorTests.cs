@@ -343,7 +343,8 @@ public class Request2Handler : IRequestHandler<Request2, int>
     [Fact(DisplayName = "Resolver covers nested in-assembly property types transitively (RideTime → Position)")]
     public Task GeneratesJsonResolver_WithTransitiveNestedTypes()
     {
-        var driver = BuildDriver(@"
+        // Auto request/result JSON serialization is opt-in (ShinyMediatorGenerateJsonContext=true)
+        var driver = BuildDriverWithOptions(@"
 using System.Collections.Generic;
 using Shiny.Mediator;
 
@@ -361,7 +362,7 @@ public class GetRidesHandler : IRequestHandler<GetRides, IReadOnlyList<RideTime>
 {
     public Task<IReadOnlyList<RideTime>> Handle(GetRides request, IMediatorContext context, CancellationToken cancellationToken)
         => Task.FromResult<IReadOnlyList<RideTime>>(new List<RideTime>());
-}");
+}", generateJsonContext: true);
         var result = driver.GetRunResult().Results.FirstOrDefault();
         result.Exception.ShouldBeNull();
         return Verify(result);
@@ -431,7 +432,8 @@ public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
         string sourceCode,
         string? rootNamespace = null,
         string? accessModifier = null,
-        string? methodName = null)
+        string? methodName = null,
+        bool generateJsonContext = false)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
         
@@ -455,12 +457,13 @@ public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
         var driver = CSharpGeneratorDriver.Create(generator);
 
         // Add MSBuild options if specified
-        if (rootNamespace != null || accessModifier != null || methodName != null)
+        if (rootNamespace != null || accessModifier != null || methodName != null || generateJsonContext)
         {
             var optionsProvider = new TestAnalyzerConfigOptionsProvider(
                 rootNamespace,
                 accessModifier,
-                methodName);
+                methodName,
+                generateJsonContext);
             driver = (CSharpGeneratorDriver)driver.WithUpdatedAnalyzerConfigOptions(optionsProvider);
         }
 
@@ -474,12 +477,14 @@ public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
         public TestAnalyzerConfigOptionsProvider(
             string? rootNamespace,
             string? accessModifier,
-            string? methodName)
+            string? methodName,
+            bool generateJsonContext)
         {
             this.globalOptions = new TestAnalyzerConfigOptions(
                 rootNamespace,
                 accessModifier,
-                methodName);
+                methodName,
+                generateJsonContext);
         }
 
         public override AnalyzerConfigOptions GlobalOptions => this.globalOptions;
@@ -496,7 +501,8 @@ public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
         public TestAnalyzerConfigOptions(
             string? rootNamespace,
             string? accessModifier,
-            string? methodName)
+            string? methodName,
+            bool generateJsonContext)
         {
             if (rootNamespace != null)
                 this.options["build_property.RootNamespace"] = rootNamespace;
@@ -504,6 +510,8 @@ public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
                 this.options["build_property.ShinyMediatorRegistryAccessModifier"] = accessModifier;
             if (methodName != null)
                 this.options["build_property.ShinyMediatorRegistryMethodName"] = methodName;
+            if (generateJsonContext)
+                this.options["build_property.ShinyMediatorGenerateJsonContext"] = "true";
         }
 
         public override bool TryGetValue(string key, out string value)

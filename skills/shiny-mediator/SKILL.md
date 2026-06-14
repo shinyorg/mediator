@@ -37,6 +37,7 @@ triggers:
   - ISerializerService
   - JsonSerializerContext
   - ShinyJsonContext
+  - ShinyMediatorGenerateJsonContext
   - ShinyJsonInclude
   - SourceGenerateJsonConverter
   - No JsonTypeInfo registered
@@ -153,6 +154,16 @@ internal partial class AppJsonContext : JsonSerializerContext;
 
 The `[ModuleInitializer]` emitted by the extensions generator registers this context with
 `Shiny.Json` before `Main` runs — no `services.AddJsonContext(...)` call needed.
+
+**Opt-in auto-generation (default off).** Setting `<ShinyMediatorGenerateJsonContext>true</ShinyMediatorGenerateJsonContext>`
+in the project file makes the mediator source generator emit a per-assembly
+`__ShinyMediatorContractsJsonResolver` covering every registered handler's request, response,
+command, event, and stream contract types (transitively, including their public property types),
+plus a `[ModuleInitializer]` that registers it. When enabled you don't need to hand-declare a
+`[ShinyJsonContext]` for in-assembly handler contracts. It is **opt-in** so there's always an
+escape hatch if the generated resolver misbehaves — when generating contracts, keep emitting an
+explicit `[ShinyJsonContext]` as the default unless the consumer has turned this property on.
+Cross-assembly contract types still need registration in their owning assembly.
 
 **Collections (`List<T>`, `T[]`, `IAsyncEnumerable<T>`, etc.) of a contract type.** Mark the
 element type with `[ShinyJsonInclude]`:

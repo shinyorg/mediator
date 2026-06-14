@@ -2,6 +2,7 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -109,7 +110,8 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
             isPartial,
             properties,
             typeDeclaration.GetLocation(),
-            typeKind
+            typeKind,
+            BuildConstructorArgPropertyNames(typeSymbol, properties)
         );
     }
 
@@ -222,7 +224,8 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
             isPartial,
             properties,
             typeDeclaration.GetLocation(),
-            typeKind
+            typeKind,
+            BuildConstructorArgPropertyNames(typeSymbol, properties)
         );
 
         // The partial check only matters when we want to attach a [JsonConverter] attribute via a
@@ -435,9 +438,12 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         
         if (isRecord)
         {
-            // Create the record using the constructor
-            var constructorArgs = string.Join(", ", typeInfo.Properties.Select(p => ToCamelCase(p.Name)));
-            sb.AppendLine($"        return new {typeInfo.Name}({constructorArgs});");
+            // Records may be positional (primary constructor) or declared with a body and
+            // init/set properties (only a parameterless constructor). Emit
+            // `new T(ctorArgs) { initProps = ... }` so both shapes compile — a positional record
+            // produces `new T(a, b)` (no initializer), a body record produces
+            // `new T() { X = x, Y = y }`.
+            sb.AppendLine($"        return {BuildRecordConstruction(typeInfo)};");
         }
         else
         {
@@ -565,7 +571,13 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         bool IsPartial,
         PropertyInfo[] Properties,
         Location Location,
-        string TypeKind
+        string TypeKind,
+        // One entry per chosen-constructor parameter, in order: the matching serializable property
+        // Name (mapped case-insensitively), or null when a parameter has no matching property
+        // (emitted as `default`). Empty => the type is constructed via its parameterless constructor
+        // and every property is set through an object initializer. Drives record construction so
+        // body records (no positional ctor) and positional records are both handled.
+        string?[] ConstructorArgPropertyNames
     );
 
 
@@ -593,6 +605,82 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
         // If the attribute is not present, return the default property name
         return property.Name;
     }
+
+    /// <summary>
+    /// Maps the chosen deserialization constructor's parameters to serializable property names so
+    /// the record converter can construct the type correctly regardless of whether it's positional
+    /// (primary constructor) or declared with a body and init/set properties (parameterless ctor).
+    /// </summary>
+    static string?[] BuildConstructorArgPropertyNames(INamedTypeSymbol typeSymbol, PropertyInfo[] properties)
+    {
+        var ctor = ChooseConstructor(typeSymbol);
+        if (ctor is null || ctor.Parameters.Length == 0)
+            return Array.Empty<string?>();
+
+        var args = new string?[ctor.Parameters.Length];
+        for (var i = 0; i < ctor.Parameters.Length; i++)
+        {
+            var param = ctor.Parameters[i];
+            var match = properties.FirstOrDefault(p => string.Equals(p.Name, param.Name, StringComparison.OrdinalIgnoreCase));
+            args[i] = match?.Name;
+        }
+        return args;
+    }
+
+
+    static IMethodSymbol? ChooseConstructor(INamedTypeSymbol typeSymbol)
+    {
+        // Mirrors System.Text.Json's selection: explicit [JsonConstructor] wins, otherwise prefer a
+        // parameterless constructor (so body records / classes deserialize via object initializer),
+        // and fall back to the widest constructor (positional records have only their primary ctor).
+        var candidates = typeSymbol.InstanceConstructors
+            .Where(c =>
+                (c.DeclaredAccessibility == Accessibility.Public || c.DeclaredAccessibility == Accessibility.Internal) &&
+                !IsCopyConstructor(c, typeSymbol)
+            )
+            .ToArray();
+
+        if (candidates.Length == 0)
+            return null;
+
+        var jsonCtor = candidates.FirstOrDefault(c => c
+            .GetAttributes()
+            .Any(a => a.AttributeClass?.ToDisplayString() == "System.Text.Json.Serialization.JsonConstructorAttribute"));
+        if (jsonCtor is not null)
+            return jsonCtor;
+
+        var parameterless = candidates.FirstOrDefault(c => c.Parameters.Length == 0);
+        if (parameterless is not null)
+            return parameterless;
+
+        return candidates.OrderByDescending(c => c.Parameters.Length).First();
+    }
+
+
+    // The synthesized record copy constructor `protected T(T original)` is not a deserialization
+    // target — exclude it so it never wins constructor selection.
+    static bool IsCopyConstructor(IMethodSymbol ctor, INamedTypeSymbol type)
+        => ctor.Parameters.Length == 1 &&
+           SymbolEqualityComparer.Default.Equals(ctor.Parameters[0].Type, type);
+
+
+    static string BuildRecordConstruction(TypeInfo typeInfo)
+    {
+        var args = typeInfo.ConstructorArgPropertyNames;
+        var argList = string.Join(", ", args.Select(name => name is null ? "default" : ToCamelCase(name)));
+
+        var consumed = new HashSet<string>(args.Where(n => n is not null)!, StringComparer.Ordinal);
+        var leftover = typeInfo.Properties.Where(p => !consumed.Contains(p.Name)).ToList();
+
+        var expr = $"new {typeInfo.Name}({argList})";
+        if (leftover.Count > 0)
+        {
+            var inits = string.Join(", ", leftover.Select(p => $"{p.Name} = {ToCamelCase(p.Name)}"));
+            expr += $" {{ {inits} }}";
+        }
+        return expr;
+    }
+
 
     static string ToCamelCase(string name)
     {
