@@ -69,3 +69,43 @@ property so there's always an escape hatch. Wiring for a new property:
 
 Example: `ShinyMediatorGenerateJsonContext` (request/result auto JSON serialization) is opt-in
 (default off) — enable with `<ShinyMediatorGenerateJsonContext>true</ShinyMediatorGenerateJsonContext>`.
+
+## Blog posts (only when explicitly requested)
+
+Do **not** write blog posts automatically as part of a fix/feature. Write them **only when the user asks**. When asked to blog a feature, produce **two** posts — first the docs-site version, then adapt it for the personal blog.
+
+### 1. Docs site — `~/Desktop/dev/documentation`
+
+- File: `src/content/docs/blog/YYYY/MM/<slug>.mdx` (current year/month folders; create the month folder if needed).
+- Frontmatter:
+  ```yaml
+  ---
+  title: '...'
+  description: '...'
+  date: YYYY-MM-DD
+  authors:
+    - allanritchie
+  tags:
+    - Release        # or Feature, AI, etc.
+  ---
+  ```
+- Body is MDX. Reuse components where relevant, e.g. `import NugetBadge from '/src/components/NugetBadge.astro';` then `<NugetBadge name="Shiny.Mediator" />`.
+- Voice: product/release-note tone — what shipped, breaking changes, code samples, how to use it. **No hero image** on this site.
+
+### 2. Personal blog — `~/Desktop/dev/blog` (adapt the docs post)
+
+- File: `src/content/blog/YYYY/MM/<slug>.mdx` (note: `content/blog`, not `content/docs/blog`).
+- Frontmatter (different schema — see `src/content.config.ts`):
+  ```yaml
+  ---
+  title: '...'
+  description: '...'
+  pubDate: 'Mon DD YYYY'                          # e.g. 'Jun 15 2026'
+  heroImage: '../../../../assets/<slug>-hero.svg'
+  tags: ['Shiny', '.NET']
+  ---
+  ```
+- Voice: rework the docs post into a personal, first-person narrative ("Here's something that shouldn't be hard but is…", "So I built…") — story/motivation up front, not a dry changelog.
+- **Hero image is required.** Create `src/assets/<slug>-hero.svg`:
+  - SVG, `viewBox="0 0 1200 630"`, `width="1200" height="630"`.
+  - Match the house style: dark navy/indigo gradient background (`#0f172a` → `#1e1b4b`), cyan/green/violet accent gradients, subtle glow filters, the feature name as the headline. Crib an existing one (e.g. `datasync-hero.svg`, `documentdb-orleans-hero.svg`) as a starting template.
