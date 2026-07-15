@@ -12,7 +12,7 @@ public class SerializationTests
     public Task Reader_NonJsonConverter()
     {
         var json = File.ReadAllText("./SourceGeneration/serialization.json");
-        var obj = JsonSerializer.Deserialize<ThemeParksApi.EntityLiveDataResponse>(json);
+        var obj = JsonSerializer.Deserialize<ThemeParksApi.GetV1EntityLiveResponse>(json);
         return Verify(obj);
     }
 
@@ -20,7 +20,7 @@ public class SerializationTests
     public Task Reader_Generated_JsonConverter()
     {
         var json = File.ReadAllText("./SourceGeneration/serialization.json");
-        var obj = JsonSerializer.Deserialize<ThemeParksApiGenerated.EntityLiveDataResponse>(json);
+        var obj = JsonSerializer.Deserialize<ThemeParksApiGenerated.GetV1EntityLiveResponse>(json);
         return Verify(obj);
     }
 
@@ -28,7 +28,7 @@ public class SerializationTests
     public Task Writer_NonJsonConverter()
     {
         var json = File.ReadAllText("./SourceGeneration/serialization.json");
-        var obj = JsonSerializer.Deserialize<ThemeParksApi.EntityLiveDataResponse>(json);
+        var obj = JsonSerializer.Deserialize<ThemeParksApi.GetV1EntityLiveResponse>(json);
         
         var serializedJson = JsonSerializer.Serialize(obj);
         return Verify(serializedJson);
@@ -39,7 +39,7 @@ public class SerializationTests
     public Task Writer_Generated_JsonConverter()
     {
         var json = File.ReadAllText("./SourceGeneration/serialization.json");
-        var obj = JsonSerializer.Deserialize<ThemeParksApiGenerated.EntityLiveDataResponse>(json);
+        var obj = JsonSerializer.Deserialize<ThemeParksApiGenerated.GetV1EntityLiveResponse>(json);
         
         var serializedJson = JsonSerializer.Serialize(obj);
         return Verify(serializedJson);

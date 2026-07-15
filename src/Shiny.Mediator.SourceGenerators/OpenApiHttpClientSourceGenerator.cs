@@ -486,6 +486,12 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         if (document.Paths.Count == 0)
             return handlers;
 
+        // Tracks the contract names already emitted for this document so operations that derive the
+        // same name — e.g. two operationId-less paths that differ only by path parameters
+        // (/entity/{id}/schedule vs /entity/{id}/schedule/{year}/{month}) — get disambiguated instead
+        // of colliding on an AddSource hintName (which throws and aborts the whole document).
+        var usedContractNames = new HashSet<string>(StringComparer.Ordinal);
+
         foreach (var path in document.Paths)
         {
             if (path.Value?.Operations != null)
@@ -498,7 +504,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                         operation.Key.ToString(),
                         operation.Value,
                         config,
-                        modelGenerator
+                        modelGenerator,
+                        usedContractNames
                     );
                     handlers.Add(handler);
                 }
@@ -515,15 +522,41 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         string operationType,
         OpenApiOperation operation,
         MediatorHttpItemConfig config,
-        OpenApiModelGenerator modelGenerator
+        OpenApiModelGenerator modelGenerator,
+        HashSet<string> usedContractNames
     )
     {
         var opId = (operation.OperationId?.Pascalize() ?? $"{operationType.Pascalize()}{String.Concat(path.Split('/').Where(s => !String.IsNullOrWhiteSpace(s) && !s.Contains("{")).Select(s => s.Pascalize()))}").ToSafeIdentifier();
         var contractName = $"{config.ContractPrefix ?? ""}{opId}{config.ContractPostfix ?? ""}".ToSafeIdentifier();
+
+        // Disambiguate names that collide (operationId-less paths differing only by path parameters).
+        // First try appending the trailing path parameters (…/schedule/{year}/{month} -> "ByYearMonth"),
+        // then fall back to a numeric suffix — keeping every emitted type name unique and deterministic.
+        if (usedContractNames.Contains(contractName))
+        {
+            var suffix = String.Concat(GetTrailingPathParameterNames(path).Select(p => p.Pascalize()));
+            if (!String.IsNullOrEmpty(suffix))
+            {
+                opId = $"{opId}By{suffix}".ToSafeIdentifier();
+                contractName = $"{config.ContractPrefix ?? ""}{opId}{config.ContractPostfix ?? ""}".ToSafeIdentifier();
+            }
+
+            var baseOpId = opId;
+            var baseContractName = contractName;
+            var counter = 2;
+            while (usedContractNames.Contains(contractName))
+            {
+                opId = $"{baseOpId}{counter}";
+                contractName = $"{baseContractName}{counter}";
+                counter++;
+            }
+        }
+        usedContractNames.Add(contractName);
+
         var handlerName = $"{contractName}Handler";
 
         // Determine response type
-        var responseType = GetResponseType(operation, config);
+        var responseType = GetResponseType(operation, config, modelGenerator, opId);
         
         // Determine HTTP method
         var httpMethod = operationType.ToUpper();
@@ -585,7 +618,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         // Process request body
         if (operation.RequestBody?.Content?.TryGetValue("application/json", out var mediaType) ?? false)
         {
-            var bodyType = GetSchemaType(mediaType.Schema!, config);
+            var bodyType = ResolveSchemaTypeOrSynthesize(mediaType.Schema!, config, modelGenerator, $"{opId}Body");
             properties.Add(new HttpPropertyInfo(
                 "Body",
                 "Body",
@@ -733,7 +766,12 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     const string JsonMediaType = "application/json";
     const string FallbackType = "global::System.Net.Http.HttpResponseMessage";
     
-    static string GetResponseType(OpenApiOperation operation, MediatorHttpItemConfig config)
+    static string GetResponseType(
+        OpenApiOperation operation,
+        MediatorHttpItemConfig config,
+        OpenApiModelGenerator modelGenerator,
+        string opId
+    )
     {
         var responseType = FallbackType;
         if (operation.Responses == null || operation.Responses.Count == 0)
@@ -749,14 +787,56 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                 {
                     // Try application/json first
                     if (response.Content.TryGetValue(JsonMediaType, out var mediaType) && mediaType?.Schema != null)
-                        responseType = GetSchemaType(mediaType.Schema, config);
+                        responseType = ResolveSchemaTypeOrSynthesize(mediaType.Schema, config, modelGenerator, $"{opId}Response");
                 }
             }
         }
 
         return responseType;
     }
-    
+
+
+    // Resolves the CLR type for a response/body schema. When the schema is an inline (anonymous)
+    // object or an array of inline objects — i.e. the spec doesn't $ref a named component — we
+    // synthesize a named model from it via the model generator (which also emits its JSON converter
+    // and wires it into the resolver) rather than collapsing it to a weakly-typed "object". Anything
+    // else ($ref, scalars, dictionaries) falls through to the regular scalar resolver.
+    static string ResolveSchemaTypeOrSynthesize(
+        IOpenApiSchema schema,
+        MediatorHttpItemConfig config,
+        OpenApiModelGenerator modelGenerator,
+        string synthesizedName
+    )
+    {
+        // $ref → already points at a named, component-generated type.
+        if (schema is OpenApiSchemaReference)
+            return GetSchemaType(schema, config);
+
+        // Inline array → synthesize the element type (if it too is inline) and wrap in List<T>.
+        if (schema.Type?.HasFlag(JsonSchemaType.Array) == true && schema.Items != null)
+        {
+            var elementType = ResolveSchemaTypeOrSynthesize(schema.Items, config, modelGenerator, $"{synthesizedName}Item");
+            return $"global::System.Collections.Generic.List<{elementType}>";
+        }
+
+        // Inline object with real properties (and not a dictionary / composed schema) → synthesize
+        // a named model so the caller gets a strongly-typed contract instead of "object".
+        if (schema.Type?.HasFlag(JsonSchemaType.Object) == true
+            && schema.Properties is { Count: > 0 }
+            && schema.AdditionalProperties == null
+            && !(schema.AllOf?.Count > 0)
+            && !(schema.OneOf?.Count > 0)
+            && !(schema.AnyOf?.Count > 0))
+        {
+            modelGenerator.GenerateModel(synthesizedName, schema);
+            var typeName = synthesizedName.Pascalize().ToSafeIdentifier();
+            return $"global::{config.Namespace}.{typeName}";
+        }
+
+        // Scalars, dictionaries, composed schemas, bare objects → existing resolution.
+        return GetSchemaType(schema, config);
+    }
+
     
     static string GetSchemaType(IOpenApiSchema schema, MediatorHttpItemConfig config)
     {
@@ -877,6 +957,29 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     };
     
     
+    // Path parameter names that trail the last literal segment, e.g. "/entity/{id}/schedule/{year}/{month}"
+    // -> [year, month]. Used to disambiguate collisions between operationId-less paths.
+    static IEnumerable<string> GetTrailingPathParameterNames(string path)
+    {
+        var segments = path.Split('/').Where(s => !String.IsNullOrWhiteSpace(s)).ToList();
+        var lastLiteral = -1;
+        for (var i = 0; i < segments.Count; i++)
+        {
+            if (!segments[i].Contains("{"))
+                lastLiteral = i;
+        }
+
+        var result = new List<string>();
+        for (var i = lastLiteral + 1; i < segments.Count; i++)
+        {
+            var seg = segments[i];
+            if (seg.StartsWith("{") && seg.EndsWith("}") && seg.Length > 2)
+                result.Add(seg.Substring(1, seg.Length - 2));
+        }
+        return result;
+    }
+
+
     static List<string> ExtractPathParameterNames(string path)
     {
         var parameters = new List<string>();

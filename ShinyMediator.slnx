@@ -5,15 +5,16 @@
         <Project Path="samples\Sample.CopilotConsole\Sample.CopilotConsole.csproj" />
         <Project Path="samples\Sample\Sample.csproj" />
     </Folder>
-    <Folder Name="/Solution/">
+    <Folder Name="/.Solution/">
         <File Path="readme.md" />
         <File Path=".github\workflows\build.yml" />
         <File Path=".editorconfig" />
         <File Path=".github\ISSUE_TEMPLATE\bug_report.yml" />
         <File Path=".github\ISSUE_TEMPLATE\config.yml" />
         <File Path=".github\ISSUE_TEMPLATE\feature_request.yml" />
-        <File Path="Directory.build.props" />
-        <File Path="Directory.packages.props" />
+        <File Path="CLAUDE.md" />
+        <File Path="Directory.Build.props" />
+        <File Path="Directory.Packages.props" />
         <File Path="LICENSE" />
         <File Path=".github\PULL_REQUEST_TEMPLATE.md" />
         <File Path=".github\workflows\sync-skills.yml" />

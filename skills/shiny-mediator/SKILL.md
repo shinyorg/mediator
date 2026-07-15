@@ -430,6 +430,8 @@ Generate contracts, models, and handlers directly from OpenAPI/Swagger specs. Ad
 
 `Include` can be a **file path** (for local specs) or a **logical name** when `Uri` is set separately.
 
+**Naming:** contract names come from each operation's `OperationId` when present; otherwise they're derived from the HTTP method + literal path segments (`GET /v1/entity/{id}/live` → `GetV1EntityLiveHttpRequest`). Operation-id-less paths that would collide (e.g. `/entity/{id}/schedule` vs `/entity/{id}/schedule/{year}/{month}`) are disambiguated by appending the trailing path parameters (`…ScheduleHttpRequest` / `…ScheduleByYearMonthHttpRequest`). Inline (anonymous) response and request-body objects — those not `$ref`-ing a named component — get a synthesized strongly-typed contract (e.g. `GetUsersResponse`) rather than a weak `object`.
+
 **MediatorHttp metadata options:**
 
 | Metadata | Description |

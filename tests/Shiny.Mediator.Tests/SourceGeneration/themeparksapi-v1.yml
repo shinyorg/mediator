@@ -1,0 +1,778 @@
+openapi: 3.0.0
+info:
+  title: V1 API
+  version: 1.0.0
+  description: API endpoints for V1 functionality
+servers:
+  - url: https://api.themeparks.wiki
+    description: Production server
+paths:
+  /v1/destinations:
+    get:
+      summary: GET /v1/destinations
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - destinations
+                properties:
+                  destinations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Destination"
+                    description: Array of all destinations
+        "429":
+          description: Too Many Requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                  - message
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - Rate limit exceeded
+                    description: Error type
+                  message:
+                    type: string
+                    description: Rate limit exceeded message
+                  retryAfter:
+                    type: integer
+                    description: Time in seconds to wait before retrying
+      parameters: []
+      tags:
+        - v1
+  /v1/entity/{id}:
+    get:
+      summary: GET /v1/entity/{id}
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - name
+                  - entityType
+                  - timezone
+                properties:
+                  id:
+                    type: string
+                    description: Unique entity identifier
+                  name:
+                    type: string
+                    description: Entity name
+                  entityType:
+                    $ref: "#/components/schemas/EntityType"
+                  parentId:
+                    type: string
+                    nullable: true
+                    description: Parent entity identifier
+                  destinationId:
+                    type: string
+                    nullable: true
+                    description: Destination identifier
+                  timezone:
+                    type: string
+                    description: Entity timezone
+                  location:
+                    $ref: "#/components/schemas/EntityLocation"
+                  tags:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TagData"
+        "429":
+          description: Too Many Requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                  - message
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - Rate limit exceeded
+                    description: Error type
+                  message:
+                    type: string
+                    description: Rate limit exceeded message
+                  retryAfter:
+                    type: integer
+                    description: Time in seconds to wait before retrying
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      tags:
+        - v1
+  /v1/entity/{id}/children:
+    get:
+      summary: GET /v1/entity/{id}/children
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Parent entity identifier
+                  name:
+                    type: string
+                    description: Parent entity name
+                  entityType:
+                    $ref: "#/components/schemas/EntityType"
+                  timezone:
+                    type: string
+                    description: Entity timezone
+                  children:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/EntityChild"
+        "429":
+          description: Too Many Requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                  - message
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - Rate limit exceeded
+                    description: Error type
+                  message:
+                    type: string
+                    description: Rate limit exceeded message
+                  retryAfter:
+                    type: integer
+                    description: Time in seconds to wait before retrying
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      tags:
+        - v1
+  /v1/entity/{id}/live:
+    get:
+      summary: GET /v1/entity/{id}/live
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Entity identifier
+                  name:
+                    type: string
+                    description: Entity name
+                  entityType:
+                    $ref: "#/components/schemas/EntityType"
+                  timezone:
+                    type: string
+                    description: Entity timezone
+                  liveData:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/EntityLiveData"
+        "429":
+          description: Too Many Requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                  - message
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - Rate limit exceeded
+                    description: Error type
+                  message:
+                    type: string
+                    description: Rate limit exceeded message
+                  retryAfter:
+                    type: integer
+                    description: Time in seconds to wait before retrying
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      tags:
+        - v1
+  /v1/entity/{id}/schedule:
+    get:
+      summary: GET /v1/entity/{id}/schedule
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema: &a1
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Entity identifier
+                  name:
+                    type: string
+                    description: Entity name
+                  entityType:
+                    type: string
+                    enum:
+                      - DESTINATION
+                      - PARK
+                      - ATTRACTION
+                      - RESTAURANT
+                      - HOTEL
+                      - SHOW
+                    description: Type of entity
+                  timezone:
+                    type: string
+                    description: Entity timezone
+                  schedule:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/EntityScheduleEntry"
+                  parks:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ParkSchedule"
+                    description: Only included for destinations, lists all parks within the
+                      destination
+        "429":
+          description: Too Many Requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                  - message
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - Rate limit exceeded
+                    description: Error type
+                  message:
+                    type: string
+                    description: Rate limit exceeded message
+                  retryAfter:
+                    type: integer
+                    description: Time in seconds to wait before retrying
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      tags:
+        - v1
+  /v1/entity/{id}/schedule/{year}/{month}:
+    get:
+      summary: GET /v1/entity/{id}/schedule/{year}/{month}
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema: *a1
+        "429":
+          description: Too Many Requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                  - message
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - Rate limit exceeded
+                    description: Error type
+                  message:
+                    type: string
+                    description: Rate limit exceeded message
+                  retryAfter:
+                    type: integer
+                    description: Time in seconds to wait before retrying
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: year
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: month
+          required: true
+          schema:
+            type: string
+      tags:
+        - v1
+components:
+  schemas:
+    BoardingGroupState:
+      type: string
+      enum:
+        - AVAILABLE
+        - PAUSED
+        - CLOSED
+      description: State of boarding group availability
+    Destination:
+      type: object
+      required:
+        - id
+        - name
+        - parks
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the destination
+        name:
+          type: string
+          description: Name of the destination
+        slug:
+          type: string
+          nullable: true
+          description: URL-friendly slug for the destination
+        externalId:
+          type: string
+          nullable: true
+          description: External entity ID from the source data provider
+        parks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Park"
+          description: Array of parks within this destination
+    DiningAvailability:
+      type: object
+      properties:
+        partySize:
+          type: number
+          nullable: true
+          description: Available party size
+        waitTime:
+          type: number
+          nullable: true
+          description: Current wait time in minutes
+    EntityChild:
+      type: object
+      required:
+        - id
+        - name
+        - entityType
+      properties:
+        id:
+          type: string
+          description: Unique entity identifier
+        name:
+          type: string
+          description: Entity name
+        entityType:
+          $ref: "#/components/schemas/EntityType"
+        externalId:
+          type: string
+          description: External identifier
+        parentId:
+          type: string
+          description: Parent entity identifier
+        location:
+          $ref: "#/components/schemas/EntityLocation"
+    EntityLiveData:
+      type: object
+      required:
+        - id
+        - name
+        - entityType
+        - lastUpdated
+      properties:
+        id:
+          type: string
+          description: Entity identifier
+        name:
+          type: string
+          description: Entity name
+        entityType:
+          $ref: "#/components/schemas/EntityType"
+        status:
+          $ref: "#/components/schemas/LiveStatusType"
+        lastUpdated:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        queue:
+          $ref: "#/components/schemas/LiveQueue"
+        showtimes:
+          type: array
+          items:
+            $ref: "#/components/schemas/LiveShowTime"
+        operatingHours:
+          type: array
+          items:
+            $ref: "#/components/schemas/LiveShowTime"
+        diningAvailability:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiningAvailability"
+    EntityLocation:
+      type: object
+      properties:
+        latitude:
+          type: number
+          description: Latitude coordinate of the entity location
+          nullable: true
+        longitude:
+          type: number
+          description: Longitude coordinate of the entity location
+          nullable: true
+    EntityScheduleEntry:
+      type: object
+      required:
+        - date
+        - type
+        - openingTime
+        - closingTime
+      properties:
+        date:
+          type: string
+          description: The date of the schedule entry
+        type:
+          type: string
+          description: Type of schedule entry e.g. OPERATING, EXTRA_HOURS, etc.
+        description:
+          type: string
+          description: Optional description of the schedule entry
+        openingTime:
+          type: string
+          description: Opening time for this schedule entry
+        closingTime:
+          type: string
+          description: Closing time for this schedule entry
+      additionalProperties: true
+      description: Represents a single schedule entry
+    EntityType:
+      type: string
+      enum:
+        - DESTINATION
+        - PARK
+        - ATTRACTION
+        - RESTAURANT
+        - HOTEL
+        - SHOW
+      description: Type of entity in the theme park system
+    LiveQueue:
+      type: object
+      properties:
+        STANDBY:
+          type: object
+          properties:
+            waitTime:
+              type: number
+              description: Current standby wait time in minutes
+        SINGLE_RIDER:
+          type: object
+          required:
+            - waitTime
+          properties:
+            waitTime:
+              type: number
+              nullable: true
+              description: Current single rider wait time in minutes
+        RETURN_TIME:
+          type: object
+          required:
+            - state
+            - returnStart
+            - returnEnd
+          properties:
+            state:
+              $ref: "#/components/schemas/ReturnTimeState"
+            returnStart:
+              type: string
+              format: date-time
+              nullable: true
+              description: Start time of return window
+            returnEnd:
+              type: string
+              format: date-time
+              nullable: true
+              description: End time of return window
+        PAID_RETURN_TIME:
+          type: object
+          required:
+            - state
+            - returnStart
+            - returnEnd
+            - price
+          properties:
+            state:
+              $ref: "#/components/schemas/ReturnTimeState"
+            returnStart:
+              type: string
+              format: date-time
+              nullable: true
+            returnEnd:
+              type: string
+              format: date-time
+              nullable: true
+            price:
+              $ref: "#/components/schemas/PriceData"
+        BOARDING_GROUP:
+          type: object
+          required:
+            - allocationStatus
+            - currentGroupStart
+            - currentGroupEnd
+            - nextAllocationTime
+            - estimatedWait
+          properties:
+            allocationStatus:
+              $ref: "#/components/schemas/BoardingGroupState"
+            currentGroupStart:
+              type: number
+              nullable: true
+              description: Current boarding group start number
+            currentGroupEnd:
+              type: number
+              nullable: true
+              description: Current boarding group end number
+            nextAllocationTime:
+              type: string
+              format: date-time
+              nullable: true
+              description: Next boarding group allocation time
+            estimatedWait:
+              type: number
+              nullable: true
+              description: Estimated wait time in minutes
+        PAID_STANDBY:
+          type: object
+          required:
+            - waitTime
+          properties:
+            waitTime:
+              type: number
+              nullable: true
+              description: Current paid standby wait time in minutes
+    LiveShowTime:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          description: Type of show time entry
+        startTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: Start time of the show
+        endTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: End time of the show
+    LiveStatusType:
+      type: string
+      enum:
+        - OPERATING
+        - DOWN
+        - CLOSED
+        - REFURBISHMENT
+      description: Current operating status of an entity
+    Park:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the park
+        name:
+          type: string
+          description: Name of the park
+    ParkSchedule:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Entity identifier
+        name:
+          type: string
+          description: Entity name
+        entityType:
+          type: string
+          enum:
+            - DESTINATION
+            - PARK
+            - ATTRACTION
+            - RESTAURANT
+            - HOTEL
+            - SHOW
+          description: Type of entity
+        timezone:
+          type: string
+          description: Entity timezone
+        schedule:
+          type: array
+          items:
+            $ref: "#/components/schemas/PricedScheduleEntry"
+    PriceData:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+          description: Numerical price amount
+        currency:
+          type: string
+          description: Currency code
+        formatted:
+          type: string
+          description: Formatted price string
+    PricedScheduleEntry:
+      type: object
+      required:
+        - date
+        - openingTime
+        - closingTime
+        - type
+      properties:
+        date:
+          type: string
+          format: YYYY-MM-DD
+          description: Schedule date
+        openingTime:
+          type: string
+          format: date-time
+          description: Opening time
+        closingTime:
+          type: string
+          format: date-time
+          description: Closing time
+        type:
+          type: string
+          enum:
+            - OPERATING
+            - TICKETED_EVENT
+            - PRIVATE_EVENT
+            - EXTRA_HOURS
+            - INFO
+          description: Type of schedule entry
+        purchases:
+          type: array
+          items:
+            $ref: "#/components/schemas/SchedulePriceObject"
+          description: Available purchases for this schedule entry
+    ReturnTimeState:
+      type: string
+      enum:
+        - AVAILABLE
+        - TEMP_FULL
+        - FINISHED
+      description: State of return time availability
+    SchedulePriceObject:
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/SchedulePriceType"
+          description: Type of price object
+        id:
+          type: string
+          description: Unique identifier
+        name:
+          type: string
+          description: Name of the price object
+        price:
+          type: object
+          properties:
+            amount:
+              type: number
+              description: Price amount
+            currency:
+              type: string
+              description: Currency code
+            formatted:
+              type: string
+              description: Formatted price string
+          required:
+            - amount
+            - currency
+        available:
+          type: boolean
+          description: Whether this price option is available
+    SchedulePriceType:
+      type: string
+      enum:
+        - ADMISSION
+        - PACKAGE
+        - ATTRACTION
+      description: Type of schedule price
+    TagData:
+      type: object
+      required:
+        - tag
+        - tagName
+      properties:
+        tag:
+          type: string
+          description: Tag identifier
+        tagName:
+          type: string
+          description: Human readable tag name
+        id:
+          type: string
+          description: Unique identifier
+        value:
+          description: Tag value - can be string, number or object
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+tags:
+  - name: v1

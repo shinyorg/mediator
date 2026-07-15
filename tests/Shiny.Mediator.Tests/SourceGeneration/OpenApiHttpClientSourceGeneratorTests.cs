@@ -23,16 +23,16 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
         {
             x.AddInMemoryCollection(new Dictionary<string, string>
             {
-                {"Mediator:Http:*",  "https://api.themeparks.wiki/v1/"}
+                {"Mediator:Http:*",  "https://api.themeparks.wiki/"}
             });
         });
         services.AddShinyMediator(x => x.AddGeneratedOpenApiClient());
 
         var sp = services.BuildServiceProvider();
         var mediator = sp.GetRequiredService<IMediator>();
-        var result = await mediator.Request(new GetEntityLiveDataHttpRequest
+        var result = await mediator.Request(new GetV1EntityLiveHttpRequest
         {
-            EntityID = "66f5d97a-a530-40bf-a712-a6317c96b06d"
+            Id = "66f5d97a-a530-40bf-a712-a6317c96b06d"
         });
     }
 
@@ -42,7 +42,7 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
     {
         // Sanity check: the generator must have emitted a resolver. Asserted by reflecting on the
         // user-namespace type, which depends on the ThemeParksApiGenerated.* generated source.
-        var resolverType = typeof(ThemeParksApiGenerated.EntityLiveDataResponse).Assembly
+        var resolverType = typeof(ThemeParksApiGenerated.GetV1EntityLiveResponse).Assembly
             .GetType("ThemeParksApiGenerated.ThemeParksApiGeneratedJsonResolver");
         resolverType.ShouldNotBeNull("generator should have emitted ThemeParksApiGeneratedJsonResolver");
 
@@ -60,7 +60,7 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
         using var http = new HttpClient();
         var json = await http.GetStringAsync("https://api.themeparks.wiki/v1/entity/66f5d97a-a530-40bf-a712-a6317c96b06d/live");
 
-        var result = serializer.Deserialize<ThemeParksApiGenerated.EntityLiveDataResponse>(json);
+        var result = serializer.Deserialize<ThemeParksApiGenerated.GetV1EntityLiveResponse>(json);
         result.ShouldNotBeNull();
         result.Id.ShouldBe("66f5d97a-a530-40bf-a712-a6317c96b06d");
     }
@@ -69,6 +69,11 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
 
     [Theory]
     [InlineData("./SourceGeneration/themeparksapi.yml")]
+    // Newer ThemeParks spec: no operationIds (path-based names), inline response objects (no $ref
+    // to a named schema), and two paths that collide on a name — /entity/{id}/schedule and
+    // /entity/{id}/schedule/{year}/{month}. Regression fixture for both the inline-response
+    // synthesis and the collision disambiguation.
+    [InlineData("./SourceGeneration/themeparksapi-v1.yml")]
     [InlineData("./SourceGeneration/fleet.json")]
     [InlineData("./SourceGeneration/test.json")]
     public Task TestApis_Generation(string filePath)

@@ -9,8 +9,8 @@
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftSdkVersion)"/>
         <PackageVersion Include="Microsoft.Extensions.Diagnostics" Version="$(MicrosoftSdkVersion)"/>
         <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Shiny.Extensions.DependencyInjection" Version="5.1.0"/>
-        <PackageVersion Include="Shiny.Extensions.Serialization" Version="5.1.0"/>
+        <PackageVersion Include="Shiny.Extensions.DependencyInjection" Version="5.1.2"/>
+        <PackageVersion Include="Shiny.Extensions.Serialization" Version="5.1.2"/>
         <PackageVersion Include="TickerQ" Version="10.4.0"/>
         <PackageVersion Include="TickerQ.EntityFrameworkCore" Version="10.4.0"/>
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.8"/>
@@ -24,9 +24,9 @@
         <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.6.0"/>
         <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.6.0"/>
         <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.Resilience" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Dapper" Version="2.1.35"/>
-        <PackageVersion Include="InterpolatedSql.Dapper" Version="2.3.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Resilience" Version="10.8.0"/>
+        <PackageVersion Include="Dapper" Version="2.1.79"/>
+        <PackageVersion Include="InterpolatedSql.Dapper" Version="2.5.1"/>
         <PackageVersion Include="FluentValidation" Version="12.0.0"/>
         <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0"/>
         <PackageVersion Include="Prism.Maui" Version="9.0.537"/>
@@ -35,14 +35,14 @@
     </ItemGroup>
     <ItemGroup>
         <PackageVersion Include="SharpYaml" Version="2.1.4"/>
-        <PackageVersion Include="Microsoft.OpenApi" Version="3.0.1"/>
-        <PackageVersion Include="Microsoft.OpenApi.YamlReader" Version="3.0.1"/>
+        <PackageVersion Include="Microsoft.OpenApi" Version="3.8.0"/>
+        <PackageVersion Include="Microsoft.OpenApi.YamlReader" Version="3.8.0"/>
         <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0"/>
     </ItemGroup>
     <ItemGroup>
         <PackageVersion Include="Prism.DryIoc.Maui" Version="9.0.537"/>
         <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2"/>
-        <PackageVersion Include="sqlite-net-pcl" Version="1.9.172"/>
+        <PackageVersion Include="sqlite-net-pcl" Version="1.11.285"/>
         <PackageVersion Include="Scalar.AspNetCore" Version="2.10.3"/>
         <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftSdkVersion)"/>
         <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftSdkVersion)" Condition="'$(Configuration)' == 'Debug'"/>
@@ -61,13 +61,13 @@
         <PackageVersion Include="Microsoft.Data.Sqlite" Version="$(MicrosoftSdkVersion)"/>
         <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftSdkVersion)"/>
         <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="$(MicrosoftSdkVersion)"/>
-        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.8.0"/>
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1"/>
         <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.7.1"/>
         <PackageVersion Include="Npgsql" Version="10.0.3"/>
         <PackageVersion Include="Shouldly" Version="4.3.0"/>
         <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0"/>
-        <PackageVersion Include="Verify.Xunit" Version="31.0.0"/>
+        <PackageVersion Include="Verify.Xunit" Version="31.12.5"/>
         <PackageVersion Include="xunit" Version="2.9.3"/>
         <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5"/>
     </ItemGroup>
