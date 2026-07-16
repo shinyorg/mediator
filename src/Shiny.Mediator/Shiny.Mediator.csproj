@@ -14,7 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Shiny.Mediator.Tests"/>
+        <!-- must be the test project's AssemblyName, not its project name, or this silently does nothing -->
+        <InternalsVisibleTo Include="UnitTests"/>
     </ItemGroup>
 
     <ItemGroup>

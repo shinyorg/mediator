@@ -254,19 +254,19 @@ public static class EndpointRouteBuilderExtensions
 
 
         /// <summary>
-        /// Maps an HTTP endpoint at <paramref name="pattern"/> that binds <typeparamref name="TRequest"/> from
-        /// the query string and route values, dispatches the stream through the mediator, and writes each
-        /// emitted <typeparamref name="TResult"/> to the response body as JSON, flushing after each item.
+        /// Maps an HTTP POST endpoint at <paramref name="pattern"/> that binds <typeparamref name="TRequest"/>
+        /// from the request body, dispatches the stream through the mediator, and writes each emitted
+        /// <typeparamref name="TResult"/> to the response body as JSON, flushing after each item.
         /// </summary>
         [RequiresDynamicCode("Endpoint routing uses reflection on the supplied delegate and its parameters")]
         public RouteHandlerBuilder MapMediatorStreamPost<TRequest, TResult>(string pattern) where TRequest : IStreamRequest<TResult>
-            => builder.MapGet(
+            => builder.MapPost(
                 pattern,
                 async (
                     HttpContext http,
                     [FromServices] IMediator mediator,
                     [FromServices] Shiny.ISerializer serializer,
-                    [AsParameters] TRequest request,
+                    [FromBody] TRequest request,
                     CancellationToken cancellationToken
                 ) =>
                 {

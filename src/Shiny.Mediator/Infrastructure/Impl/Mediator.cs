@@ -194,50 +194,6 @@ public class MediatorImpl(
         => director.GetEventExecutor<TEvent>().Subscribe(action);
 
 
-    async Task<bool> TryHandle(MediatorContext context, Exception exception)
-    {
-        context.Exception = exception;
-        
-        if (context.BypassExceptionHandlingEnabled)
-        {
-            logger.LogDebug("Bypassing exception handling is enabled");
-            return false;
-        }
-
-        var handled = false;
-        using (context.StartActivity("Starting Exception Handling"))
-        {
-            var exceptionHandlers = context
-                .ServiceScope
-                .ServiceProvider
-                .GetServices<IExceptionHandler>();
-            
-            foreach (var eh in exceptionHandlers)
-            {
-                var handlerType = eh.GetType().FullName ?? "Unknown";
-                logger.LogDebug("Trying to handle exception with {HandlerType}", handlerType);
-                
-                handled = await eh
-                    .Handle(
-                        context,
-                        exception
-                    )
-                    .ConfigureAwait(false);
-
-                if (handled)
-                {
-                    logger.LogWarning(exception, "Exception handled by {HandlerType}", handlerType);
-                    break;
-                }
-            }
-        }
-
-        if (!handled)
-        {
-            // we log as debug to let the exception bubble all the way out for the final app layers to decide the fate
-            logger.LogDebug(exception, "No exception handlers managed the exception");
-        }
-
-        return handled;
-    }
+    Task<bool> TryHandle(MediatorContext context, Exception exception)
+        => MediatorExceptionHandling.TryHandle(context, exception, logger);
 }

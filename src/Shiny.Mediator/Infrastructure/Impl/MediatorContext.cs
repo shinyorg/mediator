@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Shiny.Mediator.Infrastructure.Impl;
 
@@ -37,8 +38,10 @@ class MediatorContext(
     {
         get
         {
+            // snapshot - the caller enumerates outside this lock, and parallel event publishing
+            // adds children concurrently, so handing out the live list throws mid-enumeration
             lock (this.children)
-                return this.children;
+                return this.children.ToList();
         }
     }
 
@@ -174,10 +177,39 @@ class MediatorContext(
         Action<IMediatorContext>? configure = null
     ) where TEvent : IEvent
     {
-        var newContext = this.CreateChild(@event, true);
+        // this work outlives the current dispatch, so it cannot share the caller's scope - that scope is
+        // disposed the moment the outer Request/Send/Publish returns (and, under ASP.NET, when the request
+        // ends), leaving handlers resolving against a dead IServiceScope. We own this scope and dispose it
+        // once the handlers finish. Mirrors MediatorImpl.PublishToBackground.
+        var newContext = (MediatorContext)this.CreateChild(@event, false);
         configure?.Invoke(newContext);
-        director
-            .GetEventExecutor(@event)
-            .PublishToBackground(newContext, @event, executeInParallel, _ => { });
+
+        var logger = newContext
+            .ServiceScope
+            .ServiceProvider
+            .GetRequiredService<ILogger<TEvent>>();
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await director
+                    .GetEventExecutor(@event)
+                    .Publish(newContext, @event, executeInParallel, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // previously swallowed - a background publish reported nothing, while the same call on
+                // IMediator ran the exception handler chain
+                await MediatorExceptionHandling
+                    .TryHandle(newContext, ex, logger)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                newContext.ServiceScope.Dispose();
+            }
+        });
     }
 }

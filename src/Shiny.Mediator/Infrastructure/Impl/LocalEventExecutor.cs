@@ -71,21 +71,6 @@ public class LocalEventExecutor(
 
 
     /// <inheritdoc/>
-    public void PublishToBackground<TEvent>(
-        IMediatorContext context,
-        TEvent @event,
-        bool executeInParallel,
-        Action<Exception> onException
-    ) where TEvent : IEvent
-    {
-        _ = this.Publish(context, @event, executeInParallel, CancellationToken.None).ContinueWith(x =>
-        {
-            if (x.Exception != null)
-                onException.Invoke(x.Exception);
-        });
-    }
-
-    /// <inheritdoc/>
     public IDisposable Subscribe<TEvent>(Func<TEvent, IMediatorContext, CancellationToken, Task> action) where TEvent : IEvent
     {
         var handler = new SubscriptionEventHandler<TEvent>(this.subscriptions);

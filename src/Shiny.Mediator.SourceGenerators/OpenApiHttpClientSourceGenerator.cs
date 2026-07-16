@@ -777,7 +777,10 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         if (operation.Responses == null || operation.Responses.Count == 0)
             return responseType;
 
-        // Try to find a successful response (2xx status codes)
+        // Try to find a successful response (2xx status codes) - SuccessResponses is ordered, so the
+        // lowest declared 2xx wins. Without stopping at the first match, an operation declaring both
+        // (say) 200 and 202 would take the *last* one, and ResolveSchemaTypeOrSynthesize would also
+        // synthesize "{opId}Response" twice for inline schemas.
         foreach (var statusCode in SuccessResponses)
         {
             if (operation.Responses.TryGetValue(statusCode, out var response))
@@ -787,7 +790,10 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                 {
                     // Try application/json first
                     if (response.Content.TryGetValue(JsonMediaType, out var mediaType) && mediaType?.Schema != null)
+                    {
                         responseType = ResolveSchemaTypeOrSynthesize(mediaType.Schema, config, modelGenerator, $"{opId}Response");
+                        break;
+                    }
                 }
             }
         }

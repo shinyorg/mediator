@@ -23,20 +23,6 @@ public interface IEventExecutor
 
 
     /// <summary>
-    /// Fires the event without awaiting handlers, isolating their execution from the caller's lifetime.
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="event">The event to publish.</param>
-    /// <param name="executeInParallel">When true, handlers run concurrently; when false, they run sequentially.</param>
-    /// <param name="onError">Callback invoked if the background publish faults.</param>
-    void PublishToBackground<TEvent>(
-        IMediatorContext context,
-        TEvent @event,
-        bool executeInParallel,
-        Action<Exception> onError
-    ) where TEvent : IEvent;
-
-    /// <summary>
     /// Subscribes a delegate-based handler for <typeparamref name="TEvent"/> in this executor's local scope.
     /// </summary>
     /// <returns>A disposable handle that removes the subscription when disposed.</returns>

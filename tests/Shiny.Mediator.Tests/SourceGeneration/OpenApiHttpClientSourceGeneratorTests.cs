@@ -174,6 +174,64 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
         return Verify(result);
     }
 
+
+    [Fact]
+    public Task Response_With_Multiple_Success_Codes_Takes_The_Lowest()
+    {
+        // An operation declaring both 200 and 202 must generate IRequest<Accepted200> - the lowest
+        // declared 2xx. The success codes were previously walked without stopping at the first match,
+        // so the *last* one won (202 here), and both inline schemas synthesized "{opId}Response".
+        var openApi = """
+        openapi: 3.0.1
+        info:
+          title: Test API
+          version: '1.0'
+        paths:
+          /orders:
+            post:
+              operationId: createOrder
+              responses:
+                '200':
+                  description: OK
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/Order'
+                '202':
+                  description: Accepted
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/OrderTicket'
+        components:
+          schemas:
+            Order:
+              type: object
+              properties:
+                id:
+                  type: string
+            OrderTicket:
+              type: object
+              properties:
+                ticket:
+                  type: string
+        """;
+
+        var additionalFiles = new AdditionalText[] { new MockAdditionalText("orders.yaml", openApi) };
+
+        var buildProps = new Dictionary<string, string>
+        {
+            ["build_metadata.AdditionalFiles.SourceItemGroup"] = "MediatorHttp",
+            ["build_metadata.AdditionalFiles.Namespace"] = "TestApi",
+            ["build_property.RootNamespace"] = "UnitTests",
+            ["build_property.AssemblyName"] = "UnitTests"
+        };
+
+        var result = RunGenerator(additionalFiles, buildProps);
+        return Verify(result);
+    }
+
+
     [Fact]
     public Task PathParameters_Should_Not_Appear_In_Generated_Handler_Names()
     {
