@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - name: Checkout mediator repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: Extract version from Directory.build.props
       id: version
@@ -42,7 +42,7 @@ jobs:
         echo "Release date: $DATE"
 
     - name: Checkout documentation repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         repository: shinyorg/documentation
         token: ${{ secrets.DOCS_DEPLOY_TOKEN }}
@@ -129,7 +129,7 @@ jobs:
         head -50 "$FILE"
 
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v7
+      uses: peter-evans/create-pull-request@v8
       with:
         token: ${{ secrets.DOCS_DEPLOY_TOKEN }}
         path: documentation
