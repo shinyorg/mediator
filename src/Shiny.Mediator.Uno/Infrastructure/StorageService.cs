@@ -12,7 +12,7 @@ namespace Shiny.Mediator.Infrastructure;
 /// </summary>
 public class StorageService(
     Shiny.ISerializer serializer,
-    ILogger<StorageService> logger
+    ILogger<StorageService>? logger = null
 ) : AbstractFileStorageService(serializer, logger)
 {
     /// <inheritdoc/>

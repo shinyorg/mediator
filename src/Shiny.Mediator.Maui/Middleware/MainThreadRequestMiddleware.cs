@@ -9,7 +9,7 @@ namespace Shiny.Mediator.Middleware;
 /// </summary>
 [MiddlewareOrder(100)]
 public class MainThreadRequestMiddleware<TRequest, TResult>(
-    ILogger<MainThreadRequestMiddleware<TRequest, TResult>> logger
+    ILogger<MainThreadRequestMiddleware<TRequest, TResult>>? logger = null
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     /// <inheritdoc/>
@@ -23,7 +23,7 @@ public class MainThreadRequestMiddleware<TRequest, TResult>(
         if (attr == null)
             return next();
 
-        logger.LogDebug("MainThread Enabled - {Request}", context.Message);
+        logger?.LogDebug("MainThread Enabled - {Request}", context.Message);
         var tcs = new TaskCompletionSource<TResult>();
         MainThread.BeginInvokeOnMainThread(async () =>
         {

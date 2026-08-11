@@ -9,7 +9,7 @@ namespace Shiny.Mediator.Middleware;
 /// </summary>
 [MiddlewareOrder(100)]
 public class MainThreadCommandMiddleware<TCommand>(
-    ILogger<MainThreadCommandMiddleware<TCommand>> logger
+    ILogger<MainThreadCommandMiddleware<TCommand>>? logger = null
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     /// <inheritdoc/>
@@ -23,7 +23,7 @@ public class MainThreadCommandMiddleware<TCommand>(
         if (attr == null)
             return next();
 
-        logger.LogDebug("MainThread Enabled - {Request}", context.Message);
+        logger?.LogDebug("MainThread Enabled - {Request}", context.Message);
         var tcs = new TaskCompletionSource();
         MainThread.BeginInvokeOnMainThread(async () =>
         {

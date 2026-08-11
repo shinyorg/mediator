@@ -11,10 +11,10 @@ namespace Shiny.Mediator.Caching.Infrastructure;
 /// are resolved in priority order from the context, configuration, then a <see cref="CacheAttribute"/> on the handler method.
 /// </summary>
 public class CachingRequestMiddleware<TRequest, TResult>(
-    ILogger<CachingRequestMiddleware<TRequest, TResult>> logger,
-    IConfiguration configuration,
     ICacheService cacheService,
-    IContractKeyProvider contractKeyProvider
+    IContractKeyProvider contractKeyProvider,
+    ILogger<CachingRequestMiddleware<TRequest, TResult>>? logger = null,
+    IConfiguration? configuration = null
 )
 : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
@@ -34,7 +34,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
         
         if (context.HasForceCacheRefresh())
         {
-            logger.LogDebug("Cache Forced Refresh - {Request}", context.Message);
+            logger?.LogDebug("Cache Forced Refresh - {Request}", context.Message);
             result = await next().ConfigureAwait(false);
             
             if (result != null)
@@ -58,7 +58,7 @@ public class CachingRequestMiddleware<TRequest, TResult>(
                 )
                 .ConfigureAwait(false)!;
 
-            logger.LogDebug("Cache Hit: {Hit} - {Request} - Key: {RequestKey}", hit, context.Message, cacheKey);
+            logger?.LogDebug("Cache Hit: {Hit} - {Request} - Key: {RequestKey}", hit, context.Message, cacheKey);
             context.Cache(new CacheContext(cacheKey, hit, entry!.CreatedAt, config));
 			result = entry.Value;
         }

@@ -15,7 +15,7 @@ namespace Shiny.Mediator.Infrastructure;
 public class TickerQCommandScheduler(
     ITimeTickerManager<TimeTickerEntity> tickerManager,
     Shiny.ISerializer serializer,
-    ILogger<TickerQCommandScheduler> logger
+    ILogger<TickerQCommandScheduler>? logger = null
 ) : ICommandScheduler
 {
     /// <inheritdoc/>
@@ -41,7 +41,7 @@ public class TickerQCommandScheduler(
             CommandJson = serializer.Serialize(command, commandType)
         };
 
-        logger.LogInformation(
+        logger?.LogInformation(
             "Scheduling command '{CommandType}' to run at {DueAt}",
             commandType.FullName,
             dueAt

@@ -25,10 +25,10 @@ public class CommandSchedulingTests(ITestOutputHelper output)
         var sp = services.BuildServiceProvider();
         
         var schedulerLogger = TestHelpers.CreateLogger<ICommandScheduler>(output);
-        var scheduler = new InMemoryCommandScheduler(schedulerLogger, this.fakeTime, sp);
+        var scheduler = new InMemoryCommandScheduler(this.fakeTime, sp, schedulerLogger);
         
         var middlewareLogger = TestHelpers.CreateLogger<ScheduledCommandMiddleware<MySchedule>>(output);
-        var middleware = new ScheduledCommandMiddleware<MySchedule>(middlewareLogger, this.fakeTime, scheduler);
+        var middleware = new ScheduledCommandMiddleware<MySchedule>(this.fakeTime, scheduler, middlewareLogger);
 
         var context = new MockMediatorContext
         {

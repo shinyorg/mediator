@@ -13,9 +13,9 @@ namespace Shiny.Mediator.Resilience.Handlers;
 /// the command flows through unchanged.
 /// </summary>
 public class ResilientCommandMiddleware<TCommand>(
-    ILogger<ResilientCommandMiddleware<TCommand>> logger,
-    IConfiguration configuration,
-    ResiliencePipelineProvider<string> pipelineProvider
+    ResiliencePipelineProvider<string> pipelineProvider,
+    ILogger<ResilientCommandMiddleware<TCommand>>? logger = null,
+    IConfiguration? configuration = null
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     /// <inheritdoc/>
@@ -46,7 +46,7 @@ public class ResilientCommandMiddleware<TCommand>(
         }
 
         // it can't cancel properly here... may need to make next take a CancellationToken
-        logger.LogDebug("Resilience Enabled - {Request}", context.Message);
+        logger?.LogDebug("Resilience Enabled - {Request}", context.Message);
         await pipeline
             .ExecuteAsync(async _ => await next(), cancellationToken)
             .ConfigureAwait(false);

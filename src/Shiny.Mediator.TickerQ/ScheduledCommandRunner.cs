@@ -13,7 +13,7 @@ namespace Shiny.Mediator.Infrastructure;
 public class ScheduledCommandRunner(
     IMediator mediator,
     Shiny.ISerializer serializer,
-    ILogger<ScheduledCommandRunner> logger
+    ILogger<ScheduledCommandRunner>? logger = null
 )
 {
     static readonly MethodInfo SendMethod = typeof(IMediator).GetMethod(nameof(IMediator.Send))!;
@@ -42,7 +42,7 @@ public class ScheduledCommandRunner(
             throw new InvalidOperationException($"Could not resolve scheduled command type '{payload.CommandType}'");
 
         var command = (ICommand)serializer.Deserialize(payload.CommandJson, commandType);
-        logger.LogInformation("Executing scheduled command '{CommandType}'", commandType.FullName);
+        logger?.LogInformation("Executing scheduled command '{CommandType}'", commandType.FullName);
 
         Action<IMediatorContext> configure = ctx =>
         {

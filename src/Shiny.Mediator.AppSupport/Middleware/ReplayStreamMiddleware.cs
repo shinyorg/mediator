@@ -15,12 +15,12 @@ namespace Shiny.Mediator.Middleware;
 /// also written back to the cache and/or offline store.
 /// </summary>
 public class ReplayStreamMiddleware<TRequest, TResult>(
-    ILogger<ReplayStreamMiddleware<TRequest, TResult>> logger,
     IInternetService internet,
-    IConfiguration configuration,
     IContractKeyProvider contractKeyProvider,
-    IOfflineService? offline,
-    ICacheService? cache
+    IOfflineService? offline = null,
+    ICacheService? cache = null,
+    ILogger<ReplayStreamMiddleware<TRequest, TResult>>? logger = null,
+    IConfiguration? configuration = null
 ) : IStreamRequestMiddleware<TRequest, TResult> where TRequest : IStreamRequest<TResult>
 {
     /// <inheritdoc/>
@@ -33,7 +33,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         if (!this.IsEnabled(context))
             return next();
 
-        logger.LogDebug("Enabled - {Request}", context.Message);
+        logger?.LogDebug("Enabled - {Request}", context.Message);
         return this.Iterate(
             (TRequest)context.Message,
             context,
@@ -87,11 +87,11 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
             var item = await cache.Get<TResult>(requestKey, ct).ConfigureAwait(false);
             if (item == null)
             {
-                logger.LogDebug("Cache Miss - {Request}", context.Message);
+                logger?.LogDebug("Cache Miss - {Request}", context.Message);
             }
             else
             {
-                logger.LogDebug("Cache Hit - {Request}", context.Message);
+                logger?.LogDebug("Cache Hit - {Request}", context.Message);
                 context.Cache(new CacheContext(item.Key, true, item.CreatedAt));
                 yield return item.Value;
             }
@@ -101,11 +101,11 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
             var store = await offline.Get<TResult>(request, ct).ConfigureAwait(false);
             if (store == null)
             {
-                logger.LogDebug("Offline Miss - {Request}", context.Message);
+                logger?.LogDebug("Offline Miss - {Request}", context.Message);
             }
             else
             {
-                logger.LogDebug("Offline Hit - {Request}", context.Message);
+                logger?.LogDebug("Offline Hit - {Request}", context.Message);
                 context.Offline(new OfflineAvailableContext(requestKey, store.Timestamp));
                 yield return store.Value;
             }
@@ -113,11 +113,11 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
 
         if (!internet.IsAvailable)
         {
-            logger.LogDebug("Waiting for internet connection- {Request}", context.Message);
+            logger?.LogDebug("Waiting for internet connection- {Request}", context.Message);
             await internet.WaitForAvailable(ct).ConfigureAwait(false);
         }
 
-        logger.LogDebug("Internet Detected - Running Handler - {Request}", context.Message);
+        logger?.LogDebug("Internet Detected - Running Handler - {Request}", context.Message);
         var nxt = this.TryNext(next, ct);
         if (nxt != null)
         {
@@ -127,17 +127,17 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
                 {
                     if (cache != null)
                     {
-                        logger.LogDebug("Updating Cache - {Request}", context.Message);
+                        logger?.LogDebug("Updating Cache - {Request}", context.Message);
                         await cache.Set(requestKey, nxt.Current!).ConfigureAwait(false);
                     }
 
                     if (offline != null)
                     {
-                        logger.LogDebug("Updating Offline Store - {Request}", context.Message);
+                        logger?.LogDebug("Updating Offline Store - {Request}", context.Message);
                         await offline.Set(request, nxt.Current!, ct).ConfigureAwait(false);
                     }
 
-                    logger.LogDebug("Yielding Final Result - {Request}", context.Message);
+                    logger?.LogDebug("Yielding Final Result - {Request}", context.Message);
                     yield return nxt.Current;
                 }
             }
@@ -159,7 +159,7 @@ public class ReplayStreamMiddleware<TRequest, TResult>(
         }
         catch (TimeoutException ex)
         {
-            logger.LogWarning(ex, "Handler Timeout");
+            logger?.LogWarning(ex, "Handler Timeout");
             return null;
         }
     }

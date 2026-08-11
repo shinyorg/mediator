@@ -24,36 +24,42 @@ public static class Utils
 
     /// <summary>
     /// Treats <paramref name="task"/> as fire-and-forget, logging any unhandled exception to <paramref name="errorLogger"/>.
+    /// When <paramref name="errorLogger"/> is <c>null</c>, faults are swallowed.
     /// </summary>
-    public static void RunInBackground(this Task task, ILogger errorLogger)
+    public static void RunInBackground(this Task task, ILogger? errorLogger)
         => task.ContinueWith(x =>
         {
             if (x.Exception != null)
-                errorLogger.LogError(x.Exception, "Fire & Forget trapped error");
+                errorLogger?.LogError(x.Exception, "Fire & Forget trapped error");
         }, TaskContinuationOptions.OnlyOnFaulted);
 
 
     /// <summary>
     /// Locates the configuration section under <c>Mediator:{module}</c> that applies to the current context's
-    /// message and handler. Returns <c>null</c> when no matching section exists.
+    /// message and handler. Returns <c>null</c> when no matching section exists or when
+    /// <paramref name="config"/> is <c>null</c>.
     /// </summary>
     public static IConfigurationSection? GetHandlerSection(
         this IMediatorContext context,
-        IConfiguration config,
+        IConfiguration? config,
         string module
     ) => config.GetHandlerSection(module, context.Message, context.MessageHandler);
 
     /// <summary>
     /// Locates the configuration section under <c>Mediator:{module}</c> matching <paramref name="request"/> and
     /// <paramref name="handler"/>. Looks up by full type name, namespace wildcard, and a final <c>*</c> catch-all in priority order.
+    /// Returns <c>null</c> when <paramref name="config"/> is <c>null</c>.
     /// </summary>
     public static IConfigurationSection? GetHandlerSection(
-        this IConfiguration config,
+        this IConfiguration? config,
         string module,
         object request,
         object? handler
     )
     {
+        if (config == null)
+            return null;
+
         var moduleCfg = config.GetSection("Mediator:" + module);
         if (!moduleCfg.Exists())
             return null;

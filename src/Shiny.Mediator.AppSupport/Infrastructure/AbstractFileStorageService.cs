@@ -14,7 +14,7 @@ namespace Shiny.Mediator.Infrastructure;
 /// </summary>
 public abstract class AbstractFileStorageService(
     Shiny.ISerializer serializer,
-    ILogger logger
+    ILogger? logger = null
 ) : IStorageService
 {
     /// <summary>Writes <paramref name="content"/> to the platform store under <paramref name="fileName"/>, overwriting any existing data.</summary>
@@ -33,7 +33,7 @@ public abstract class AbstractFileStorageService(
         var fileName = await this.GetFileIndexer(category, key, cancellationToken).ConfigureAwait(false);
         using (await this.keyLocker.LockAsync(LockKey(category, key), cancellationToken).ConfigureAwait(false))
         {
-            logger.LogInformation("Setting {Category}-{key} to {File}", category, key, fileName);
+            logger?.LogInformation("Setting {Category}-{key} to {File}", category, key, fileName);
             await this.WriteObject(fileName, value, cancellationToken).ConfigureAwait(false);
             await this.WriteState(cancellationToken).ConfigureAwait(false);
         }
@@ -55,7 +55,7 @@ public abstract class AbstractFileStorageService(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error getting {Category}-{Key}", category, key);
+                logger?.LogError(ex, "Error getting {Category}-{Key}", category, key);
                 recover = true;
             }
         }
@@ -137,7 +137,7 @@ public abstract class AbstractFileStorageService(
         CancellationToken cancellationToken
     )
     {
-        logger.LogInformation("Evicting {RequestKey} in {Category}", requestKey, category);
+        logger?.LogInformation("Evicting {RequestKey} in {Category}", requestKey, category);
         indexes.TryRemove(requestKey, out _);
         await this.DeleteFile(fileName, cancellationToken).ConfigureAwait(false);
         if (writeState)
@@ -164,7 +164,7 @@ public abstract class AbstractFileStorageService(
         var content = await this.ReadFile(fileName, cancellationToken).ConfigureAwait(false);
         if (String.IsNullOrWhiteSpace(content))
         {
-            logger.LogInformation("No content found for {FileName}", fileName);
+            logger?.LogInformation("No content found for {FileName}", fileName);
             return default;
         }
 
@@ -184,7 +184,7 @@ public abstract class AbstractFileStorageService(
         {
             if (this._indexes != null)
             {
-                logger.LogInformation("Writing File Index");
+                logger?.LogInformation("Writing File Index");
                 await this.WriteObject(IndexFile, this._indexes, cancellationToken).ConfigureAwait(false);
             }
         }

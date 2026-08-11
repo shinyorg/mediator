@@ -187,7 +187,7 @@ class MediatorContext(
         var logger = newContext
             .ServiceScope
             .ServiceProvider
-            .GetRequiredService<ILogger<TEvent>>();
+            .GetService<ILogger<TEvent>>();
 
         _ = Task.Run(async () =>
         {

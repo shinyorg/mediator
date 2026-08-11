@@ -9,7 +9,7 @@ namespace Shiny.Mediator.Infrastructure;
 /// <see cref="IEventHandler{TEvent}"/> implementations from each page and its binding context
 /// when events are dispatched.
 /// </summary>
-public class MauiEventCollector(ILogger<MauiEventCollector> logger) : IMauiInitializeService, IEventCollector
+public class MauiEventCollector(ILogger<MauiEventCollector>? logger = null) : IMauiInitializeService, IEventCollector
 {
     readonly Lock sync = new();
     readonly List<Page> trackingPages = new();
@@ -20,7 +20,7 @@ public class MauiEventCollector(ILogger<MauiEventCollector> logger) : IMauiIniti
         var application = services.GetRequiredService<IApplication>() as Application;
         if (application == null)
         {
-            logger.LogWarning("Application was not detected properly and cannot be wired");
+            logger?.LogWarning("Application was not detected properly and cannot be wired");
             return;
         }
         application.DescendantAdded += (_, args) =>
@@ -30,7 +30,7 @@ public class MauiEventCollector(ILogger<MauiEventCollector> logger) : IMauiIniti
                 lock (this.sync)
                     this.trackingPages.Add(page);
 
-                logger.LogDebug("Tracking {count} pages", this.trackingPages.Count);
+                logger?.LogDebug("Tracking {count} pages", this.trackingPages.Count);
             }
         };
         application.DescendantRemoved += (_, args) =>
@@ -40,7 +40,7 @@ public class MauiEventCollector(ILogger<MauiEventCollector> logger) : IMauiIniti
                 lock (this.sync)
                     this.trackingPages.Remove(page);
 
-                logger.LogDebug("Tracking {count} pages", this.trackingPages.Count);
+                logger?.LogDebug("Tracking {count} pages", this.trackingPages.Count);
             }
         };
     }
@@ -49,7 +49,7 @@ public class MauiEventCollector(ILogger<MauiEventCollector> logger) : IMauiIniti
     /// <inheritdoc/>
     public IReadOnlyList<IEventHandler<TEvent>> GetHandlers<TEvent>() where TEvent : IEvent
     {
-        logger.LogDebug("Collecting MAUI Pages/binding contexts for Event Handler Type: {type}", typeof(TEvent).FullName);
+        logger?.LogDebug("Collecting MAUI Pages/binding contexts for Event Handler Type: {type}", typeof(TEvent).FullName);
 
         var list = new List<IEventHandler<TEvent>>();
         lock (this.sync)
@@ -63,7 +63,7 @@ public class MauiEventCollector(ILogger<MauiEventCollector> logger) : IMauiIniti
                     list.Add(handler2);
             }
         }
-        logger.LogDebug(
+        logger?.LogDebug(
             "Found {count} MAUI pages/binding contexts for Event Hander Type: {type}",
             this.trackingPages.Count,
             typeof(TEvent).FullName

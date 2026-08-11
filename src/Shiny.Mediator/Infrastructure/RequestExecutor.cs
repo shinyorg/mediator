@@ -39,13 +39,13 @@ public abstract class RequestExecutor : IRequestExecutor
 
         context.MessageHandler = requestHandler;
         var middlewares = context.BypassMiddlewareEnabled ? [] : services.GetServices<IRequestMiddleware<TRequest, TResult>>();
-        var logger = services.GetRequiredService<ILogger<TRequest>>();
+        var logger = services.GetService<ILogger<TRequest>>();
         
         var handlerExec = new RequestHandlerDelegate<TResult>(() =>
         {
             using (var handlerActivity = context.StartActivity("Handler"))
             {
-                logger.LogDebug(
+                logger?.LogDebug(
                     "Executing request handler {RequestHandlerType}",
                     requestHandler.GetType().FullName
                 );
@@ -61,7 +61,7 @@ public abstract class RequestExecutor : IRequestExecutor
                 {
                     using (var midActivity = context.StartActivity("Middleware"))
                     {
-                        logger.LogDebug(
+                        logger?.LogDebug(
                             "Executing request middleware {MiddlewareType}",
                             middleware.GetType().FullName
                         );

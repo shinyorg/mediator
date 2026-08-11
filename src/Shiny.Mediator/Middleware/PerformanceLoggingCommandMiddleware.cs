@@ -13,8 +13,8 @@ namespace Shiny.Mediator.Middleware;
 /// </summary>
 [MiddlewareOrder(1)]
 public class PerformanceLoggingCommandMiddleware<TCommand>(
-    IConfiguration configuration,
-    ILogger<TCommand> logger
+    IConfiguration? configuration = null,
+    ILogger<TCommand>? logger = null
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     /// <inheritdoc/>
@@ -42,14 +42,14 @@ public class PerformanceLoggingCommandMiddleware<TCommand>(
         if (delta > ts)
         {
             context.SetPerformanceLoggingThresholdBreached(delta);
-            logger.LogError(
+            logger?.LogError(
                 "{CommandType} took longer than {Threshold} to execute - {Elapsed}", 
                 typeof(TCommand), 
                 ts,
                 delta
             );
         }
-        else if (logger.IsEnabled(LogLevel.Debug))
+        else if (logger?.IsEnabled(LogLevel.Debug) == true)
         {
             logger.LogDebug(
                 "{CommandType} took {Elapsed} to execute",

@@ -13,11 +13,11 @@ namespace Shiny.Mediator.Http;
 /// dependencies needed to send HTTP requests and deserialize responses.
 /// </summary>
 public record HttpHandlerServices(
-    ILoggerFactory LoggerFactory,
-    IConfiguration Configuration,
     Shiny.ISerializer Serializer,
     IHttpClientFactory HttpClientFactory,
-    IEnumerable<IHttpRequestDecorator> Decorators
+    IEnumerable<IHttpRequestDecorator> Decorators,
+    ILoggerFactory? LoggerFactory = null,
+    IConfiguration? Configuration = null
 );
 
 /// <summary>
@@ -26,7 +26,7 @@ public record HttpHandlerServices(
 /// </summary>
 public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
 {
-    readonly ILogger logger = services.LoggerFactory.CreateLogger<BaseHttpRequestHandler>();
+    readonly ILogger? logger = services.LoggerFactory?.CreateLogger<BaseHttpRequestHandler>();
 
 
     /// <summary>
@@ -123,7 +123,7 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
     )
     {
         await this.Decorate(context, httpRequest, cancellationToken).ConfigureAwait(false);
-        var timeoutSeconds = services.Configuration.GetValue("Mediator:Http:Timeout", 20);
+        var timeoutSeconds = services.Configuration?.GetValue("Mediator:Http:Timeout", 20) ?? 20;
         
         await this
             .Send<HttpResponseMessage>(context, httpRequest, TimeSpan.FromSeconds(timeoutSeconds), cancellationToken)
@@ -145,7 +145,7 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
     )
     {
         await this.Decorate(context, httpRequest, cancellationToken).ConfigureAwait(false);
-        var timeoutSeconds = services.Configuration.GetValue("Mediator:Http:Timeout", 20);
+        var timeoutSeconds = services.Configuration?.GetValue("Mediator:Http:Timeout", 20) ?? 20;
         
         var result = await this
             .Send<TResult>(context, httpRequest, TimeSpan.FromSeconds(timeoutSeconds), cancellationToken)
@@ -241,7 +241,7 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
     {
         foreach (var decorator in services.Decorators)
         {
-            this.logger.LogDebug("Decorating {Type}", decorator.GetType().Name);
+            this.logger?.LogDebug("Decorating {Type}", decorator.GetType().Name);
             await decorator
                 .Decorate(httpRequest, context, cancellationToken)
                 .ConfigureAwait(false);
@@ -260,7 +260,7 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
         CancellationToken cancellationToken
     )
     {
-        var debug = services.Configuration.GetValue("Mediator:Http:Debug", false);
+        var debug = services.Configuration?.GetValue("Mediator:Http:Debug", false) ?? false;
         if (!debug)
             return;
     
@@ -291,8 +291,8 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
         foreach (var header in response.Headers)
             details.Add("Response_" + header.Key, header.Value);
         
-        using (logger.BeginScope(details))
-            logger.LogInformation("Request Body: {Body}", requestBody);
+        using (logger?.BeginScope(details))
+            logger?.LogInformation("Request Body: {Body}", requestBody);
     }
 
     
@@ -310,7 +310,7 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
         if (String.IsNullOrWhiteSpace(cfg.Value))
             throw new InvalidOperationException("Base URI empty for: " + request.GetType().FullName);
         
-        logger.LogDebug("Base URI: {Uri}", cfg.Value);
+        logger?.LogDebug("Base URI: {Uri}", cfg.Value);
         return cfg.Value;
     }
 }

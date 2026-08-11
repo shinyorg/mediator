@@ -228,10 +228,10 @@ public class HttpRequestCacheMiddlewareTests(ITestOutputHelper output)
         var contractKeyProvider = new DefaultContractKeyProvider(null!);
         var logger = TestHelpers.CreateLogger<HttpRequestCacheMiddleware<HttpCacheTestContract, string>>(output);
         var middleware = new HttpRequestCacheMiddleware<HttpCacheTestContract, string>(
-            logger,
             timeProvider,
             cache,
-            contractKeyProvider
+            contractKeyProvider,
+            logger
         );
 
         return (context, cache, logger, middleware);
@@ -253,10 +253,10 @@ public class HttpRequestCacheMiddlewareTests(ITestOutputHelper output)
         var contractKeyProvider = new DefaultContractKeyProvider(null!);
         var logger = TestHelpers.CreateLogger<HttpRequestCacheMiddleware<HttpCacheTestContract, string?>>(output);
         var middleware = new HttpRequestCacheMiddleware<HttpCacheTestContract, string?>(
-            logger,
             timeProvider,
             cache,
-            contractKeyProvider
+            contractKeyProvider,
+            logger
         );
 
         return (context, cache, logger, middleware);

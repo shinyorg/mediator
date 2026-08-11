@@ -10,9 +10,9 @@ namespace Shiny.Mediator;
 /// through the mediator whenever the device's internet availability changes.
 /// </summary>
 public class ConnectivityBroadcaster(
-    ILogger<ConnectivityBroadcaster> logger,
     IMediator mediator,
-    IInternetService internetService
+    IInternetService internetService,
+    ILogger<ConnectivityBroadcaster>? logger = null
 ) : IServiceInitialize
 {
     /// <inheritdoc/>
@@ -26,7 +26,7 @@ public class ConnectivityBroadcaster(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error occured while connectivity Sprayer");
+                logger?.LogError(ex, "Error occured while connectivity Sprayer");
             }
         };
     }

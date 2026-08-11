@@ -12,10 +12,10 @@ namespace Shiny.Mediator.Middleware;
 /// <see cref="OfflineAvailableAttribute"/> on the handler method or by an <c>Offline</c> configuration section.
 /// </summary>
 public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
-    ILogger<OfflineAvailableRequestMiddleware<TRequest, TResult>> logger,
     IInternetService connectivity,
     IOfflineService offline,
-    IConfiguration configuration
+    ILogger<OfflineAvailableRequestMiddleware<TRequest, TResult>>? logger = null,
+    IConfiguration? configuration = null
 ) : IRequestMiddleware<TRequest, TResult>
     where TRequest : IRequest<TResult>
 {
@@ -36,7 +36,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
             {
                 result = await next().ConfigureAwait(false);
                 var requestKey = await offline.Set(context.Message!, result!, cancellationToken);
-                logger.LogDebug("Offline: {Request} - Key: {RequestKey}", context.Message, requestKey);
+                logger?.LogDebug("Offline: {Request} - Key: {RequestKey}", context.Message, requestKey);
             }
             catch (TimeoutException)
             {
@@ -63,7 +63,7 @@ public class OfflineAvailableRequestMiddleware<TRequest, TResult>(
             context.Offline(new OfflineAvailableContext(offlineResult.RequestKey, offlineResult.Timestamp));
             result = offlineResult.Value;
             
-            logger.LogDebug(
+            logger?.LogDebug(
                 "Offline Hit: {Request} - Timestamp: {Timestamp} - Key: {RequestKey}", 
                 context.Message, 
                 offlineResult.Timestamp,

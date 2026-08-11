@@ -13,9 +13,9 @@ namespace Shiny.Mediator.Infrastructure;
 /// configuration are ignored.
 /// </summary>
 public class UserNotificationExceptionHandler(
-    ILogger<UserNotificationExceptionHandler> logger,
-    IConfiguration configuration,
-    IAlertDialogService alerts
+    IAlertDialogService alerts,
+    ILogger<UserNotificationExceptionHandler>? logger = null,
+    IConfiguration? configuration = null
 ) : IExceptionHandler
 {
     /// <inheritdoc/>
@@ -36,7 +36,7 @@ public class UserNotificationExceptionHandler(
 
         if (section == null)
         {
-            logger.LogInformation("User Error Notifications not setup for: {RequestType}", msgType.FullName);
+            logger?.LogInformation("User Error Notifications not setup for: {RequestType}", msgType.FullName);
         }
         else
         {
@@ -50,7 +50,7 @@ public class UserNotificationExceptionHandler(
 
             if (!locale.Exists())
             {
-                logger.LogInformation("No locale found for {RequestType}", msgType.FullName);
+                logger?.LogInformation("No locale found for {RequestType}", msgType.FullName);
             }
             else
             {

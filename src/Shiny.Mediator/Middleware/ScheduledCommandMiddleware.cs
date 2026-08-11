@@ -12,9 +12,9 @@ namespace Shiny.Mediator.Middleware;
 /// </summary>
 [MiddlewareOrder(90)]
 public class ScheduledCommandMiddleware<TCommand>(
-    ILogger<ScheduledCommandMiddleware<TCommand>> logger,
     TimeProvider timeProvider,
-    ICommandScheduler scheduler
+    ICommandScheduler scheduler,
+    ILogger<ScheduledCommandMiddleware<TCommand>>? logger = null
 ) : ICommandMiddleware<TCommand> where TCommand : ICommand
 {
     /// <inheritdoc/>
@@ -29,7 +29,7 @@ public class ScheduledCommandMiddleware<TCommand>(
         
         if (dueAt == null || dueAt <= now)
         {
-            logger.LogWarning(
+            logger?.LogWarning(
                 "Executing Scheduled Command '{message}' that was due at {dueAt}",
                 context.Message,
                 dueAt
@@ -38,7 +38,7 @@ public class ScheduledCommandMiddleware<TCommand>(
         }
         else
         {
-            logger.LogInformation("Command '{message}' scheduled for {dueAt}", context.Message, dueAt);
+            logger?.LogInformation("Command '{message}' scheduled for {dueAt}", context.Message, dueAt);
             await scheduler
                 .Schedule(
                     context,

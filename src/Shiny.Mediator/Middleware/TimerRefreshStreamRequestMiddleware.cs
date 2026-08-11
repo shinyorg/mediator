@@ -13,8 +13,8 @@ namespace Shiny.Mediator.Middleware;
 /// middleware passes through without iterating.
 /// </summary>
 public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
-    ILogger<TimerRefreshStreamRequestMiddleware<TRequest, TResult>> logger,
-    IConfiguration configuration
+    ILogger<TimerRefreshStreamRequestMiddleware<TRequest, TResult>>? logger = null,
+    IConfiguration? configuration = null
 ) : IStreamRequestMiddleware<TRequest, TResult>
     where TRequest : IStreamRequest<TResult>
 {
@@ -31,7 +31,7 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
         var header = context.TryGetTimerRefresh();
         if (header != null)
         {
-            logger.LogDebug("Timer setting in MediatorContext");
+            logger?.LogDebug("Timer setting in MediatorContext");
             interval = header.Value;
         }
         else
@@ -40,7 +40,7 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
             if (section != null)
             {
                 interval = section.GetValue("IntervalSeconds", 0);
-                logger.LogDebug("Timer setting found in configuration");
+                logger?.LogDebug("Timer setting found in configuration");
             }
             else
             {
@@ -48,19 +48,19 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
                 if (attribute != null)
                 {
                     interval = attribute.IntervalSeconds;
-                    logger.LogDebug("Timer setting found on attribute");
+                    logger?.LogDebug("Timer setting found on attribute");
                 }
             }
         }
 
-        logger.LogDebug("Timer Setting Interval: {value}", interval);
+        logger?.LogDebug("Timer Setting Interval: {value}", interval);
         if (interval <= 0)
         {
-            logger.LogDebug("Timer Refresh will not be used - returning");
+            logger?.LogDebug("Timer Refresh will not be used - returning");
             return next();
         }
 
-        logger.LogDebug("Timer Refresh Set to run");
+        logger?.LogDebug("Timer Refresh Set to run");
         return this.Iterate(interval, next, cancellationToken);
     }
 
@@ -76,14 +76,14 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
         while (!ct.IsCancellationRequested)
         {
             // fire initial before waiting
-            logger.LogDebug("Firing Timer Request");
+            logger?.LogDebug("Firing Timer Request");
             var nxt = next().GetAsyncEnumerator(ct);
             try
             {
                 while (await nxt.MoveNextAsync() && !ct.IsCancellationRequested)
                 {
                     yield return nxt.Current;
-                    logger.LogDebug("Firing Timer Response");
+                    logger?.LogDebug("Firing Timer Response");
                 }
             }
             finally
@@ -92,7 +92,7 @@ public class TimerRefreshStreamRequestMiddleware<TRequest, TResult>(
             }
 
             // TODO: number of iterations configuration?
-            logger.LogDebug("Waiting for next iteration");
+            logger?.LogDebug("Waiting for next iteration");
             await Task.Delay(ts, ct).ConfigureAwait(false);
         }
     }

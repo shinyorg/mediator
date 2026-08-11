@@ -25,12 +25,12 @@ public class LocalCommandExecutor : ICommandExecutor
 
         context.MessageHandler = commandHandler;
 
-        var logger = services.GetRequiredService<ILogger<TCommand>>();
+        var logger = services.GetService<ILogger<TCommand>>();
         var handlerExec = new CommandHandlerDelegate(async () =>
         {
             using (var handlerActivity = context.StartActivity("ExecutingHandler"))
             {
-                logger.LogDebug(
+                logger?.LogDebug(
                     "Executing request handler {RequestHandlerType}",
                     commandHandler.GetType().FullName
                 );
@@ -49,7 +49,7 @@ public class LocalCommandExecutor : ICommandExecutor
                 {
                     using (var handlerActivity = context.StartActivity("ExecutingMiddleware"))
                     {
-                        logger.LogDebug(
+                        logger?.LogDebug(
                             "Executing request middleware {MiddlewareType}",
                             middleware.GetType().FullName
                         );

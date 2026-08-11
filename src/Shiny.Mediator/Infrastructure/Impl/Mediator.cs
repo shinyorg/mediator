@@ -11,9 +11,9 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 /// to pick an executor, and routes thrown exceptions through the registered <see cref="IExceptionHandler"/> chain.
 /// </summary>
 public class MediatorImpl(
-    ILogger<MediatorImpl> logger,
     IServiceProvider services,
-    IMediatorDirector director
+    IMediatorDirector director,
+    ILogger<MediatorImpl>? logger = null
 ) : IMediator
 {
     /// <inheritdoc/>
@@ -42,7 +42,7 @@ public class MediatorImpl(
 
             if (result is IEvent @event)
             {
-                logger.LogDebug("Event Returned by Request - Publishing: {EventType}", @event.GetType().FullName);
+                logger?.LogDebug("Event Returned by Request - Publishing: {EventType}", @event.GetType().FullName);
                 var child = context.CreateChild(@event, true);
                 await director
                     .GetEventExecutor(@event)

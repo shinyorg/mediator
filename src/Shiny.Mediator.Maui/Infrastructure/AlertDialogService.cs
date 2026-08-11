@@ -7,7 +7,7 @@ namespace Shiny.Mediator.Infrastructure;
 /// MAUI <see cref="IAlertDialogService"/> implementation that shows alerts via
 /// <see cref="Page.DisplayAlert(string, string, string)"/> on the first window's current page.
 /// </summary>
-public class AlertDialogService(ILogger<AlertDialogService> logger) : IAlertDialogService
+public class AlertDialogService(ILogger<AlertDialogService>? logger = null) : IAlertDialogService
 {
     /// <inheritdoc/>
     public void Display(string title, string message)

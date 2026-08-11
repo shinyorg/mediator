@@ -13,10 +13,10 @@ namespace Shiny.Mediator.Http;
 /// to outbound HTTP requests issued through the mediator HTTP pipeline.
 /// </summary>
 public class MauiHttpRequestDecorator(
-    ILogger<MauiHttpRequestDecorator> logger,
     IAppInfo appInfo,
     IDeviceInfo deviceInfo,
-    IGeolocation geolocation
+    IGeolocation geolocation,
+    ILogger<MauiHttpRequestDecorator>? logger = null
 ) : IHttpRequestDecorator
 {
     /// <inheritdoc/>
@@ -42,7 +42,7 @@ public class MauiHttpRequestDecorator(
         }
         catch (Exception ex)
         {
-            logger.LogInformation(ex, "Failed to get GPS");
+            logger?.LogInformation(ex, "Failed to get GPS");
         }
     }
 }

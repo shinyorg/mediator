@@ -10,9 +10,9 @@ namespace Shiny.Mediator;
 /// page (and its binding context) that implements <see cref="IEventHandler{T}"/> for that event.
 /// </summary>
 public class ConnectivityBroadcaster(
-    ILogger<ConnectivityBroadcaster> logger,
     IMediator mediator,
-    IInternetService internetService
+    IInternetService internetService,
+    ILogger<ConnectivityBroadcaster>? logger = null
 ) : IMauiInitializeService
 {
     bool connected = false;
@@ -27,7 +27,7 @@ public class ConnectivityBroadcaster(
         var app = services.GetRequiredService<IApplication>() as Application;
         if (app == null)
         {
-            logger.LogWarning("Application not supported");
+            logger?.LogWarning("Application not supported");
         }
         else
         {
@@ -42,16 +42,16 @@ public class ConnectivityBroadcaster(
 
             app.PageAppearing += async (_, page) =>
             {
-                logger.LogDebug("Firing PageAppearing ConnectivityChanged for pages");
+                logger?.LogDebug("Firing PageAppearing ConnectivityChanged for pages");
                 if (page is IEventHandler<ConnectivityChanged> handler1)
                 {
-                    logger.LogDebug("Firing PageAppearing for {pageType}", page.GetType());
+                    logger?.LogDebug("Firing PageAppearing for {pageType}", page.GetType());
                     await this.TryAsHandler(handler1).ConfigureAwait(false);
                 }
 
                 if (page.BindingContext is IEventHandler<ConnectivityChanged> handler2)
                 {
-                    logger.LogDebug("Firing PageAppearing for {bindingContextType}", page.BindingContext.GetType());
+                    logger?.LogDebug("Firing PageAppearing for {bindingContextType}", page.BindingContext.GetType());
                     await this.TryAsHandler(handler2).ConfigureAwait(false);
                 }
             };
@@ -74,7 +74,7 @@ public class ConnectivityBroadcaster(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to rebroadcast connectivity");
+            logger?.LogError(ex, "Failed to rebroadcast connectivity");
         }
     }
 
@@ -83,7 +83,7 @@ public class ConnectivityBroadcaster(
     {
         try
         {
-            logger.LogInformation("Firing Mediator Connection Changed to {conn}", conn);
+            logger?.LogInformation("Firing Mediator Connection Changed to {conn}", conn);
             this.connected = conn;
                 
             await mediator
@@ -92,7 +92,7 @@ public class ConnectivityBroadcaster(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error occured while connectivity Sprayer");
+            logger?.LogError(ex, "Error occured while connectivity Sprayer");
         }
     }
 }

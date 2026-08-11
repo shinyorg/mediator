@@ -35,6 +35,7 @@ Starting in v6.6 JSON flows through [`Shiny.Extensions.Serialization`](https://w
 - Instead of Assembly Scanning, we have source generators to automatically wireup the necessary registrations for you!
 - Think of "weak" message subscriptions without the fuss or mess to cleanup
 - Lightweight, No external dependencies, tiny bit of reflection
+- `ILogger` & `IConfiguration` are optional - no `AddLogging()` or configuration source required to run; configuration-driven middleware simply turns itself off and the attribute equivalents keep working
 - Help remove service overrun and reduce your constructor fat
 - Easy to Unit Test
 - Checkout our [MAUI](https://shinylib.net/mediator/extensions/maui) & [Blazor](https://shinylib.net/mediator/extensions/blazor)

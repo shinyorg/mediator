@@ -128,6 +128,20 @@ builder.Services.AddShinyMediator(x => x
 );
 ```
 
+**Logging & Configuration are optional (v6.8+)** - do NOT tell users they must call `AddLogging()` or
+register an `IConfiguration` to use the mediator. Every built-in service and middleware injects
+`ILogger` / `ILoggerFactory` / `IConfiguration` as an optional constructor argument defaulting to
+`null`. With no logging registered, log statements are skipped. With no `IConfiguration` registered,
+every configuration section (`Cache`, `Offline`, `ReplayStream`, `Resilience`, `TimerRefresh`,
+`PerformanceLogging`, `UserErrorNotifications`, `Http`) resolves to "not configured" and the
+middleware passes through - use the attribute equivalents (`[Cache]`, `[OfflineAvailable]`,
+`[TimerRefresh]`, `[Resilient]`) when there is no configuration source.
+
+Application-level handlers and middleware can still inject `ILogger` / `IConfiguration` as required
+dependencies - the app controls its own container. Follow the optional convention (`ILogger<T>? logger = null`
+last in the constructor, `logger?.LogDebug(...)`) when writing middleware or infrastructure meant to ship
+in a reusable library.
+
 ## JSON Serialization (v6.6+)
 
 Mediator uses `Shiny.ISerializer` from `Shiny.Extensions.Serialization`. The default chain is

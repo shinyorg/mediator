@@ -18,14 +18,14 @@ static class MediatorExceptionHandling
     public static async Task<bool> TryHandle(
         MediatorContext context,
         Exception exception,
-        ILogger logger
+        ILogger? logger
     )
     {
         context.Exception = exception;
 
         if (context.BypassExceptionHandlingEnabled)
         {
-            logger.LogDebug("Bypassing exception handling is enabled");
+            logger?.LogDebug("Bypassing exception handling is enabled");
             return false;
         }
 
@@ -40,7 +40,7 @@ static class MediatorExceptionHandling
             foreach (var eh in exceptionHandlers)
             {
                 var handlerType = eh.GetType().FullName ?? "Unknown";
-                logger.LogDebug("Trying to handle exception with {HandlerType}", handlerType);
+                logger?.LogDebug("Trying to handle exception with {HandlerType}", handlerType);
 
                 handled = await eh
                     .Handle(
@@ -51,7 +51,7 @@ static class MediatorExceptionHandling
 
                 if (handled)
                 {
-                    logger.LogWarning(exception, "Exception handled by {HandlerType}", handlerType);
+                    logger?.LogWarning(exception, "Exception handled by {HandlerType}", handlerType);
                     break;
                 }
             }
@@ -60,7 +60,7 @@ static class MediatorExceptionHandling
         if (!handled)
         {
             // we log as debug to let the exception bubble all the way out for the final app layers to decide the fate
-            logger.LogDebug(exception, "No exception handlers managed the exception");
+            logger?.LogDebug(exception, "No exception handlers managed the exception");
         }
 
         return handled;

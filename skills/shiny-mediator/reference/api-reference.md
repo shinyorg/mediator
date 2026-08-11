@@ -284,13 +284,17 @@ Base class for all generated HTTP handlers. Handles request execution, response 
 
 ```csharp
 public record HttpHandlerServices(
-    ILoggerFactory LoggerFactory,
-    IConfiguration Configuration,
-    ISerializerService Serializer,
+    Shiny.ISerializer Serializer,
     IHttpClientFactory HttpClientFactory,
-    IEnumerable<IHttpRequestDecorator> Decorators
+    IEnumerable<IHttpRequestDecorator> Decorators,
+    ILoggerFactory? LoggerFactory = null,
+    IConfiguration? Configuration = null
 );
 ```
+
+`LoggerFactory` and `Configuration` are optional - with no `IConfiguration` registered,
+`Mediator:Http:Timeout` falls back to 20 seconds and `Mediator:Http:Debug` to off, but
+`GetBaseUri` still throws when no base URI is configured for a relative-route request.
 
 ### IHttpRequestDecorator
 Customize HTTP requests before they are sent (e.g., add auth headers):

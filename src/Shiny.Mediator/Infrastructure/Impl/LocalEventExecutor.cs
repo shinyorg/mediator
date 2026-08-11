@@ -33,7 +33,7 @@ public class LocalEventExecutor(
         if (handlers.Count == 0)
             return;
         
-        var logger = services.GetRequiredService<ILogger<TEvent>>();
+        var logger = services.GetService<ILogger<TEvent>>();
         var bypass = context.BypassMiddlewareEnabled;
         var middlewares = bypass ? [] : services.GetServices<IEventMiddleware<TEvent>>();
         
@@ -91,8 +91,8 @@ public class LocalEventExecutor(
     async Task PublishCore<TEvent>(
         IMediatorContext context,
         TEvent @event,
-        IEventHandler<TEvent> eventHandler, 
-        ILogger logger,
+        IEventHandler<TEvent> eventHandler,
+        ILogger? logger,
         IEnumerable<IEventMiddleware<TEvent>> middlewares,
         CancellationToken cancellationToken
     ) where TEvent : IEvent
@@ -101,7 +101,7 @@ public class LocalEventExecutor(
         {
             using (context.StartActivity("Handler"))
             {
-                logger.LogDebug(
+                logger?.LogDebug(
                     "Executing Event Handler {HandlerType}",
                     eventHandler.GetType().FullName
                 );
@@ -117,7 +117,7 @@ public class LocalEventExecutor(
                 {
                     using (context.StartActivity("Middleware"))
                     {
-                        logger.LogDebug(
+                        logger?.LogDebug(
                             "Executing event middleware {MiddlewareType}",
                             middleware.GetType().FullName
                         );

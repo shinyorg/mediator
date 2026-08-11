@@ -13,9 +13,9 @@ namespace Shiny.Mediator.Resilience.Handlers;
 /// the request flows through unchanged.
 /// </summary>
 public class ResilientRequestMiddleware<TRequest, TResult>(
-    ILogger<ResilientRequestMiddleware<TRequest, TResult>> logger,
-    IConfiguration configuration,
-    ResiliencePipelineProvider<string> pipelineProvider
+    ResiliencePipelineProvider<string> pipelineProvider,
+    ILogger<ResilientRequestMiddleware<TRequest, TResult>>? logger = null,
+    IConfiguration? configuration = null
 ) : IRequestMiddleware<TRequest, TResult> where TRequest : IRequest<TResult>
 {
     /// <inheritdoc/>
@@ -42,7 +42,7 @@ public class ResilientRequestMiddleware<TRequest, TResult>(
             return await next().ConfigureAwait(false);
 
         // it can't cancel properly here... may need to make next take a CancellationToken
-        logger.LogDebug("Resilience Enabled - {Request}", context.Message);
+        logger?.LogDebug("Resilience Enabled - {Request}", context.Message);
         var result = await pipeline
             .ExecuteAsync(async _ => await next(), cancellationToken)
             .ConfigureAwait(false);

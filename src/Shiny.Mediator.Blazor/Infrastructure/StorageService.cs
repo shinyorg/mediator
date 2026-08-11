@@ -11,15 +11,15 @@ namespace Shiny.Mediator.Blazor.Infrastructure;
 /// <c>{category}_{key}</c>.
 /// </summary>
 public class StorageService(
-    ILogger<StorageService> logger,
     IJSRuntime jsruntime,
-    Shiny.ISerializer serializer
+    Shiny.ISerializer serializer,
+    ILogger<StorageService>? logger = null
 ) : IStorageService
 {
     /// <inheritdoc/>
     public async Task Set<T>(string category, string key, T value, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Storing {Category}-{key}", category, key);
+        logger?.LogInformation("Storing {Category}-{key}", category, key);
         var content = serializer.Serialize(value);
         var requestKey = $"{category}_{key}";
         await jsruntime
@@ -50,7 +50,7 @@ public class StorageService(
     /// <inheritdoc/>
     public async Task Remove(string category, string requestKey, bool partialMatchKey = false, CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Evicting {Category}-{key}", category, requestKey);
+        logger?.LogInformation("Evicting {Category}-{key}", category, requestKey);
         await jsruntime.InvokeVoidAsync("MediatorServices.removeStore", cancellationToken, this.GetKey(category, requestKey));
     }
 

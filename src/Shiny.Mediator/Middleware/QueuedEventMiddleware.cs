@@ -15,7 +15,7 @@ namespace Shiny.Mediator.Middleware;
 /// </summary>
 [MiddlewareOrder(50)]
 public class QueuedEventMiddleware<TEvent>(
-    ILogger<QueuedEventMiddleware<TEvent>> logger
+    ILogger<QueuedEventMiddleware<TEvent>>? logger = null
 ) : IEventMiddleware<TEvent> where TEvent : IEvent
 {
     record SampleState(long MillisecondsDelay) : IDisposable
@@ -25,7 +25,7 @@ public class QueuedEventMiddleware<TEvent>(
         CancellationTokenSource? timerCts;
         EventHandlerDelegate? pendingNext;
 
-        public void Enqueue(EventHandlerDelegate next, ILogger logger)
+        public void Enqueue(EventHandlerDelegate next, ILogger? logger)
         {
             lock (this.syncLock)
             {
@@ -58,7 +58,7 @@ public class QueuedEventMiddleware<TEvent>(
                             }
                             catch (Exception ex)
                             {
-                                logger.LogError(ex, "Error executing sampled event handler");
+                                logger?.LogError(ex, "Error executing sampled event handler");
                             }
                         }
                     }, TaskContinuationOptions.OnlyOnRanToCompletion);
@@ -83,7 +83,7 @@ public class QueuedEventMiddleware<TEvent>(
         readonly Lock syncLock = new();
         bool inCooldown;
 
-        public bool TryExecute(ILogger logger)
+        public bool TryExecute(ILogger? logger)
         {
             lock (this.syncLock)
             {
@@ -124,7 +124,7 @@ public class QueuedEventMiddleware<TEvent>(
             var eventType = context.Message.GetType().FullName ?? "unknown";
             var key = $"{eventType}::{handlerType}";
 
-            logger.LogDebug("Sampling event {EventType} for handler {HandlerType} with {Milliseconds}ms window", eventType, handlerType, sampleAttribute.Milliseconds);
+            logger?.LogDebug("Sampling event {EventType} for handler {HandlerType} with {Milliseconds}ms window", eventType, handlerType, sampleAttribute.Milliseconds);
 
             var state = this.sampleStates.GetOrAdd(key, _ => new SampleState(sampleAttribute.Milliseconds));
             state.Enqueue(next, logger);
@@ -144,11 +144,11 @@ public class QueuedEventMiddleware<TEvent>(
 
             if (state.TryExecute(logger))
             {
-                logger.LogDebug("Throttle executing event {EventType} for handler {HandlerType}", eventType, handlerType);
+                logger?.LogDebug("Throttle executing event {EventType} for handler {HandlerType}", eventType, handlerType);
                 return next();
             }
 
-            logger.LogDebug("Throttle discarding event {EventType} for handler {HandlerType} - in cooldown", eventType, handlerType);
+            logger?.LogDebug("Throttle discarding event {EventType} for handler {HandlerType} - in cooldown", eventType, handlerType);
             return Task.CompletedTask;
         }
 

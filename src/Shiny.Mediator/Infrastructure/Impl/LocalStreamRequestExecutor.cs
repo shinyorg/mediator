@@ -71,13 +71,13 @@ public class StreamRequestWrapper<TRequest, TResult>(
             throw new InvalidOperationException("No request handler found for " + request.GetType().FullName);
 
         context.MessageHandler = requestHandler;
-        var logger = context.ServiceScope.ServiceProvider.GetRequiredService<ILogger<TRequest>>();
+        var logger = context.ServiceScope.ServiceProvider.GetService<ILogger<TRequest>>();
         
         var handlerExec = new StreamRequestHandlerDelegate<TResult>(() =>
         {
             using (var handlerActivity = context.StartActivity("Handler"))
             {
-                logger.LogDebug(
+                logger?.LogDebug(
                     "Executing streaming request handler {RequestHandlerType}",
                     requestHandler.GetType().FullName
                 );
@@ -94,7 +94,7 @@ public class StreamRequestWrapper<TRequest, TResult>(
                 {
                     using (var midActivity = context.StartActivity("Middleware"))
                     {
-                        logger.LogDebug(
+                        logger?.LogDebug(
                             "Executing stream middleware {MiddlewareType}",
                             middleware.GetType().FullName
                         );

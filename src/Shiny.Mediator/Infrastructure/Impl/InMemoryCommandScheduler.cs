@@ -9,9 +9,9 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 /// their due time elapses. Scheduled commands do not survive process restarts.
 /// </summary>
 public class InMemoryCommandScheduler(
-    ILogger<ICommandScheduler> logger,
     TimeProvider timeProvider,
-    IServiceProvider services
+    IServiceProvider services,
+    ILogger<ICommandScheduler>? logger = null
 ) : ICommandScheduler
 {
     readonly List<ScheduledItem> commands = new();
@@ -66,7 +66,7 @@ public class InMemoryCommandScheduler(
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Error running scheduled command");
+                    logger?.LogError(ex, "Error running scheduled command");
                 }
                 finally
                 {
