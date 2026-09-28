@@ -57,7 +57,7 @@ public class InternetService : IInternetService
         if (this.IsAvailable)
             return;
         
-        var tcs = new TaskCompletionSource();
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var handler = new NetworkStatusChangedEventHandler(_ => 
         {
             if (this.IsAvailable)
@@ -65,7 +65,7 @@ public class InternetService : IInternetService
         });
         try
         {
-            using var _ = cancelToken.Register(() => tcs.TrySetCanceled());
+            using var _ = cancelToken.Register(() => tcs.TrySetCanceled(cancelToken));
             NetworkInformation.NetworkStatusChanged += handler;
             await tcs.Task.ConfigureAwait(false);
         }

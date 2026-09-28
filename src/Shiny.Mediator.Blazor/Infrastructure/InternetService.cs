@@ -64,13 +64,13 @@ public class InternetService : IInternetService, IDisposable
         if (this.IsAvailable)
             return;
 
-        var tcs = new TaskCompletionSource();
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         lock (this.waiters)
             this.waiters.Add(tcs);
 
         await using var _ = cancelToken.Register(() =>
         {
-            tcs.TrySetCanceled();
+            tcs.TrySetCanceled(cancelToken);
             lock (this.waiters)
                 this.waiters.Remove(tcs);
         });

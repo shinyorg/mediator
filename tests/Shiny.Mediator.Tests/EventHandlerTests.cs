@@ -228,6 +228,29 @@ public class EventHandlerTests
 
 
     [Fact]
+    public async Task WaitForSingleEvent_DoesNotResumeWaiterInlineOnPublisher()
+    {
+        var mediator = this.SetupMediator();
+        var waitTask = mediator.WaitForSingleEvent<TestEvent>();
+
+        // blocks whichever thread completes waitTask - if the waiter were resumed inline on the
+        // publisher's stack, Publish would not return until this is released
+        using var gate = new ManualResetEventSlim();
+        var blocked = waitTask.ContinueWith(_ => gate.Wait(TimeSpan.FromSeconds(10)), TaskContinuationOptions.ExecuteSynchronously);
+
+        // publish from another thread - an inline continuation would otherwise block this test's thread
+        // synchronously inside Publish rather than showing up as an incomplete task
+        var publish = Task.Run(() => mediator.Publish(new TestEvent { Delay = 1 }));
+        var completed = await Task.WhenAny(publish, Task.Delay(5000));
+        gate.Set();
+
+        completed.ShouldBe(publish, "Publish was held up by the waiter's continuation running inline");
+        await blocked;
+        (await waitTask).Delay.ShouldBe(1);
+    }
+
+
+    [Fact]
     public async Task WaitForSingleEvent_Cancellation_Throws()
     {
         var mediator = this.SetupMediator();

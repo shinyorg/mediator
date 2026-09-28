@@ -24,17 +24,28 @@ public class MainThreadCommandMiddleware<TCommand>(
             return next();
 
         logger?.LogDebug("MainThread Enabled - {Request}", context.Message);
-        var tcs = new TaskCompletionSource();
+        // RunContinuationsAsynchronously: completing this from the UI thread must not resume the
+        // caller's continuation inline on the UI thread.
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         MainThread.BeginInvokeOnMainThread(async () =>
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                tcs.TrySetCanceled(cancellationToken);
+                return;
+            }
             try
             {
                 await next().ConfigureAwait(false);
-                tcs.SetResult();
+                tcs.TrySetResult();
+            }
+            catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
+            {
+                tcs.TrySetCanceled(ex.CancellationToken);
             }
             catch (Exception ex)
             {
-                tcs.SetException(ex);
+                tcs.TrySetException(ex);
             }
         });
         return tcs.Task;

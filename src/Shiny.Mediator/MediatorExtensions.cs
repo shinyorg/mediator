@@ -22,7 +22,7 @@ public static class MediatorExtensions
             CancellationToken cancellationToken = default
         ) where T : IEvent
         {
-            var tcs = new TaskCompletionSource<T>();
+            var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
             await using var u1 = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
             using var u2 = mediator.Subscribe<T>((ev, ctx, ct) =>
             {

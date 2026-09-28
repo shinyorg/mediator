@@ -42,7 +42,7 @@ public class InternetService(IConnectivity connectivity) : IInternetService
         if (this.IsAvailable)
             return;
         
-        var tcs = new TaskCompletionSource();
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var handler = new EventHandler<ConnectivityChangedEventArgs>((sender, args) =>
         {
             if (args.NetworkAccess == NetworkAccess.Internet)
@@ -50,7 +50,7 @@ public class InternetService(IConnectivity connectivity) : IInternetService
         });
         try
         {
-            using var _ = cancelToken.Register(() => tcs.TrySetCanceled());
+            using var _ = cancelToken.Register(() => tcs.TrySetCanceled(cancelToken));
             connectivity.ConnectivityChanged += handler;
             await tcs.Task.ConfigureAwait(false);
         }
