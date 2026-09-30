@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>$(BaseTargetFramework)</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Shiny.Mediator</RootNamespace>
+        <Description>Shiny Mediator - expose mediator requests and commands to Siri, Shortcuts, Apple Intelligence and Android AppFunctions (Gemini) through Shiny.AppFunctions</Description>
+        <PackageTags>$(PackageTags) appfunctions siri appintents gemini</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- analyzers + buildTransitive must flow so apps get the Shiny.AppFunctions generator from this package alone -->
+        <PackageReference Include="Shiny.AppFunctions" PrivateAssets="none"/>
+    </ItemGroup>
+</Project>

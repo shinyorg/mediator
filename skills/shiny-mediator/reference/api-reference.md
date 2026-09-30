@@ -11,6 +11,7 @@ dotnet add package Shiny.Mediator.Maui          # For .NET MAUI
 dotnet add package Shiny.Mediator.Blazor        # For Blazor
 dotnet add package Shiny.Mediator.AspNet        # For ASP.NET
 dotnet add package Shiny.Mediator.Uno           # For Uno Platform
+dotnet add package Shiny.Mediator.AppFunctions  # Siri / Shortcuts / Apple Intelligence / Android AppFunctions (Gemini)
 
 # Middleware packages
 dotnet add package Shiny.Mediator.Resilience    # Polly resilience
@@ -29,6 +30,7 @@ dotnet add package Shiny.Mediator.AppSupport    # Offline, replay, user notifica
 | `Shiny.Mediator.Blazor` | Blazor integration |
 | `Shiny.Mediator.AspNet` | ASP.NET integration |
 | `Shiny.Mediator.Uno` | Uno Platform integration |
+| `Shiny.Mediator.AppFunctions` | Requests/commands as Siri, Shortcuts & Gemini app functions (brings Shiny.AppFunctions + its generator) |
 | `Shiny.Mediator.Prism` | Prism MVVM integration |
 | `Shiny.Mediator.AppSupport` | Offline, replay, user notifications |
 | `Shiny.Mediator.Resilience` | Polly resilience middleware |
@@ -231,6 +233,41 @@ public interface IMediatorContext
     Task Publish<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : IEvent;
 }
 ```
+
+## App Functions (Shiny.Mediator.AppFunctions)
+
+Namespace `Shiny.Mediator` (attributes/types from `Shiny.AppFunctions`). Contracts and handlers must be in the app project.
+
+```csharp
+// contracts
+public interface IAppFunctionRequest<TResult> : IRequest<TResult>, IAppFunction<TResult>;
+public interface IAppFunctionCommand : ICommand, IAppFunction;
+
+// handlers - implement only the mediator Handle; the app function Handle is a default implementation
+// that forwards through IMediator (full middleware pipeline)
+public interface IAppFunctionRequestHandler<TRequest, TResult>
+    : IRequestHandler<TRequest, TResult>, IAppFunctionHandler<TRequest, TResult>
+    where TRequest : IRequest<TResult>, IAppFunction<TResult>;
+
+public interface IAppFunctionCommandHandler<TCommand>
+    : ICommandHandler<TCommand>, IAppFunctionHandler<TCommand>
+    where TCommand : ICommand, IAppFunction;
+
+// forward a hand-written IAppFunctionHandler to a mediator contract (e.g. one in a shared library)
+public static class MediatorAppFunctions
+{
+    public const string AppFunctionContextHeader = "AppFunctions.Context";
+    Task<TResult> Request<TRequest, TResult>(TRequest request, AppFunctionContext context, CancellationToken ct) where TRequest : IRequest<TResult>;
+    Task Send<TCommand>(TCommand command, AppFunctionContext context, CancellationToken ct) where TCommand : ICommand;
+}
+
+// IMediatorContext extensions
+AppFunctionContext? GetAppFunctionContext(this IMediatorContext context);  // walks parents; null for normal calls
+bool IsAppFunctionCall(this IMediatorContext context);
+IMediatorContext SayToAssistant(this IMediatorContext context, string dialog);  // Siri dialog / Android response text
+```
+
+Error mapping: `AppFunctionException` passes through; `ValidateException` → `AppFunctionErrorCode.InvalidArgument` (validation messages joined); others → `AppError`.
 
 ## Attributes
 

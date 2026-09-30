@@ -23,7 +23,8 @@ public class DataAnnotationsRequestMiddleware<TRequest, TResult> : AbstractValid
         Validator.TryValidateObject(
             request!,
             new ValidationContext(request!),
-            results
+            results,
+            validateAllProperties: true // otherwise only [Required] runs - [Range], [Url], [StringLength], etc. are skipped
         );
         
         foreach (var result in results!)

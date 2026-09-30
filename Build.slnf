@@ -4,6 +4,7 @@
         "projects": [
             "src\\Shiny.Mediator\\Shiny.Mediator.csproj",
             "src\\Shiny.Mediator.SourceGenerators\\Shiny.Mediator.SourceGenerators.csproj",
+            "src\\Shiny.Mediator.AppFunctions\\Shiny.Mediator.AppFunctions.csproj",
             "src\\Shiny.Mediator.AppSupport\\Shiny.Mediator.AppSupport.csproj",
             "src\\Shiny.Mediator.AspNet.SourceGenerators\\Shiny.Mediator.AspNet.SourceGenerators.csproj",
             "src\\Shiny.Mediator.AspNet\\Shiny.Mediator.AspNet.csproj",

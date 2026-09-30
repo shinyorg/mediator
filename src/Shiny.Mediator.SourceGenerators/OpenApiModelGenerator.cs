@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.OpenApi;
 
@@ -50,7 +51,7 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
 
         if (this.generatedTypes.Add(className))
         {
-            if (schema.Enum?.Count > 0)
+            if (IsGeneratableEnum(schema))
             {
                 GenerateEnum(className, schema);
             }
@@ -61,7 +62,42 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         }
     }
 
-    
+
+    /// <summary>
+    /// Only string and integral enums map to a C# enum. Anything else (e.g. boolean "const" style
+    /// enums like <c>type: boolean, enum: [false]</c>) falls back to the schema's plain type.
+    /// </summary>
+    static bool IsGeneratableEnum(IOpenApiSchema schema)
+    {
+        var values = schema.Enum?.Where(x => x != null).ToList();
+        if (values == null || values.Count == 0)
+            return false;
+
+        if (values.All(x => x!.GetValueKind() == System.Text.Json.JsonValueKind.String))
+            return true;
+
+        return values.All(x => TryGetEnumInt(x!, out _));
+    }
+
+
+    // YAML documents surface numbers as decimal-backed JsonValues, so GetValue<int>() throws - parse the raw json instead
+    static bool TryGetEnumInt(System.Text.Json.Nodes.JsonNode node, out int value)
+    {
+        value = 0;
+        if (node.GetValueKind() != System.Text.Json.JsonValueKind.Number)
+            return false;
+
+        if (!Decimal.TryParse(node.ToJsonString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var d))
+            return false;
+
+        if (d != Decimal.Truncate(d) || d < Int32.MinValue || d > Int32.MaxValue)
+            return false;
+
+        value = (int)d;
+        return true;
+    }
+
+
     void GenerateEnum(string enumName, IOpenApiSchema schema)
     {
         var sb = new StringBuilder();
@@ -84,6 +120,11 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         {
             sb.AppendLine($"[global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonStringEnumConverter<global::{config.Namespace}.{enumName}>))]");
         }
+        else
+        {
+            // without a converter attribute, generated json converters treat enums as strings
+            sb.AppendLine($"[global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonNumberEnumConverter<global::{config.Namespace}.{enumName}>))]");
+        }
 
         sb.AppendLine(Constants.GeneratedCodeAttributeString);
         sb.AppendLine($"{accessor} enum {enumName}");
@@ -91,12 +132,31 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
 
         if (isStringEnum)
         {
+            var memberNames = new HashSet<string>();
             foreach (var ev in schema.Enum!)
             {
                 if (ev != null)
                 {
                     var strValue = ev.GetValue<string>();
-                    sb.AppendLine($"    {strValue},");
+                    var memberName = strValue;
+
+                    // values like "Too Many Requests" aren't valid members - sanitize and map back to the wire value
+                    if (!SyntaxFacts.IsValidIdentifier(strValue) || SyntaxFacts.GetKeywordKind(strValue) != SyntaxKind.None)
+                    {
+                        memberName = strValue.Pascalize().ToSafeIdentifier();
+                        if (SyntaxFacts.GetKeywordKind(memberName) != SyntaxKind.None)
+                            memberName = "_" + memberName;
+                    }
+
+                    var baseName = memberName;
+                    var i = 2;
+                    while (!memberNames.Add(memberName))
+                        memberName = baseName + i++;
+
+                    if (memberName != strValue)
+                        sb.AppendLine($"    [global::System.Text.Json.Serialization.JsonStringEnumMemberName(\"{strValue.Replace("\\", "\\\\").Replace("\"", "\\\"")}\")]");
+
+                    sb.AppendLine($"    {memberName},");
                 }
             }
         }
@@ -106,8 +166,9 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
             {
                 if (ev != null)
                 {
-                    var intValue = ev.GetValue<int>();
-                    sb.AppendLine($"    Value{intValue} = {intValue},");
+                    TryGetEnumInt(ev, out var intValue);
+                    var memberName = intValue < 0 ? $"ValueMinus{-(long)intValue}" : $"Value{intValue}";
+                    sb.AppendLine($"    {memberName} = {intValue},");
                 }
             }
         }
@@ -179,7 +240,7 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
                             GenerateClass(typeName, propSchema);
                         }
                     }
-                    else if (propSchema.Enum?.Count > 0 && String.IsNullOrEmpty(propSchema.Title))
+                    else if (IsGeneratableEnum(propSchema) && String.IsNullOrEmpty(propSchema.Title))
                     {
                         // Generate nested enum (only if not already generated)
                         typeName = className + propertyName;

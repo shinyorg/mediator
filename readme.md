@@ -28,6 +28,7 @@ Starting in v6.6 JSON flows through [`Shiny.Extensions.Serialization`](https://w
 - A Mediator for your ALL .NET Apps
 - Fully AOT & Trimming friendly
 - [AI Tool Integration](https://shinylib.net/mediator/extensions/ai) - Expose your contracts as AI-callable tools via Microsoft.Extensions.AI
+- [App Functions](https://shinylib.net/mediator/extensions/appfunctions) - Run your requests & commands from Siri, Shortcuts, Apple Intelligence & Android AppFunctions (Gemini) - through the full middleware pipeline
 - [Request/Response Handling](https://shinylib.net/mediator/requests)
 - [Event Publication](https://shinylib.net/mediator/events)
 - [Async Enumerable Stream Requests](https://shinylib.net/mediator/streams)

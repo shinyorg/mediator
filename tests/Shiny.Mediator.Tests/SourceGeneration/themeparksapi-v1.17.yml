@@ -1,0 +1,2375 @@
+openapi: 3.0.0
+info:
+  title: V1 API
+  version: 1.17.0+6d34799
+  description: >-
+    Live wait times, operating status, schedules and history for theme parks,
+    water parks and other attractions worldwide.
+
+
+    ## Start here
+
+
+    - See plans and their limits on the [pricing
+    page](https://www.themeparks.wiki/pricing).
+
+    - Call GET /v1/me to see your key's plan, history window and remaining
+    budgets.
+
+    - Find worked examples in the
+    [recipes](https://www.themeparks.wiki/api/recipes), and more in the
+    [guides](https://www.themeparks.wiki/api).
+
+    - Download this document as [JSON](/docs/v1.json) or [YAML](/docs/v1.yaml).
+
+
+    An API key is optional on the data endpoints. You need one for GET /v1/me
+    and the WebSocket. Send it in the `X-API-Key` header.
+
+
+    Fields with a fixed set of values, such as statuses and entity types, may
+    gain new values in a later version of this API. Treat a value you do not
+    recognise as unknown.
+
+
+    ## Polling and caching
+
+
+    Live data updates about every minute; entity details and schedules about
+    every five minutes. Polling more often returns the same data. Responses
+    carry Cache-Control and ETag headers. Honour them, and send If-None-Match to
+    get an empty 304 when nothing has changed.
+
+
+    ## Limits
+
+
+    Every call counts against a request limit of 300 requests every minute
+    without a key (counted per IP address) or with a free key, 600 on Pro, 1500
+    on Business and unmetered on Enterprise. Over it you get 429 with
+    `retryAfter`. The RateLimit-Limit, -Policy, -Remaining and -Reset headers
+    show where you stand; unmetered plans get none.
+
+
+    The three /v1/entity/{id}/history calls also share an hourly budget: 60 an
+    hour without a key, 600 with a free key, 1200 on Pro, 3000 on Business and
+    unmetered on Enterprise. Over it you get 429 HISTORY_RATE_LIMITED with
+    `retryAfter`. The request limit is checked first.
+
+
+    History responses carry RateLimit-History-Limit, -Policy, -Remaining and
+    -Reset, except a successful response to a call without a key, a 404 for an
+    unknown id, and a 429 from the request limit. Unmetered plans get none. GET
+    /v1/me shows both budgets without spending the history budget.
+
+
+    History reaches back 7 days without a key, 30 with a free key and more on
+    paid plans; GET /v1/me shows your window. An earlier day returns 403
+    HISTORY_WINDOW_EXCEEDED with the earliest allowed date. /history/coverage
+    has no window.
+
+
+    Without a key, a history response that covers today can be up to an hour
+    behind the live feed.
+
+
+    ## Notes on history data
+
+
+    Ride status at Warner Bros. Movie World, Sea World Gold Coast and Wet'n'Wild
+    Gold Coast is reconstructed from wait activity during the park's published
+    hours before 2026-09-27 11:25 UTC; from then on the park's own status is
+    used. On a day with published hours, a ride whose wait changed reads
+    OPERATING during them. Breakdowns in the reconstructed period are not
+    recoverable. While it applies, today's status can be revised until the day
+    ends: a ride keeps its reported status until its wait first changes during
+    the park's hours.
+
+
+    Ride status at Attractiepark Toverland, Tokyo Disneyland, Tokyo DisneySea
+    and Europa-Park is corrected for an early-morning feed error until our fix
+    for it (Attractiepark Toverland at 2026-04-16 07:17 UTC, Tokyo Disney Resort
+    at 2026-06-16 20:46 UTC and Europa-Park until it is live): a ride reported
+    open before the park's published opening time reads closed until that
+    opening, except at Europa-Park, where a ride whose wait was changing in the
+    hour before reads open from that change. This correction leaves days without
+    published hours, and all wait times, as reported.
+
+
+    At Europa-Park, until our fix is live, a ride reported open on a day the
+    park published no opening hours, with no wait above zero all day, reads
+    closed: the park's feed lists closed rides that way through its winter
+    closure. A ride that reported a real wait that day is as reported.
+
+
+    At Genting SkyWorlds Theme Park, the park was closed on 2026-06-09,
+    2026-06-23, 2026-06-30, 2026-07-07, 2026-07-14, 2026-07-21, 2026-07-28,
+    2026-08-04, 2026-08-11, 2026-08-18, 2026-09-08, 2026-09-22 and 2026-09-29
+    while its feed reported it open, with every ride down. History holds no
+    readings for those days: each ride reads closed all day, the status it ended
+    the previous day with, and /history/daily has no row for them.
+
+
+    Wait values above 24 hours (1440 minutes) are feed errors and are omitted.
+
+
+    ## Live data over WebSocket
+
+
+    Live data is also pushed over a WebSocket, so you do not have to poll. It is
+    not an HTTP endpoint, so it is not listed below.
+
+
+    Connect to `wss://api.themeparks.wiki/v1/live` (TLS only). You need an API
+    key: send it in the `X-API-Key` header when you connect or, from a browser,
+    send `{"type":"auth","apiKey":"<key>"}` as the first message within 5
+    seconds. A key in the URL query string is refused with close code 3001.
+
+
+    Offer the `preview` subprotocol to get the message format the WebSocket
+    guide documents. Without it you get an older format, which will stop being
+    the default; offer `legacy` to keep that one.
+
+
+    The server pings every connection every 30 seconds and sends a heartbeat
+    message to a connection that has had no data for that long; the `preview`
+    `welcome` frame states the interval as `heartbeatIntervalMs`. Reset a read
+    deadline on every frame, heartbeats included, and if nothing arrives for 60
+    to 90 seconds, reconnect with backoff.
+
+
+    Your plan sets how many connections and subscriptions you can open, and
+    whether you can subscribe to every entity at once. The [WebSocket
+    guide](https://www.themeparks.wiki/api/websockets) covers the full protocol.
+servers:
+  - url: https://api.themeparks.wiki
+    description: Production server
+paths:
+  /v1/destinations:
+    get:
+      summary: List destinations
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationsResponse"
+        "429":
+          description: Too many requests. Wait `retryAfter` seconds (also the Retry-After
+            header).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimited"
+      operationId: getAllDestinations
+      parameters: []
+      description: "Returns every destination with its parks (id and name). This is
+        the place to start: take an id from here and call GET
+        /v1/entity/{id}/children for what is inside it, /live for what it is
+        doing, or /schedule for its opening hours. Cache it; it rarely changes."
+      tags:
+        - v1
+  /v1/entity/{id}:
+    get:
+      summary: Get an entity
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityData"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityNotFound"
+        "429":
+          description: Too many requests. Wait `retryAfter` seconds (also the Retry-After
+            header).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimited"
+      operationId: getEntityById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: "The entity: its UUID, its slug, or for a destination its
+            `externalId`."
+      description: "Returns what this entity is: its name, entityType, timezone,
+        location, parent and park, and its attributes. `id` can be an entity's
+        UUID, its slug or, for a destination, its `externalId`. An unknown or
+        malformed id returns 404. Attributes appear as extra top-level keys
+        named after them, such as `minimumHeight` and `mayGetWet`, so the set of
+        keys varies; read the ones you need. For what the entity is doing now,
+        call GET /v1/entity/{id}/live."
+      tags:
+        - v1
+  /v1/entity/{id}/children:
+    get:
+      summary: List the entities inside an entity
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityChildrenResponse"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityNotFound"
+        "429":
+          description: Too many requests. Wait `retryAfter` seconds (also the Retry-After
+            header).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimited"
+      operationId: getEntityChildren
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: "The entity: its UUID, its slug, or for a destination its
+            `externalId`."
+      description: Returns the entities beneath this one as a flat array, each with
+        id, name, entityType, slug, externalId, location and parentId. `id` can
+        be an entity's UUID, its slug or, for a destination, its `externalId`.
+        An unknown or malformed id returns 404. For a DESTINATION or a PARK you
+        get everything inside it, not just one level; for any other entityType
+        you get its direct children. Rebuild the tree from `parentId`. Removed
+        entities are not listed.
+      tags:
+        - v1
+  /v1/entity/{id}/history:
+    get:
+      summary: History of an entity
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/HistoryEnvelope"
+                  - $ref: "#/components/schemas/HistoryParkRawEnvelope"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/HistoryErrorInvalidDate"
+                  - $ref: "#/components/schemas/HistoryErrorInvalidRange"
+                  - $ref: "#/components/schemas/HistoryErrorRangeTooLong"
+        "403":
+          description: Access forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HistoryErrorWindowExceeded"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HistoryErrorNotFound"
+        "429":
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/HistoryErrorRateLimited"
+                  - $ref: "#/components/schemas/RateLimited"
+        "502":
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HistoryErrorBackendUnavailable"
+      operationId: getHistory
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: "The entity: its UUID, its slug, or for a destination its
+            `externalId`."
+        - in: query
+          name: date
+          required: false
+          description: One park-local day, YYYY-MM-DD. Cannot be combined with from/to.
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: from
+          required: false
+          description: "Start: a park-local day (YYYY-MM-DD, inclusive) or an RFC 3339
+            instant with an offset (inclusive). from and to must be the same
+            form."
+          schema:
+            type: string
+        - in: query
+          name: to
+          required: false
+          description: "End: a day (inclusive) or an instant (exclusive). Defaults to
+            today, or now. Up to 31 park-local days per call for a single
+            entity. For a park, 1 park-local day, and a longer range returns 400
+            RANGE_TOO_LONG."
+          schema:
+            type: string
+      description: >-
+        Returns an entity's history as one row per change. Each row is the
+        entity's complete live data at that moment (the same keys as /live) plus
+        `time` and `changed`. Ask for one park-local day (`date=YYYY-MM-DD`), a
+        range of days (`from` and `to`, both inclusive), or RFC 3339 instants
+        with an offset (`to` exclusive). With no parameters you get today. A
+        call covers up to 31 days. The `opening` object is the state at the
+        start of the range: the last reading of every field, however old, with
+        `opening.observedAt` saying when it was seen, so the first row is
+        already complete. `coverage.firstRecordedAt` is the first day we hold
+        anything for this entity.
+
+
+        For a park, the 200 is `HistoryParkRawEnvelope`: an `entities[]` array
+        with the same `coverage`, `opening` object and `history` for each entity
+        that has history, the park included if it has its own. A park call
+        covers 1 park-local day, and a longer range returns 400 RANGE_TOO_LONG.
+        Every other entityType gets the single-entity shape, so the 200 is a
+        union of two schemas selected by `entityType`. A call costs one unit of
+        the hourly history budget, however large the park.
+
+
+        See "Limits" above for the history window and hourly budget.
+      tags:
+        - v1
+  /v1/entity/{id}/history/coverage:
+    get:
+      summary: History held for an entity
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/HistoryCoverageDocument"
+                  - $ref: "#/components/schemas/HistoryParkCoverageDocument"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HistoryErrorNotFound"
+        "429":
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/HistoryErrorRateLimited"
+                  - $ref: "#/components/schemas/RateLimited"
+      operationId: getHistoryCoverage
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: "The entity: its UUID, its slug, or for a destination its
+            `externalId`."
+      description: >-
+        Returns the history we hold for this entity, per field: the first and
+        last park-local day we recorded each field (`status`, `queue.STANDBY`,
+        `showtimes` and so on), keyed by the same live-data paths as /live,
+        /history and /history/daily. Fields the entity never reported are left
+        out of `kinds`. Recording runs 2 to 3 days behind live data, so `last`
+        and `lastRecordedAt` usually trail today by that much, even for a field
+        still being published; use /live to see what is current.
+        `retrievableThrough` is the newest day you can ask /history and
+        /history/daily for, usually today. An entity with nothing recorded
+        returns `kinds: {}` with null days, not 404. For a park, the 200 is
+        `HistoryParkCoverageDocument`, a summary across the park's entities.
+        This call takes no parameters, is not paged and has no history window,
+        but it does spend the hourly history budget.
+
+
+        See "Limits" above for the history window and hourly budget.
+      tags:
+        - v1
+  /v1/entity/{id}/history/daily:
+    get:
+      summary: Daily summaries of an entity's history
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/HistoryDailyEnvelope"
+                  - $ref: "#/components/schemas/HistoryParkDailyEnvelope"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/HistoryErrorInvalidDate"
+                  - $ref: "#/components/schemas/HistoryErrorInvalidRange"
+                  - $ref: "#/components/schemas/HistoryErrorRangeTooLong"
+        "403":
+          description: Access forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HistoryErrorWindowExceeded"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HistoryErrorNotFound"
+        "429":
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/HistoryErrorRateLimited"
+                  - $ref: "#/components/schemas/RateLimited"
+      operationId: getHistoryDaily
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: "The entity: its UUID, its slug, or for a destination its
+            `externalId`."
+        - in: query
+          name: date
+          required: false
+          description: One park-local day, YYYY-MM-DD. Cannot be combined with from/to.
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: from
+          required: false
+          description: "Start: a park-local day (YYYY-MM-DD) or an RFC 3339 instant with
+            an offset; rows are always whole days. from and to must be the same
+            form."
+          schema:
+            type: string
+        - in: query
+          name: to
+          required: false
+          description: "End: a day (inclusive) or an instant (exclusive). Defaults to
+            today. Up to 3660 park-local days per call."
+          schema:
+            type: string
+      description: >-
+        Returns one summary row per park-local day: minutes operating, down and
+        unknown, first opening and last close, wait statistics, show count and
+        change count. Parameters are as for /history; rows cover whole days. A
+        call covers up to 3660 days and is never paged. Days with no data are
+        left out. So are `standby`, `singleRider` and `showCount` when there was
+        nothing of that kind.
+
+
+        A run lasts from a change to OPERATING until the next change to CLOSED
+        or REFURBISHMENT, DOWN periods included. A row is counted like this:
+
+
+        - Outside the park's published hours, an OPERATING status counts as
+        `unknownMinutes`, not `operatingMinutes`, after 4 hours or more
+        unconfirmed. On a day with published hours, only a status change
+        confirms it; a status carried over midnight is unconfirmed. On other
+        days, any change but `showtimes` confirms it, across midnight.
+
+        - A wait counts only while the entity is OPERATING and on the day it was
+        posted. The wait showing when a ride opens counts if it last changed
+        within 24 hours.
+
+        - `extremeWaits` counts readings of 480 minutes or more, kept in the
+        statistics. Wait values above 1440 minutes (24 hours) are feed errors
+        and are omitted.
+
+        - `firstOperatingAt` is null when the entity did not change to OPERATING
+        that day; it may still have operated, carried over from the day before.
+
+        - `lastClosedAt` is when the last run that started that day closed,
+        which can be after midnight. The next day's row does not repeat it.
+
+        - `inParkHours` repeats the numbers for the park's published hours, when
+        it published any.
+
+        - A row without `unknownMinutes` was counted under earlier rules.
+
+
+        To rebuild a row from /history, use that day's and the next day's
+        history, the park's schedule for both days, `opening.observedAtByKind`
+        and `opening.observedAt`.
+
+
+        For a park, the 200 is `HistoryParkDailyEnvelope`, with an `entities[]`
+        array in place of `coverage` and `days`. Park calls are paged, 31
+        park-local days at a time, with `next` for the rest. Every other
+        entityType gets the single-entity shape, so the 200 is a union of two
+        schemas selected by `entityType`. A call costs one unit of the hourly
+        history budget, however large the park.
+
+
+        See "Limits" above for the history window and hourly budget.
+      tags:
+        - v1
+  /v1/entity/{id}/live:
+    get:
+      summary: Live data for an entity
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityLiveDataResponse"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityNotFound"
+        "429":
+          description: Too many requests. Wait `retryAfter` seconds (also the Retry-After
+            header).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimited"
+      operationId: getEntityLiveData
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: "The entity: its UUID, its slug, or for a destination its
+            `externalId`."
+        - in: query
+          name: entityType
+          required: false
+          description: Only return entities of these types, comma-separated, e.g.
+            ATTRACTION,SHOW.
+          schema:
+            type: string
+      description: "Returns live data for this entity and everything beneath it:
+        status, wait times, return-time and boarding-group windows, and show
+        times. `id` can be an entity's UUID, its slug or, for a destination, its
+        `externalId`. An unknown or malformed id returns 404. An entity with
+        nothing to report is left out of `liveData`; treat that as no data.
+        Filter by type with `entityType`. The data is current to about a minute.
+        For past data, call GET /v1/entity/{id}/history."
+      tags:
+        - v1
+  /v1/entity/{id}/schedule:
+    get:
+      summary: Upcoming opening hours
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityScheduleResponse"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityNotFound"
+        "429":
+          description: Too many requests. Wait `retryAfter` seconds (also the Retry-After
+            header).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimited"
+      operationId: getEntitySchedule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: "The entity: its UUID, its slug, or for a destination its
+            `externalId`."
+      description: Returns opening hours from today through the next 30 days, in the
+        entity's own timezone. `id` can be an entity's UUID, its slug or, for a
+        destination, its `externalId`. An unknown or malformed id returns 404.
+        Days the park has not published are left out. For a particular month,
+        past months included, call GET /v1/entity/{id}/schedule/{year}/{month}.
+      tags:
+        - v1
+  /v1/entity/{id}/schedule/{year}/{month}:
+    get:
+      summary: Opening hours for a month
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityScheduleResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityInvalidParameter"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityNotFound"
+        "429":
+          description: Too many requests. Wait `retryAfter` seconds (also the Retry-After
+            header).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimited"
+      operationId: getEntityScheduleYearMonth
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: "The entity: its UUID, its slug, or for a destination its
+            `externalId`."
+        - in: path
+          name: year
+          required: true
+          schema:
+            type: string
+          description: A year from 1970 to 2150, e.g. 2026.
+        - in: path
+          name: month
+          required: true
+          schema:
+            type: string
+            pattern: ^(0[1-9]|1[0-2])$
+          description: Month as two digits, 01 to 12.
+      description: Returns opening hours for one calendar month, in the entity's own
+        timezone. `month` must be two digits (`/2026/09`, not `/2026/9`) and
+        `year` a number from 1970 to 2150; anything else returns 400. `id` can
+        be an entity's UUID, its slug or, for a destination, its `externalId`.
+        An unknown or malformed id returns 404. Past months show what was
+        published at the time. A month before we started recording this entity
+        comes back empty. Days the park has not published are left out.
+      tags:
+        - v1
+  /v1/me:
+    get:
+      summary: Your plan and remaining budgets
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/V1Me"
+        "401":
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthenticationRequired"
+        "429":
+          description: Too many requests. Wait `retryAfter` seconds (also the Retry-After
+            header).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimited"
+        "503":
+          description: Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlanUnavailable"
+      operationId: getMe
+      security:
+        - ApiKeyAuth: []
+      parameters: []
+      description: "Returns your plan and what is left of it: `tier`, how far back
+        your history calls reach (`historyDays`, or `historyAllArchive: true`
+        when you can read everything we hold), the earliest day you may ask for,
+        and two budgets: `rateLimit`, the request limit every call counts
+        against, and `historyRateLimit`, the hourly history budget. Each budget
+        has `unmetered`; when it is false, it also has `limit`, `windowSeconds`,
+        `remaining` and `reset`, the same figures as the RateLimit headers. Use
+        it on an unmetered plan, which gets no such headers, or to check your
+        history budget without spending it. The call counts as one ordinary
+        request and needs an API key."
+      tags:
+        - v1
+components:
+  schemas:
+    AuthenticationRequired:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          enum:
+            - false
+          description: Always false.
+        error:
+          type: object
+          required:
+            - type
+            - message
+          properties:
+            type:
+              type: string
+              enum:
+                - Authentication failed
+            message:
+              type: string
+              description: Says whether no credential was sent or the one sent was not
+                accepted.
+            code:
+              type: integer
+              enum:
+                - 401
+              description: Repeats the HTTP status.
+      description: "401: this endpoint needs an API key (X-API-Key header) or a
+        session token, and none was sent or the one sent was not accepted. A
+        revoked, mistyped or truncated key answers this too."
+    BoardingGroupState:
+      type: string
+      enum:
+        - AVAILABLE
+        - PAUSED
+        - CLOSED
+      description: State of boarding group availability
+    Destination:
+      type: object
+      required:
+        - id
+        - name
+        - parks
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the destination
+        name:
+          type: string
+          description: Name of the destination
+        slug:
+          type: string
+          nullable: true
+          description: URL-friendly slug for the destination
+        externalId:
+          type: string
+          nullable: true
+          description: The park operator's own id for this destination
+        parks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Park"
+          description: Array of parks within this destination
+    DestinationsResponse:
+      type: object
+      required:
+        - destinations
+      properties:
+        destinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Destination"
+          description: Array of all destinations
+    DiningAvailability:
+      type: object
+      properties:
+        partySize:
+          type: number
+          nullable: true
+          description: Available party size
+        waitTime:
+          type: number
+          nullable: true
+          description: Current wait time in minutes
+    EntityChild:
+      type: object
+      required:
+        - id
+        - name
+        - entityType
+      properties:
+        id:
+          type: string
+          description: Unique entity identifier
+        name:
+          type: string
+          description: Entity name
+        entityType:
+          $ref: "#/components/schemas/EntityType"
+        externalId:
+          type: string
+          description: External identifier
+        parentId:
+          type: string
+          description: Parent entity identifier
+        location:
+          $ref: "#/components/schemas/EntityLocation"
+        slug:
+          type: string
+          nullable: true
+          description: URL-friendly slug
+    EntityChildrenResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Parent entity identifier
+        name:
+          type: string
+          description: Parent entity name
+        entityType:
+          $ref: "#/components/schemas/EntityType"
+        timezone:
+          type: string
+          description: Entity timezone
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/EntityChild"
+    EntityData:
+      type: object
+      required:
+        - id
+        - name
+        - entityType
+        - timezone
+      properties:
+        id:
+          type: string
+          description: Unique entity identifier
+        name:
+          type: string
+          description: Entity name
+        entityType:
+          $ref: "#/components/schemas/EntityType"
+        attractionType:
+          type: string
+          enum:
+            - UNKNOWN
+            - RIDE
+            - SHOW
+            - TRANSPORT
+            - PARADE
+            - MEET_AND_GREET
+            - OTHER
+          description: Kind of attraction. Present on ATTRACTION entities.
+        parentId:
+          type: string
+          nullable: true
+          description: Parent entity identifier
+        destinationId:
+          type: string
+          nullable: true
+          description: Destination identifier
+        parkId:
+          type: string
+          nullable: true
+          description: Identifier of the park this entity belongs to. Absent on
+            destinations and on parks themselves.
+        timezone:
+          type: string
+          description: Entity timezone
+        location:
+          $ref: "#/components/schemas/EntityLocation"
+        externalId:
+          type: string
+          description: The park operator's own id for this entity.
+        slug:
+          type: string
+          nullable: true
+          description: URL-friendly slug. Served for destinations.
+      additionalProperties: true
+      description: A single entity. It may also carry attribute keys not listed here,
+        named after the attribute, e.g. `minimumHeight` (integer, centimetres)
+        or `mayGetWet` (boolean). Which ones appear varies by entity, so read
+        the ones you need and do not assume any is present.
+    EntityInvalidParameter:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          enum:
+            - false
+          description: Always false.
+        error:
+          type: object
+          required:
+            - type
+            - message
+          properties:
+            type:
+              type: string
+              enum:
+                - Bad request
+            message:
+              type: string
+              description: Says which parameter was rejected and what it must look like, e.g.
+                "Month must be a two-digit number (01-12)".
+            code:
+              type: integer
+              enum:
+                - 400
+              description: Repeats the HTTP status.
+      description: "400: a path parameter is the wrong shape, such as a one-digit
+        `month` or a `year` outside the accepted range. An unknown id returns
+        404 first."
+    EntityLiveData:
+      type: object
+      required:
+        - id
+        - name
+        - entityType
+        - lastUpdated
+      properties:
+        id:
+          type: string
+          description: Entity identifier
+        name:
+          type: string
+          description: Entity name
+        entityType:
+          $ref: "#/components/schemas/EntityType"
+        status:
+          $ref: "#/components/schemas/LiveStatusType"
+        lastUpdated:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        queue:
+          $ref: "#/components/schemas/LiveQueue"
+        showtimes:
+          type: array
+          items:
+            $ref: "#/components/schemas/LiveShowTime"
+        operatingHours:
+          type: array
+          items:
+            $ref: "#/components/schemas/LiveShowTime"
+        diningAvailability:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiningAvailability"
+    EntityLiveDataResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Entity identifier
+        name:
+          type: string
+          description: Entity name
+        entityType:
+          $ref: "#/components/schemas/EntityType"
+        timezone:
+          type: string
+          description: Entity timezone
+        liveData:
+          type: array
+          items:
+            $ref: "#/components/schemas/EntityLiveData"
+    EntityLocation:
+      type: object
+      properties:
+        latitude:
+          type: number
+          description: Latitude coordinate of the entity location
+          nullable: true
+        longitude:
+          type: number
+          description: Longitude coordinate of the entity location
+          nullable: true
+    EntityNotFound:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          enum:
+            - false
+          description: Always false.
+        error:
+          type: object
+          required:
+            - type
+            - message
+          properties:
+            type:
+              type: string
+              enum:
+                - Not found
+            message:
+              type: string
+              description: Names the id that did not resolve, e.g. "Entity
+                00000000-0000-0000-0000-000000000000 not found".
+            code:
+              type: integer
+              enum:
+                - 404
+              description: Repeats the HTTP status.
+      description: "404: nothing matches `id` (a UUID, a slug, or a destination's
+        externalId; a malformed id is 404 too). The answer is the same whether
+        it never existed or was removed."
+    EntityScheduleResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Entity identifier
+        name:
+          type: string
+          description: Entity name
+        entityType:
+          $ref: "#/components/schemas/EntityType"
+          description: Type of entity
+        timezone:
+          type: string
+          description: Entity timezone
+        schedule:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScheduleEntry"
+        parks:
+          type: array
+          items:
+            $ref: "#/components/schemas/ParkSchedule"
+          description: Only included for destinations, lists all parks within the
+            destination
+    EntityType:
+      type: string
+      enum:
+        - DESTINATION
+        - PARK
+        - ATTRACTION
+        - RESTAURANT
+        - HOTEL
+        - SHOW
+      description: Type of entity in the theme park system
+    HistoryCoverage:
+      type: object
+      required:
+        - firstRecordedAt
+      properties:
+        firstRecordedAt:
+          type: string
+          format: date
+          nullable: true
+          description: "First park-local day we hold anything for this entity, or null.
+            Per-field detail: GET /v1/entity/{id}/history/coverage."
+    HistoryCoverageDocument:
+      type: object
+      required:
+        - id
+        - name
+        - entityType
+        - parentId
+        - destinationId
+        - timezone
+        - firstRecordedAt
+        - lastRecordedAt
+        - retrievableThrough
+        - kinds
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        entityType:
+          type: string
+        parentId:
+          type: string
+          nullable: true
+        destinationId:
+          type: string
+          nullable: true
+        timezone:
+          type: string
+          description: IANA timezone the park-local days are resolved in.
+        firstRecordedAt:
+          type: string
+          format: date
+          nullable: true
+          description: First park-local day we hold anything for this entity, or null.
+        lastRecordedAt:
+          type: string
+          format: date
+          nullable: true
+          description: The newest `last` across `kinds`, or null.
+        retrievableThrough:
+          type: string
+          format: date
+          nullable: true
+          description: "The newest day you can ask /history and /history/daily for:
+            usually today for an entity still reporting, or its last recorded
+            day for one that stopped long ago. Null when we hold nothing. Your
+            history window limits how far back you can ask."
+        kinds:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/HistoryCoverageKindSpan"
+          description: Keyed by live-data path (status, queue.STANDBY, showtimes and so
+            on), as /live and /history name them. Fields the entity never
+            reported are left out.
+      description: "What history we hold for one entity, per field. An entity with
+        nothing recorded is a 200 with `kinds: {}` and null days, not 404. For a
+        PARK the same call returns HistoryParkCoverageDocument."
+    HistoryCoverageKindSpan:
+      type: object
+      required:
+        - first
+        - last
+      properties:
+        first:
+          type: string
+          format: date
+          description: First park-local day this field was reported.
+        last:
+          type: string
+          format: date
+          description: The newest day we hold this field for. The coverage call says how
+            far it trails today.
+      description: One live-data field's recorded span for an entity, both ends inclusive.
+    HistoryDailyEnvelope:
+      type: object
+      required:
+        - id
+        - name
+        - entityType
+        - parentId
+        - destinationId
+        - timezone
+        - range
+        - coverage
+        - days
+        - next
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        entityType:
+          type: string
+        parentId:
+          type: string
+          nullable: true
+        destinationId:
+          type: string
+          nullable: true
+        timezone:
+          type: string
+          description: IANA timezone the park-local days are resolved in.
+        range:
+          $ref: "#/components/schemas/HistoryRange"
+        coverage:
+          $ref: "#/components/schemas/HistoryCoverage"
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/HistoryDailyRow"
+          description: One row per day, ascending. Days with no data are left out.
+        next:
+          type: string
+          nullable: true
+          description: Always null for a single entity.
+      description: One entity's daily summary. For a PARK the same call returns
+        HistoryParkDailyEnvelope. range is always whole park-local days
+        (YYYY-MM-DD), and today's row is the day so far.
+    HistoryDailyExtremeWaits:
+      type: object
+      required:
+        - standby
+        - singleRider
+      properties:
+        standby:
+          type: integer
+          description: Standby readings of 480 minutes or more included in the day's
+            standby statistics.
+        singleRider:
+          type: integer
+          description: Single-rider readings of 480 minutes or more included in the day's
+            single-rider statistics.
+      description: How many wait readings of 480 minutes or more the day's statistics
+        include. Such readings are usually feed errors (values like 999); they
+        are counted here as a flag and stay in every statistic. Wait values
+        above 1440 minutes (24 hours) are feed errors and are omitted. Counted
+        per reading while OPERATING. Present only when there were some, and then
+        with both counts.
+    HistoryDailyInParkHours:
+      type: object
+      required:
+        - scheduledMinutes
+        - operatingMinutes
+        - downMinutes
+        - unknownMinutes
+      properties:
+        scheduledMinutes:
+          type: integer
+          description: "Minutes of the day inside the park's published hours: its schedule
+            entries of type OPERATING, EXTRA_HOURS and TICKETED_EVENT. Hours
+            from the previous day's schedule that run past midnight are not
+            included. Today counts elapsed minutes only."
+        operatingMinutes:
+          type: integer
+          description: Of scheduledMinutes, the minutes the entity was OPERATING.
+        downMinutes:
+          type: integer
+          description: Of scheduledMinutes, the minutes the entity was DOWN.
+        unknownMinutes:
+          type: integer
+          description: Of scheduledMinutes, the minutes with no known status.
+        standby:
+          $ref: "#/components/schemas/HistoryDailyStats"
+        singleRider:
+          $ref: "#/components/schemas/HistoryDailyStats"
+        extremeWaits:
+          $ref: "#/components/schemas/HistoryDailyExtremeWaits"
+      description: The day's numbers limited to the park's published hours. Present
+        only when the park published hours that day.
+    HistoryDailyRow:
+      type: object
+      required:
+        - date
+        - firstOperatingAt
+        - lastClosedAt
+        - operatingMinutes
+        - downMinutes
+        - changes
+      properties:
+        date:
+          type: string
+          format: date
+          description: The park-local calendar day this row summarises, YYYY-MM-DD, in the
+            entity's timezone.
+        firstOperatingAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the entity changed to OPERATING that day (UTC, whole seconds).
+            null when it did not change to OPERATING that day; it may still have
+            operated, carried over from the day before.
+        lastClosedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: "When the last run that started this day closed (UTC, whole
+            seconds). A run lasts from a change to OPERATING until the next
+            change to CLOSED or REFURBISHMENT, DOWN periods included. A run
+            still going at midnight closes the next day and is reported on this
+            row. null if it did not close by the end of the next day, or if the
+            close came after 4 hours or more outside published hours with
+            nothing to confirm the run (see unknownMinutes: a change of status
+            on a day with published hours, a change to any field other than
+            showtimes on a day without)."
+        operatingMinutes:
+          type: integer
+          description: Minutes OPERATING with a known status. Today counts elapsed minutes
+            only. CLOSED and REFURBISHMENT minutes are not counted, so
+            operatingMinutes, downMinutes and unknownMinutes need not add up to
+            the day.
+        downMinutes:
+          type: integer
+          description: Minutes DOWN. Today counts elapsed minutes only.
+        unknownMinutes:
+          type: integer
+          description: "Minutes with no known status: none was reported, or the entity was
+            OPERATING outside the park's published hours with nothing to confirm
+            it for 4 hours or more. On a day the park published hours, only a
+            change of status confirms it, and a status carried over midnight is
+            unknown outside those hours until it changes. On a day with no
+            published hours, or for an entity outside any park, a change to any
+            field other than showtimes (status, a wait or anything else)
+            confirms it, and for a status carried over midnight the hours count
+            from the last change before midnight. Absent on rows counted under
+            earlier rules."
+        standby:
+          $ref: "#/components/schemas/HistoryDailyStats"
+        singleRider:
+          $ref: "#/components/schemas/HistoryDailyStats"
+        extremeWaits:
+          $ref: "#/components/schemas/HistoryDailyExtremeWaits"
+        showCount:
+          type: integer
+          description: Distinct performance start times whose park-local day is this day.
+            Present only for entities that published showtimes on the day.
+        inParkHours:
+          $ref: "#/components/schemas/HistoryDailyInParkHours"
+        changes:
+          type: integer
+          description: How many times any field changed this day.
+      description: One day of an entity's history. standby, singleRider, extremeWaits,
+        showCount and inParkHours are absent when there is nothing to report; a
+        standby block needs a valid wait showing for at least one whole minute.
+        A row without unknownMinutes was counted under earlier rules, and also
+        lacks extremeWaits and inParkHours.
+    HistoryDailyStats:
+      type: object
+      required:
+        - min
+        - p50
+        - mean
+        - p90
+        - max
+      properties:
+        min:
+          type: integer
+          description: Lowest wait posted during the counted minutes, including one that
+            showed for under a minute.
+        p50:
+          type: integer
+          description: Median wait, weighted by minutes; always a value that was actually
+            posted.
+        mean:
+          type: integer
+          description: Minute-weighted average wait, rounded to the nearest whole minute.
+        p90:
+          type: integer
+          description: 90th-percentile wait, weighted by minutes.
+        max:
+          type: integer
+          description: "Highest wait posted during the counted minutes, including a brief
+            spike. It can be a feed error: the row's extremeWaits counts
+            readings of 480 minutes or more."
+      description: Wait statistics for the day. p50, mean and p90 are weighted by how
+        many minutes each wait was showing; min and max are the extremes of
+        every value posted. Only minutes where the entity was OPERATING (not
+        unknown) and the wait was valid count. A wait is valid during the run
+        and on the day it was posted; the wait showing when a ride opens counts
+        from the opening if it last changed within 24 hours; a wait carried over
+        midnight does not count until it changes. Wait values above 1440 minutes
+        (24 hours) are feed errors and are omitted. Otherwise, a reading of 480
+        minutes or more stays in these statistics and is counted in the row's
+        `extremeWaits`. Absent when no minute counted.
+    HistoryEnvelope:
+      type: object
+      required:
+        - id
+        - name
+        - entityType
+        - parentId
+        - destinationId
+        - timezone
+        - range
+        - coverage
+        - opening
+        - history
+        - next
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        entityType:
+          type: string
+        parentId:
+          type: string
+          nullable: true
+        destinationId:
+          type: string
+          nullable: true
+        timezone:
+          type: string
+          description: IANA timezone the park-local days are resolved in.
+        range:
+          $ref: "#/components/schemas/HistoryRange"
+        coverage:
+          $ref: "#/components/schemas/HistoryCoverage"
+        opening:
+          $ref: "#/components/schemas/HistoryOpening"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/HistoryRow"
+          description: Ascending by time.
+        next:
+          type: string
+          nullable: true
+          description: Always null for a single entity.
+      description: One entity's history. For a PARK the same call returns
+        HistoryParkRawEnvelope instead.
+    HistoryErrorBackendUnavailable:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - type
+            - message
+          properties:
+            type:
+              type: string
+              enum:
+                - HISTORY_BACKEND_UNAVAILABLE
+            message:
+              type: string
+      description: "502: history is temporarily unavailable. Retry shortly."
+    HistoryErrorInvalidDate:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - type
+            - message
+          properties:
+            type:
+              type: string
+              enum:
+                - INVALID_DATE
+            message:
+              type: string
+              description: e.g. "from must be a calendar day (YYYY-MM-DD) or an RFC 3339
+                instant with an offset (e.g. 2026-09-13T14:00:00Z)."
+      description: "400: a date parameter is not a calendar day or an RFC 3339 instant
+        with an explicit offset, or date was combined with from/to, or from and
+        to mix the two forms, or to was given without from."
+    HistoryErrorInvalidRange:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - type
+            - message
+          properties:
+            type:
+              type: string
+              enum:
+                - INVALID_RANGE
+            message:
+              type: string
+              description: e.g. "to must not be before from."
+      description: "400: both ends parsed, but the range runs backwards (days: to
+        before from; instants: to not after from)."
+    HistoryErrorNotFound:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - type
+            - message
+          properties:
+            type:
+              type: string
+              enum:
+                - NOT_FOUND
+            message:
+              type: string
+      description: "404: no entity with that id."
+    HistoryErrorRangeTooLong:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - type
+            - message
+          properties:
+            type:
+              type: string
+              enum:
+                - RANGE_TOO_LONG
+            message:
+              type: string
+              description: Names the limit that applied and your span, e.g. "A history call
+                covers at most 31 park-local days (2026-01-01 to 2026-03-01 is
+                60)."
+      description: "400: the range is too long. The limit is not the same on every
+        path: 31 days on /history (1 for a park), and 3660 on /history/daily (a
+        park pages at 31 instead). Split the range into shorter calls."
+    HistoryErrorRateLimited:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - type
+            - message
+            - retryAfter
+          properties:
+            type:
+              type: string
+              enum:
+                - HISTORY_RATE_LIMITED
+            message:
+              type: string
+              description: e.g. "This key can make 600 history requests an hour."
+            retryAfter:
+              type: integer
+              description: Seconds until the hourly history budget admits another request.
+                Also sent as the Retry-After header.
+      description: "429: your hourly history budget is spent. It is separate from the
+        per-minute limit; the limits per plan are on the pricing page."
+    HistoryErrorWindowExceeded:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - type
+            - message
+            - earliestAllowedDate
+          properties:
+            type:
+              type: string
+              enum:
+                - HISTORY_WINDOW_EXCEEDED
+            message:
+              type: string
+              description: e.g. "This key can see history back to 2026-09-08 (7 days)."
+            earliestAllowedDate:
+              type: string
+              format: date
+              description: First park-local day this credential may query.
+    HistoryOpening:
+      type: object
+      required:
+        - time
+      properties:
+        time:
+          type: string
+          format: date-time
+          description: Start of the range (UTC, whole seconds). The state below is
+            effective from this instant.
+        observedAt:
+          type: string
+          format: date-time
+          description: "When this state was last seen (UTC, whole seconds): the newest
+            entry in `observedAtByKind`. Earlier than `time` means it was
+            carried in from before the range, possibly from long ago; a ride
+            whose feed stopped keeps its last values. Absent means we hold
+            nothing for this entity from before the range, unless `degraded` is
+            set."
+        observedAtByKind:
+          type: object
+          additionalProperties:
+            type: string
+            format: date-time
+          description: "When each field of the opening was last seen (UTC, whole seconds),
+            keyed by its path: `status`, `queue.STANDBY`, `showtimes` and so on.
+            A wait that did not change for weeks is dated weeks back, so check a
+            queue's own entry before treating it as current. Usually, but not
+            always, the moment the value last changed."
+        degraded:
+          type: boolean
+          enum:
+            - true
+          description: Present, and true, when we could not look far enough back for this
+            response, so the opening may be missing a field we hold. Ask again
+            in a minute for the full opening.
+        degradedReason:
+          type: string
+          enum:
+            - timeout
+            - error
+            - capacity
+          description: "Why the lookup was cut short: `timeout`, `error`, or `capacity`
+            when it needed more reading than one request is allowed."
+        status:
+          type: string
+          nullable: true
+          description: Live status at the start of the range; null when unknown.
+        queue:
+          $ref: "#/components/schemas/LiveQueue"
+        showtimes:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/LiveShowTime"
+      description: 'The `opening` object: the complete state at the start of the
+        range, in the same shape as a row. A field is present only if the entity
+        has it. An unknown value is its empty form (standby `{"waitTime":
+        null}`, showtimes `[]`); an unknown status is null.'
+    HistoryParkCoverageDepth:
+      type: object
+      description: How far back each entity's record of this field goes, as counts per
+        band of calendar years, measured from `summary.measuredOn`.
+      required:
+        - fourYearsPlus
+        - twoToFourYears
+        - oneToTwoYears
+        - underOneYear
+      properties:
+        fourYearsPlus:
+          type: integer
+          description: Entities whose record of this field goes back four calendar years
+            or more.
+        twoToFourYears:
+          type: integer
+          description: Entities with at least two and under four calendar years.
+        oneToTwoYears:
+          type: integer
+          description: Entities with at least one and under two calendar years.
+        underOneYear:
+          type: integer
+          description: Entities with under a calendar year, usually something that opened
+            recently.
+    HistoryParkCoverageDocument:
+      type: object
+      description: "What history we hold across a whole PARK, returned by
+        /history/coverage when the entity is a PARK. Its names map to the
+        single-entity document: `fields` is `kinds`, and each `from` and
+        `newest` is a `first` and `last`. It reports depth and breadth; it does
+        not find missing days."
+      required:
+        - id
+        - name
+        - entityType
+        - parentId
+        - destinationId
+        - timezone
+        - summary
+        - fields
+        - entities
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        entityType:
+          type: string
+        parentId:
+          type: string
+          nullable: true
+        destinationId:
+          type: string
+          nullable: true
+        timezone:
+          type: string
+          description: IANA timezone of the park.
+        summary:
+          $ref: "#/components/schemas/HistoryParkCoverageSummary"
+        fields:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/HistoryParkCoverageField"
+          description: Keyed by live-data field path, in live-data order.
+        entities:
+          type: array
+          items:
+            $ref: "#/components/schemas/HistoryParkCoverageEntity"
+          description: Every entity of the park history is held for.
+    HistoryParkCoverageEntity:
+      type: object
+      description: One entity we hold history for. Entities with none (often parades,
+        shows and lands) are absent.
+      required:
+        - id
+        - name
+        - entityType
+        - from
+        - newest
+        - fields
+        - stillListed
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        entityType:
+          type: string
+        from:
+          type: string
+          format: date
+          description: The earliest park-local day any field of this entity was recorded.
+        newest:
+          type: string
+          format: date
+          description: The newest park-local day any field of this entity was recorded.
+        fields:
+          type: array
+          items:
+            type: string
+          description: Field paths held, named as in the single-entity coverage document.
+        stillListed:
+          type: boolean
+          description: false when the park no longer lists this entity. Its history is
+            still available.
+    HistoryParkCoverageField:
+      type: object
+      description: One field across the park. `entities` counts the entities we hold
+        it for; entities that never reported it are not counted.
+      required:
+        - entities
+        - from
+        - newest
+        - depth
+      properties:
+        entities:
+          type: integer
+          description: How many of the park's entities this field is held for.
+        from:
+          type: string
+          format: date
+          description: The earliest park-local day any entity in the park reported this
+            field.
+        newest:
+          type: string
+          format: date
+          description: Newest day any entity reported it. A past day can mean the park
+            stopped publishing the field.
+        depth:
+          $ref: "#/components/schemas/HistoryParkCoverageDepth"
+    HistoryParkCoverageSummary:
+      type: object
+      description: Summary figures for the park, all describing what we hold.
+      required:
+        - entitiesWithData
+        - archiveFrom
+        - recordedTo
+        - retrievableThrough
+        - measuredOn
+      properties:
+        entitiesWithData:
+          type: integer
+          description: "Entities we hold any history for, including ones the park no
+            longer lists (`stillListed: false`)."
+        archiveFrom:
+          type: string
+          format: date
+          description: Earliest day anything in this park was recorded, or null.
+        recordedTo:
+          type: string
+          format: date
+          description: The newest park-local day anything in this park was recorded, or
+            null.
+        retrievableThrough:
+          type: string
+          format: date
+          description: The newest day you can ask for, usually today. Null when nothing is
+            recorded.
+        measuredOn:
+          type: string
+          format: date
+          description: The day these figures were computed; they grow over time.
+    HistoryParkDailyEnvelope:
+      type: object
+      required:
+        - id
+        - name
+        - entityType
+        - parentId
+        - destinationId
+        - timezone
+        - range
+        - entities
+        - next
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        entityType:
+          type: string
+        parentId:
+          type: string
+          nullable: true
+        destinationId:
+          type: string
+          nullable: true
+        timezone:
+          type: string
+          description: IANA timezone of the park; every entity is summarised in it.
+        range:
+          $ref: "#/components/schemas/HistoryRange"
+        entities:
+          type: array
+          items:
+            $ref: "#/components/schemas/HistoryParkEntityDaily"
+          description: One entry per entity with history, by name. Entities with no
+            history are absent.
+        next:
+          type: string
+          nullable: true
+          description: Absolute URL of the next page (your parameters kept, `from` moved
+            on), or null on the last page. Up to 31 park-local days a page.
+      description: The daily summary of a whole PARK, returned by /history/daily when
+        the entity's entityType is PARK. A call serves up to 31 park-local days;
+        `range.to` is this page's last day.
+    HistoryParkEntityDaily:
+      type: object
+      required:
+        - id
+        - name
+        - entityType
+        - coverage
+        - days
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        entityType:
+          type: string
+        coverage:
+          $ref: "#/components/schemas/HistoryCoverage"
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/HistoryDailyRow"
+          description: The entity's rows for this page, as /history/daily returns them for
+            the entity alone. Empty when it has no data in these days.
+      description: One entity of the park, with its first recorded day and its rows.
+        The park appears too if it has history of its own.
+    HistoryParkEntityRaw:
+      type: object
+      required:
+        - id
+        - name
+        - entityType
+        - coverage
+        - opening
+        - history
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        entityType:
+          type: string
+        coverage:
+          $ref: "#/components/schemas/HistoryCoverage"
+        opening:
+          $ref: "#/components/schemas/HistoryOpening"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/HistoryRow"
+          description: Ascending by time. Empty when nothing changed in the range.
+      description: One entity of the park, with the same coverage, opening and history
+        as a single-entity call. The park appears too if it has history of its
+        own.
+    HistoryParkRawEnvelope:
+      type: object
+      required:
+        - id
+        - name
+        - entityType
+        - parentId
+        - destinationId
+        - timezone
+        - range
+        - entities
+        - next
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        entityType:
+          type: string
+        parentId:
+          type: string
+          nullable: true
+        destinationId:
+          type: string
+          nullable: true
+        timezone:
+          type: string
+          description: IANA timezone of the park; every entity is resolved in it.
+        range:
+          $ref: "#/components/schemas/HistoryRange"
+        entities:
+          type: array
+          items:
+            $ref: "#/components/schemas/HistoryParkEntityRaw"
+          description: One entry per entity with history, by name. Entities with no
+            history are absent.
+        next:
+          type: string
+          nullable: true
+          description: "Always null: one day per call."
+      description: History of a whole PARK for 1 park-local day, returned by /history
+        when the entity's entityType is PARK. A longer range is 400
+        RANGE_TOO_LONG.
+    HistoryRange:
+      type: object
+      required:
+        - from
+        - to
+      properties:
+        from:
+          type: string
+          description: The start you asked for. A day comes back as you sent it; an
+            instant comes back normalised to UTC whole seconds. On
+            /history/daily it is always a day.
+        to:
+          type: string
+          description: The end, in the same form as from. Defaults to today (days) or now
+            (instants).
+    HistoryRow:
+      type: object
+      required:
+        - time
+        - changed
+      properties:
+        time:
+          type: string
+          format: date-time
+          description: UTC instant (whole seconds) from which this state is effective,
+            until the next row's time.
+        changed:
+          type: array
+          items:
+            type: string
+          description: Leaf paths that differ from the previous row (or from opening for
+            the first row), e.g. queue.STANDBY.waitTime, status, showtimes.
+        status:
+          type: string
+          nullable: true
+        queue:
+          $ref: "#/components/schemas/LiveQueue"
+        showtimes:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/LiveShowTime"
+      description: One row per moment any field changed. Every field is carried
+        forward, so each row is the complete live data at that moment (same keys
+        as GET /v1/entity/{id}/live).
+    LiveQueue:
+      type: object
+      properties:
+        STANDBY:
+          type: object
+          properties:
+            waitTime:
+              type: number
+              nullable: true
+              description: Current standby wait time in minutes
+        SINGLE_RIDER:
+          type: object
+          required:
+            - waitTime
+          properties:
+            waitTime:
+              type: number
+              nullable: true
+              description: Current single rider wait time in minutes
+        RETURN_TIME:
+          type: object
+          required:
+            - state
+            - returnStart
+            - returnEnd
+          properties:
+            state:
+              nullable: true
+              allOf:
+                - $ref: "#/components/schemas/ReturnTimeState"
+            returnStart:
+              type: string
+              format: date-time
+              nullable: true
+              description: Start time of return window
+            returnEnd:
+              type: string
+              format: date-time
+              nullable: true
+              description: End time of return window
+        PAID_RETURN_TIME:
+          type: object
+          required:
+            - state
+            - returnStart
+            - returnEnd
+            - price
+          properties:
+            state:
+              nullable: true
+              allOf:
+                - $ref: "#/components/schemas/ReturnTimeState"
+            returnStart:
+              type: string
+              format: date-time
+              nullable: true
+            returnEnd:
+              type: string
+              format: date-time
+              nullable: true
+            price:
+              nullable: true
+              allOf:
+                - $ref: "#/components/schemas/PriceData"
+        BOARDING_GROUP:
+          type: object
+          required:
+            - allocationStatus
+            - currentGroupStart
+            - currentGroupEnd
+            - nextAllocationTime
+            - estimatedWait
+          properties:
+            allocationStatus:
+              nullable: true
+              allOf:
+                - $ref: "#/components/schemas/BoardingGroupState"
+            currentGroupStart:
+              type: number
+              nullable: true
+              description: Current boarding group start number
+            currentGroupEnd:
+              type: number
+              nullable: true
+              description: Current boarding group end number
+            nextAllocationTime:
+              type: string
+              format: date-time
+              nullable: true
+              description: Next boarding group allocation time
+            estimatedWait:
+              type: number
+              nullable: true
+              description: Estimated wait time in minutes
+        PAID_STANDBY:
+          type: object
+          required:
+            - waitTime
+          properties:
+            waitTime:
+              type: number
+              nullable: true
+              description: Current paid standby wait time in minutes
+      description: "The queues an entity has, each present only when the entity
+        publishes it. STANDBY: the ordinary line. SINGLE_RIDER: a separate line
+        for guests riding alone. RETURN_TIME: a free reservation for a later
+        time window. PAID_RETURN_TIME: the same, paid for. BOARDING_GROUP: a
+        virtual queue that calls groups by number. PAID_STANDBY: a paid line
+        with its own wait."
+    LiveShowTime:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          description: Type of show time entry
+        startTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: Start time of the show
+        endTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: End time of the show
+    LiveStatusType:
+      type: string
+      enum:
+        - OPERATING
+        - DOWN
+        - CLOSED
+        - REFURBISHMENT
+      description: "An entity's status. OPERATING: open and running. DOWN: stopped for
+        now, for example by a breakdown, when it would otherwise be running.
+        CLOSED: not open. REFURBISHMENT: closed for a longer period of
+        maintenance or rebuilding."
+    Park:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the park
+        name:
+          type: string
+          description: Name of the park
+    ParkSchedule:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Entity identifier
+        name:
+          type: string
+          description: Entity name
+        entityType:
+          $ref: "#/components/schemas/EntityType"
+          description: Type of entity
+        timezone:
+          type: string
+          description: Entity timezone
+        schedule:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScheduleEntry"
+    PlanUnavailable:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          enum:
+            - false
+        error:
+          type: object
+          required:
+            - type
+            - message
+          properties:
+            type:
+              type: string
+              enum:
+                - Server error
+            message:
+              type: string
+            code:
+              type: integer
+              enum:
+                - 503
+      description: "503: your plan could not be read just now. Try again after the
+        Retry-After header's number of seconds."
+    PriceData:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+          nullable: true
+          description: Numerical price amount, in the currency's lowest denomination (e.g.
+            cents). null when the item costs money but the provider does not
+            publish an amount; 0 means genuinely free
+        currency:
+          type: string
+          description: Currency code
+        formatted:
+          type: string
+          description: Formatted price string
+    RateLimited:
+      type: object
+      required:
+        - error
+        - message
+        - retryAfter
+      properties:
+        error:
+          type: string
+          enum:
+            - Too Many Requests
+        message:
+          type: string
+          description: What happened, e.g. "Too Many Requests".
+        retryAfter:
+          type: integer
+          description: Seconds to wait before retrying. Also sent as the Retry-After header.
+        useInstead:
+          type: string
+          description: 'Present when you were looking entities up one guessed slug at a
+            time: the call to make instead, e.g. "GET /v1/destinations".'
+      description: 429 from the request limit every call counts against. See "Limits"
+        at the top of this document.
+    ReturnTimeState:
+      type: string
+      enum:
+        - AVAILABLE
+        - TEMP_FULL
+        - FINISHED
+      description: State of return time availability
+    ScheduleEntry:
+      type: object
+      required:
+        - date
+        - openingTime
+        - closingTime
+        - type
+      properties:
+        date:
+          type: string
+          format: YYYY-MM-DD
+          description: Schedule date
+        openingTime:
+          type: string
+          format: date-time
+          description: Opening time
+        closingTime:
+          type: string
+          format: date-time
+          description: Closing time
+        type:
+          type: string
+          enum:
+            - OPERATING
+            - TICKETED_EVENT
+            - PRIVATE_EVENT
+            - EXTRA_HOURS
+            - INFO
+          description: Type of schedule entry
+        description:
+          type: string
+          description: Optional description of the schedule entry
+        purchases:
+          type: array
+          items:
+            $ref: "#/components/schemas/SchedulePriceObject"
+          description: Available purchases for this schedule entry
+    SchedulePriceObject:
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/SchedulePriceType"
+          description: Type of price object
+        id:
+          type: string
+          description: Unique identifier
+        name:
+          type: string
+          description: Name of the price object
+        price:
+          $ref: "#/components/schemas/PriceData"
+          description: Price of this purchase option
+        available:
+          type: boolean
+          description: Whether this price option is available
+    SchedulePriceType:
+      type: string
+      enum:
+        - ADMISSION
+        - PACKAGE
+        - ATTRACTION
+      description: Type of schedule price
+    V1Me:
+      type: object
+      required:
+        - tier
+        - historyDays
+        - historyAllArchive
+        - historyEarliestDate
+        - rateLimit
+        - historyRateLimit
+      properties:
+        tier:
+          type: string
+          description: Your plan, e.g. "free", "pro", "business", "enterprise".
+        historyDays:
+          type: integer
+          nullable: true
+          description: How many days back your history calls may reach, today included.
+            null when `historyAllArchive` is true.
+        historyAllArchive:
+          type: boolean
+          description: true when this key can read everything we hold for an entity, back
+            to the first day we recorded it. `historyDays` and
+            `historyEarliestDate` are then null.
+        historyEarliestDate:
+          type: string
+          format: date
+          nullable: true
+          description: The earliest day (YYYY-MM-DD) a history call may ask for, computed
+            in UTC. Each park counts days in its own time zone, so near midnight
+            this can be off by one. Earlier days answer 403
+            HISTORY_WINDOW_EXCEEDED. null when `historyAllArchive` is true.
+        rateLimit:
+          $ref: "#/components/schemas/V1MeBudget"
+        historyRateLimit:
+          $ref: "#/components/schemas/V1MeBudget"
+      description: Your plan and what is left of it. `rateLimit` is the request limit
+        every call counts against, this one included. `historyRateLimit` is the
+        hourly budget the history calls count against; reading it here does not
+        spend it. Figures are per account, so every key on one account reports
+        the same.
+    V1MeBudget:
+      type: object
+      required:
+        - unmetered
+      properties:
+        unmetered:
+          type: boolean
+          description: true when this budget is not metered on your plan. The other fields
+            are then absent, and no RateLimit headers are sent for it.
+        limit:
+          type: integer
+          description: Requests allowed per window.
+        windowSeconds:
+          type: integer
+          description: Window length in seconds.
+        remaining:
+          type: integer
+          nullable: true
+          description: Requests left in the current window; null if it could not be read
+            just now.
+        reset:
+          type: integer
+          nullable: true
+          description: Seconds until the window resets; null if nothing has been counted
+            in this window yet, or if it could not be read.
+      description: "One budget: the same figures the RateLimit-* and
+        RateLimit-History-* headers carry."
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: "Optional on the data endpoints and required for GET /v1/me.
+        Without a key you get the anonymous allowance; with one, you get your
+        plan's. The pricing page lists every limit for each plan:
+        https://www.themeparks.wiki/pricing"
+security:
+  - {}
+  - ApiKeyAuth: []
+tags:
+  - name: v1
+    description: "Theme park data: destinations, entities, live data, opening hours,
+      history, and your own plan."

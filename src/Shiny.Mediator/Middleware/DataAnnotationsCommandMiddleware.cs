@@ -22,7 +22,8 @@ public class DataAnnotationsCommandMiddleware<TCommand> : AbstractValidationComm
         Validator.TryValidateObject(
             command!,
             new ValidationContext(command!),
-            results
+            results,
+            validateAllProperties: true // otherwise only [Required] runs - [Range], [Url], [StringLength], etc. are skipped
         );
         
         foreach (var result in results!)

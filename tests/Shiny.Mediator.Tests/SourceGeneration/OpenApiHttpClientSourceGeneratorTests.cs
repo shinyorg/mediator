@@ -30,7 +30,7 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
 
         var sp = services.BuildServiceProvider();
         var mediator = sp.GetRequiredService<IMediator>();
-        var result = await mediator.Request(new GetV1EntityLiveHttpRequest
+        var result = await mediator.Request(new GetEntityLiveDataHttpRequest
         {
             Id = "66f5d97a-a530-40bf-a712-a6317c96b06d"
         });
@@ -42,7 +42,7 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
     {
         // Sanity check: the generator must have emitted a resolver. Asserted by reflecting on the
         // user-namespace type, which depends on the ThemeParksApiGenerated.* generated source.
-        var resolverType = typeof(ThemeParksApiGenerated.GetV1EntityLiveResponse).Assembly
+        var resolverType = typeof(ThemeParksApiGenerated.EntityLiveDataResponse).Assembly
             .GetType("ThemeParksApiGenerated.ThemeParksApiGeneratedJsonResolver");
         resolverType.ShouldNotBeNull("generator should have emitted ThemeParksApiGeneratedJsonResolver");
 
@@ -60,7 +60,7 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
         using var http = new HttpClient();
         var json = await http.GetStringAsync("https://api.themeparks.wiki/v1/entity/66f5d97a-a530-40bf-a712-a6317c96b06d/live");
 
-        var result = serializer.Deserialize<ThemeParksApiGenerated.GetV1EntityLiveResponse>(json);
+        var result = serializer.Deserialize<ThemeParksApiGenerated.EntityLiveDataResponse>(json);
         result.ShouldNotBeNull();
         result.Id.ShouldBe("66f5d97a-a530-40bf-a712-a6317c96b06d");
     }
@@ -74,6 +74,9 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
     // /entity/{id}/schedule/{year}/{month}. Regression fixture for both the inline-response
     // synthesis and the collision disambiguation.
     [InlineData("./SourceGeneration/themeparksapi-v1.yml")]
+    // ThemeParks spec 1.17: boolean single-value enums (success: enum [false]) and integer enums
+    // (error.code: enum [401]) which the YAML reader surfaces as decimal-backed values.
+    [InlineData("./SourceGeneration/themeparksapi-v1.17.yml")]
     [InlineData("./SourceGeneration/fleet.json")]
     [InlineData("./SourceGeneration/test.json")]
     public Task TestApis_Generation(string filePath)
@@ -489,6 +492,79 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
 
         return Verify(result);
     }
+
+    [Fact(DisplayName = "OpenAPI - boolean enums fall back to bool, integer enums from YAML generate, string enums with spaces map member names")]
+    public void NonString_Enums()
+    {
+        var openApi = """
+        openapi: 3.0.1
+        info:
+          title: Test API
+          version: '1.0'
+        paths:
+          /items:
+            get:
+              operationId: getItems
+              responses:
+                '200':
+                  description: OK
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/Item'
+        components:
+          schemas:
+            Item:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  enum:
+                    - false
+                code:
+                  type: integer
+                  enum:
+                    - 401
+                    - -1
+                ratio:
+                  type: number
+                  enum:
+                    - 1.5
+                message:
+                  type: string
+                  enum:
+                    - Too Many Requests
+                    - OK
+        """;
+
+        var additionalFiles = new AdditionalText[] { new MockAdditionalText("enums.yaml", openApi) };
+        var buildProps = new Dictionary<string, string>
+        {
+            ["build_metadata.AdditionalFiles.SourceItemGroup"] = "MediatorHttp",
+            ["build_metadata.AdditionalFiles.Namespace"] = "TestApi",
+            ["build_property.RootNamespace"] = "UnitTests",
+            ["build_property.AssemblyName"] = "UnitTests"
+        };
+
+        var result = RunGenerator(additionalFiles, buildProps);
+        result.Diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+
+        var item = result.GeneratedSources.Single(x => x.HintName.Contains("Item.") && !x.HintName.Contains("Converter")).SourceText.ToString();
+        item.ShouldContain("public bool Success");
+        item.ShouldContain("public ItemCode? Code");
+        item.ShouldContain("public double Ratio");
+
+        var code = result.GeneratedSources.Single(x => x.HintName.Contains("ItemCode")).SourceText.ToString();
+        code.ShouldContain("Value401 = 401,");
+        code.ShouldContain("ValueMinus1 = -1,");
+        code.ShouldContain("JsonNumberEnumConverter<global::TestApi.ItemCode>");
+
+        var message = result.GeneratedSources.Single(x => x.HintName.Contains("ItemMessage")).SourceText.ToString();
+        message.ShouldContain("[global::System.Text.Json.Serialization.JsonStringEnumMemberName(\"Too Many Requests\")]");
+        message.ShouldContain("TooManyRequests,");
+        message.ShouldContain("    OK,");
+    }
+
 
     static GeneratorRunResult RunGenerator(AdditionalText[] additionalFiles, Dictionary<string, string> buildProps)
     {
