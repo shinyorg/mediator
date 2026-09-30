@@ -17,6 +17,8 @@ public class DataAnnotationsTests
         services.AddSingletonAsImplementedInterfaces<ValidationRequestHandler>();
         services.AddSingletonAsImplementedInterfaces<RangeValidationRequestHandler>();
         services.AddSingletonAsImplementedInterfaces<RangeValidationCommandHandler>();
+        services.AddSingletonAsImplementedInterfaces<ObjectLevelValidationRequestHandler>();
+        services.AddSingletonAsImplementedInterfaces<ObjectLevelValidationCommandHandler>();
         this.mediator = services.BuildServiceProvider().GetRequiredService<IMediator>();    
     }
     
@@ -65,6 +67,39 @@ public class DataAnnotationsTests
     public async Task NonRequiredAttributes_Valid()
     {
         var response = await this.mediator.Request(new RangeValidationRequest { Quantity = 5, Url = "https://test.com" });
+        response.Result.IsValid.ShouldBeTrue();
+    }
+
+
+    [Fact]
+    public async Task ValidatableObject_WithoutMemberNames_IsNotDropped_Request()
+    {
+        var response = await this.mediator.Request(new ObjectLevelValidationRequest { Start = 10, End = 1 });
+        response.Result.IsValid.ShouldBeFalse();
+        response.Result.Errors[String.Empty].ShouldBe(["Start must be before End"]);
+    }
+
+
+    [Fact]
+    public async Task ValidatableObject_WithMemberNames_KeyedByMember()
+    {
+        var response = await this.mediator.Request(new ObjectLevelValidationRequest { Start = 1, End = 2, Code = "bad" });
+        response.Result.Errors.Keys.ShouldBe(["Code"]);
+    }
+
+
+    [Fact]
+    public async Task ClassLevelAttribute_WithoutMemberNames_IsNotDropped_Command()
+    {
+        var ex = await Should.ThrowAsync<ValidateException>(() => this.mediator.Send(new ObjectLevelValidationCommand()));
+        ex.Result.Errors[String.Empty].ShouldBe(["Command is never valid"]);
+    }
+
+
+    [Fact]
+    public async Task ValidatableObject_Valid()
+    {
+        var response = await this.mediator.Request(new ObjectLevelValidationRequest { Start = 1, End = 2 });
         response.Result.IsValid.ShouldBeTrue();
     }
 
@@ -130,5 +165,44 @@ public class RangeValidationRequestHandler : IRequestHandler<RangeValidationRequ
 public class RangeValidationCommandHandler : ICommandHandler<RangeValidationCommand>
 {
     public Task Handle(RangeValidationCommand command, IMediatorContext context, CancellationToken cancellationToken)
+        => throw new InvalidOperationException("Never should have gotten here");
+}
+
+
+[Validate]
+public class ObjectLevelValidationRequest : IRequest<ValidateResult>, IValidatableObject
+{
+    public int Start { get; set; }
+    public int End { get; set; }
+    public string? Code { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (this.Start >= this.End)
+            yield return new ValidationResult("Start must be before End"); // no member names
+
+        if (this.Code == "bad")
+            yield return new ValidationResult("Code is bad", [nameof(this.Code)]);
+    }
+}
+
+public class NeverValidAttribute() : ValidationAttribute("Command is never valid")
+{
+    public override bool IsValid(object? value) => false;
+}
+
+[Validate]
+[NeverValid]
+public class ObjectLevelValidationCommand : ICommand;
+
+public class ObjectLevelValidationRequestHandler : IRequestHandler<ObjectLevelValidationRequest, ValidateResult>
+{
+    public Task<ValidateResult> Handle(ObjectLevelValidationRequest request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(ValidateResult.Success);
+}
+
+public class ObjectLevelValidationCommandHandler : ICommandHandler<ObjectLevelValidationCommand>
+{
+    public Task Handle(ObjectLevelValidationCommand command, IMediatorContext context, CancellationToken cancellationToken)
         => throw new InvalidOperationException("Never should have gotten here");
 }

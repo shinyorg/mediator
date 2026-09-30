@@ -141,7 +141,7 @@ public class CreateUserCommand : ICommand
 builder.AddShinyMediator(x => x.AddFluentValidation());
 ```
 
-> Data annotations evaluates **every** attribute (`[Range]`, `[EmailAddress]`, `[MinLength]`, custom `ValidationAttribute`s). Before 6.10 only `[Required]` was checked, so after upgrading, contracts that previously passed may start failing validation. That is the attributes finally being enforced, not a regression.
+> Data annotations evaluates **every** attribute (`[Range]`, `[EmailAddress]`, `[MinLength]`, custom `ValidationAttribute`s). Before 6.10 only `[Required]` was checked, so after upgrading, contracts that previously passed may start failing validation. That is the attributes finally being enforced, not a regression. Errors from `IValidatableObject` or class-level attributes that name no property are reported under the key `""` (earlier versions silently dropped them).
 
 ## Event Queuing (Sampling & Throttling)
 
