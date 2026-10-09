@@ -16,6 +16,8 @@ We are AOT/Trim friendly in all aspects of how you use Mediator.  We use source 
 
 Starting in v6.6 JSON flows through [`Shiny.Extensions.Serialization`](https://www.nuget.org/packages/Shiny.Extensions.Serialization) — register your contracts in a `[ShinyJsonContext] partial class : JsonSerializerContext` (auto-wired via a `[ModuleInitializer]`) and OpenAPI HTTP clients with `GenerateJsonConverters="true"` are AOT-clean end-to-end with zero setup.
 
+For OpenAPI discriminated `oneOf`/`anyOf` models, also enable `<ShinyMediatorOpenApiPolymorphism>true</ShinyMediatorOpenApiPolymorphism>`. The opt-in generates abstract bases, concrete variants and converters with fixed discriminator values. Unsupported mappings fail with `SHINYMED005` instead of producing incomplete payloads. See the [supported schema shapes and example](docs/sourcegeneration.mdx).
+
 ## Samples & Documentation
 - Docs
   - [Main](https://shinylib.net/mediator/)
@@ -46,6 +48,7 @@ Starting in v6.6 JSON flows through [`Shiny.Extensions.Serialization`](https://w
 - Save the Boilerplate + Receive the Power of Middleware
   - [Dapper Extension](https://shinylib.net/mediator/extensions/dapper) for Easy Query Handling
   - [HTTP Extension](https://shinylib.net/mediator/extensions/http) for Easy API handling - OpenAPI Contract Generation takes it even one step further
+  - Opt-in OpenAPI discriminated unions with generated inheritance and serialization metadata
   - Map contracts directly to handlers with our [ASP.NET Extension](https://shinylib.net/mediator/extensions/aspnet)
   - Server Sent Events for ASP.NET
 - [Epic Out-of-the-Box Middleware](https://shinylib.net/mediator/middleware/)
@@ -206,3 +209,5 @@ public class MyViewModel
 ```
 
 Strongly typed.  No page required page knowledge from the module upfront.  The other dev team of the module can define HOW things work.
+
+Opt-in models also preserve nullable date/time scalar metadata and omit unset optional fields that the schema does not permit to be null.

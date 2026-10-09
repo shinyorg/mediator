@@ -73,7 +73,8 @@ internal static class HttpHandlerCodeGenerator
         var routeExpression = BuildRouteExpression(route, propertiesList);
         sb.AppendLine($"        var route = {routeExpression};");
         
-        // Add query parameters conditionally to route
+        // Add query parameters conditionally to route. Values travel culture-invariant (dates as ISO 8601)
+        // and URL-encoded; collections repeat the parameter (?tag=a&tag=b).
         var queryProps = propertiesList.Where(p => p.ParameterType == HttpParameterType.Query).ToList();
         if (queryProps.Count > 0)
         {
@@ -82,8 +83,21 @@ internal static class HttpHandlerCodeGenerator
             {
                 sb.AppendLine($"        if (request.{prop.PropertyName} != null)");
                 sb.AppendLine("        {");
-                sb.AppendLine("            route += route.Contains(\"?\") ? \"&\" : \"?\";");
-                sb.AppendLine($"            route += $\"{prop.ParameterName}={{request.{prop.PropertyName}}}\";");
+                if (IsCollectionType(prop.PropertyType))
+                {
+                    var item = $"item{prop.PropertyName}";
+                    sb.AppendLine($"            foreach (var {item} in request.{prop.PropertyName})");
+                    sb.AppendLine("            {");
+                    sb.AppendLine($"                if ({item} == null) continue;");
+                    sb.AppendLine("                route += route.Contains(\"?\") ? \"&\" : \"?\";");
+                    sb.AppendLine($"                route += \"{prop.ParameterName}=\" + global::System.Uri.EscapeDataString({QueryValueExpression(item, ElementType(prop.PropertyType!))});");
+                    sb.AppendLine("            }");
+                }
+                else
+                {
+                    sb.AppendLine("            route += route.Contains(\"?\") ? \"&\" : \"?\";");
+                    sb.AppendLine($"            route += \"{prop.ParameterName}=\" + global::System.Uri.EscapeDataString({QueryValueExpression($"request.{prop.PropertyName}", prop.PropertyType)});");
+                }
                 sb.AppendLine("        }");
                 sb.AppendLine();
             }
@@ -116,8 +130,18 @@ internal static class HttpHandlerCodeGenerator
             sb.AppendLine();
             sb.AppendLine($"        if (request.{bodyProp.PropertyName} != null)");
             sb.AppendLine("        {");
-            sb.AppendLine($"            var json = services.Serializer.Serialize(request.{bodyProp.PropertyName});");
-            sb.AppendLine("            httpRequest.Content = new global::System.Net.Http.StringContent(json, global::System.Text.Encoding.UTF8, \"application/json\");");
+            if (bodyProp.PropertyType == "global::System.IO.Stream")
+            {
+                var contentType = String.IsNullOrWhiteSpace(bodyProp.ContentType) ? "application/octet-stream" : bodyProp.ContentType;
+                sb.AppendLine($"            var content = new global::System.Net.Http.StreamContent(request.{bodyProp.PropertyName});");
+                sb.AppendLine($"            content.Headers.ContentType = new global::System.Net.Http.Headers.MediaTypeHeaderValue(\"{contentType}\");");
+                sb.AppendLine("            httpRequest.Content = content;");
+            }
+            else
+            {
+                sb.AppendLine($"            var json = services.Serializer.Serialize(request.{bodyProp.PropertyName});");
+                sb.AppendLine("            httpRequest.Content = new global::System.Net.Http.StringContent(json, global::System.Text.Encoding.UTF8, \"application/json\");");
+            }
             sb.AppendLine("        }");
         }
 
@@ -149,6 +173,53 @@ internal static class HttpHandlerCodeGenerator
         sb.AppendLine("}");
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Expression that renders a query value the way ASP.NET Core binds it on any server culture: dates as
+    /// round-trip ISO 8601 ("O"), DateOnly as yyyy-MM-dd, numbers/bools/enums via Convert.ToString with the
+    /// invariant culture, strings as they are. Composite formatting boxes a Nullable&lt;T&gt; to its value, so the
+    /// same expression works whether the generated property is optional (T?) or not. Callers wrap the result
+    /// in Uri.EscapeDataString.
+    /// </summary>
+    internal static string QueryValueExpression(string valueExpression, string? propertyType)
+    {
+        const string invariant = "global::System.Globalization.CultureInfo.InvariantCulture";
+        var core = (propertyType ?? String.Empty).Trim().TrimEnd('?');
+
+        if (core.EndsWith("System.DateTimeOffset", StringComparison.Ordinal) || core.EndsWith("System.DateTime", StringComparison.Ordinal))
+            return $"global::System.String.Format({invariant}, \"{{0:O}}\", {valueExpression})";
+        if (core.EndsWith("System.DateOnly", StringComparison.Ordinal))
+            return $"global::System.String.Format({invariant}, \"{{0:yyyy-MM-dd}}\", {valueExpression})";
+        if (core.EndsWith("System.TimeOnly", StringComparison.Ordinal))
+            return $"global::System.String.Format({invariant}, \"{{0:O}}\", {valueExpression})";
+        if (core == "string" || core.EndsWith("System.String", StringComparison.Ordinal))
+            return valueExpression;
+
+        return $"global::System.Convert.ToString({valueExpression}, {invariant})";
+    }
+
+    internal static bool IsCollectionType(string? propertyType)
+    {
+        if (propertyType == null)
+            return false;
+
+        return propertyType.Contains("System.Collections.Generic.List<")
+            || propertyType.Contains("System.Collections.Generic.IEnumerable<")
+            || propertyType.Contains("System.Collections.Generic.IReadOnlyList<")
+            || propertyType.Contains("System.Collections.Generic.IList<")
+            || propertyType.TrimEnd('?').EndsWith("[]", StringComparison.Ordinal);
+    }
+
+    internal static string ElementType(string propertyType)
+    {
+        var type = propertyType.Trim().TrimEnd('?');
+        var start = type.IndexOf('<');
+        var end = type.LastIndexOf('>');
+        if (start >= 0 && end > start)
+            return type.Substring(start + 1, end - start - 1);
+
+        return type.EndsWith("[]", StringComparison.Ordinal) ? type.Substring(0, type.Length - 2) : "object";
     }
 
     public static string GenerateRegistration(
@@ -259,7 +330,8 @@ public record HttpPropertyInfo(
     bool IsRequired,
     HttpParameterType ParameterType,
     string? PropertyType = null,
-    string? Comments = null
+    string? Comments = null,
+    string? ContentType = null
 );
 
 public record HandlerRegistrationInfo(

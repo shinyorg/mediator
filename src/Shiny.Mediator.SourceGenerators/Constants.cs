@@ -21,6 +21,7 @@ public static class Constants
     // openapi httpclient
     public const bool DefaultOpenApiRegistrationUseInternal = false;
     public const bool DefaultOpenApiGenerateJsonConverters = false;
+    public const bool DefaultOpenApiPolymorphism = false;
     public const string DefaultOpenApiRegistrationClassName = "__ShinyMediatorOpenApiClient";
     public const string DefaultOpenApiRegistrationMethodName = "AddGeneratedOpenApiClient";
 }

@@ -8,4 +8,5 @@ public class MediatorHttpItemConfig
     public bool GenerateModelsOnly { get; set; }
     public bool UseInternalClasses { get; set; }
     public bool GenerateJsonConverters { get; set; }
+    public bool GeneratePolymorphicModels { get; set; }
 }

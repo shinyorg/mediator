@@ -84,7 +84,9 @@ public abstract class AbstractFileStorageService(
         }
         else
         {
-            var copy = indexes.ToList();
+            // ConcurrentDictionary's instance ToArray takes a consistent snapshot. LINQ ToList
+            // can observe a different Count and CopyTo size while another request inserts.
+            var copy = indexes.ToArray();
             var changed = false;
 
             foreach (var (key, value) in copy)
@@ -113,7 +115,7 @@ public abstract class AbstractFileStorageService(
         var indexes = await this.GetIndexCategory(category, cancellationToken).ConfigureAwait(false);
         if (indexes.Count > 0)
         {
-            var copy = indexes.ToList();
+            var copy = indexes.ToArray();
             foreach (var (key, fn) in copy)
             {
                 using (await this.keyLocker.LockAsync(LockKey(category, key), cancellationToken).ConfigureAwait(false))

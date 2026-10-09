@@ -79,6 +79,10 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
     [InlineData("./SourceGeneration/themeparksapi-v1.17.yml")]
     [InlineData("./SourceGeneration/fleet.json")]
     [InlineData("./SourceGeneration/test.json")]
+    // Numeric enums with x-enumNames / x-enumFlags and decimal formats (NSwag conventions).
+    [InlineData("./SourceGeneration/enums.json")]
+    // Raw bodies and raw responses (format: binary) — Stream contracts, HttpResponseMessage results.
+    [InlineData("./SourceGeneration/binary.json")]
     public Task TestApis_Generation(string filePath)
     {
         var content = File.ReadAllText(filePath);
@@ -491,6 +495,85 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
         }
 
         return Verify(result);
+    }
+
+    [Fact(DisplayName = "OpenAPI - query parameters are culture-invariant, ISO 8601 for dates, URL-encoded and repeated for arrays")]
+    public void Query_Parameters_Are_Invariant_Encoded_And_Repeated()
+    {
+        var openApi = """
+        openapi: 3.0.1
+        info:
+          title: Test API
+          version: '1.0'
+        paths:
+          /receipts:
+            get:
+              parameters:
+                - name: at
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: day
+                  in: query
+                  schema:
+                    type: string
+                    format: date
+                - name: take
+                  in: query
+                  schema:
+                    type: integer
+                - name: q
+                  in: query
+                  schema:
+                    type: string
+                - name: tags
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                      type: string
+              responses:
+                '200':
+                  description: OK
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/Receipt'
+        components:
+          schemas:
+            Receipt:
+              type: object
+              properties:
+                id:
+                  type: string
+        """;
+
+        var additionalFiles = new AdditionalText[] { new MockAdditionalText("query.yaml", openApi) };
+        var buildProps = new Dictionary<string, string>
+        {
+            ["build_metadata.AdditionalFiles.SourceItemGroup"] = "MediatorHttp",
+            ["build_metadata.AdditionalFiles.Namespace"] = "TestApi",
+            ["build_property.RootNamespace"] = "UnitTests",
+            ["build_property.AssemblyName"] = "UnitTests"
+        };
+
+        var result = RunGenerator(additionalFiles, buildProps);
+        var handler = result.GeneratedSources
+            .Select(s => s.SourceText.ToString())
+            .Single(s => s.Contains("/receipts") && s.Contains("HandleRequest<"));
+
+        // dates: round-trip ISO 8601 instead of the device culture ("04.09.2026 21:46:57 +00:00")
+        Assert.Contains("global::System.String.Format(global::System.Globalization.CultureInfo.InvariantCulture, \"{0:O}\", request.At)", handler);
+        Assert.Contains("global::System.String.Format(global::System.Globalization.CultureInfo.InvariantCulture, \"{0:yyyy-MM-dd}\", request.Day)", handler);
+        // numbers with the invariant culture, strings as they are — everything URL-encoded
+        Assert.Contains("global::System.Convert.ToString(request.Take, global::System.Globalization.CultureInfo.InvariantCulture)", handler);
+        Assert.Contains("\"q=\" + global::System.Uri.EscapeDataString(request.Q)", handler);
+        // arrays repeat the parameter
+        Assert.Contains("foreach (var itemTags in request.Tags)", handler);
+        Assert.Contains("\"tags=\" + global::System.Uri.EscapeDataString(itemTags)", handler);
+        // the old, culture-dependent interpolation is gone
+        Assert.DoesNotContain("={request.", handler);
     }
 
     [Fact(DisplayName = "OpenAPI - boolean enums fall back to bool, integer enums from YAML generate, string enums with spaces map member names")]

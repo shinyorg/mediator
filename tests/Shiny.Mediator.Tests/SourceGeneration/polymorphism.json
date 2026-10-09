@@ -1,0 +1,343 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Discriminated checkout",
+    "version": "1.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "NewOrderItem": {
+        "type": "object",
+        "required": [
+          "itemId",
+          "source"
+        ],
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source": {
+            "$ref": "#/components/schemas/OrderItemSource"
+          }
+        }
+      },
+      "VoucherIssue": {
+        "type": "object",
+        "required": [
+          "programId",
+          "programVersion",
+          "nominalAmount",
+          "origin"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "voucherIssue"
+            ]
+          },
+          "programId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "programVersion": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nominalAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "precreatedCredentialIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "origin": {
+            "$ref": "#/components/schemas/VoucherOriginData"
+          }
+        }
+      },
+      "OrderItemSource": {
+        "required": [
+          "kind",
+          "correlationId"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "correlationId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/CatalogItem"
+          },
+          {
+            "$ref": "#/components/schemas/CustomSupply"
+          },
+          {
+            "$ref": "#/components/schemas/VoucherIssue"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "catalogItem": "#/components/schemas/CatalogItem",
+            "customSupply": "#/components/schemas/CustomSupply",
+            "voucherIssue": "#/components/schemas/VoucherIssue"
+          }
+        }
+      },
+      "CustomSupply": {
+        "type": "object",
+        "required": [
+          "name",
+          "grossAmount",
+          "taxClassId",
+          "taxKind"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "customSupply"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "grossAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "taxClassId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "taxKind": {
+            "$ref": "#/components/schemas/TaxKind"
+          }
+        }
+      },
+      "CatalogItem": {
+        "type": "object",
+        "required": [
+          "productId"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "catalogItem"
+            ]
+          },
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "TaxKind": {
+        "type": "integer",
+        "enum": [
+          1,
+          6,
+          7
+        ],
+        "x-enumNames": [
+          "Standard",
+          "Exempt",
+          "OutsideScope"
+        ]
+      },
+      "VoucherOriginData": {
+        "type": "object",
+        "required": [
+          "originKind"
+        ],
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/OwnProgramOrigin"
+          },
+          {
+            "$ref": "#/components/schemas/ExternalIssuerOrigin"
+          },
+          {
+            "$ref": "#/components/schemas/LegacyImportOrigin"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "originKind",
+          "mapping": {
+            "ownProgram": "#/components/schemas/OwnProgramOrigin",
+            "externalIssuer": "#/components/schemas/ExternalIssuerOrigin",
+            "legacyImport": "#/components/schemas/LegacyImportOrigin"
+          }
+        }
+      },
+      "OwnProgramOrigin": {
+        "type": "object",
+        "required": [
+          "sellerId"
+        ],
+        "properties": {
+          "sellerId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "ExternalIssuerOrigin": {
+        "type": "object",
+        "required": [
+          "issuer",
+          "agreementId"
+        ],
+        "properties": {
+          "issuer": {
+            "type": "string"
+          },
+          "agreementId": {
+            "type": "string"
+          }
+        }
+      },
+      "LegacyImportOrigin": {
+        "type": "object",
+        "required": [
+          "batchId",
+          "originalReference"
+        ],
+        "properties": {
+          "batchId": {
+            "type": "string"
+          },
+          "originalReference": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "Selection": {
+        "type": "object",
+        "required": [
+          "requiredNullableSource"
+        ],
+        "properties": {
+          "sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemSource"
+            }
+          },
+          "optionalSource": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/OrderItemSource"
+              }
+            ]
+          },
+          "requiredNullableSource": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrderItemSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "TemporalEnvelope": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "optionalDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "time": {
+            "type": "string",
+            "format": "time"
+          },
+          "optionalTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "time"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "optionalTimestamp": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "source": {
+            "$ref": "#/components/schemas/OrderItemSource"
+          }
+        }
+      },
+      "FundingEvidence": {
+        "type": "integer",
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "x-enumNames": [
+          "None",
+          "Terminal",
+          "Reviewed"
+        ]
+      },
+      "CashSplit": {
+        "type": "object",
+        "properties": {
+          "gross": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "fundingEvidenceSource": {
+            "$ref": "#/components/schemas/FundingEvidence"
+          },
+          "nullableEvidence": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/FundingEvidence"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

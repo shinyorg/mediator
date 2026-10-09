@@ -2678,19 +2678,19 @@ public partial class GetHistoryHttpRequestHandler(global::Shiny.Mediator.Http.Ht
         if (request.Date != null)
         {
             route += route.Contains("?") ? "&" : "?";
-            route += $"date={request.Date}";
+            route += "date=" + global::System.Uri.EscapeDataString(global::System.String.Format(global::System.Globalization.CultureInfo.InvariantCulture, "{0:yyyy-MM-dd}", request.Date));
         }
 
         if (request.From != null)
         {
             route += route.Contains("?") ? "&" : "?";
-            route += $"from={request.From}";
+            route += "from=" + global::System.Uri.EscapeDataString(request.From);
         }
 
         if (request.To != null)
         {
             route += route.Contains("?") ? "&" : "?";
-            route += $"to={request.To}";
+            route += "to=" + global::System.Uri.EscapeDataString(request.To);
         }
 
         var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Get, route);
@@ -2830,19 +2830,19 @@ public partial class GetHistoryDailyHttpRequestHandler(global::Shiny.Mediator.Ht
         if (request.Date != null)
         {
             route += route.Contains("?") ? "&" : "?";
-            route += $"date={request.Date}";
+            route += "date=" + global::System.Uri.EscapeDataString(global::System.String.Format(global::System.Globalization.CultureInfo.InvariantCulture, "{0:yyyy-MM-dd}", request.Date));
         }
 
         if (request.From != null)
         {
             route += route.Contains("?") ? "&" : "?";
-            route += $"from={request.From}";
+            route += "from=" + global::System.Uri.EscapeDataString(request.From);
         }
 
         if (request.To != null)
         {
             route += route.Contains("?") ? "&" : "?";
-            route += $"to={request.To}";
+            route += "to=" + global::System.Uri.EscapeDataString(request.To);
         }
 
         var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Get, route);
@@ -2913,7 +2913,7 @@ public partial class GetEntityLiveDataHttpRequestHandler(global::Shiny.Mediator.
         if (request.EntityType != null)
         {
             route += route.Contains("?") ? "&" : "?";
-            route += $"entityType={request.EntityType}";
+            route += "entityType=" + global::System.Uri.EscapeDataString(request.EntityType);
         }
 
         var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Get, route);

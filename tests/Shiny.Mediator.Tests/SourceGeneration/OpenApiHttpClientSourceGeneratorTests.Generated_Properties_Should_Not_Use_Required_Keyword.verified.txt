@@ -109,7 +109,7 @@ public partial class PutUsersHttpRequestHandler(global::Shiny.Mediator.Http.Http
         if (request.Filter != null)
         {
             route += route.Contains("?") ? "&" : "?";
-            route += $"filter={request.Filter}";
+            route += "filter=" + global::System.Uri.EscapeDataString(request.Filter);
         }
 
         var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Put, route);

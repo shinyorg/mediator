@@ -4,6 +4,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AssemblyName>UnitTests</AssemblyName>
+        <ShinyMediatorOpenApiPolymorphism>true</ShinyMediatorOpenApiPolymorphism>
     </PropertyGroup>
 
     <ItemGroup>
@@ -60,20 +61,39 @@
     </ItemGroup>
 
     <ItemGroup>
-        <MediatorHttp Include="OpenApiRemote"
-                      Uri="https://api.themeparks.wiki/docs/v1.yaml"
+        <!-- Pin the compiled contracts to the reviewed fixture. The public spec can change
+             operation IDs independently of these tests. Separate paths carry separate namespaces. -->
+        <MediatorHttp Include="$(BaseIntermediateOutputPath)OpenApiFixtures/ThemeParksApi.yml"
                       Namespace="ThemeParksApi"
                       ContractPostfix="HttpRequest"
                       GenerateJsonConverters="false"
                       Visible="false"/>
 
-        <MediatorHttp Include="OpenApiRemoteGenerated"
-                      Uri="https://api.themeparks.wiki/docs/v1.yaml"
+        <MediatorHttp Include="$(BaseIntermediateOutputPath)OpenApiFixtures/ThemeParksApiGenerated.yml"
                       Namespace="ThemeParksApiGenerated"
                       ContractPostfix="HttpRequest"
                       GenerateJsonConverters="true"
                       Visible="false"/>
+
+        <MediatorHttp Include="SourceGeneration\enums.json"
+                      Namespace="EnumsApi"
+                      ContractPostfix="HttpRequest"
+                      GenerateJsonConverters="true"
+                      Visible="false"/>
+
+        <MediatorHttp Include="SourceGeneration\polymorphism.json"
+                      Namespace="PolymorphicApi"
+                      GenerateModelsOnly="true"
+                      GenerateJsonConverters="true"
+                      Visible="false"/>
     </ItemGroup>
+
+    <Target Name="PrepareOpenApiTestFixtures" BeforeTargets="_InjectShinyMediatorAdditionalFiles">
+        <Copy SourceFiles="SourceGeneration/themeparksapi-v1.17.yml"
+              DestinationFiles="$(BaseIntermediateOutputPath)OpenApiFixtures/ThemeParksApi.yml" />
+        <Copy SourceFiles="SourceGeneration/themeparksapi-v1.17.yml"
+              DestinationFiles="$(BaseIntermediateOutputPath)OpenApiFixtures/ThemeParksApiGenerated.yml" />
+    </Target>
 
     <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"/>
 </Project>

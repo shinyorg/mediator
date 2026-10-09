@@ -16,6 +16,9 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
     readonly HashSet<string> generatedTypes = new();
     readonly HashSet<string> convertedTypes = new();
     readonly Dictionary<string, bool> enumTypes = new();
+    readonly OpenApiPolymorphism polymorphism = new();
+    readonly List<(string Name, IOpenApiSchema Schema)> pendingConverters = new();
+    readonly HashSet<string> collectionElementTypes = new(StringComparer.Ordinal);
 
     public MediatorHttpItemConfig Config => config;
     public SourceProductionContext Context => context;
@@ -41,13 +44,31 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
     /// for numeric enums) and to wire their <c>Nullable&lt;TEnum&gt;</c> counterparts.
     /// </summary>
     public IDictionary<string, bool> EnumTypeNames => this.enumTypes;
+    public IReadOnlyCollection<string> CollectionElementTypeNames => collectionElementTypes;
 
     public void UpdateCompilation(Compilation newCompilation) => Compilation = newCompilation;
+
+    public void PreparePolymorphism(IDictionary<string, IOpenApiSchema> schemas)
+    {
+        if (config.GeneratePolymorphicModels)
+            polymorphism.Analyze(schemas, config.GenerateJsonConverters);
+    }
+
+    public void CompleteModels()
+    {
+        // Symbols for every component must exist before inspecting derived/inherited or forward
+        // referenced properties. Otherwise a valid wire property can be mistaken for an error type.
+        foreach (var pending in pendingConverters)
+            GenerateConverter(pending.Name, pending.Schema);
+        pendingConverters.Clear();
+    }
 
 
     public void GenerateModel(string name, IOpenApiSchema schema)
     {
         var className = name.Pascalize().ToSafeIdentifier();
+        if (config.GeneratePolymorphicModels && !polymorphism.Bases.ContainsKey(className))
+            OpenApiPolymorphism.RejectInlineDiscriminator(schema);
 
         if (this.generatedTypes.Add(className))
         {
@@ -55,7 +76,7 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
             {
                 GenerateEnum(className, schema);
             }
-            else if (schema.Type?.HasFlag(JsonSchemaType.Object) == true || schema.Properties?.Count > 0)
+            else if (schema.Type?.HasFlag(JsonSchemaType.Object) == true || schema.Properties?.Count > 0 || polymorphism.Bases.ContainsKey(className))
             {
                 GenerateClass(className, schema);
             }
@@ -81,7 +102,7 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
 
 
     // YAML documents surface numbers as decimal-backed JsonValues, so GetValue<int>() throws - parse the raw json instead
-    static bool TryGetEnumInt(System.Text.Json.Nodes.JsonNode node, out int value)
+    static bool TryGetEnumInt(System.Text.Json.Nodes.JsonNode node, out long value)
     {
         value = 0;
         if (node.GetValueKind() != System.Text.Json.JsonValueKind.Number)
@@ -90,10 +111,10 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         if (!Decimal.TryParse(node.ToJsonString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var d))
             return false;
 
-        if (d != Decimal.Truncate(d) || d < Int32.MinValue || d > Int32.MaxValue)
+        if (d != Decimal.Truncate(d) || d < Int64.MinValue || d > Int64.MaxValue)
             return false;
 
-        value = (int)d;
+        value = (long)d;
         return true;
     }
 
@@ -124,14 +145,16 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         {
             // without a converter attribute, generated json converters treat enums as strings
             sb.AppendLine($"[global::System.Text.Json.Serialization.JsonConverter(typeof(global::System.Text.Json.Serialization.JsonNumberEnumConverter<global::{config.Namespace}.{enumName}>))]");
+            if (GetExtensionBoolean(schema, "x-enumFlags"))
+                sb.AppendLine("[global::System.Flags]");
         }
 
         sb.AppendLine(Constants.GeneratedCodeAttributeString);
-        sb.AppendLine($"{accessor} enum {enumName}");
-        sb.AppendLine("{");
 
         if (isStringEnum)
         {
+            sb.AppendLine($"{accessor} enum {enumName}");
+            sb.AppendLine("{");
             var memberNames = new HashSet<string>();
             foreach (var ev in schema.Enum!)
             {
@@ -162,38 +185,105 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         }
         else
         {
+            var values = new List<long>();
             foreach (var ev in schema.Enum!)
             {
                 if (ev != null)
                 {
-                    TryGetEnumInt(ev, out var intValue);
-                    var memberName = intValue < 0 ? $"ValueMinus{-(long)intValue}" : $"Value{intValue}";
-                    sb.AppendLine($"    {memberName} = {intValue},");
+                    TryGetEnumInt(ev, out var value);
+                    values.Add(value);
                 }
+            }
+
+            // Member names come from the NSwag/AutoRest conventions (x-enumNames, x-enum-varnames)
+            // when the document carries them and they line up with the values; otherwise Value{n}.
+            var names = GetExtensionStrings(schema, "x-enumNames") ?? GetExtensionStrings(schema, "x-enum-varnames");
+            if (names == null || names.Count != values.Count)
+            {
+                names = values
+                    .Select(v => v < 0
+                        ? "ValueMinus" + (-(decimal)v).ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        : "Value" + v.ToString(System.Globalization.CultureInfo.InvariantCulture))
+                    .ToList();
+            }
+
+            var underlying = values.Any(v => v < Int32.MinValue || v > Int32.MaxValue) ? " : long" : String.Empty;
+            sb.AppendLine($"{accessor} enum {enumName}{underlying}");
+            sb.AppendLine("{");
+
+            var used = new HashSet<string>();
+            for (var i = 0; i < values.Count; i++)
+            {
+                var memberName = names[i].ToSafeIdentifier();
+                while (!used.Add(memberName))
+                    memberName += "_";
+
+                sb.AppendLine($"    {memberName} = {values[i].ToString(System.Globalization.CultureInfo.InvariantCulture)},");
             }
         }
 
         sb.AppendLine("}");
 
-        context.AddSource(GetFileName(enumName), SourceText.From(sb.ToString(), Encoding.UTF8));
+        AddModelSource(enumName, sb.ToString());
     }
     
 
+    static List<string>? GetExtensionStrings(IOpenApiSchema schema, string name)
+    {
+        if (schema.Extensions == null || !schema.Extensions.TryGetValue(name, out var extension))
+            return null;
+
+        if (extension is JsonNodeExtension { Node: System.Text.Json.Nodes.JsonArray array })
+        {
+            var list = new List<string>();
+            foreach (var item in array)
+            {
+                if (item is not System.Text.Json.Nodes.JsonValue value || value.GetValueKind() != System.Text.Json.JsonValueKind.String)
+                    return null;
+
+                list.Add(value.GetValue<string>());
+            }
+            return list;
+        }
+
+        return null;
+    }
+
+    static bool GetExtensionBoolean(IOpenApiSchema schema, string name)
+        => schema.Extensions != null
+           && schema.Extensions.TryGetValue(name, out var extension)
+           && extension is JsonNodeExtension { Node: System.Text.Json.Nodes.JsonValue value }
+           && value.GetValueKind() == System.Text.Json.JsonValueKind.True;
+
     void GenerateClass(string className, IOpenApiSchema schema)
     {
+        if (config.GeneratePolymorphicModels && !polymorphism.Bases.ContainsKey(className))
+            OpenApiPolymorphism.RejectInlineDiscriminator(schema);
+        polymorphism.Bases.TryGetValue(className, out var polymorphicBase);
+        polymorphism.Variants.TryGetValue(className, out var polymorphicVariant);
+        var discriminator = polymorphicBase?.Discriminator ?? polymorphicVariant?.Parent.Discriminator;
         var sb = new StringBuilder();
         sb.AppendLine("// <auto-generated>");
         sb.AppendLine("// Code generated by Shiny Mediator OpenAPI Source Generator.");
         sb.AppendLine("// </auto-generated>");
         sb.AppendLine("#nullable disable");
+        if (config.GeneratePolymorphicModels)
+            sb.AppendLine("#nullable enable annotations");
         sb.AppendLine();
         sb.AppendLine($"namespace {config.Namespace};");
         sb.AppendLine();
+        if (polymorphicBase != null)
+            sb.AppendLine($"[global::System.Text.Json.Serialization.JsonConverter(typeof({className}JsonConverter))]");
         sb.AppendLine(Constants.GeneratedCodeAttributeString);
-        sb.Append($"{accessor} partial class {className}");
+        var modifier = polymorphicBase != null ? "abstract " : polymorphicVariant != null ? "sealed " : String.Empty;
+        sb.Append($"{accessor} {modifier}partial class {className}");
 
         // Handle inheritance
-        if (schema.AllOf?.Count == 1)
+        if (polymorphicVariant != null)
+        {
+            sb.AppendLine($" : global::{config.Namespace}.{polymorphicVariant.Parent.Name}");
+        }
+        else if (schema.AllOf?.Count == 1)
         {
             var baseType = GetSchemaType(schema.AllOf[0]);
             if (baseType != null)
@@ -217,6 +307,10 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         {
             foreach (var property in schema.Properties)
             {
+                // The variant determines this value; a mutable Kind property could contradict
+                // the runtime type and reintroduce ambiguous or incomplete wire payloads.
+                if (property.Key == discriminator)
+                    continue;
                 var propertyName = property.Key.Pascalize().ToSafeIdentifier();
 
                 if (property.Value != null)
@@ -257,7 +351,9 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
                     if (typeName != null)
                     {
                         var isRequired = schema.Required?.Contains(property.Key) ?? false;
-                        var typeIncludesNull = propSchema.Type?.HasFlag(JsonSchemaType.Null) ?? false;
+                        var typeIncludesNull = config.GeneratePolymorphicModels
+                            ? AllowsNull(propSchema)
+                            : propSchema.Type?.HasFlag(JsonSchemaType.Null) ?? false;
                         var isValueType = IsValueType(typeName);
                         
                         // Value types are only nullable if schema explicitly includes null
@@ -277,11 +373,16 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
 
         sb.AppendLine("}");
 
-        context.AddSource(GetFileName(className), SourceText.From(sb.ToString(), Encoding.UTF8));
+        AddModelSource(className, sb.ToString());
 
         // Generate JSON converter if requested
         if (config.GenerateJsonConverters)
         {
+            if (config.GeneratePolymorphicModels)
+            {
+                pendingConverters.Add((className, schema));
+                return;
+            }
             try
             {
                 // Parse the generated source code and add it to compilation so we can get the type symbol
@@ -311,9 +412,90 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         }
     }
 
+    void AddModelSource(string name, string source)
+    {
+        context.AddSource(GetFileName(name), SourceText.From(source, Encoding.UTF8));
+        if (!config.GeneratePolymorphicModels)
+            return;
+
+        var parseOptions = Compilation.SyntaxTrees.FirstOrDefault()?.Options as Microsoft.CodeAnalysis.CSharp.CSharpParseOptions
+            ?? Microsoft.CodeAnalysis.CSharp.CSharpParseOptions.Default;
+        UpdateCompilation(Compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(
+            source, parseOptions, cancellationToken: context.CancellationToken)));
+    }
+
+    void GenerateConverter(string className, IOpenApiSchema schema)
+    {
+        var fullyQualifiedTypeName = $"{config.Namespace}.{className}";
+        if (polymorphism.Bases.TryGetValue(className, out var parent))
+        {
+            OpenApiPolymorphicConverterGenerator.Generate(context, config.Namespace, parent, config.UseInternalClasses);
+        }
+        else
+        {
+            var symbol = Compilation.GetTypeByMetadataName(fullyQualifiedTypeName)
+                ?? throw new OpenApiPolymorphismException($"Cannot resolve generated model '{fullyQualifiedTypeName}' to emit its converter.");
+            var options = new JsonConverterGenerationOptions { UseInternalConverter = config.UseInternalClasses };
+            AddOptionalProperties(options, schema);
+            if (polymorphism.Variants.TryGetValue(className, out var variant))
+            {
+                options.IncludeInheritedProperties = true;
+                options.DiscriminatorPropertyName = variant.Parent.Discriminator;
+                options.DiscriminatorValue = variant.DiscriminatorValue;
+                AddRequiredProperties(options, schema, onlyPolymorphic: false);
+                AddRequiredProperties(options, variant.Parent.Schema, onlyPolymorphic: false);
+                AddOptionalProperties(options, variant.Parent.Schema);
+            }
+            else
+            {
+                AddRequiredProperties(options, schema, onlyPolymorphic: true);
+            }
+            JsonConverterSourceGenerator.GenerateJsonConverter(context, symbol, attachAttribute: true, options);
+        }
+        convertedTypes.Add(fullyQualifiedTypeName);
+    }
+
+    static void AddOptionalProperties(JsonConverterGenerationOptions options, IOpenApiSchema schema)
+    {
+        if (schema.Properties == null) return;
+        foreach (var property in schema.Properties)
+            if (property.Value is not null && schema.Required?.Contains(property.Key) != true && !AllowsNull(property.Value))
+                options.OmitNullProperties.Add(property.Key.Pascalize().ToSafeIdentifier());
+    }
+
+    void AddRequiredProperties(JsonConverterGenerationOptions options, IOpenApiSchema schema, bool onlyPolymorphic)
+    {
+        if (schema.Required == null || schema.Properties == null)
+            return;
+        foreach (var name in schema.Required)
+        {
+            if (name == options.DiscriminatorPropertyName || !schema.Properties.TryGetValue(name, out var property))
+                continue;
+            if (onlyPolymorphic && !ReferencesPolymorphicBase(property))
+                continue;
+
+            var propertyName = name.Pascalize().ToSafeIdentifier();
+            options.RequiredProperties.Add(propertyName);
+            if (!AllowsNull(property))
+                options.NonNullProperties.Add(propertyName);
+        }
+    }
+
+    bool ReferencesPolymorphicBase(IOpenApiSchema schema)
+        => schema is OpenApiSchemaReference reference
+            ? polymorphism.Bases.ContainsKey(OpenApiPolymorphism.ClassName(reference.Reference.Id!))
+            : schema.OneOf?.Any(ReferencesPolymorphicBase) == true || schema.AnyOf?.Any(ReferencesPolymorphicBase) == true;
+
+    static bool AllowsNull(IOpenApiSchema schema)
+        => schema.Type?.HasFlag(JsonSchemaType.Null) == true ||
+           schema.OneOf?.Any(x => x.Type == JsonSchemaType.Null) == true ||
+           schema.AnyOf?.Any(x => x.Type == JsonSchemaType.Null) == true;
+
     
     string? GetSchemaType(IOpenApiSchema schema)
     {
+        if (config.GeneratePolymorphicModels)
+            OpenApiPolymorphism.RejectInlineDiscriminator(schema);
         string? type = null;
         if (schema is OpenApiSchemaReference schemaRef && !String.IsNullOrWhiteSpace(schemaRef.Reference.Id))
         {
@@ -350,7 +532,11 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
             {
                 var listType = GetSchemaType(schema.Items);
                 if (listType != null)
+                {
+                    if (config.GeneratePolymorphicModels)
+                        collectionElementTypes.Add(listType);
                     type = $"global::System.Collections.Generic.List<{listType}>";
+                }
             }
             else if (schema.Type.Value.HasFlag(JsonSchemaType.String))
             {
@@ -402,7 +588,7 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
     }
     
     static bool IsNumericFormat(string? format)
-        => format is "int32" or "int64" or "float" or "double";
+        => format is "int32" or "int64" or "float" or "double" or "decimal";
 
     static string GetStringType(IOpenApiSchema schema)
     {
@@ -420,6 +606,7 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
             "date" => "global::System.DateOnly",
             "time" => "global::System.TimeOnly",
             "date-span" => "global::System.TimeSpan",
+            "binary" or "byte" => "byte[]",
             _ => "string"
         };
     }
@@ -429,6 +616,7 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         "int32" => "int",
         "int64" => "long",
         "float" => "float",
+        "decimal" => "decimal",
         _ => "double"
     };
 

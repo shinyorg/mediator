@@ -31,7 +31,7 @@ public partial class SearchRequestHandler(global::Shiny.Mediator.Http.HttpHandle
         if (request.SearchTerm != null)
         {
             route += route.Contains("?") ? "&" : "?";
-            route += $"query={request.SearchTerm}";
+            route += "query=" + global::System.Uri.EscapeDataString(request.SearchTerm);
         }
 
         var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Get, route);

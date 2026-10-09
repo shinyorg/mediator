@@ -1,0 +1,59 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Binary API", "version": "1.0.0" },
+  "paths": {
+    "/preferences": {
+      "put": {
+        "operationId": "putPreferences",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Stream" } } }
+        },
+        "responses": { "204": { "description": "No Content" } }
+      }
+    },
+    "/rooms/{roomId}/background": {
+      "put": {
+        "operationId": "putBackground",
+        "parameters": [ { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } } ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "image/png": { "schema": { "$ref": "#/components/schemas/Stream" } },
+            "image/jpeg": { "schema": { "$ref": "#/components/schemas/Stream" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RoomData" } } } }
+        }
+      }
+    },
+    "/exports/{exportId}/file": {
+      "get": {
+        "operationId": "getExportFile",
+        "parameters": [ { "name": "exportId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } } ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": { "schema": { "$ref": "#/components/schemas/Stream" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/Stream" } }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Stream": { "type": "string", "format": "binary" },
+      "RoomData": {
+        "type": "object",
+        "properties": {
+          "roomId": { "type": "string", "format": "uuid" },
+          "thumbnail": { "type": "string", "format": "byte" }
+        }
+      }
+    }
+  }
+}

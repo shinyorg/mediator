@@ -35,6 +35,7 @@
         <CompilerVisibleProperty Include="ShinyMediatorOpenApiRegistrationNamespace"/>
         <CompilerVisibleProperty Include="ShinyMediatorOpenApiRegistrationClassName"/>
         <CompilerVisibleProperty Include="ShinyMediatorOpenApiRegistrationMethodName"/>
+        <CompilerVisibleProperty Include="ShinyMediatorOpenApiPolymorphism"/>
         
         <AvailableItemName Include="MediatorHttp"/>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false"/>

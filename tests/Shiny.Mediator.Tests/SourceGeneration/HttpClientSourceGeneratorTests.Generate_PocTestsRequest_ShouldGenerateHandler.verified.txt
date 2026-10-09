@@ -31,7 +31,7 @@ public partial class PocTestsHandler(global::Shiny.Mediator.Http.HttpHandlerServ
         if (request.QueryValue != null)
         {
             route += route.Contains("?") ? "&" : "?";
-            route += $"TestQuery={request.QueryValue}";
+            route += "TestQuery=" + global::System.Uri.EscapeDataString(global::System.Convert.ToString(request.QueryValue, global::System.Globalization.CultureInfo.InvariantCulture));
         }
 
         var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Get, route);

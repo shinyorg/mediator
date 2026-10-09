@@ -31,7 +31,7 @@ public partial class UpdateOrderRequestHandler(global::Shiny.Mediator.Http.HttpH
         if (request.Status != null)
         {
             route += route.Contains("?") ? "&" : "?";
-            route += $"status={request.Status}";
+            route += "status=" + global::System.Uri.EscapeDataString(request.Status);
         }
 
         var httpRequest = this.CreateHttpRequest(context, global::System.Net.Http.HttpMethod.Post, route);
