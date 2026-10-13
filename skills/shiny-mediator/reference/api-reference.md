@@ -390,6 +390,7 @@ Generate strongly-typed mediator contracts and handlers from OpenAPI specs via `
 ### What Gets Generated
 - **Models** from `components/schemas` with `[JsonPropertyName]` attributes
 - **Enums** with optional `JsonStringEnumConverter`
+- **Discriminated hierarchies** - a schema with a `discriminator` (`oneOf`/`anyOf` union or `allOf` inheritance) becomes an `abstract` base + variant subclasses with a generated `{Base}JsonConverter` that dispatches on the discriminator value (reflection and AOT)
 - **Contract classes** implementing `IRequest<TResult>` with route/query/header/body properties
 - **Handler classes** inheriting `BaseHttpRequestHandler`
 - **Registration extension** `AddGeneratedOpenApiClient()`

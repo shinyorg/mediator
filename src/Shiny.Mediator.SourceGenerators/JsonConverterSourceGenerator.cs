@@ -193,13 +193,7 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
             return;
 
         // Extract type information
-        var properties = typeSymbol
-            .GetMembers()
-            .OfType<IPropertySymbol>()
-            .Where(x => 
-                x.DeclaredAccessibility == Accessibility.Public && 
-                x is { GetMethod: not null, SetMethod: not null }
-            )
+        var properties = GetPropertiesWithInherited(typeSymbol)
             .Select(x => new PropertyInfo(
                 x.Name,
                 x.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
@@ -253,6 +247,36 @@ public class JsonConverterSourceGenerator : IIncrementalGenerator
             GeneratePartialTypeWithAttribute(context, typeInfo);
     }
     
+
+    /// <summary>
+    /// Public read/write properties including those declared on base classes - base first so
+    /// inherited members (e.g. a polymorphic discriminator) lead the object. An override replaces
+    /// the base declaration in place so attributes come from the most derived member.
+    /// </summary>
+    static List<IPropertySymbol> GetPropertiesWithInherited(INamedTypeSymbol typeSymbol)
+    {
+        var chain = new List<INamedTypeSymbol>();
+        for (var current = typeSymbol; current != null && current.SpecialType != SpecialType.System_Object; current = current.BaseType)
+            chain.Insert(0, current);
+
+        var properties = new List<IPropertySymbol>();
+        foreach (var type in chain)
+        {
+            foreach (var property in type.GetMembers().OfType<IPropertySymbol>())
+            {
+                if (property.DeclaredAccessibility != Accessibility.Public || property.IsStatic || property is not { GetMethod: not null, SetMethod: not null })
+                    continue;
+
+                var index = properties.FindIndex(x => x.Name == property.Name);
+                if (index >= 0)
+                    properties[index] = property;
+                else
+                    properties.Add(property);
+            }
+        }
+        return properties;
+    }
+
 
     static void GeneratePartialTypeWithAttribute(SourceProductionContext context, TypeInfo typeInfo)
     {

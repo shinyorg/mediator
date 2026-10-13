@@ -466,10 +466,19 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
     {
         if (document.Components?.Schemas == null)
             return;
-        
+
+        var context = modelGenerator.Context;
+        modelGenerator.SetComponents(document.Components.Schemas, message => ReportDiagnostic(
+            context,
+            "SHINYMED009",
+            "OpenAPI Polymorphism",
+            message,
+            DiagnosticSeverity.Warning
+        ));
+
         foreach (var schema in document.Components.Schemas)
         {
-            modelGenerator.GenerateModel(schema.Key, schema.Value);
+            modelGenerator.GenerateModel(schema.Key, schema.Value, true);
         }
     }
 

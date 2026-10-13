@@ -45,7 +45,7 @@ Starting in v6.6 JSON flows through [`Shiny.Extensions.Serialization`](https://w
   - We still have a "messagingcenter" type subscribe off IMediator for cases where you can't have your current type implement an interface
 - Save the Boilerplate + Receive the Power of Middleware
   - [Dapper Extension](https://shinylib.net/mediator/extensions/dapper) for Easy Query Handling
-  - [HTTP Extension](https://shinylib.net/mediator/extensions/http) for Easy API handling - OpenAPI Contract Generation takes it even one step further
+  - [HTTP Extension](https://shinylib.net/mediator/extensions/http) for Easy API handling - OpenAPI Contract Generation takes it even one step further (including discriminated/polymorphic models)
   - Map contracts directly to handlers with our [ASP.NET Extension](https://shinylib.net/mediator/extensions/aspnet)
   - Server Sent Events for ASP.NET
 - [Epic Out-of-the-Box Middleware](https://shinylib.net/mediator/middleware/)

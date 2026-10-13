@@ -25,6 +25,10 @@ triggers:
   - OpenAPI
   - HTTP client
   - MediatorHttp
+  - discriminator
+  - polymorphism
+  - oneOf
+  - allOf
   - swagger
   - contract-first
   - strongly typed HTTP
@@ -498,6 +502,14 @@ Generate contracts, models, and handlers directly from OpenAPI/Swagger specs. Ad
 | `UseInternalClasses` | Generate internal classes instead of public |
 | `GenerateModelsOnly` | Only generate models, no handlers |
 | `GenerateJsonConverters` | Generate `JsonConverter` implementations for enums |
+
+**Discriminated (polymorphic) schemas** are always supported: a schema with a `discriminator` (either a
+`oneOf`/`anyOf` union as ASP.NET Core emits it, or `allOf: [$ref Base, {...}]` inheritance as NSwag/Swashbuckle
+emit it) generates an `abstract partial class Base` carrying `[JsonConverter(typeof(BaseJsonConverter))]` and
+`public abstract string Kind`, plus `partial class Variant : Base` with `Kind` overridden to its discriminator value.
+Deserialize to the base type (`List<Animal>`) and pattern-match on the variant (`if (a is Dog d)`). To send one,
+construct the variant (`new Dog { ... }`); do not set the discriminator by hand. Unmapped variants use their schema
+name as the value. `$type` becomes a `Type` property. An unknown or missing discriminator throws `JsonException`.
 
 **Registration of generated OpenAPI client:**
 ```csharp

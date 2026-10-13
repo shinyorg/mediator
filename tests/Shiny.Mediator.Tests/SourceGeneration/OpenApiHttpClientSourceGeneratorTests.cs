@@ -79,6 +79,9 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
     [InlineData("./SourceGeneration/themeparksapi-v1.17.yml")]
     [InlineData("./SourceGeneration/fleet.json")]
     [InlineData("./SourceGeneration/test.json")]
+    // discriminated models: oneOf/anyOf union (ASP.NET Core) and allOf inheritance (NSwag/Swashbuckle)
+    [InlineData("./SourceGeneration/polymorphism-union.json")]
+    [InlineData("./SourceGeneration/polymorphism-inheritance.json")]
     public Task TestApis_Generation(string filePath)
     {
         var content = File.ReadAllText(filePath);

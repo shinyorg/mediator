@@ -73,7 +73,20 @@
                       ContractPostfix="HttpRequest"
                       GenerateJsonConverters="true"
                       Visible="false"/>
+
+        <!--discriminated models - union (ASP.NET Core) + allOf inheritance (NSwag) shapes, reflection + generated converters-->
+        <MediatorHttp Include="SourceGeneration\polymorphism-union.json" Namespace="PolyUnion" Visible="false"/>
+        <MediatorHttp Include="SourceGeneration\polymorphism-inheritance.json" Namespace="PolyInherit" Visible="false"/>
+        <!--additional files are keyed by path, so the generated-converter variants read copies-->
+        <MediatorHttp Include="$(IntermediateOutputPath)polymorphism\polymorphism-union.json" Namespace="PolyUnionGenerated" GenerateJsonConverters="true" Visible="false"/>
+        <MediatorHttp Include="$(IntermediateOutputPath)polymorphism\polymorphism-inheritance.json" Namespace="PolyInheritGenerated" GenerateJsonConverters="true" Visible="false"/>
     </ItemGroup>
+
+    <Target Name="CopyPolymorphismFixtures" BeforeTargets="_InjectShinyMediatorAdditionalFiles">
+        <Copy SourceFiles="SourceGeneration\polymorphism-union.json;SourceGeneration\polymorphism-inheritance.json"
+              DestinationFolder="$(IntermediateOutputPath)polymorphism"
+              SkipUnchangedFiles="true"/>
+    </Target>
 
     <Import Project="..\..\src\Shiny.Mediator.SourceGenerators\SourceGenerators.targets"/>
 </Project>

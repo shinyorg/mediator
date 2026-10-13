@@ -1,0 +1,86 @@
+{
+  "openapi": "3.1.1",
+  "info": { "title": "Shapes", "version": "1.0" },
+  "paths": {
+    "/shapes": {
+      "get": {
+        "operationId": "getShapes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Shape" } }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "addShape",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/Shape" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Drawing" } }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Drawing": {
+        "type": "object",
+        "required": [ "name", "shapes" ],
+        "properties": {
+          "name": { "type": "string" },
+          "primary": { "$ref": "#/components/schemas/Shape" },
+          "shapes": { "type": "array", "items": { "$ref": "#/components/schemas/Shape" } }
+        }
+      },
+      "Shape": {
+        "required": [ "$type" ],
+        "type": "object",
+        "anyOf": [
+          { "$ref": "#/components/schemas/ShapeCircle" },
+          { "$ref": "#/components/schemas/ShapeSquare" }
+        ],
+        "discriminator": {
+          "propertyName": "$type",
+          "mapping": {
+            "circle": "#/components/schemas/ShapeCircle",
+            "square": "#/components/schemas/ShapeSquare"
+          }
+        },
+        "properties": {
+          "$type": { "type": "string" },
+          "color": { "type": "string" }
+        }
+      },
+      "ShapeCircle": {
+        "required": [ "$type", "radius" ],
+        "properties": {
+          "$type": { "enum": [ "circle" ], "type": "string" },
+          "color": { "type": "string" },
+          "radius": { "type": "number", "format": "double" }
+        }
+      },
+      "ShapeSquare": {
+        "required": [ "$type", "side" ],
+        "properties": {
+          "$type": { "enum": [ "square" ], "type": "string" },
+          "color": { "type": "string" },
+          "side": { "type": "integer", "format": "int32" }
+        }
+      }
+    }
+  }
+}
