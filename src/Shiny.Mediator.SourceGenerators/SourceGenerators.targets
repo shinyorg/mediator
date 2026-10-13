@@ -16,6 +16,22 @@
         <CompilerVisibleProperty Include="ShinyMediatorGenerateJsonContext"/>
     </ItemGroup>
 
+    <!--reflection-free contract keys (opt-in: set ShinyMediatorGenerateContractKeys=true)-->
+    <ItemGroup>
+        <CompilerVisibleProperty Include="ShinyMediatorGenerateContractKeys"/>
+    </ItemGroup>
+
+    <!--
+        reflection-based contract key fallback - defaults to off when generated keys are on so the trimmer can remove it;
+        set ShinyMediatorReflectionContractKeys=true to keep it as a fallback, or false to strip it without generated keys
+    -->
+    <PropertyGroup>
+        <ShinyMediatorReflectionContractKeys Condition="'$(ShinyMediatorReflectionContractKeys)' == '' AND '$(ShinyMediatorGenerateContractKeys)' == 'true'">false</ShinyMediatorReflectionContractKeys>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(ShinyMediatorReflectionContractKeys)' == 'false'">
+        <RuntimeHostConfigurationOption Include="Shiny.Mediator.ReflectionContractKeys" Value="false" Trim="true"/>
+    </ItemGroup>
+
     <!--user httpclient registration variables-->
     <ItemGroup>
         <CompilerVisibleProperty Include="ShinyMediatorHttpRegistrationUseInternalClass"/>

@@ -7,6 +7,10 @@ public static class Constants
     // request/result auto JSON serialization (opt-in)
     public const bool DefaultGenerateJsonContext = false;
 
+    // reflection-free contract keys (opt-in)
+    public const bool DefaultGenerateContractKeys = false;
+    public const string DefaultContractKeySourceClassName = "GeneratedContractKeySource";
+
     // registry defaults
     public const bool DefaultRegistryUseInternal = false;
     public const string DefaultRegistryRegistrationMethodName = "AddMediatorRegistry";

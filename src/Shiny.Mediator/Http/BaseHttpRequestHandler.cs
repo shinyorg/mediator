@@ -179,8 +179,8 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
     
     /// <summary>
     /// Sends <paramref name="httpRequest"/> with a hard <paramref name="timeout"/>,
-    /// surfaces a <see cref="TimeoutException"/> if the timeout fires (vs. a caller cancel),
-    /// captures the response on <paramref name="context"/>, and deserializes the body.
+    /// surfaces a <see cref="TimeoutException"/> if the timeout fires, lets a caller cancel propagate as
+    /// <see cref="TaskCanceledException"/> (it never returns <c>default</c> for a cancelled request), captures the response on <paramref name="context"/>, and deserializes the body.
     /// When <typeparamref name="TResult"/> is <see cref="HttpResponseMessage"/> the raw response is returned.
     /// </summary>
     protected virtual async Task<TResult> Send<TResult>(
@@ -223,10 +223,10 @@ public abstract class BaseHttpRequestHandler(HttpHandlerServices services)
                 finalResult = services.Serializer.Deserialize<TResult>(stringResult)!;
             }
         }
-        catch (TaskCanceledException ex)
+        catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            if (!cancellationToken.IsCancellationRequested)
-                throw new TimeoutException("HTTP Request timed out", ex);
+            // only the internal timeout is translated - a caller cancel propagates as-is
+            throw new TimeoutException("HTTP Request timed out", ex);
         }
         return finalResult;
     }

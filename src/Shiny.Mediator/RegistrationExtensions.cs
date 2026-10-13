@@ -91,6 +91,7 @@ public static class RegistrationExtensions
         /// Installs middleware that runs <see cref="System.ComponentModel.DataAnnotations"/> validation against
         /// requests and commands marked with <c>[Validate]</c>, throwing <c>ValidateException</c> when invalid.
         /// </summary>
+        [RequiresUnreferencedCode("DataAnnotations validation reflects over the contract's properties and attributes, which may be trimmed")]
         public ShinyMediatorBuilder AddDataAnnotations()
         {
             mediatorBuilder.AddOpenRequestMiddleware(typeof(DataAnnotationsRequestMiddleware<,>));

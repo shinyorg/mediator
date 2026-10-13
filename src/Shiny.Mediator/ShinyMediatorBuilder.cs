@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Infrastructure;
 
 namespace Shiny.Mediator;
@@ -19,10 +20,11 @@ public sealed class ShinyMediatorBuilder(IServiceCollection services)
 
     /// <summary>
     /// Replaces the registered <see cref="IContractKeyProvider"/> used to compute unique keys for cache, replay, and storage lookups.
+    /// Safe to call before or after <c>AddShinyMediator</c> - any existing registration is replaced.
     /// </summary>
     public ShinyMediatorBuilder SetContractKeyProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>() where TProvider : class, IContractKeyProvider
     {
-        this.Services.AddSingleton<IContractKeyProvider, TProvider>();
+        this.Services.Replace(ServiceDescriptor.Singleton<IContractKeyProvider, TProvider>());
         return this;
     }
 

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.ComponentModel.DataAnnotations;
 
 namespace Shiny.Mediator.Middleware;
@@ -11,6 +12,7 @@ namespace Shiny.Mediator.Middleware;
 public class DataAnnotationsCommandMiddleware<TCommand> : AbstractValidationCommandMiddleware<TCommand> where TCommand : ICommand
 {
     /// <inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Only registered via AddDataAnnotations, which carries RequiresUnreferencedCode")]
     protected override Task Validate(
         TCommand command, 
         Dictionary<string, List<string>> populate, 

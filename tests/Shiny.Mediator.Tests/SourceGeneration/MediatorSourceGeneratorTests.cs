@@ -2,6 +2,8 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Shiny.Mediator.Infrastructure;
+using Shiny.Mediator.Infrastructure.Impl;
 using Shiny.Mediator.SourceGenerators;
 
 namespace Shiny.Mediator.Tests.SourceGeneration;
@@ -425,6 +427,126 @@ public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
         return Verify(result);
     }
 
+    const string ContractKeySource = @"
+using System;
+using Shiny.Mediator;
+
+
+namespace TestApp;
+
+public enum Status { Active, Closed }
+
+public record GetOrders(string? Customer, int Page, Status Status, DateTime? Since, string? Unused) : IRequest<string>;
+
+public class OrderStream : IStreamRequest<int>
+{
+    public int Take { get; set; }
+    public string WriteOnly { set { } }
+    public string this[int index] => string.Empty;
+}
+
+public record SaveOrder(Guid Id) : ICommand;
+
+// supplies its own key - never in the generated source
+public record KeyedRequest(string Id) : IRequest<string>, IContractKey
+{
+    public string GetKey() => Id;
+}
+
+public class Outer
+{
+    public record NestedRequest(int Value) : IRequest<string>;
+}
+
+public abstract record BaseQuery(string Tenant) : IRequest<string>;
+public record DerivedQuery(string Tenant, string Term) : BaseQuery(Tenant);
+
+[MediatorSingleton]
+public class GetOrdersHandler : IRequestHandler<GetOrders, string>
+{
+    public Task<string> Handle(GetOrders request, IMediatorContext context, CancellationToken cancellationToken)
+        => Task.FromResult(string.Empty);
+}";
+
+
+    [Fact(DisplayName = "Contract keys - opt-in generates a reflection-free IContractKeySource and registers it")]
+    public Task GeneratesContractKeySource()
+    {
+        var driver = BuildDriverWithOptions(ContractKeySource, generateContractKeys: true);
+        var result = driver.GetRunResult().Results.FirstOrDefault();
+        result.Exception.ShouldBeNull();
+        return Verify(result);
+    }
+
+
+    [Fact(DisplayName = "Contract keys - nothing generated when not opted in")]
+    public void DoesNotGenerateContractKeySource_ByDefault()
+    {
+        var driver = BuildDriver(ContractKeySource);
+        var result = driver.GetRunResult().Results.First();
+        result.GeneratedSources.ShouldNotContain(x => x.HintName.Contains("GeneratedContractKeySource"));
+        result.GeneratedSources.Single(x => x.HintName.EndsWith("_Registry.g.cs"))
+            .SourceText.ToString()
+            .ShouldNotContain("IContractKeySource");
+    }
+
+
+    [Fact(DisplayName = "Contract keys - generated keys match the reflection fallback exactly")]
+    public void GeneratedContractKeys_MatchReflectionKeys()
+    {
+        var driver = BuildDriverWithOptions(ContractKeySource, generateContractKeys: true);
+        var keySourceTree = driver
+            .GetRunResult()
+            .GeneratedTrees
+            .Single(x => x.FilePath.EndsWith("GeneratedContractKeySource.g.cs"));
+
+        var references = AppDomain.CurrentDomain
+            .GetAssemblies()
+            .Where(x => !x.IsDynamic && !String.IsNullOrEmpty(x.Location))
+            .Select(x => MetadataReference.CreateFromFile(x.Location));
+
+        var compilation = CSharpCompilation.Create(
+            "ContractKeyParity",
+            [
+                CSharpSyntaxTree.ParseText(ContractKeySource.Replace("[MediatorSingleton]", String.Empty)),
+                CSharpSyntaxTree.ParseText("global using System.Threading; global using System.Threading.Tasks;"),
+                keySourceTree
+            ],
+            references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
+        using var ms = new MemoryStream();
+        var emit = compilation.Emit(ms);
+        emit.Success.ShouldBeTrue(String.Join(Environment.NewLine, emit.Diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error)));
+
+        var assembly = Assembly.Load(ms.ToArray());
+        var source = (IContractKeySource)Activator.CreateInstance(assembly.GetType("TestAssembly.GeneratedContractKeySource")!)!;
+        var reflectionProvider = new DefaultContractKeyProvider();
+
+        object Create(string typeName, params object?[] args)
+            => Activator.CreateInstance(assembly.GetType(typeName)!, args)!;
+
+        var statusClosed = Enum.Parse(assembly.GetType("TestApp.Status")!, "Closed");
+        var contracts = new[]
+        {
+            Create("TestApp.GetOrders", "allan", 2, statusClosed, new DateTime(2026, 10, 13), null),
+            Create("TestApp.GetOrders", null, 0, statusClosed, null, null),
+            Create("TestApp.SaveOrder", Guid.Parse("8f3c2a5e-6a7b-4c1d-9e2f-0a1b2c3d4e5f")),
+            Create("TestApp.Outer+NestedRequest", 7),
+            Create("TestApp.DerivedQuery", "t1", "shoes")
+        };
+        foreach (var contract in contracts)
+        {
+            source.TryGetKey(contract, out var generatedKey).ShouldBeTrue(contract.GetType().FullName);
+            generatedKey.ShouldBe(reflectionProvider.GetContractKey(contract));
+        }
+
+        // indexers make reflection throw, so the type is left out and falls through
+        var stream = Create("TestApp.OrderStream");
+        source.TryGetKey(stream, out _).ShouldBeFalse();
+    }
+
+
     static GeneratorDriver BuildDriver(string sourceCode)
         => BuildDriverWithOptions(sourceCode);
 
@@ -433,7 +555,8 @@ public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
         string? rootNamespace = null,
         string? accessModifier = null,
         string? methodName = null,
-        bool generateJsonContext = false)
+        bool generateJsonContext = false,
+        bool generateContractKeys = false)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
         
@@ -457,13 +580,14 @@ public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
         var driver = CSharpGeneratorDriver.Create(generator);
 
         // Add MSBuild options if specified
-        if (rootNamespace != null || accessModifier != null || methodName != null || generateJsonContext)
+        if (rootNamespace != null || accessModifier != null || methodName != null || generateJsonContext || generateContractKeys)
         {
             var optionsProvider = new TestAnalyzerConfigOptionsProvider(
                 rootNamespace,
                 accessModifier,
                 methodName,
-                generateJsonContext);
+                generateJsonContext,
+                generateContractKeys);
             driver = (CSharpGeneratorDriver)driver.WithUpdatedAnalyzerConfigOptions(optionsProvider);
         }
 
@@ -478,13 +602,15 @@ public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
             string? rootNamespace,
             string? accessModifier,
             string? methodName,
-            bool generateJsonContext)
+            bool generateJsonContext,
+            bool generateContractKeys)
         {
             this.globalOptions = new TestAnalyzerConfigOptions(
                 rootNamespace,
                 accessModifier,
                 methodName,
-                generateJsonContext);
+                generateJsonContext,
+                generateContractKeys);
         }
 
         public override AnalyzerConfigOptions GlobalOptions => this.globalOptions;
@@ -502,7 +628,8 @@ public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
             string? rootNamespace,
             string? accessModifier,
             string? methodName,
-            bool generateJsonContext)
+            bool generateJsonContext,
+            bool generateContractKeys)
         {
             if (rootNamespace != null)
                 this.options["build_property.RootNamespace"] = rootNamespace;
@@ -512,6 +639,8 @@ public class MyCommandMiddleware : ICommandMiddleware<MyCommand>
                 this.options["build_property.ShinyMediatorRegistryMethodName"] = methodName;
             if (generateJsonContext)
                 this.options["build_property.ShinyMediatorGenerateJsonContext"] = "true";
+            if (generateContractKeys)
+                this.options["build_property.ShinyMediatorGenerateContractKeys"] = "true";
         }
 
         public override bool TryGetValue(string key, out string value)

@@ -38,6 +38,13 @@ triggers:
   - JsonSerializerContext
   - ShinyJsonContext
   - ShinyMediatorGenerateJsonContext
+  - ShinyMediatorGenerateContractKeys
+  - ShinyMediatorReflectionContractKeys
+  - IContractKeySource
+  - IContractKeyProvider
+  - SetContractKeyProvider
+  - IL2075
+  - IL2026
   - ShinyJsonInclude
   - SourceGenerateJsonConverter
   - No JsonTypeInfo registered
@@ -192,6 +199,26 @@ plus a `[ModuleInitializer]` that registers it. When enabled you don't need to h
 escape hatch if the generated resolver misbehaves — when generating contracts, keep emitting an
 explicit `[ShinyJsonContext]` as the default unless the consumer has turned this property on.
 Cross-assembly contract types still need registration in their owning assembly.
+
+### Contract Keys & Trimming
+
+Caching, offline, replay, and the HTTP cache key contracts through `IContractKeyProvider`. The default
+`DefaultContractKeyProvider` resolves keys in this order: `IContractKey` on the contract, then any
+registered `IContractKeySource`, then **reflection** over the public properties. The reflection path
+carries `[RequiresUnreferencedCode]`, so trimmed and AOT apps get an `IL2026` warning when it's reachable.
+
+- **Trimmed/AOT apps or trim warnings (`IL2026`/`IL2075` from `DefaultContractKeyProvider`):** set
+  `<ShinyMediatorGenerateContractKeys>true</ShinyMediatorGenerateContractKeys>` in the **app** project.
+  The generator emits a reflection-free `IContractKeySource` for every contract declared in the project
+  and every contract its `[MediatorSingleton]`/`[MediatorScoped]` handlers use. `AddMediatorRegistry()`
+  registers it. Keys keep the reflection format, so existing cache/offline entries still match. It also
+  defaults `ShinyMediatorReflectionContractKeys` to `false`, which trims the reflection fallback away. An
+  uncovered contract then throws `InvalidOperationException`; fix it with `IContractKey`, `[ContractKey]`,
+  or `<ShinyMediatorReflectionContractKeys>true</ShinyMediatorReflectionContractKeys>`.
+- It's opt-in (default off). Don't add it unless the consumer trims, publishes AOT, or asks for it.
+- A custom provider: `cfg.SetContractKeyProvider<T>()` replaces the default whether you call it before or after `AddShinyMediator`.
+- `AddDataAnnotations()` is `[RequiresUnreferencedCode]`. For trimmed/AOT apps, prefer FluentValidation or hand-written validation.
+- Native AOT: register handlers with `[MediatorSingleton]`/`[MediatorScoped]` so the generated executor dispatches them. Hand-registered handlers fall back to a `MakeGenericType`-based executor.
 
 **Collections (`List<T>`, `T[]`, `IAsyncEnumerable<T>`, etc.) of a contract type.** Mark the
 element type with `[ShinyJsonInclude]`:
@@ -667,7 +694,7 @@ public class GetWeatherFunctionHandler : IAppFunctionHandler<GetWeatherFunction,
 4. **Use `partial` with middleware attributes** - Required for `[Cache]`, `[OfflineAvailable]`, `[Resilient]`, etc.
 5. **Chain via context** - Use `context.Request()` not injecting IMediator
 6. **Implement IContractKey** - For custom cache/offline keys
-7. **Always pass CancellationToken** - Respect cancellation
+7. **Always pass CancellationToken** - Respect cancellation. A cancelled HTTP request throws `TaskCanceledException` (never returns `null`), and the internal HTTP timeout throws `TimeoutException`. Catch these rather than null-checking.
 8. **Use IServerSentEventsStream marker** - On stream contracts consumed via HTTP SSE
 9. **Stream handlers only support GET/POST** - Other HTTP methods are not valid for SSE endpoints
 10. **Use EventStream for SSE push endpoints** - Combine `mediator.EventStream<T>()` with `TypedResults.ServerSentEvents()` for event-driven SSE

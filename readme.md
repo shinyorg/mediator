@@ -26,7 +26,7 @@ Starting in v6.6 JSON flows through [`Shiny.Extensions.Serialization`](https://w
 
 ## Features
 - A Mediator for your ALL .NET Apps
-- Fully AOT & Trimming friendly
+- Fully AOT & Trimming friendly. The core packages are marked `IsAotCompatible`, and `<ShinyMediatorGenerateContractKeys>true</ShinyMediatorGenerateContractKeys>` replaces reflection-based cache/offline keys with source-generated ones
 - [AI Tool Integration](https://shinylib.net/mediator/extensions/ai) - Expose your contracts as AI-callable tools via Microsoft.Extensions.AI
 - [App Functions](https://shinylib.net/mediator/extensions/appfunctions) - Run your requests & commands from Siri, Shortcuts, Apple Intelligence & Android AppFunctions (Gemini) - through the full middleware pipeline
 - [Request/Response Handling](https://shinylib.net/mediator/requests)

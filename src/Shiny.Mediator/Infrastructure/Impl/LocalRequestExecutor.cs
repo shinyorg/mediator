@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -11,6 +12,7 @@ namespace Shiny.Mediator.Infrastructure.Impl;
 public class LocalRequestExecutor : RequestExecutor
 {
     /// <inheritdoc/>
+    [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "Fallback for handlers registered without the source generator. Handlers marked [MediatorSingleton]/[MediatorScoped] are dispatched by the generated executor, which is the supported Native AOT path")]
     public override async Task<TResult> Request<TResult>(
         IMediatorContext context,
         IRequest<TResult> request,

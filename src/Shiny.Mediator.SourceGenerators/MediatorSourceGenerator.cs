@@ -57,6 +57,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                 provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorRegistryMethodName", out var registryMethodName);
                 provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorRegistryUseInternalClass", out var useInternalString);
                 provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorGenerateJsonContext", out var generateJsonContextString);
+                provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorGenerateContractKeys", out var generateContractKeysString);
 
                 var useInternal = useInternalString?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? Constants.DefaultRegistryUseInternal;
                 // Opt-in (default OFF) — auto request/result JSON serialization is generated only when
@@ -65,6 +66,9 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                 // there is always an escape hatch if the generated resolver misbehaves; leave it off to
                 // manage your own JsonSerializerContext.
                 var generateJsonContext = "true".Equals(generateJsonContextString, StringComparison.OrdinalIgnoreCase) || Constants.DefaultGenerateJsonContext;
+                // Opt-in (default OFF) — reflection-free contract keys (IContractKeySource) for every contract
+                // declared in this compilation or touched by a registered handler/middleware
+                var generateContractKeys = "true".Equals(generateContractKeysString, StringComparison.OrdinalIgnoreCase) || Constants.DefaultGenerateContractKeys;
 
                 return new MsBuildOptions(
                     Namespace: (rootNamespace ?? compilation.AssemblyName)!,
@@ -72,16 +76,20 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                     StreamRequestExecutorClassName: String.IsNullOrWhiteSpace(streamRequestExecutorClassName) ? Constants.DefaultStreamRequestExecutorClassName : streamRequestExecutorClassName!,
                     RegistryMethodName: String.IsNullOrWhiteSpace(registryMethodName) ? Constants.DefaultRegistryRegistrationMethodName : registryMethodName!,
                     UseInternalAccessModifier: useInternal,
-                    GenerateJsonContext: generateJsonContext
+                    GenerateJsonContext: generateJsonContext,
+                    GenerateContractKeys: generateContractKeys
                 );
             });
 
         // Collect all handlers and middleware from current compilation ONLY
         var allHandlersAndMiddleware = context.CompilationProvider
-            .Select((compilation, _) =>
+            .Combine(msbuildOptions)
+            .Select((pair, _) =>
             {
+                var (compilation, opts) = pair;
                 var handlers = new List<HandlerInfo>();
                 var middleware = new List<MiddlewareInfo>();
+                var contracts = new List<ITypeSymbol>();
 
                 // Scan ONLY current assembly (syntax trees) - NOT referenced assemblies
                 foreach (var syntaxTree in compilation.SyntaxTrees)
@@ -101,12 +109,25 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                             CollectHandlersAndMiddleware(classSymbol, handlers, middleware);
                         }
                     }
+
+                    if (opts.GenerateContractKeys)
+                    {
+                        foreach (var typeDecl in root.DescendantNodes().OfType<TypeDeclarationSyntax>())
+                        {
+                            if (semanticModel.GetDeclaredSymbol(typeDecl) is INamedTypeSymbol typeSymbol &&
+                                MediatorContractKeySourceGenerator.IsContract(typeSymbol))
+                            {
+                                contracts.Add(typeSymbol);
+                            }
+                        }
+                    }
                 }
 
                 return (
                     Compilation: compilation,
                     Handlers: handlers.ToImmutableArray(),
-                    Middleware: middleware.ToImmutableArray()
+                    Middleware: middleware.ToImmutableArray(),
+                    Contracts: contracts.ToImmutableArray()
                 );
             });
 
@@ -121,10 +142,22 @@ public class MediatorSourceGenerator : IIncrementalGenerator
             if (handlersAndMiddleware.Handlers.IsEmpty && handlersAndMiddleware.Middleware.IsEmpty)
                 return;
 
+            // contracts declared here plus any (possibly referenced-assembly) contract a handler/middleware touches
+            var generatedContractKeys = options.GenerateContractKeys && MediatorContractKeySourceGenerator.Generate(
+                spc,
+                handlersAndMiddleware.Compilation,
+                handlersAndMiddleware.Contracts
+                    .Concat(handlersAndMiddleware.Handlers.Select(h => h.RequestType))
+                    .Concat(handlersAndMiddleware.Middleware.Select(m => m.RequestType)),
+                options.Namespace,
+                Constants.DefaultContractKeySourceClassName
+            );
+
             Execute(
                 handlersAndMiddleware.Handlers,
                 handlersAndMiddleware.Middleware,
                 options,
+                generatedContractKeys,
                 spc
             );
 
@@ -267,6 +300,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         ImmutableArray<HandlerInfo> handlers,
         ImmutableArray<MiddlewareInfo> middleware,
         MsBuildOptions options,
+        bool generatedContractKeys,
         SourceProductionContext context
     )
     {
@@ -302,6 +336,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
             streamHandlers.Count > 0,
             options.RequestExecutorClassName,
             options.StreamRequestExecutorClassName,
+            generatedContractKeys,
             options
         );
         context.AddSource($"{options.Namespace}_Registry.g.cs", SourceText.From(registryCode, Encoding.UTF8));
@@ -456,6 +491,7 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         bool hasStreamHandlers,
         string executorClassName,
         string streamExecutorClassName,
+        bool generatedContractKeys,
         MsBuildOptions options
     )
     {
@@ -550,6 +586,10 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         if (hasStreamHandlers)
             sb.AppendLine($"        services.AddSingleton<global::Shiny.Mediator.Infrastructure.IStreamRequestExecutor, global::{namespaceName}.{streamExecutorClassName}>();");
 
+        // one source per assembly - TryAddEnumerable so calling the registry twice doesn't double up
+        if (generatedContractKeys)
+            sb.AppendLine($"        global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddEnumerable(services, global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::Shiny.Mediator.Infrastructure.IContractKeySource, global::{namespaceName}.{Constants.DefaultContractKeySourceClassName}>());");
+
         sb.AppendLine();
         sb.AppendLine("        return services;");
         sb.AppendLine("    }");
@@ -616,7 +656,8 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         string StreamRequestExecutorClassName,
         string RegistryMethodName,
         bool UseInternalAccessModifier,
-        bool GenerateJsonContext
+        bool GenerateJsonContext,
+        bool GenerateContractKeys
     );
 }
 
