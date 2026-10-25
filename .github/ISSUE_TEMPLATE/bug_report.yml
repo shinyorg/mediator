@@ -3,6 +3,10 @@ description: You have found something wrong with Shiny Mediator
 title: "[Bug]: "
 labels: [bug, unverified]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        > ⭐ **Finding this library useful? Please give the repository a [Star](https://github.com/shinyorg/mediator) - it's free and it's how the project gets seen.**
   - type: dropdown
     id: platform
     attributes:
