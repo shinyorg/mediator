@@ -39,7 +39,7 @@ Starting in v6.6 JSON flows through [`Shiny.Extensions.Serialization`](https://w
 - `ILogger` & `IConfiguration` are optional - no `AddLogging()` or configuration source required to run; configuration-driven middleware simply turns itself off and the attribute equivalents keep working
 - Help remove service overrun and reduce your constructor fat
 - Easy to Unit Test
-- Checkout our [MAUI](https://shinylib.net/mediator/extensions/maui) & [Blazor](https://shinylib.net/mediator/extensions/blazor)
+- Checkout our [MAUI](https://shinylib.net/mediator/extensions/maui), [Blazor](https://shinylib.net/mediator/extensions/blazor), [Uno Platform](https://shinylib.net/mediator/extensions/unoplatform) & [Avalonia](https://shinylib.net/mediator/extensions/avalonia) integrations
   - Integrations allow your viewmodels or pages to implement an IEventHandler interface(s) without them having to participate in the dependency injection provider
   - Middleware built for apps including caching, offline support, & more
   - We still have a "messagingcenter" type subscribe off IMediator for cases where you can't have your current type implement an interface
@@ -62,9 +62,11 @@ Starting in v6.6 JSON flows through [`Shiny.Extensions.Serialization`](https://w
 
 ## Works With
 - .NET MAUI - all platforms
-- MVVM Frameworks like Prism, ReactiveUI, & .NET MAUI Shell
-- Blazor - Work In Progress
-- Any other .NET platform - but you'll have to come up with your own "event collector" for the out-of-state stuff
+- Uno Platform - all platforms
+- Avalonia - desktop, mobile & browser
+- Blazor
+- MVVM Frameworks like Prism, ReactiveUI, CommunityToolkit.Mvvm & .NET MAUI Shell
+- Any other .NET platform - but you'll have to come up with your own "event collector" for the out-of-state stuff (and an `IMainThreadDispatcher` for `[MainThread]`)
 
 ## What Does It Solve
 
@@ -206,3 +208,7 @@ public class MyViewModel
 ```
 
 Strongly typed.  No page required page knowledge from the module upfront.  The other dev team of the module can define HOW things work.
+
+## Commercial Support
+
+Shipping this to production? [ShinySoft Technologies](https://shinysoft.biz), the company that builds and maintains the Shiny libraries, offers priority issue response, support agreements, architecture reviews and private office hours. See [Commercial Support](https://shinylib.net/foundation/support/?utm_source=github&utm_medium=readme#commercial-support) or [get in touch](https://shinysoft.biz/contact?utm_source=github&utm_medium=readme). Community support through GitHub issues and discussions stays free.

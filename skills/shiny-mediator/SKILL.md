@@ -66,6 +66,13 @@ triggers:
   - MediatorAppFunctions
   - GetAppFunctionContext
   - SayToAssistant
+  - Uno Platform
+  - UseUno
+  - Avalonia
+  - UseAvalonia
+  - MainThread
+  - IMainThreadDispatcher
+  - event collector
 ---
 
 # Shiny Mediator Skill
@@ -78,7 +85,7 @@ Invoke this skill when the user wants to:
 - Create request handlers, command handlers, event handlers, or stream handlers
 - Generate contracts (IRequest, ICommand, IEvent, IStreamRequest)
 - Add middleware (caching, resilience, validation, offline)
-- Scaffold ASP.NET, MAUI, or Blazor projects with Shiny Mediator
+- Scaffold ASP.NET, MAUI, Blazor, Uno Platform, or Avalonia projects with Shiny Mediator
 - Configure Shiny Mediator in their application
 - Set up ASP.NET Server-Sent Events (SSE) endpoints with stream handlers
 - Use event subscriptions (WaitForSingleEvent, EventStream, Subscribe)
@@ -152,6 +159,29 @@ builder.Services.AddShinyMediator(x => x
     .PreventEventExceptions()
 );
 ```
+
+**Uno Platform** (`App.xaml.cs`, Uno.Extensions hosting - the `IApplicationBuilder` overload tracks `builder.Window`):
+```csharp
+var builder = this.CreateBuilder(args)
+    .AddShinyMediator(x => x
+        .AddMediatorRegistry()
+        .AddUnoPersistentCache()
+    );
+// without Uno.Extensions hosting: services.AddShinyMediator(x => x.UseUno(MainWindow));
+```
+
+**Avalonia** (`App.axaml.cs`, wherever the `ServiceCollection` is built - windows/main view are found via `ApplicationLifetime`, nothing to pass):
+```csharp
+services.AddShinyMediator(x => x
+    .AddMediatorRegistry()
+    .UseAvalonia()
+    .AddAvaloniaPersistentCache()
+);
+```
+
+**UI event collectors (MAUI, Blazor, Uno, Avalonia):** pages/views and their view models (`BindingContext` / `DataContext`)
+that implement `IEventHandler<T>` receive published events automatically. **Never register those views or view models
+as event handlers in DI** - that creates new instances instead of reaching the one on screen.
 
 **Logging & Configuration are optional (v6.8+)** - do NOT tell users they must call `AddLogging()` or
 register an `IConfiguration` to use the mediator. Every built-in service and middleware injects
@@ -296,7 +326,7 @@ Apply to handler methods as needed:
 - `[Cache(AbsoluteExpirationSeconds = N)]` - Cacheable queries
 - `[OfflineAvailable]` - Offline storage for mobile
 - `[Resilient("policyName")]` - Retry/timeout policies
-- `[MainThread]` - MAUI main thread execution
+- `[MainThread]` - UI thread execution (MAUI, Uno Platform, Avalonia; other UI frameworks: implement `IMainThreadDispatcher` + `AddMainThreadMiddleware<TDispatcher>()`)
 - `[TimerRefresh(milliseconds)]` - Auto-refresh streams
 - `[Sample(milliseconds)]` - Fixed-window sampling (last event in window executes)
 - `[Throttle(milliseconds)]` - True throttle (first event executes, cooldown discards rest)
@@ -725,6 +755,8 @@ For detailed templates and examples, see:
 dotnet add package Shiny.Mediator                              # Core
 dotnet add package Shiny.Mediator.Maui                         # MAUI
 dotnet add package Shiny.Mediator.Blazor                       # Blazor
+dotnet add package Shiny.Mediator.Uno                          # Uno Platform
+dotnet add package Shiny.Mediator.Avalonia                     # Avalonia
 dotnet add package Shiny.Mediator.AspNet                       # ASP.NET
 dotnet add package Shiny.Mediator.Resilience                   # Polly
 dotnet add package Shiny.Mediator.Caching.MicrosoftMemoryCache # Caching

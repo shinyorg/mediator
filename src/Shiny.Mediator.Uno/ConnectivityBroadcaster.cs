@@ -7,7 +7,8 @@ namespace Shiny.Mediator;
 
 /// <summary>
 /// Uno <see cref="IServiceInitialize"/> that publishes a <see cref="ConnectivityChanged"/> event
-/// through the mediator whenever the device's internet availability changes.
+/// through the mediator whenever the device's internet availability changes. Register it with
+/// <c>AddConnectivityBroadcaster()</c>; Uno hosting initializes it once the host is built.
 /// </summary>
 public class ConnectivityBroadcaster(
     IMediator mediator,
@@ -15,25 +16,24 @@ public class ConnectivityBroadcaster(
     ILogger<ConnectivityBroadcaster>? logger = null
 ) : IServiceInitialize
 {
+    int initialized;
+
     /// <inheritdoc/>
     public void Initialize()
     {
+        if (Interlocked.Exchange(ref this.initialized, 1) == 1)
+            return;
+
         internetService.StateChanged += async (_, connected) =>
         {
             try
             {
-                await mediator.Publish(new ConnectivityChanged(connected));
+                await mediator.Publish(new ConnectivityChanged(connected)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                logger?.LogError(ex, "Error occured while connectivity Sprayer");
+                logger?.LogError(ex, "Error occurred while broadcasting connectivity change");
             }
         };
     }
 }
-
-/// <summary>
-/// Mediator event published by <see cref="ConnectivityBroadcaster"/> when the device's internet
-/// availability changes; <c>Connected</c> reflects the new state.
-/// </summary>
-public record ConnectivityChanged(bool Connected) : IEvent;

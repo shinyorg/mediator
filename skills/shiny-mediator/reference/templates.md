@@ -47,7 +47,7 @@ public partial class {Name}RequestHandler : IRequestHandler<{Name}Request, {Resu
 - `[Cache(AbsoluteExpirationSeconds = N)]` - For cacheable queries
 - `[OfflineAvailable]` - For offline-capable requests
 - `[Resilient("policyName")]` - For resilience with retry/timeout
-- `[MainThread]` - For MAUI UI thread execution
+- `[MainThread]` - For UI thread execution (MAUI, Uno Platform, Avalonia)
 - `[TimerRefresh(milliseconds)]` - For auto-refresh streams
 - `[Sample(milliseconds)]` - For fixed-window sampling of rapid event firings (last event in window wins)
 - `[Throttle(milliseconds)]` - For throttling rapid event firings (first event executes, rest discarded during cooldown)

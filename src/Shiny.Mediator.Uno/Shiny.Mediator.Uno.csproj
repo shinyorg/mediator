@@ -1,4 +1,4 @@
-<Project Sdk="Uno.Sdk/6.4.13">
+<Project Sdk="Uno.Sdk/6.7.45">
     <PropertyGroup>
         <TargetFramework>$(BaseTargetFramework)</TargetFramework>
         <UnoSingleProject>true</UnoSingleProject>
@@ -7,9 +7,12 @@
 
         <UnoFeatures>Hosting</UnoFeatures>
         <RootNamespace>Shiny.Mediator</RootNamespace>
+        <Description>Shiny Mediator - Uno Platform integration (view/view model event collection, main thread, offline, persistent cache)</Description>
+        <PackageTags>$(PackageTags) uno unoplatform winui</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj"/>
+        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
     </ItemGroup>
 </Project>

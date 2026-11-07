@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Handlers;
 using Shiny.Mediator.Http;
 using Shiny.Mediator.Infrastructure;
-using Shiny.Mediator.Middleware;
 
 namespace Shiny.Mediator;
 
@@ -135,17 +134,12 @@ public static class MauiAppBuilderExtensions
 
 
     /// <summary>
-    /// Registers the event, request, and command middleware that observes the
-    /// <see cref="MainThreadAttribute"/> on handlers and marshals their execution to the MAUI
-    /// UI thread via <see cref="MainThread.BeginInvokeOnMainThread(Action)"/>.
+    /// Registers the MAUI <see cref="IMainThreadDispatcher"/> and the event, request, and command
+    /// middleware that observes the <see cref="MainThreadAttribute"/> on handlers and marshals their
+    /// execution to the MAUI UI thread via <see cref="MainThread.BeginInvokeOnMainThread(Action)"/>.
     /// </summary>
     public static ShinyMediatorBuilder AddMainThreadMiddleware(this ShinyMediatorBuilder cfg)
-    {
-        cfg.AddOpenEventMiddleware(typeof(MainTheadEventMiddleware<>));
-        cfg.AddOpenRequestMiddleware(typeof(MainThreadRequestMiddleware<,>));
-        cfg.AddOpenCommandMiddleware(typeof(MainThreadCommandMiddleware<>));
-        return cfg;
-    }
+        => cfg.AddMainThreadMiddleware<MauiMainThreadDispatcher>();
 }
 
 /*

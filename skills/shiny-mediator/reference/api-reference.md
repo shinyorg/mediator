@@ -11,6 +11,7 @@ dotnet add package Shiny.Mediator.Maui          # For .NET MAUI
 dotnet add package Shiny.Mediator.Blazor        # For Blazor
 dotnet add package Shiny.Mediator.AspNet        # For ASP.NET
 dotnet add package Shiny.Mediator.Uno           # For Uno Platform
+dotnet add package Shiny.Mediator.Avalonia      # For Avalonia
 dotnet add package Shiny.Mediator.AppFunctions  # Siri / Shortcuts / Apple Intelligence / Android AppFunctions (Gemini)
 
 # Middleware packages
@@ -29,7 +30,8 @@ dotnet add package Shiny.Mediator.AppSupport    # Offline, replay, user notifica
 | `Shiny.Mediator.Maui` | MAUI integration |
 | `Shiny.Mediator.Blazor` | Blazor integration |
 | `Shiny.Mediator.AspNet` | ASP.NET integration |
-| `Shiny.Mediator.Uno` | Uno Platform integration |
+| `Shiny.Mediator.Uno` | Uno Platform integration (event collector, main thread, ContentDialog alerts, persistent cache) |
+| `Shiny.Mediator.Avalonia` | Avalonia integration (event collector, main thread, alerts, persistent cache) |
 | `Shiny.Mediator.AppFunctions` | Requests/commands as Siri, Shortcuts & Gemini app functions (brings Shiny.AppFunctions + its generator) |
 | `Shiny.Mediator.Prism` | Prism MVVM integration |
 | `Shiny.Mediator.AppSupport` | Offline, replay, user notifications |
@@ -282,7 +284,7 @@ Error mapping: `AppFunctionException` passes through; `ValidateException` → `A
 - `[Cache(AbsoluteExpirationSeconds, SlidingExpirationSeconds)]` - Enable caching
 - `[OfflineAvailable]` - Enable offline storage
 - `[Resilient("policyName")]` - Apply resilience policy
-- `[MainThread]` - Execute on main thread (MAUI)
+- `[MainThread]` - Execute on main thread (MAUI, Uno Platform, Avalonia - dispatched through `IMainThreadDispatcher`)
 - `[TimerRefresh(milliseconds)]` - Auto-refresh streams
 - `[Sample(milliseconds)]` - Fixed-window sampling (last event in window executes)
 - `[Throttle(milliseconds)]` - True throttle (first event executes, cooldown discards rest)
@@ -429,7 +431,7 @@ Generate strongly-typed mediator contracts and handlers from OpenAPI specs via `
 - Check handler implements correct interface
 
 ### Caching Not Working
-- Verify cache middleware is registered (`AddMemoryCaching()` or `AddMauiPersistentCache()`)
+- Verify cache middleware is registered (`AddMemoryCaching()`, `AddMauiPersistentCache()`, `AddUnoPersistentCache()`, `AddAvaloniaPersistentCache()`, or `AddBlazorPersistentCache()`)
 - Check `[Cache]` attribute is on the handler method
 - **Ensure handler class is `partial`**
 - Implement `IContractKey` for custom cache keys
@@ -438,6 +440,8 @@ Generate strongly-typed mediator contracts and handlers from OpenAPI specs via `
 - Ensure event handler is registered or implements `IEventHandler<T>` on a ViewModel
 - For MAUI, call `UseMaui()` in setup
 - For Blazor, call `UseBlazor()` in setup
+- For Uno Platform, use `IApplicationBuilder.AddShinyMediator()` or `UseUno(window)` - without a tracked window, views don't receive events
+- For Avalonia, call `UseAvalonia()` in setup
 
 ### Middleware Not Executing
 - Check middleware registration order (or use `[MiddlewareOrder]` to control explicitly)

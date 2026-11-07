@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shiny.Mediator.Infrastructure;
@@ -60,4 +61,29 @@ public static class AppSupportExtensions
         cfg.AddOpenStreamMiddleware(typeof(ReplayStreamMiddleware<,>));
         return cfg;
     }
+
+
+    /// <summary>
+    /// Registers the event, request, and command middleware that observes the
+    /// <see cref="MainThreadAttribute"/> on handlers and marshals their execution to the UI thread
+    /// through <typeparamref name="TDispatcher"/>. The UI integrations (MAUI, Uno Platform, Avalonia)
+    /// call this with their own dispatcher; an existing <see cref="IMainThreadDispatcher"/>
+    /// registration is preserved.
+    /// </summary>
+    public static ShinyMediatorBuilder AddMainThreadMiddleware<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TDispatcher>(this ShinyMediatorBuilder cfg)
+        where TDispatcher : class, IMainThreadDispatcher
+    {
+        cfg.Services.TryAddSingleton<IMainThreadDispatcher, TDispatcher>();
+        if (cfg.Services.Any(x => x.ServiceType == typeof(MainThreadMiddlewareMarker)))
+            return cfg;
+
+        cfg.Services.AddSingleton<MainThreadMiddlewareMarker>();
+        cfg.AddOpenEventMiddleware(typeof(MainTheadEventMiddleware<>));
+        cfg.AddOpenRequestMiddleware(typeof(MainThreadRequestMiddleware<,>));
+        cfg.AddOpenCommandMiddleware(typeof(MainThreadCommandMiddleware<>));
+        return cfg;
+    }
+
+
+    sealed class MainThreadMiddlewareMarker;
 }

@@ -17,7 +17,7 @@ public partial class MyRequestHandler : IRequestHandler<MyRequest, string>  // M
     [Cache(AbsoluteExpirationSeconds = 300)]  // Cache for 5 minutes
     [OfflineAvailable]                         // Store for offline access
     [Resilient("default")]                     // Apply resilience policy
-    [MainThread]                               // Execute on main thread (MAUI)
+    [MainThread]                               // Execute on main thread (MAUI, Uno, Avalonia)
     [TimerRefresh(5000)]                       // Auto-refresh stream every 5s
     public Task<string> Handle(MyRequest request, IMediatorContext context, CancellationToken ct)
     {

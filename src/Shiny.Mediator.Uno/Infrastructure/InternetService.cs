@@ -19,7 +19,7 @@ public class InternetService : IInternetService
         {
             if (this.handler == null)
             {
-                NetworkInformation.NetworkStatusChanged += this.OnNetowrkStatusChanged;
+                NetworkInformation.NetworkStatusChanged += this.OnNetworkStatusChanged;
             }
             this.handler += value;
         }
@@ -28,12 +28,12 @@ public class InternetService : IInternetService
             this.handler -= value;
             if (this.handler == null)
             {
-                NetworkInformation.NetworkStatusChanged -= this.OnNetowrkStatusChanged;
+                NetworkInformation.NetworkStatusChanged -= this.OnNetworkStatusChanged;
             }
         }
     }
 
-    void OnNetowrkStatusChanged(object sender) => this.handler?.Invoke(sender, this.IsAvailable);
+    void OnNetworkStatusChanged(object sender) => this.handler?.Invoke(sender, this.IsAvailable);
 
 
     /// <inheritdoc/>

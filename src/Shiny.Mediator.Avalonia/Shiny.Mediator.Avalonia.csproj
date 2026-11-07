@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>$(BaseTargetFramework)</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Shiny.Mediator</RootNamespace>
+        <Description>Shiny Mediator - Avalonia integration (view/view model event collection, main thread, offline, persistent cache)</Description>
+        <PackageTags>$(PackageTags) avalonia</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia"/>
+        <ProjectReference Include="..\Shiny.Mediator.AppSupport\Shiny.Mediator.AppSupport.csproj"/>
+        <ProjectReference Include="..\Shiny.Mediator\Shiny.Mediator.csproj"/>
+    </ItemGroup>
+</Project>

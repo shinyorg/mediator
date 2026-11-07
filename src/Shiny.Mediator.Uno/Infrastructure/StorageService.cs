@@ -6,7 +6,7 @@ namespace Shiny.Mediator.Infrastructure;
 
 
 /// <summary>
-/// Uno file-based <see cref="IStorageService"/> implementation that persists serialized values
+/// Uno Platform file-based <see cref="IStorageService"/> implementation that persists serialized values
 /// to <see cref="ApplicationData.LocalFolder"/>. Suitable for backing
 /// <see cref="StorageCacheService"/> with cache that survives app restarts.
 /// </summary>
@@ -15,38 +15,40 @@ public class StorageService(
     ILogger<StorageService>? logger = null
 ) : AbstractFileStorageService(serializer, logger)
 {
+    /// <summary>
+    /// Root directory used for backing files. Defaults to <see cref="ApplicationData.LocalFolder"/>;
+    /// override to relocate storage.
+    /// </summary>
+    protected virtual string StoreDirectory => ApplicationData.Current.LocalFolder.Path;
+
+
     /// <inheritdoc/>
-    protected override async Task WriteFile(string fileName, string content, CancellationToken cancellationToken)
+    protected override Task WriteFile(string fileName, string content, CancellationToken cancellationToken)
     {
-        var local = ApplicationData.Current.LocalFolder;
-        var file = await local.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
-        await FileIO.WriteTextAsync(file, content);
+        Directory.CreateDirectory(this.StoreDirectory);
+        var path = Path.Combine(this.StoreDirectory, fileName);
+        return File.WriteAllTextAsync(path, content, cancellationToken);
     }
 
 
     /// <inheritdoc/>
     protected override async Task<string?> ReadFile(string fileName, CancellationToken cancellationToken)
     {
-        var local = ApplicationData.Current.LocalFolder;
-        var fn = Path.Combine(local.Path, fileName);
-        if (!File.Exists(fn))
+        var path = Path.Combine(this.StoreDirectory, fileName);
+        if (!File.Exists(path))
             return null;
 
-        var file = await local.GetFileAsync(fn);
-        var content = await FileIO.ReadTextAsync(file);
-        return content;
+        return await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
 
     /// <inheritdoc/>
-    protected override async Task DeleteFile(string fileName, CancellationToken cancellationToken)
+    protected override Task DeleteFile(string fileName, CancellationToken cancellationToken)
     {
-        var local = ApplicationData.Current.LocalFolder;
-        var fn = Path.Combine(local.Path, fileName);
-        if (File.Exists(fn))
-        {
-            var file = await local.GetFileAsync(fileName);
-            await file.DeleteAsync();
-        }
+        var path = Path.Combine(this.StoreDirectory, fileName);
+        if (File.Exists(path))
+            File.Delete(path);
+
+        return Task.CompletedTask;
     }
 }
