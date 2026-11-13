@@ -58,6 +58,8 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                 provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorRegistryUseInternalClass", out var useInternalString);
                 provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorGenerateJsonContext", out var generateJsonContextString);
                 provider.GlobalOptions.TryGetValue("build_property.ShinyMediatorGenerateContractKeys", out var generateContractKeysString);
+                provider.GlobalOptions.TryGetValue("build_property.PublishAot", out var publishAotString);
+                provider.GlobalOptions.TryGetValue("build_property.IsAotCompatible", out var isAotCompatibleString);
 
                 var useInternal = useInternalString?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? Constants.DefaultRegistryUseInternal;
                 // Opt-in (default OFF) — auto request/result JSON serialization is generated only when
@@ -77,7 +79,9 @@ public class MediatorSourceGenerator : IIncrementalGenerator
                     RegistryMethodName: String.IsNullOrWhiteSpace(registryMethodName) ? Constants.DefaultRegistryRegistrationMethodName : registryMethodName!,
                     UseInternalAccessModifier: useInternal,
                     GenerateJsonContext: generateJsonContext,
-                    GenerateContractKeys: generateContractKeys
+                    GenerateContractKeys: generateContractKeys,
+                    TargetsNativeAot: "true".Equals(publishAotString, StringComparison.OrdinalIgnoreCase) ||
+                                      "true".Equals(isAotCompatibleString, StringComparison.OrdinalIgnoreCase)
                 );
             });
 
@@ -141,6 +145,9 @@ public class MediatorSourceGenerator : IIncrementalGenerator
 
             if (handlersAndMiddleware.Handlers.IsEmpty && handlersAndMiddleware.Middleware.IsEmpty)
                 return;
+
+            if (options.TargetsNativeAot)
+                ReportValueTypeContracts(spc, handlersAndMiddleware.Handlers);
 
             // contracts declared here plus any (possibly referenced-assembly) contract a handler/middleware touches
             var generatedContractKeys = options.GenerateContractKeys && MediatorContractKeySourceGenerator.Generate(
@@ -650,6 +657,42 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         string Lifetime
     );
 
+    static readonly DiagnosticDescriptor ValueTypeContractUnderNativeAot = new(
+        "SHINYMED010",
+        "Value type in a mediator contract under Native AOT",
+        "'{0}' handles '{1}' with the value type '{2}'. Under Native AOT, Microsoft.Extensions.DependencyInjection cannot close " +
+        "an open-generic middleware over a value type and throws on the first call as soon as any open {3} middleware is registered " +
+        "(for example performance logging, caching, offline or main thread). Use a reference type, such as a record that wraps the value.",
+        "ShinyMediator",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true
+    );
+
+    // Open-generic middleware (AddOpenRequestMiddleware & co.) is closed by MS.DI per contract. Under Native AOT
+    // (RuntimeFeature.IsDynamicCodeSupported == false) CallSiteFactory.VerifyOpenGenericAotCompatibility refuses any
+    // value-type argument, so the first Request/Send/Publish/stream of such a contract throws InvalidOperationException.
+    static void ReportValueTypeContracts(SourceProductionContext context, ImmutableArray<HandlerInfo> handlers)
+    {
+        foreach (var handler in handlers)
+        {
+            var valueType = handler.RequestType.IsValueType
+                ? handler.RequestType
+                : handler.ResultType is { IsValueType: true } result ? result : null;
+
+            if (valueType == null)
+                continue;
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                ValueTypeContractUnderNativeAot,
+                handler.ClassSymbol.Locations.FirstOrDefault(),
+                handler.ClassSymbol.Name,
+                handler.RequestType.ToDisplayString(),
+                valueType.ToDisplayString(),
+                handler.HandlerType.ToLowerInvariant()
+            ));
+        }
+    }
+
     record struct MsBuildOptions(
         string Namespace,
         string RequestExecutorClassName,
@@ -657,7 +700,8 @@ public class MediatorSourceGenerator : IIncrementalGenerator
         string RegistryMethodName,
         bool UseInternalAccessModifier,
         bool GenerateJsonContext,
-        bool GenerateContractKeys
+        bool GenerateContractKeys,
+        bool TargetsNativeAot
     );
 }
 

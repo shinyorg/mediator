@@ -16,6 +16,12 @@
         <CompilerVisibleProperty Include="ShinyMediatorGenerateJsonContext"/>
     </ItemGroup>
 
+    <!--Native AOT: value types in contracts cannot be used with open-generic middleware (SHINYMED010)-->
+    <ItemGroup>
+        <CompilerVisibleProperty Include="PublishAot"/>
+        <CompilerVisibleProperty Include="IsAotCompatible"/>
+    </ItemGroup>
+
     <!--reflection-free contract keys (opt-in: set ShinyMediatorGenerateContractKeys=true)-->
     <ItemGroup>
         <CompilerVisibleProperty Include="ShinyMediatorGenerateContractKeys"/>
