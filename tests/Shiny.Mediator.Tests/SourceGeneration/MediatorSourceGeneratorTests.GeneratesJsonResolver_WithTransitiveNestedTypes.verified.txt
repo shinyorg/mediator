@@ -190,7 +190,7 @@ public sealed class RideTimeJsonConverter : JsonConverter<RideTime>
         if (value.Position == null)
             writer.WriteNullValue();
         else
-            JsonSerializer.Serialize(writer, value.Position, options);
+            Serialize(writer, value.Position, options);
         writer.WriteEndObject();
     }
 
@@ -229,7 +229,7 @@ public sealed class RideTimeJsonConverter : JsonConverter<RideTime>
                     break;
                 case "Position":
                     if (reader.TokenType != JsonTokenType.Null)
-                        position = JsonSerializer.Deserialize<global::TestApp.Position>(ref reader, options);
+                        position = Deserialize<global::TestApp.Position>(ref reader, options);
                     break;
                 default:
                     reader.Skip();
@@ -239,6 +239,12 @@ public sealed class RideTimeJsonConverter : JsonConverter<RideTime>
 
         return new RideTime(id, name, position);
     }
+
+    static TValue Deserialize<TValue>(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        => JsonSerializer.Deserialize(ref reader, (global::System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>)options.GetTypeInfo(typeof(TValue)));
+
+    static void Serialize<TValue>(Utf8JsonWriter writer, TValue value, JsonSerializerOptions options)
+        => JsonSerializer.Serialize(writer, value, (global::System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>)options.GetTypeInfo(typeof(TValue)));
 }
 
     },
