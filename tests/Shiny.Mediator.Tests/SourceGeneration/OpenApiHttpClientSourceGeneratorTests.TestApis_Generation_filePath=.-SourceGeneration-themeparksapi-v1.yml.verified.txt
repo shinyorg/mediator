@@ -1339,8 +1339,52 @@ internal static class Hello
         services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestApi.GetV1EntityLiveHttpRequest, global::TestApi.GetV1EntityLiveResponse>, global::TestApi.GetV1EntityLiveHttpRequestHandler>();
         services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestApi.GetV1EntityScheduleHttpRequest, global::TestApi.GetV1EntityScheduleResponse>, global::TestApi.GetV1EntityScheduleHttpRequestHandler>();
         services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestApi.GetV1EntityScheduleByYearMonthHttpRequest, global::TestApi.GetV1EntityScheduleByYearMonthResponse>, global::TestApi.GetV1EntityScheduleByYearMonthHttpRequestHandler>();
+        services.TryAddEnumerable(global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, global::ThisShouldBeTheNamespace.HelloRequestExecutor>());
         return services;
     }
+}
+
+/// <summary>
+/// Runs the generated HTTP requests through their handler and middleware without reflection.
+/// </summary>
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
+internal sealed class HelloRequestExecutor : global::Shiny.Mediator.Infrastructure.RequestExecutor
+{
+    static readonly global::System.Collections.Generic.Dictionary<global::System.Type, int> Requests = new(6)
+    {
+        [typeof(global::TestApi.GetV1DestinationsHttpRequest)] = 0,
+        [typeof(global::TestApi.GetV1EntityHttpRequest)] = 1,
+        [typeof(global::TestApi.GetV1EntityChildrenHttpRequest)] = 2,
+        [typeof(global::TestApi.GetV1EntityLiveHttpRequest)] = 3,
+        [typeof(global::TestApi.GetV1EntityScheduleHttpRequest)] = 4,
+        [typeof(global::TestApi.GetV1EntityScheduleByYearMonthHttpRequest)] = 5,
+    };
+
+    static int IndexOf(object request) => Requests.TryGetValue(request.GetType(), out var index) ? index : -1;
+
+    public override bool CanHandle<TResult>(global::Shiny.Mediator.IRequest<TResult> request) => IndexOf(request) >= 0;
+
+    public override global::System.Threading.Tasks.Task<TResult> Request<TResult>(
+        global::Shiny.Mediator.IMediatorContext context,
+        global::Shiny.Mediator.IRequest<TResult> request,
+        global::System.Threading.CancellationToken cancellationToken)
+        => IndexOf(request) switch
+        {
+            0 => As<global::TestApi.GetV1DestinationsResponse, TResult>(this.Execute<global::TestApi.GetV1DestinationsHttpRequest, global::TestApi.GetV1DestinationsResponse>((global::TestApi.GetV1DestinationsHttpRequest)(object)request, context, cancellationToken)),
+            1 => As<global::TestApi.GetV1EntityResponse, TResult>(this.Execute<global::TestApi.GetV1EntityHttpRequest, global::TestApi.GetV1EntityResponse>((global::TestApi.GetV1EntityHttpRequest)(object)request, context, cancellationToken)),
+            2 => As<global::TestApi.GetV1EntityChildrenResponse, TResult>(this.Execute<global::TestApi.GetV1EntityChildrenHttpRequest, global::TestApi.GetV1EntityChildrenResponse>((global::TestApi.GetV1EntityChildrenHttpRequest)(object)request, context, cancellationToken)),
+            3 => As<global::TestApi.GetV1EntityLiveResponse, TResult>(this.Execute<global::TestApi.GetV1EntityLiveHttpRequest, global::TestApi.GetV1EntityLiveResponse>((global::TestApi.GetV1EntityLiveHttpRequest)(object)request, context, cancellationToken)),
+            4 => As<global::TestApi.GetV1EntityScheduleResponse, TResult>(this.Execute<global::TestApi.GetV1EntityScheduleHttpRequest, global::TestApi.GetV1EntityScheduleResponse>((global::TestApi.GetV1EntityScheduleHttpRequest)(object)request, context, cancellationToken)),
+            5 => As<global::TestApi.GetV1EntityScheduleByYearMonthResponse, TResult>(this.Execute<global::TestApi.GetV1EntityScheduleByYearMonthHttpRequest, global::TestApi.GetV1EntityScheduleByYearMonthResponse>((global::TestApi.GetV1EntityScheduleByYearMonthHttpRequest)(object)request, context, cancellationToken)),
+            _ => throw new global::System.InvalidOperationException("Unknown request type " + request.GetType().FullName)
+        };
+
+    // TResult is the declared result unless the caller asked through a covariant base (IRequest<out TResult>)
+    static global::System.Threading.Tasks.Task<TResult> As<T, TResult>(global::System.Threading.Tasks.Task<T> task)
+        => (object)task is global::System.Threading.Tasks.Task<TResult> same ? same : Await<T, TResult>(task);
+
+    static async global::System.Threading.Tasks.Task<TResult> Await<T, TResult>(global::System.Threading.Tasks.Task<T> task)
+        => (TResult)(object)await task.ConfigureAwait(false);
 }
 
     }
