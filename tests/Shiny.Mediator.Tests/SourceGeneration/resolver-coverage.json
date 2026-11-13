@@ -1,0 +1,97 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Resolver coverage",
+    "description": "Member, body and response shapes the generated code asks the options for: nested models, lists, dates, dictionaries.",
+    "version": "1.0"
+  },
+  "paths": {
+    "/orders/{id}": {
+      "get": {
+        "operationId": "getOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Order" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders": {
+      "post": {
+        "operationId": "createOrder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Order" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Line ids by name",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Order": {
+        "type": "object",
+        "required": [ "id", "lines" ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "day": { "type": "string", "format": "date" },
+          "closedOn": { "type": "string", "format": "date", "nullable": true },
+          "tags": { "type": "array", "items": { "type": "string", "format": "uuid" } },
+          "lines": { "type": "array", "items": { "$ref": "#/components/schemas/OrderLine" } },
+          "payment": { "$ref": "#/components/schemas/Payment" },
+          "status": { "$ref": "#/components/schemas/OrderStatus" },
+          "counts": { "type": "object", "additionalProperties": { "type": "integer", "format": "int32" } },
+          "tagsByLine": {
+            "type": "object",
+            "additionalProperties": { "type": "array", "items": { "type": "string", "format": "uuid" } }
+          }
+        }
+      },
+      "OrderLine": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "gross": { "type": "number", "format": "double" }
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "OrderStatus": {
+        "type": "string",
+        "enum": [ "open", "closed" ]
+      }
+    }
+  }
+}

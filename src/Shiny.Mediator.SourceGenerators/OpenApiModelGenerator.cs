@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.OpenApi;
 
@@ -41,6 +42,132 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
     /// for numeric enums) and to wire their <c>Nullable&lt;TEnum&gt;</c> counterparts.
     /// </summary>
     public IDictionary<string, bool> EnumTypeNames => this.enumTypes;
+
+    /// <summary>Scalars (string, int, Guid, DateOnly ...) generated code reads or writes through the options.</summary>
+    public IReadOnlyCollection<string> ScalarTypeNames => this.scalars;
+
+    /// <summary>Value-type scalars generated code reads or writes as <c>Nullable&lt;T&gt;</c> through the options.</summary>
+    public IReadOnlyCollection<string> NullableScalarTypeNames => this.nullableScalars;
+
+    /// <summary>Element types of every <c>List&lt;T&gt;</c> generated code reads or writes through the options.</summary>
+    public IReadOnlyCollection<string> ListElementTypeNames => this.listElements;
+
+    /// <summary>Element types of every <c>T[]</c> generated code reads or writes through the options.</summary>
+    public IReadOnlyCollection<string> ArrayElementTypeNames => this.arrayElements;
+
+    /// <summary>Value types of every <c>Dictionary&lt;string, V&gt;</c> (additionalProperties) generated code reads or writes through the options.</summary>
+    public IReadOnlyCollection<string> DictionaryValueTypeNames => this.dictionaryValues;
+
+    readonly HashSet<string> scalars = new(StringComparer.Ordinal);
+    readonly HashSet<string> nullableScalars = new(StringComparer.Ordinal);
+    readonly HashSet<string> listElements = new(StringComparer.Ordinal);
+    readonly HashSet<string> arrayElements = new(StringComparer.Ordinal);
+    readonly HashSet<string> dictionaryValues = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Records a type that generated code reads or writes through the options (a converter member, a
+    /// response), so the resolver can provide its metadata: every scalar, list, array and
+    /// <c>Dictionary&lt;string, V&gt;</c> in it, at any depth. Models and enums are covered on their own.
+    /// </summary>
+    public void RequireTypeInfo(string typeName) => this.Require(SyntaxFactory.ParseTypeName(typeName));
+
+    /// <summary>Records the type of every property a generated converter of <paramref name="typeSymbol"/> reads or writes.</summary>
+    public void RequireMemberTypeInfo(INamedTypeSymbol typeSymbol)
+    {
+        for (var current = typeSymbol; current != null && current.SpecialType != SpecialType.System_Object; current = current.BaseType)
+        {
+            foreach (var property in current.GetMembers().OfType<IPropertySymbol>())
+            {
+                if (!property.IsStatic && !property.IsIndexer)
+                    this.RequireTypeInfo(property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+            }
+        }
+    }
+
+    void Require(TypeSyntax type)
+    {
+        var name = type.ToString();
+        if (ScalarConverter(name) != null)
+        {
+            this.scalars.Add(name);
+            return;
+        }
+
+        switch (type)
+        {
+            case NullableTypeSyntax nullable:
+                var inner = nullable.ElementType.ToString();
+                if (ScalarConverter(inner) == null)
+                    this.Require(nullable.ElementType); // enums and models are covered on their own
+                else if (IsReferenceScalar(inner))
+                    this.scalars.Add(inner);
+                else
+                    this.nullableScalars.Add(inner);
+                break;
+
+            case ArrayTypeSyntax array when array.RankSpecifiers.Count == 1:
+                this.arrayElements.Add(array.ElementType.ToString());
+                this.Require(array.ElementType);
+                break;
+
+            default:
+                var generic = type switch
+                {
+                    GenericNameSyntax g => g,
+                    QualifiedNameSyntax { Right: GenericNameSyntax g } => g,
+                    AliasQualifiedNameSyntax { Name: GenericNameSyntax g } => g,
+                    _ => null
+                };
+                if (generic == null)
+                    break;
+
+                var args = generic.TypeArgumentList.Arguments;
+                if (args.Count == 1 && name.StartsWith(ListPrefix, StringComparison.Ordinal))
+                {
+                    this.listElements.Add(args[0].ToString());
+                    this.Require(args[0]);
+                }
+                else if (args.Count == 2 && name.StartsWith(DictionaryPrefix, StringComparison.Ordinal) && args[0].ToString() == "string")
+                {
+                    this.dictionaryValues.Add(args[1].ToString());
+                    this.Require(args[1]);
+                }
+                break;
+        }
+    }
+
+    const string ListPrefix = "global::System.Collections.Generic.List<";
+    const string DictionaryPrefix = "global::System.Collections.Generic.Dictionary<";
+
+    static bool IsReferenceScalar(string type) => type is "string" or "global::System.Uri" or "byte[]";
+
+    /// <summary>The <c>JsonMetadataServices</c> converter property for a scalar, null for anything else.</summary>
+    public static string? ScalarConverter(string type) => type switch
+    {
+        "bool" => "BooleanConverter",
+        "byte" => "ByteConverter",
+        "sbyte" => "SByteConverter",
+        "short" => "Int16Converter",
+        "ushort" => "UInt16Converter",
+        "int" => "Int32Converter",
+        "uint" => "UInt32Converter",
+        "long" => "Int64Converter",
+        "ulong" => "UInt64Converter",
+        "float" => "SingleConverter",
+        "double" => "DoubleConverter",
+        "decimal" => "DecimalConverter",
+        "char" => "CharConverter",
+        "string" => "StringConverter",
+        "byte[]" => "ByteArrayConverter",
+        "global::System.Guid" => "GuidConverter",
+        "global::System.DateTime" => "DateTimeConverter",
+        "global::System.DateTimeOffset" => "DateTimeOffsetConverter",
+        "global::System.DateOnly" => "DateOnlyConverter",
+        "global::System.TimeOnly" => "TimeOnlyConverter",
+        "global::System.TimeSpan" => "TimeSpanConverter",
+        "global::System.Uri" => "UriConverter",
+        _ => null
+    };
 
     public void UpdateCompilation(Compilation newCompilation) => Compilation = newCompilation;
 
@@ -361,6 +488,7 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
                     {
                         JsonConverterSourceGenerator.GenerateJsonConverter(context, typeSymbol);
                         this.convertedTypes.Add(fullyQualifiedTypeName);
+                        this.RequireMemberTypeInfo(typeSymbol);
                     }
                 }
             }

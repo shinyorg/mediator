@@ -276,7 +276,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             // We don't emit a partial JsonSerializerContext + [JsonSerializable] because STJ's own
             // source generator doesn't see partial classes emitted by another generator in the same
             // compilation, so the abstract members of JsonSerializerContext would never be filled in.
-            if (config.GenerateJsonConverters && (modelGenerator.ConvertedTypeNames.Count > 0 || modelGenerator.EnumTypeNames.Count > 0))
+            if (config.GenerateJsonConverters)
                 GenerateJsonResolver(context, config, modelGenerator, handlers);
         }
 
@@ -300,7 +300,10 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         // (FQNs without the "global::" prefix).
         var converted = modelGenerator.ConvertedTypeNames;
         var enums = modelGenerator.EnumTypeNames;
-        if (converted.Count == 0 && enums.Count == 0)
+        if (converted.Count == 0 &&
+            enums.Count == 0 &&
+            modelGenerator.ScalarTypeNames.Count == 0 &&
+            modelGenerator.NullableScalarTypeNames.Count == 0)
             return;
 
         // Sort for deterministic output.
@@ -375,6 +378,20 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             }
         }
 
+        // Scalars and Nullable<T> scalars: generated converters hand every member they do not write
+        // themselves to the options, and responses are read through them. Without reflection nothing
+        // else in the chain is guaranteed to provide them (DateOnly, Guid, ...).
+        foreach (var scalar in modelGenerator.ScalarTypeNames.OrderBy(x => x, StringComparer.Ordinal))
+        {
+            sb.AppendLine($"        if (type == typeof({scalar}))");
+            sb.AppendLine($"            return JsonMetadataServices.CreateValueInfo<{scalar}>(options, JsonMetadataServices.{OpenApiModelGenerator.ScalarConverter(scalar)});");
+        }
+        foreach (var scalar in modelGenerator.NullableScalarTypeNames.OrderBy(x => x, StringComparer.Ordinal))
+        {
+            sb.AppendLine($"        if (type == typeof({scalar}?))");
+            sb.AppendLine($"            return JsonMetadataServices.CreateValueInfo<{scalar}?>(options, JsonMetadataServices.GetNullableConverter<{scalar}>(JsonMetadataServices.CreateValueInfo<{scalar}>(options, JsonMetadataServices.{OpenApiModelGenerator.ScalarConverter(scalar)})));");
+        }
+
         // Per-type: collection wrappers (List<T>, T[]) using metadata services factories. Element
         // TypeInfo is looked up via this same resolver — they compose cleanly inside one assembly.
         foreach (var fqn in ordered)
@@ -384,6 +401,26 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             sb.AppendLine($"            return CreateList<{typeRef}>(options);");
             sb.AppendLine($"        if (type == typeof({typeRef}[]))");
             sb.AppendLine($"            return CreateArray<{typeRef}>(options);");
+        }
+
+        // Lists, arrays and Dictionary<string, V> (additionalProperties) of everything else that
+        // reaches the options: scalars, enums, nested collections
+        var modelRefs = new HashSet<string>(ordered.Select(x => $"global::{x}"), StringComparer.Ordinal);
+        foreach (var element in modelGenerator.ListElementTypeNames.Where(x => !modelRefs.Contains(x)).OrderBy(x => x, StringComparer.Ordinal))
+        {
+            sb.AppendLine($"        if (type == typeof(global::System.Collections.Generic.List<{element}>))");
+            sb.AppendLine($"            return CreateList<{element}>(options);");
+        }
+        foreach (var element in modelGenerator.ArrayElementTypeNames.Where(x => !modelRefs.Contains(x)).OrderBy(x => x, StringComparer.Ordinal))
+        {
+            sb.AppendLine($"        if (type == typeof({element}[]))");
+            sb.AppendLine($"            return CreateArray<{element}>(options);");
+        }
+        var dictionaryValues = modelGenerator.DictionaryValueTypeNames.OrderBy(x => x, StringComparer.Ordinal).ToList();
+        foreach (var value in dictionaryValues)
+        {
+            sb.AppendLine($"        if (type == typeof(global::System.Collections.Generic.Dictionary<string, {value}>))");
+            sb.AppendLine($"            return CreateDictionary<{value}>(options);");
         }
 
         sb.AppendLine("        return null;");
@@ -414,6 +451,25 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
         sb.AppendLine("            });");
         sb.AppendLine("    }");
         sb.AppendLine();
+        if (dictionaryValues.Count > 0)
+        {
+            sb.AppendLine("    static JsonTypeInfo CreateDictionary<TValue>(JsonSerializerOptions options)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        var key = ResolveElement<string>(options);");
+            sb.AppendLine("        var value = ResolveElement<TValue>(options);");
+            sb.AppendLine("        if (key is null || value is null) return null;");
+            sb.AppendLine("        return JsonMetadataServices.CreateDictionaryInfo<Dictionary<string, TValue>, string, TValue>(");
+            sb.AppendLine("            options,");
+            sb.AppendLine("            new JsonCollectionInfoValues<Dictionary<string, TValue>>");
+            sb.AppendLine("            {");
+            sb.AppendLine("                ObjectCreator = static () => new Dictionary<string, TValue>(),");
+            sb.AppendLine("                KeyInfo = key,");
+            sb.AppendLine("                ElementInfo = value");
+            sb.AppendLine("            });");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+        }
+
         sb.AppendLine("    static JsonTypeInfo<T> ResolveElement<T>(JsonSerializerOptions options)");
         sb.AppendLine("    {");
         sb.AppendLine("        try { return options.GetTypeInfo(typeof(T)) as JsonTypeInfo<T>; }");
@@ -566,6 +622,8 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
 
         // Determine response type
         var responseType = GetResponseType(operation, config, modelGenerator, opId);
+        // read through the options by the handler (List<T>, Dictionary<string, V>, scalars ...)
+        modelGenerator.RequireTypeInfo(responseType);
         
         // Determine HTTP method
         var httpMethod = operationType.ToUpper();
@@ -755,6 +813,7 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
                 {
                     JsonConverterSourceGenerator.GenerateJsonConverter(context, typeSymbol);
                     modelGenerator.ConvertedTypeNames.Add(fullyQualifiedTypeName);
+                    modelGenerator.RequireMemberTypeInfo(typeSymbol);
                 }
             }
             catch (Exception ex)
