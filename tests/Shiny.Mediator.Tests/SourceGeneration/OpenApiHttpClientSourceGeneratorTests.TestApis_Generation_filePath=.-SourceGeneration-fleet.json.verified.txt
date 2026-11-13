@@ -749,8 +749,54 @@ internal static class Hello
         services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestApi.RefreshAuthenticationHttpRequest, global::TestApi.AuthResult>, global::TestApi.RefreshAuthenticationHttpRequestHandler>();
         services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestApi.SignInHttpRequest, global::TestApi.AuthResult>, global::TestApi.SignInHttpRequestHandler>();
         services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestApi.SignOutHttpRequest, global::System.Net.Http.HttpResponseMessage>, global::TestApi.SignOutHttpRequestHandler>();
+        services.TryAddEnumerable(global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, global::ThisShouldBeTheNamespace.HelloRequestExecutor>());
         return services;
     }
+}
+
+/// <summary>
+/// Runs the generated HTTP requests through their handler and middleware without reflection.
+/// </summary>
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
+internal sealed class HelloRequestExecutor : global::Shiny.Mediator.Infrastructure.RequestExecutor
+{
+    static readonly global::System.Collections.Generic.Dictionary<global::System.Type, int> Requests = new(7)
+    {
+        [typeof(global::TestApi.GetUserInfoHttpRequest)] = 0,
+        [typeof(global::TestApi.SignUpHttpRequest)] = 1,
+        [typeof(global::TestApi.PushRegistrationHttpRequest)] = 2,
+        [typeof(global::TestApi.SignInBackdoorHttpRequest)] = 3,
+        [typeof(global::TestApi.RefreshAuthenticationHttpRequest)] = 4,
+        [typeof(global::TestApi.SignInHttpRequest)] = 5,
+        [typeof(global::TestApi.SignOutHttpRequest)] = 6,
+    };
+
+    static int IndexOf(object request) => Requests.TryGetValue(request.GetType(), out var index) ? index : -1;
+
+    public override bool CanHandle<TResult>(global::Shiny.Mediator.IRequest<TResult> request) => IndexOf(request) >= 0;
+
+    public override global::System.Threading.Tasks.Task<TResult> Request<TResult>(
+        global::Shiny.Mediator.IMediatorContext context,
+        global::Shiny.Mediator.IRequest<TResult> request,
+        global::System.Threading.CancellationToken cancellationToken)
+        => IndexOf(request) switch
+        {
+            0 => As<global::TestApi.UserInfo, TResult>(this.Execute<global::TestApi.GetUserInfoHttpRequest, global::TestApi.UserInfo>((global::TestApi.GetUserInfoHttpRequest)(object)request, context, cancellationToken)),
+            1 => As<global::TestApi.ValidateResult, TResult>(this.Execute<global::TestApi.SignUpHttpRequest, global::TestApi.ValidateResult>((global::TestApi.SignUpHttpRequest)(object)request, context, cancellationToken)),
+            2 => As<global::System.Net.Http.HttpResponseMessage, TResult>(this.Execute<global::TestApi.PushRegistrationHttpRequest, global::System.Net.Http.HttpResponseMessage>((global::TestApi.PushRegistrationHttpRequest)(object)request, context, cancellationToken)),
+            3 => As<string, TResult>(this.Execute<global::TestApi.SignInBackdoorHttpRequest, string>((global::TestApi.SignInBackdoorHttpRequest)(object)request, context, cancellationToken)),
+            4 => As<global::TestApi.AuthResult, TResult>(this.Execute<global::TestApi.RefreshAuthenticationHttpRequest, global::TestApi.AuthResult>((global::TestApi.RefreshAuthenticationHttpRequest)(object)request, context, cancellationToken)),
+            5 => As<global::TestApi.AuthResult, TResult>(this.Execute<global::TestApi.SignInHttpRequest, global::TestApi.AuthResult>((global::TestApi.SignInHttpRequest)(object)request, context, cancellationToken)),
+            6 => As<global::System.Net.Http.HttpResponseMessage, TResult>(this.Execute<global::TestApi.SignOutHttpRequest, global::System.Net.Http.HttpResponseMessage>((global::TestApi.SignOutHttpRequest)(object)request, context, cancellationToken)),
+            _ => throw new global::System.InvalidOperationException("Unknown request type " + request.GetType().FullName)
+        };
+
+    // TResult is the declared result unless the caller asked through a covariant base (IRequest<out TResult>)
+    static global::System.Threading.Tasks.Task<TResult> As<T, TResult>(global::System.Threading.Tasks.Task<T> task)
+        => (object)task is global::System.Threading.Tasks.Task<TResult> same ? same : Await<T, TResult>(task);
+
+    static async global::System.Threading.Tasks.Task<TResult> Await<T, TResult>(global::System.Threading.Tasks.Task<T> task)
+        => (TResult)(object)await task.ConfigureAwait(false);
 }
 
     }

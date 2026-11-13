@@ -218,8 +218,46 @@ public static class __ShinyMediatorOpenApiClient
         services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestApi.GetAdsHttpRequest, global::TestApi.GetAdsResponse>, global::TestApi.GetAdsHttpRequestHandler>();
         services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestApi.GetUsersPostsHttpRequest, global::System.Net.Http.HttpResponseMessage>, global::TestApi.GetUsersPostsHttpRequestHandler>();
         services.TryAddSingleton<global::Shiny.Mediator.IRequestHandler<global::TestApi.DeleteItemsDetailsHttpRequest, global::System.Net.Http.HttpResponseMessage>, global::TestApi.DeleteItemsDetailsHttpRequestHandler>();
+        services.TryAddEnumerable(global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::Shiny.Mediator.Infrastructure.IRequestExecutor, global::UnitTests.__ShinyMediatorOpenApiClientRequestExecutor>());
         return services;
     }
+}
+
+/// <summary>
+/// Runs the generated HTTP requests through their handler and middleware without reflection.
+/// </summary>
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Shiny.Mediator.SourceGenerators", "6.0.0")]
+internal sealed class __ShinyMediatorOpenApiClientRequestExecutor : global::Shiny.Mediator.Infrastructure.RequestExecutor
+{
+    static readonly global::System.Collections.Generic.Dictionary<global::System.Type, int> Requests = new(3)
+    {
+        [typeof(global::TestApi.GetAdsHttpRequest)] = 0,
+        [typeof(global::TestApi.GetUsersPostsHttpRequest)] = 1,
+        [typeof(global::TestApi.DeleteItemsDetailsHttpRequest)] = 2,
+    };
+
+    static int IndexOf(object request) => Requests.TryGetValue(request.GetType(), out var index) ? index : -1;
+
+    public override bool CanHandle<TResult>(global::Shiny.Mediator.IRequest<TResult> request) => IndexOf(request) >= 0;
+
+    public override global::System.Threading.Tasks.Task<TResult> Request<TResult>(
+        global::Shiny.Mediator.IMediatorContext context,
+        global::Shiny.Mediator.IRequest<TResult> request,
+        global::System.Threading.CancellationToken cancellationToken)
+        => IndexOf(request) switch
+        {
+            0 => As<global::TestApi.GetAdsResponse, TResult>(this.Execute<global::TestApi.GetAdsHttpRequest, global::TestApi.GetAdsResponse>((global::TestApi.GetAdsHttpRequest)(object)request, context, cancellationToken)),
+            1 => As<global::System.Net.Http.HttpResponseMessage, TResult>(this.Execute<global::TestApi.GetUsersPostsHttpRequest, global::System.Net.Http.HttpResponseMessage>((global::TestApi.GetUsersPostsHttpRequest)(object)request, context, cancellationToken)),
+            2 => As<global::System.Net.Http.HttpResponseMessage, TResult>(this.Execute<global::TestApi.DeleteItemsDetailsHttpRequest, global::System.Net.Http.HttpResponseMessage>((global::TestApi.DeleteItemsDetailsHttpRequest)(object)request, context, cancellationToken)),
+            _ => throw new global::System.InvalidOperationException("Unknown request type " + request.GetType().FullName)
+        };
+
+    // TResult is the declared result unless the caller asked through a covariant base (IRequest<out TResult>)
+    static global::System.Threading.Tasks.Task<TResult> As<T, TResult>(global::System.Threading.Tasks.Task<T> task)
+        => (object)task is global::System.Threading.Tasks.Task<TResult> same ? same : Await<T, TResult>(task);
+
+    static async global::System.Threading.Tasks.Task<TResult> Await<T, TResult>(global::System.Threading.Tasks.Task<T> task)
+        => (TResult)(object)await task.ConfigureAwait(false);
 }
 
     }

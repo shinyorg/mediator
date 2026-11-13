@@ -80,6 +80,12 @@
         <!--additional files are keyed by path, so the generated-converter variants read copies-->
         <MediatorHttp Include="$(IntermediateOutputPath)polymorphism\polymorphism-union.json" Namespace="PolyUnionGenerated" GenerateJsonConverters="true" Visible="false"/>
         <MediatorHttp Include="$(IntermediateOutputPath)polymorphism\polymorphism-inheritance.json" Namespace="PolyInheritGenerated" GenerateJsonConverters="true" Visible="false"/>
+        <!--generated requests dispatched by the generated executor (GeneratedHttpRequestExecutorTests)-->
+        <MediatorHttp Include="SourceGeneration\executor.json"
+                      Namespace="ExecutorApi"
+                      ContractPostfix="HttpRequest"
+                      GenerateJsonConverters="true"
+                      Visible="false"/>
     </ItemGroup>
 
     <Target Name="CopyPolymorphismFixtures" BeforeTargets="_InjectShinyMediatorAdditionalFiles">
