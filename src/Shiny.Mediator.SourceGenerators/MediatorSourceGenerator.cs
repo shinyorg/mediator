@@ -673,21 +673,23 @@ public class MediatorSourceGenerator : IIncrementalGenerator
     // value-type argument, so the first Request/Send/Publish/stream of such a contract throws InvalidOperationException.
     static void ReportValueTypeContracts(SourceProductionContext context, ImmutableArray<HandlerInfo> handlers)
     {
-        foreach (var handler in handlers)
+        var offenders = handlers
+            .Select(handler => (
+                Handler: handler,
+                ValueType: handler.RequestType.IsValueType
+                    ? handler.RequestType
+                    : handler.ResultType is { IsValueType: true } result ? result : null
+            ))
+            .Where(x => x.ValueType != null);
+
+        foreach (var (handler, valueType) in offenders)
         {
-            var valueType = handler.RequestType.IsValueType
-                ? handler.RequestType
-                : handler.ResultType is { IsValueType: true } result ? result : null;
-
-            if (valueType == null)
-                continue;
-
             context.ReportDiagnostic(Diagnostic.Create(
                 ValueTypeContractUnderNativeAot,
                 handler.ClassSymbol.Locations.FirstOrDefault(),
                 handler.ClassSymbol.Name,
                 handler.RequestType.ToDisplayString(),
-                valueType.ToDisplayString(),
+                valueType!.ToDisplayString(),
                 handler.HandlerType.ToLowerInvariant()
             ));
         }
