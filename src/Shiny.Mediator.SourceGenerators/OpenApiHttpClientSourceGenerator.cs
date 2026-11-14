@@ -380,16 +380,18 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
 
         // Scalars and Nullable<T> scalars: generated converters hand every member they do not write
         // themselves to the options, and responses are read through them. Without reflection nothing
-        // else in the chain is guaranteed to provide them (DateOnly, Guid, ...).
+        // else in the chain is guaranteed to provide them (DateOnly, Guid, ...). A converter the app put on
+        // options.Converters wins over the built-in one, as in STJ's own generated contexts.
+        var hasScalars = modelGenerator.ScalarTypeNames.Count > 0 || modelGenerator.NullableScalarTypeNames.Count > 0;
         foreach (var scalar in modelGenerator.ScalarTypeNames.OrderBy(x => x, StringComparer.Ordinal))
         {
             sb.AppendLine($"        if (type == typeof({scalar}))");
-            sb.AppendLine($"            return JsonMetadataServices.CreateValueInfo<{scalar}>(options, JsonMetadataServices.{OpenApiModelGenerator.ScalarConverter(scalar)});");
+            sb.AppendLine($"            return CreateScalar<{scalar}>(options, JsonMetadataServices.{OpenApiModelGenerator.ScalarConverter(scalar)});");
         }
         foreach (var scalar in modelGenerator.NullableScalarTypeNames.OrderBy(x => x, StringComparer.Ordinal))
         {
             sb.AppendLine($"        if (type == typeof({scalar}?))");
-            sb.AppendLine($"            return JsonMetadataServices.CreateValueInfo<{scalar}?>(options, JsonMetadataServices.GetNullableConverter<{scalar}>(JsonMetadataServices.CreateValueInfo<{scalar}>(options, JsonMetadataServices.{OpenApiModelGenerator.ScalarConverter(scalar)})));");
+            sb.AppendLine($"            return JsonMetadataServices.CreateValueInfo<{scalar}?>(options, GetCustomConverter<{scalar}?>(options) ?? JsonMetadataServices.GetNullableConverter<{scalar}>(CreateScalar<{scalar}>(options, JsonMetadataServices.{OpenApiModelGenerator.ScalarConverter(scalar)})));");
         }
 
         // Per-type: collection wrappers (List<T>, T[]) using metadata services factories. Element
@@ -466,6 +468,25 @@ public class OpenApiHttpClientSourceGenerator : IIncrementalGenerator
             sb.AppendLine("                KeyInfo = key,");
             sb.AppendLine("                ElementInfo = value");
             sb.AppendLine("            });");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+        }
+
+        if (hasScalars)
+        {
+            sb.AppendLine("    static JsonTypeInfo<T> CreateScalar<T>(JsonSerializerOptions options, global::System.Text.Json.Serialization.JsonConverter<T> builtIn)");
+            sb.AppendLine("        => JsonMetadataServices.CreateValueInfo<T>(options, GetCustomConverter<T>(options) ?? builtIn);");
+            sb.AppendLine();
+            sb.AppendLine("    static global::System.Text.Json.Serialization.JsonConverter<T> GetCustomConverter<T>(JsonSerializerOptions options)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        foreach (var converter in options.Converters)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            if (converter.CanConvert(typeof(T)))");
+            sb.AppendLine("                return converter is global::System.Text.Json.Serialization.JsonConverterFactory factory");
+            sb.AppendLine("                    ? factory.CreateConverter(typeof(T), options) as global::System.Text.Json.Serialization.JsonConverter<T>");
+            sb.AppendLine("                    : converter as global::System.Text.Json.Serialization.JsonConverter<T>;");
+            sb.AppendLine("        }");
+            sb.AppendLine("        return null;");
             sb.AppendLine("    }");
             sb.AppendLine();
         }

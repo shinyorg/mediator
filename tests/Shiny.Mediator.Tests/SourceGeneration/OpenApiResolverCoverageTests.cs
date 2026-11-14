@@ -59,8 +59,40 @@ public class OpenApiResolverCoverageTests
     }
 
 
+    [Fact]
+    public void A_Converter_On_The_Options_Wins_Over_The_Built_In_Scalar_Converter()
+    {
+        var options = Options();
+        options.Converters.Add(new DayNumberConverter());
+        var order = new ResolverCoverageApi.Order
+        {
+            Id = Id,
+            Day = new DateOnly(2026, 11, 12),
+            ClosedOn = new DateOnly(2026, 11, 13),
+            Lines = []
+        };
+
+        var json = JsonSerializer.Serialize(order, Info<ResolverCoverageApi.Order>(options));
+        json.ShouldContain($"\"day\":{order.Day.DayNumber}");
+        json.ShouldContain($"\"closedOn\":{order.ClosedOn!.Value.DayNumber}");
+
+        var read = JsonSerializer.Deserialize(json, Info<ResolverCoverageApi.Order>(options))!;
+        read.Day.ShouldBe(order.Day);
+        read.ClosedOn.ShouldBe(order.ClosedOn);
+    }
+
+
     // no reflection fallback: a type the resolver does not cover throws NotSupportedException
     static JsonSerializerOptions Options() => new() { TypeInfoResolver = ResolverCoverageApi.ResolverCoverageApiJsonResolver.Instance };
+
+    sealed class DayNumberConverter : System.Text.Json.Serialization.JsonConverter<DateOnly>
+    {
+        public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            => DateOnly.FromDayNumber(reader.GetInt32());
+
+        public override void Write(Utf8JsonWriter writer, DateOnly value, JsonSerializerOptions options)
+            => writer.WriteNumberValue(value.DayNumber);
+    }
 
     static JsonTypeInfo<T> Info<T>(JsonSerializerOptions options) => (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T));
 }
