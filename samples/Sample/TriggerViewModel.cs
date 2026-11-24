@@ -9,7 +9,7 @@ namespace Sample;
 public partial class TriggerViewModel(
     IMediator mediator,
     AppSqliteConnection data,
-    IPageDialogService dialogs
+    IDialogService dialogs
 ) : ObservableObject, IEventHandler<MyMessageEvent>, IConnectivityEventHandler
 {
     readonly IDisposable sub;
@@ -31,10 +31,10 @@ public partial class TriggerViewModel(
 
 
     [RelayCommand]
-    Task PrismNav()
-        => mediator.Send(new MyPrismNavCommand(this.PrismNavArg!), CancellationToken.None);
+    Task Navigate()
+        => mediator.Send(new MyNavCommand(this.NavArg), CancellationToken.None);
     
-    [ObservableProperty] string prismNavArg;
+    [ObservableProperty] string? navArg;
 
 
     [RelayCommand]
@@ -87,7 +87,7 @@ public partial class TriggerViewModel(
     {
         try
         {
-            var response = await mediator.Request(new GetV1DestinationsHttpRequest(), this.cancelSource.Token);
+            var response = await mediator.Request(new GetAllDestinationsHttpRequest(), this.cancelSource.Token);
             await dialogs.DisplayAlertAsync("Results", response.Result.Destinations.Count.ToString(), "OK");
         }
         catch (Exception ex)

@@ -6,20 +6,18 @@ namespace Sample;
 
 public partial class AnotherViewModel(
     AppSqliteConnection conn
-) : ObservableObject, INavigatedAware, IEventHandler<MyMessageEvent>
+) : ObservableObject, IQueryAttributable, IEventHandler<MyMessageEvent>
 {
-    const string Key = nameof(MyPrismNavCommand);
+    public const string ArgKey = "Arg";
 
-    
-    public void OnNavigatedFrom(INavigationParameters parameters) {}
-    public void OnNavigatedTo(INavigationParameters parameters)
+
+    // Shell hands the navigation arguments from MyNavCommandHandler to the page's binding context
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        if (parameters.ContainsKey(Key))
+        if (query.TryGetValue(ArgKey, out var arg))
         {
-            var p = parameters.GetValue<MyPrismNavCommand>(Key);
-
             this.ShowArg = true;
-            this.Arg = p.Arg ?? "No Argument";
+            this.Arg = arg as string ?? "No Argument";
         }
     }
 

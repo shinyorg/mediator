@@ -10,27 +10,7 @@ public static class MauiProgram
     {
         var builder = MauiApp
             .CreateBuilder()
-            .UseMauiApp<App>()
-            .UsePrism(
-                new DryIocContainerExtension(),
-                prism => prism.CreateWindow(nav => nav
-                    .CreateBuilder()
-                    .AddTabbedSegment(tabs => tabs
-                        .CreateTab(tab => tab
-                            .AddNavigationPage()
-                            .AddSegment(nameof(TriggerPage))
-                        )
-                        .CreateTab(tab => tab
-                            .AddNavigationPage()
-                            .AddSegment(nameof(EventPage))
-                        )
-                        .CreateTab(tab => tab
-                            .AddNavigationPage()
-                            .AddSegment(nameof(BlazorPage))
-                        )
-                    )
-                )
-            );
+            .UseMauiApp<App>();
 
 #if DEBUG
         builder.Logging.SetMinimumLevel(LogLevel.Trace);
@@ -55,7 +35,6 @@ public static class MauiProgram
             // .AddFluentValidation() 
             
             .AddMauiHttpDecorator()
-            .AddPrismSupport()
             
             .AddResiliencyMiddleware(builder.Configuration)
             // Cache - you can only have one
@@ -69,10 +48,17 @@ public static class MauiProgram
         builder.Services.AddSingleton<AppSqliteConnection>();
         builder.Services.AddMauiBlazorWebView();
 
-        builder.Services.RegisterForNavigation<TriggerPage, TriggerViewModel>();
-        builder.Services.RegisterForNavigation<EventPage, EventViewModel>();
-        builder.Services.RegisterForNavigation<BlazorPage, BlazorViewModel>();
-        builder.Services.RegisterForNavigation<AnotherPage, AnotherViewModel>();
+        builder.Services.AddSingleton<IDialogService, DialogService>();
+
+        // Shell resolves pages from DI, and each page takes its view model
+        builder.Services.AddTransient<TriggerPage>();
+        builder.Services.AddTransient<TriggerViewModel>();
+        builder.Services.AddTransient<EventPage>();
+        builder.Services.AddTransient<EventViewModel>();
+        builder.Services.AddTransient<BlazorPage>();
+        builder.Services.AddTransient<BlazorViewModel>();
+        builder.Services.AddTransient<AnotherPage>();
+        builder.Services.AddTransient<AnotherViewModel>();
         
         var app = builder.Build();
         return app;

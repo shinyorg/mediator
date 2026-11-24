@@ -435,7 +435,7 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
                 if (typeName != null)
                 {
                     var isRequired = required.Contains(property.Key);
-                    var typeIncludesNull = propSchema.Type?.HasFlag(JsonSchemaType.Null) ?? false;
+                    var typeIncludesNull = OpenApiCompat.IsNullable(propSchema);
                     var isValueType = IsValueType(typeName);
                     
                     // Value types are only nullable if schema explicitly includes null
@@ -445,6 +445,9 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
                         : (!isRequired || typeIncludesNull);
                     var nullableSuffix = isNullable ? "?" : String.Empty;
                     
+                    if (propSchema.Deprecated)
+                        sb.AppendLine("    [global::System.Obsolete(\"This property is deprecated in the OpenAPI document\")]");
+
                     sb.AppendLine($"    [global::System.Text.Json.Serialization.JsonPropertyName(\"{property.Key}\")]");
                     sb.AppendLine($"    public {typeName}{nullableSuffix} {propertyName} {{ get; set; }}");
                     sb.AppendLine();
@@ -541,10 +544,19 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
             sb.AppendLine($"            case \"{Escape(variant.Key)}\":");
             sb.AppendLine($"                return Deserialize<{VariantType(variant.Value)}>(ref reader, options);");
         }
-        sb.AppendLine("            case null:");
-        sb.AppendLine($"                throw new JsonException(\"Missing '{tagName}' discriminator for {className}\");");
-        sb.AppendLine("            default:");
-        sb.AppendLine($"                throw new JsonException($\"Unknown '{tagName}' discriminator '{{discriminator}}' for {className}\");");
+        if (info.DefaultVariant != null)
+        {
+            // OpenAPI 3.2 discriminator.defaultMapping - missing or unmapped values fall back to this variant
+            sb.AppendLine("            default:");
+            sb.AppendLine($"                return Deserialize<{VariantType(info.DefaultVariant)}>(ref reader, options);");
+        }
+        else
+        {
+            sb.AppendLine("            case null:");
+            sb.AppendLine($"                throw new JsonException(\"Missing '{tagName}' discriminator for {className}\");");
+            sb.AppendLine("            default:");
+            sb.AppendLine($"                throw new JsonException($\"Unknown '{tagName}' discriminator '{{discriminator}}' for {className}\");");
+        }
         sb.AppendLine("        }");
         sb.AppendLine("    }");
         sb.AppendLine();
@@ -672,6 +684,10 @@ public class OpenApiModelGenerator(MediatorHttpItemConfig config, SourceProducti
         else if (IsNumericFormat(schema.Format))
         {
             type = GetNumberType(schema.Format);
+        }
+        else if (OpenApiCompat.IsMixedTypeWithString(schema))
+        {
+            type = "string";
         }
         else if (schema.Type != null)
         {

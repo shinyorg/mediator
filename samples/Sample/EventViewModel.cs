@@ -5,9 +5,9 @@ namespace Sample;
 
 
 public partial class EventViewModel(
-    IPageDialogService dialogs,
+    IDialogService dialogs,
     AppSqliteConnection conn
-) : ObservableObject, IPageLifecycleAware
+) : ObservableObject
 {
     [RelayCommand]
     async Task Clear()
@@ -40,7 +40,6 @@ public partial class EventViewModel(
     [ObservableProperty] bool isBusy;
     
     public void OnAppearing() => this.LoadCommand.Execute(null);
-    public void OnDisappearing() {}
 }
 
 public record EventItemViewModel(

@@ -1,4 +1,4 @@
-﻿namespace Sample;
+namespace Sample;
 
 public partial class App : Application
 {
@@ -6,4 +6,6 @@ public partial class App : Application
     {
         this.InitializeComponent();
     }
+
+    protected override Window CreateWindow(IActivationState? activationState) => new(new AppShell());
 }

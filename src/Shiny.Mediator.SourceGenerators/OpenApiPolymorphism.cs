@@ -16,6 +16,12 @@ public class OpenApiPolymorphicBase(string componentName, string propertyName)
 
     /// <summary>Discriminator value → variant component name, in declaration order.</summary>
     public List<KeyValuePair<string, string>> Variants { get; } = new();
+
+    /// <summary>
+    /// OpenAPI 3.2 <c>discriminator.defaultMapping</c> - the variant component used when the discriminator is
+    /// missing or matches no mapping. Null throws a <c>JsonException</c> instead.
+    /// </summary>
+    public string? DefaultVariant { get; set; }
 }
 
 
@@ -124,11 +130,33 @@ public class OpenApiPolymorphism
                 result.Variants.Add(tag.Value, new OpenApiPolymorphicVariant(info, tag.Key, parent));
             }
 
+            info.DefaultVariant = GetDefaultVariant(name, schema.Discriminator, info, warn);
+
             if (info.Variants.Count > 0)
                 result.Bases.Add(name, info);
         }
 
         return result;
+    }
+
+
+    static string? GetDefaultVariant(string name, OpenApiDiscriminator discriminator, OpenApiPolymorphicBase info, Action<string> warn)
+    {
+        if (discriminator.DefaultMapping == null)
+            return null;
+
+        var target = GetReferenceId(discriminator.DefaultMapping);
+        if (target == name)
+        {
+            warn($"Discriminator defaultMapping on '{name}' maps to the base itself - polymorphic bases are generated abstract, so it was ignored");
+            return null;
+        }
+        if (target == null || !info.Variants.Any(x => x.Value == target))
+        {
+            warn($"Discriminator defaultMapping on '{name}' does not reference a variant of the hierarchy and was ignored");
+            return null;
+        }
+        return target;
     }
 
 

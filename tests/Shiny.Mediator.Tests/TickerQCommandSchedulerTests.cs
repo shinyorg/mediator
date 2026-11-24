@@ -99,6 +99,9 @@ file class FakeTimeTickerManager : ITimeTickerManager<TimeTickerEntity>
     public Task<TickerResult<TimeTickerEntity>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
 
+    public Task<TickerResult<TimeTickerEntity>> ReplaceChainAsync(Guid id, TimeTickerEntity timeTicker, CancellationToken cancellationToken = default)
+        => throw new NotImplementedException();
+
     public Task<TickerResult<List<TimeTickerEntity>>> AddBatchAsync(List<TimeTickerEntity> entities, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
 

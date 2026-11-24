@@ -39,22 +39,47 @@ change unless there's a reason not to.
 Release notes live in the documentation repo at
 `~/Desktop/dev/documentation/src/content/docs/mediator/release-notes.mdx`.
 
-**Which version does a note go against?** Use `<PackageVersion>` from `Directory.Build.props` —
-**the raw version portion only** (strip any prerelease/build-metadata suffix, e.g.
-`6.7.0-beta.1` → `6.7.0`).
+**Which version does a note go against?** The repo has no version - releases come from git tags (see
+[Releasing](#releasing)). Unreleased work goes under the `## <version> TBD` section at the top of
+`release-notes.mdx`; that version is the next tag you intend to push (raw version only, no prerelease
+suffix: a `v7.0.0-beta.1` tag still belongs to `## 7.0.0 TBD`).
+- If a `## <version> TBD` heading already exists, **add the note under it**. If you are modifying a
+  feature that hasn't shipped yet (it's already an entry under the `TBD` section), edit that entry in
+  place rather than adding a duplicate.
+- If there is no `TBD` section (the last version shipped), **create a new `## <version> TBD` heading**
+  at the top for the next version - a patch, minor or major bump depending on the change - and add the
+  note there.
 
-**If the version is a beta / prerelease (or the section is still marked `TBD`):**
-- If a `## <version> TBD` heading already exists in `release-notes.mdx`, **add the note under that
-  existing section**. If you are modifying a feature that hasn't shipped yet (it's already an entry
-  under a `TBD` section), edit that existing entry in place rather than adding a duplicate.
-- If no section exists for that version yet, **create a new `## <version> TBD` heading** at the top
-  and add the note there.
-
-**If the version is a final release**, the section is dated (`## 6.4.0 - May 17, 2026`); add the
-note under the matching dated section (or promote the `TBD` section to a dated one when cutting the
-release).
+When a final (non-prerelease) tag ships, promote its `TBD` heading to a dated one
+(`## 6.4.0 - May 17, 2026`).
 
 Each note is a single `<RN>` line, newest version section at the top of the file.
+
+## Releasing
+
+`main` is the only working branch (`v6.0` and older are left as they are). Versions come from git tags,
+not the repo - there is no `<PackageVersion>` to bump:
+
+- Push a `v7.0.0` (or `v7.0.0-beta.1`) tag on a `main` commit, or run the **Release** workflow by hand
+  with a version (it creates the tag). `release.yml` builds `Build.slnf` with `-p:Version=<tag>`, runs
+  the tests, pushes every package to NuGet (trusted publishing) and creates a GitHub release with
+  generated notes. A `-suffix` makes both prerelease.
+- **CI** (`ci.yml`) builds and tests every push / PR to `main` the way a release does and publishes
+  nothing. Its runner and toolchain pins match `release.yml` - bump them together.
+- `skills/` syncs to shinyorg/skills only as the last job of a release (`release.yml` calls
+  `sync-skills.yml`), so the published skills always match a shipped version. Run **Sync Skills** by
+  hand to re-sync without releasing.
+- Untagged builds are `0.0.0-dev` (`Directory.Build.props`).
+
+## Target frameworks
+
+- `BaseTargetFramework` (`net11.0`): apps, tests, samples, and the MAUI / Blazor libraries.
+- `LibraryTargetFrameworks` (`net10.0;net11.0`): every other library. When a dependency's latest major
+  drops `net10.0`, pin the last `net10.0`-capable release for the `net10.0` build with a
+  `TargetFramework`-conditioned version property in `Directory.Packages.props` (see `AppFunctionsVersion`,
+  `TickerQVersion`).
+- The source generators stay `netstandard2.0` and on an older `Microsoft.CodeAnalysis.CSharp` than the
+  SDK ships, so older IDE compilers can still load them - don't bump it to "latest".
 
 ## Source-generator opt-ins (escape hatches)
 

@@ -16,7 +16,6 @@
             "src\\Shiny.Mediator.DapperRequests\\Shiny.Mediator.DapperRequests.csproj",
             "src\\Shiny.Mediator.FluentValidation\\Shiny.Mediator.FluentValidation.csproj",
             "src\\Shiny.Mediator.Maui\\Shiny.Mediator.Maui.csproj",
-            "src\\Shiny.Mediator.Prism\\Shiny.Mediator.Prism.csproj",
             "src\\Shiny.Mediator.Resilience\\Shiny.Mediator.Resilience.csproj",
             "src\\Shiny.Mediator.Uno\\Shiny.Mediator.Uno.csproj",
             "src\\Shiny.Mediator.Testing\\Shiny.Mediator.Testing.csproj",

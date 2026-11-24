@@ -33,7 +33,6 @@ dotnet add package Shiny.Mediator.AppSupport    # Offline, replay, user notifica
 | `Shiny.Mediator.Uno` | Uno Platform integration (event collector, main thread, ContentDialog alerts, persistent cache) |
 | `Shiny.Mediator.Avalonia` | Avalonia integration (event collector, main thread, alerts, persistent cache) |
 | `Shiny.Mediator.AppFunctions` | Requests/commands as Siri, Shortcuts & Gemini app functions (brings Shiny.AppFunctions + its generator) |
-| `Shiny.Mediator.Prism` | Prism MVVM integration |
 | `Shiny.Mediator.AppSupport` | Offline, replay, user notifications |
 | `Shiny.Mediator.Resilience` | Polly resilience middleware |
 | `Shiny.Mediator.FluentValidation` | FluentValidation middleware |

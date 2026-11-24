@@ -1,0 +1,49 @@
+name: CI
+
+# Every push to main, and every pull request into it: build and test the packages the way a release does, without
+# publishing. Releases come from tags - see release.yml. Toolchain pins match release.yml - bump them together.
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'skills/**'
+      - '.claude-plugin/**'
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # the libraries are plain net10.0 / net11.0 (no platform targets), so no workloads are needed
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      with:
+          dotnet-version: '11.0.100'
+
+    - name: Build
+      run: dotnet build Build.slnf /restore -m -property:Configuration=Release
+
+    - name: Test
+      run: dotnet test tests/Shiny.Mediator.Tests/Shiny.Mediator.Tests.csproj -c Release --nologo --logger GitHubActions
+
+    - name: Publish Artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: nugets
+        path: |
+          src/**/bin/Release/*.nupkg
+          src/**/bin/Release/*.snupkg
+        retention-days: 5

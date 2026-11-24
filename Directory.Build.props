@@ -1,6 +1,9 @@
 ﻿<Project>
     <PropertyGroup>
-        <BaseTargetFramework>net10.0</BaseTargetFramework>
+        <!-- apps, tests, samples and the MAUI / Blazor libraries are net11 only -->
+        <BaseTargetFramework>net11.0</BaseTargetFramework>
+        <!-- every other library also keeps a net10 build -->
+        <LibraryTargetFrameworks>net10.0;$(BaseTargetFramework)</LibraryTargetFrameworks>
         <Authors>Allan Ritchie</Authors>
         <Owners>aritchie;shinylib</Owners>
         <LangVersion>latest</LangVersion>
@@ -8,7 +11,8 @@
         <DisableExtraReferences>False</DisableExtraReferences>
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
         
-        <PackageVersion>6.13.0</PackageVersion>
+        <!-- local / CI builds only - release.yml stamps the real version from the v* tag with -p:Version -->
+        <Version Condition="'$(Version)' == ''">0.0.0-dev</Version>
         <Description>Shiny Mediator - A mediator pattern for all .NET Apps</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Copyright>Copyright (c) $([System.DateTime]::Now.Year) Allan Ritchie</Copyright>
@@ -16,7 +20,7 @@
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
         <PackageReleaseNotes>https://shinylib.net/release-notes/mediator</PackageReleaseNotes>
-        <PackageTags>mediator shiny aspnet maui blazor prism</PackageTags>
+        <PackageTags>mediator shiny aspnet maui blazor</PackageTags>
         <RepositoryUrl>https://github.com/shinyorg/mediator</RepositoryUrl>
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
         

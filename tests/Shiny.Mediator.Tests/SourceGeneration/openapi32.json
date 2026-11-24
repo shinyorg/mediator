@@ -1,0 +1,128 @@
+{
+  "openapi": "3.2.0",
+  "info": { "title": "OpenAPI 3.2", "version": "1.0" },
+  "paths": {
+    "/ticks": {
+      "get": {
+        "operationId": "getTicks",
+        "parameters": [
+          { "name": "count", "in": "query", "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OpenAPI 3.2 server-sent events - itemSchema describes one event (ASP.NET Core 11)",
+            "content": {
+              "text/event-stream": {
+                "itemSchema": {
+                  "type": "object",
+                  "required": [ "data" ],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/Tick" },
+                    "event": { "type": "string" },
+                    "id": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/counter": {
+      "get": {
+        "operationId": "getCounter",
+        "responses": {
+          "200": {
+            "description": "3.0/3.1 style - schema describes one event as an ASP.NET Core 10 SseItem<int> envelope",
+            "content": {
+              "text/event-stream": { "schema": { "$ref": "#/components/schemas/SseItemOfint" } }
+            }
+          }
+        }
+      }
+    },
+    "/ticks/latest": {
+      "get": {
+        "operationId": "getLatestTick",
+        "responses": {
+          "200": {
+            "description": "offers JSON as well - stays a regular request",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Tick" } },
+              "text/event-stream": { "itemSchema": { "$ref": "#/components/schemas/Tick" } }
+            }
+          }
+        }
+      }
+    },
+    "/pets/legacy": {
+      "get": {
+        "operationId": "getLegacyPets",
+        "deprecated": true,
+        "parameters": [
+          { "name": "filter", "in": "query", "deprecated": true, "schema": { "type": "string" } },
+          { "name": "name", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Pet" } } }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Tick": {
+        "type": "object",
+        "properties": {
+          "n": { "type": "integer", "format": "int32" },
+          "label": { "type": "string", "deprecated": true }
+        }
+      },
+      "SseItemOfint": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "integer", "format": "int32" },
+          "eventType": { "type": [ "null", "string" ] },
+          "eventId": { "type": [ "null", "string" ] }
+        }
+      },
+      "Pet": {
+        "type": "object",
+        "required": [ "kind" ],
+        "properties": {
+          "kind": { "type": "string" },
+          "name": { "type": "string" }
+        },
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": { "dog": "#/components/schemas/Dog" },
+          "defaultMapping": "#/components/schemas/OtherPet"
+        },
+        "oneOf": [
+          { "$ref": "#/components/schemas/Dog" },
+          { "$ref": "#/components/schemas/OtherPet" }
+        ]
+      },
+      "Dog": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string" },
+          "name": { "type": "string" },
+          "barks": { "type": "boolean" }
+        }
+      },
+      "OtherPet": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string" },
+          "name": { "type": "string" }
+        }
+      }
+    }
+  }
+}

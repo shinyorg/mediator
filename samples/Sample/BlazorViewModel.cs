@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace Sample;
 
 
-public partial class BlazorViewModel(INavigationService navigator) : ObservableObject
+public partial class BlazorViewModel : ObservableObject
 {
-    [RelayCommand] Task Navigate() => navigator.NavigateAsync(nameof(AnotherPage));
+    [RelayCommand] Task Navigate() => Shell.Current.GoToAsync(nameof(AnotherPage));
 }

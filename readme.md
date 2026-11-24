@@ -45,7 +45,7 @@ Starting in v6.6 JSON flows through [`Shiny.Extensions.Serialization`](https://w
   - We still have a "messagingcenter" type subscribe off IMediator for cases where you can't have your current type implement an interface
 - Save the Boilerplate + Receive the Power of Middleware
   - [Dapper Extension](https://shinylib.net/mediator/extensions/dapper) for Easy Query Handling
-  - [HTTP Extension](https://shinylib.net/mediator/extensions/http) for Easy API handling - OpenAPI Contract Generation takes it even one step further (including discriminated/polymorphic models)
+  - [HTTP Extension](https://shinylib.net/mediator/extensions/http) for Easy API handling - OpenAPI Contract Generation takes it even one step further (including discriminated/polymorphic models, server-sent event streams from OpenAPI 3.2 `itemSchema`, and `deprecated` → `[Obsolete]`)
   - Map contracts directly to handlers with our [ASP.NET Extension](https://shinylib.net/mediator/extensions/aspnet)
   - Server Sent Events for ASP.NET
 - [Epic Out-of-the-Box Middleware](https://shinylib.net/mediator/middleware/)
@@ -58,14 +58,15 @@ Starting in v6.6 JSON flows through [`Shiny.Extensions.Serialization`](https://w
   - [Main Thread Dispatching](https://shinylib.net/mediator/middleware/mainthread)
   - [Replayable Streams](https://shinylib.net/mediator/middleware/replay)
   - [Refresh Timer Streams](https://shinylib.net/mediator/middleware/refresh)
-  - [Command Scheduling](https://shinylib.net/mediator/middleware/scheduling)
+  - [Command Scheduling](https://shinylib.net/mediator/middleware/scheduling) - in-memory, or durable through [TickerQ](https://tickerq.net) (`Shiny.Mediator.TickerQ`)
 
 ## Works With
+- .NET 10 & .NET 11 - the MAUI & Blazor packages target .NET 11 (MAUI 11 / Blazor 11); every other package ships both
 - .NET MAUI - all platforms
 - Uno Platform - all platforms
 - Avalonia - desktop, mobile & browser
 - Blazor
-- MVVM Frameworks like Prism, ReactiveUI, CommunityToolkit.Mvvm & .NET MAUI Shell
+- MVVM Frameworks like ReactiveUI, CommunityToolkit.Mvvm & .NET MAUI Shell
 - Any other .NET platform - but you'll have to come up with your own "event collector" for the out-of-state stuff (and an `IMainThreadDispatcher` for `[MainThread]`)
 
 ## What Does It Solve
@@ -165,49 +166,36 @@ public class MyViewModel : IEventHandler<SomeEvent1>, IEventHandler<SomeEvent2>
 
 ### Problem #3 - Strongly Typed Navigation with Strongly Typed Arguments
 
-Our amazing friends over in Prism offer the "best in class" MVVM framework.  We'll them upsell you beyond that, but one
-of their amazing features is 'Modules'.  Modules help break up your navigation registration, services, etc.
-
-What they don't solve is providing a strongly typed nature for this stuff (not their job though).  We think we can help
-addon to their beautiful solution.
-
-A normal call to a navigation service might look like this:
+A normal call to navigation might look like this:
 
 ```csharp
-_navigationService.NavigateAsync("MyPage", new NavigationParameters { { "MyArg", "MyValue" } });
+await Shell.Current.GoToAsync("MyPage", new Dictionary<string, object> { ["MyArg"] = "MyValue" });
 ```
 
-This is great.  It works, but I don't know the type OR argument requirements of "MyPage" without going to look it up.  In a small project
-with a small dev team, this is fine.  In a large project with a large dev team, this can be difficult.
+It works, but nothing tells you which route "MyPage" is or what arguments it needs without going to look it up. In a small project
+with a small dev team, this is fine. In a large project with a large dev team, this can be difficult.
 
-Through our Shiny.Framework library we offer a GlobalNavigationService that can be used to navigate to any page in your app from anywhere, however,
-for the nature of this example, we'll pass our navigation service FROM our viewmodel through the mediator request to ensure proper scope.
-
+Make the navigation a command instead. The command is the contract - its type names the destination and its properties are the arguments:
 
 ```csharp
-public record MyPageNavigatonRequest(INavigationService navigator, string MyArg) : IRequest;
-public class MyPageNavigationHandler : IRequestHandler<MyPageNavigatonRequest>
+public record MyPageNavigationCommand(string MyArg) : ICommand;
+
+[MediatorSingleton]
+public partial class MyPageNavigationHandler : ICommandHandler<MyPageNavigationCommand>
 {
-    public async Task Handle(MyPageNavigatonRequest request, CancellationToken cancellationToken)
-    {
-        await request.navigator.NavigateAsync("MyPage", new NavigationParameters { { "MyArg", request.MyArg } });
-    }
+    [MainThread]
+    public Task Handle(MyPageNavigationCommand command, IMediatorContext context, CancellationToken cancellationToken)
+        => Shell.Current.GoToAsync("MyPage", new Dictionary<string, object> { ["MyArg"] = command.MyArg });
 }
 ```
 
 Now, in your viewmodel, you can do this:
 
 ```csharp
-public class MyViewModel
-{
-    public MyViewModel(IMediator mediator)
-    {
-        mediator.Request(new MyPageNavigationCommand(_navigationService, "MyValue"));
-    }
-}
+await mediator.Send(new MyPageNavigationCommand("MyValue"));
 ```
 
-Strongly typed.  No page required page knowledge from the module upfront.  The other dev team of the module can define HOW things work.
+Strongly typed. Callers need no knowledge of the page or its route - the team that owns the page defines HOW navigation to it works, and it runs through the middleware pipeline like any other command.
 
 ## Commercial Support
 

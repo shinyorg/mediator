@@ -1,6 +1,6 @@
-<Project Sdk="Uno.Sdk/6.7.45">
+<Project Sdk="Uno.Sdk/7.0.22">
     <PropertyGroup>
-        <TargetFramework>$(BaseTargetFramework)</TargetFramework>
+        <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
         <UnoSingleProject>true</UnoSingleProject>
         <OutputType>Library</OutputType>
         <Nullable>enable</Nullable>

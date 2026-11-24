@@ -66,9 +66,9 @@
                 <TextCell Text="Validate" Command="{Binding ValidateCommand}" />
             </TableSection>
             
-            <TableSection Title="REQUESTS - Prism Navigation">
-                <EntryCell Label="Arg" Text="{Binding PrismNavArg}" />
-                <TextCell Text="Navigate" Command="{Binding PrismNavCommand}" />
+            <TableSection Title="COMMANDS - Navigation">
+                <EntryCell Label="Arg" Text="{Binding NavArg}" />
+                <TextCell Text="Navigate" Command="{Binding NavigateCommand}" />
             </TableSection>
             
             <TableSection Title="REQUESTS - Resiliency">

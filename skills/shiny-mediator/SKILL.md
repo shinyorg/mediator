@@ -29,6 +29,10 @@ triggers:
   - polymorphism
   - oneOf
   - allOf
+  - itemSchema
+  - text/event-stream
+  - defaultMapping
+  - deprecated
   - swagger
   - contract-first
   - strongly typed HTTP
@@ -58,6 +62,11 @@ triggers:
   - No JsonTypeInfo registered
   - Shiny.Extensions.Serialization
   - Shiny.Mediator.AppFunctions
+  - Shiny.Mediator.TickerQ
+  - TickerQ
+  - AddTickerQCommandScheduling
+  - IScheduledCommand
+  - command scheduling
   - app functions
   - AppFunction
   - siri
@@ -104,6 +113,10 @@ Invoke this skill when the user wants to:
 **Documentation**: https://shinylib.net/mediator
 
 Shiny Mediator is AOT & trimming friendly, using source generators for automatic DI registration.
+
+**Target frameworks (v7+):** `Shiny.Mediator.Maui` and `Shiny.Mediator.Blazor` are
+`net11.0` only (MAUI 11 / Blazor 11) - scaffold MAUI and Blazor apps on `net11.0`. Every other package ships
+`net10.0` and `net11.0`.
 
 ### Core Patterns
 
@@ -549,6 +562,23 @@ Deserialize to the base type (`List<Animal>`) and pattern-match on the variant (
 construct the variant (`new Dog { ... }`); do not set the discriminator by hand. Unmapped variants use their schema
 name as the value. `$type` becomes a `Type` property. An unknown or missing discriminator throws `JsonException`.
 
+**Server-sent event streams:** an operation whose success response is `text/event-stream` (and no
+`application/json`) generates `IStreamRequest<T>, IServerSentEventsStream` instead of `IRequest<T>`. `T` is the event
+`data` type from OpenAPI 3.2 `itemSchema` (ASP.NET Core 11) or 3.0/3.1 `schema` (an envelope of
+`data`/`event`/`id`/`retry` or ASP.NET Core 10 `SseItem<T>` fields yields its `data` type; any other schema is the
+payload). Consume with `await foreach (var (ctx, item) in mediator.Request(new GetTicksHttpRequest()))`.
+
+**Discriminator `defaultMapping` (3.2):** missing or unknown discriminator values deserialize to that variant instead
+of throwing `JsonException`.
+
+**`deprecated: true`** on an operation, parameter or model property generates `[Obsolete]` (callers see CS0618; the
+generated handlers/converters suppress it).
+
+**Nullability:** a property is nullable when it isn't `required`, or when its schema allows null - OpenAPI 3.1
+`type: [x, "null"]`, or 3.0 `nullable: true`, including the type-less `nullable: true` + `allOf: [$ref]` shape
+Swashbuckle/NSwag emit for nullable references (generated as `TheRef?`, e.g. a nullable enum). A `oneOf` of
+plain types that includes `string` generates `string`.
+
 **Registration of generated OpenAPI client:**
 ```csharp
 builder.Services.AddShinyMediator(x => x
@@ -736,6 +766,29 @@ public class GetWeatherFunctionHandler : IAppFunctionHandler<GetWeatherFunction,
 ### Testing
 `AppFunctionDispatcher.Execute(new AppFunctionInvocation("create_order", AppFunctionPlatform.Apple), json, ct)` runs the real pipeline (bind → delegates → mediator → handler) and never throws - check `outcome.Status`, `ResultJson`, `Dialog`, `ErrorCode`, `Message`.
 
+## Durable Command Scheduling (TickerQ)
+
+`IScheduledCommand` contracts (or `context.SetCommandSchedule(...)`) run later through the registered
+`ICommandScheduler`. `AddInMemoryCommandScheduling()` loses them on restart; `Shiny.Mediator.TickerQ` persists them:
+
+```csharp
+builder.Services.AddShinyMediator(x => x.AddTickerQCommandScheduling());
+builder.Services.AddTickerQ(options =>
+{
+    options.UseApplicationNamespace("MyApp"); // required by TickerQ 11 once the scheduler is enabled
+    options.AddOperationalStore<TimeTickerEntity, CronTickerEntity>(ef =>
+        ef.UseTickerQDbContext<TickerQDbContext>(db => db.UseSqlite("Data Source=tickerq.db")));
+});
+var app = builder.Build();
+app.UseTickerQ();
+```
+
+- **Licensing - tell the user:** TickerQ 10.5+ is source-available (not MIT) and TickerQ 11 executes no jobs
+  without a license certificate (free Community license under US$5M revenue; https://license.tickerq.net).
+  Without one, scheduled commands are stored but never fire. The `net11.0` package uses TickerQ 11, `net10.0` 10.5.
+- Scheduled commands are serialized with `ISerializer` - list them in the `[ShinyJsonContext]`.
+- Only one `ICommandScheduler` can be registered.
+
 ## Best Practices
 
 1. **Use records for contracts** - Immutable, value equality
@@ -771,4 +824,5 @@ dotnet add package Shiny.Mediator.Caching.MicrosoftMemoryCache # Caching
 dotnet add package Shiny.Mediator.AppSupport                   # Offline
 dotnet add package Microsoft.Extensions.AI                     # AI Tools
 dotnet add package Shiny.Mediator.AppFunctions                 # Siri / Shortcuts / Gemini (App Functions)
+dotnet add package Shiny.Mediator.TickerQ                      # Durable command scheduling (TickerQ - licensed)
 ```

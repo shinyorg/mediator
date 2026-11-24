@@ -1,5 +1,5 @@
 {
-  "openapi": "3.1.1",
+  "openapi": "3.2.0",
   "info": {
     "title": "Sample.Api | v1",
     "version": "1.0.0"
@@ -121,8 +121,27 @@
             "description": "OK",
             "content": {
               "text/event-stream": {
-                "schema": {
-                  "$ref": "#/components/schemas/SseItemOfint"
+                "itemSchema": {
+                  "required": [
+                    "data"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "pattern": "^-?(?:0|[1-9]\\d*)$",
+                      "type": [
+                        "integer",
+                        "string"
+                      ],
+                      "format": "int32"
+                    },
+                    "event": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
@@ -202,8 +221,22 @@
             "description": "OK",
             "content": {
               "text/event-stream": {
-                "schema": {
-                  "$ref": "#/components/schemas/SseItemOfMyEvent"
+                "itemSchema": {
+                  "required": [
+                    "data"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MyEvent"
+                    },
+                    "event": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
@@ -326,65 +359,6 @@
       },
       "MyEvent": {
         "type": "object"
-      },
-      "SseItemOfint": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "eventType": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "eventId": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "reconnectionInterval": {
-            "pattern": "^-?(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$",
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        }
-      },
-      "SseItemOfMyEvent": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/MyEvent"
-          },
-          "eventType": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "eventId": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "reconnectionInterval": {
-            "pattern": "^-?(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$",
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        }
       },
       "TestCommand": {
         "required": [

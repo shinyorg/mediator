@@ -82,6 +82,7 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
     // discriminated models: oneOf/anyOf union (ASP.NET Core) and allOf inheritance (NSwag/Swashbuckle)
     [InlineData("./SourceGeneration/polymorphism-union.json")]
     [InlineData("./SourceGeneration/polymorphism-inheritance.json")]
+    [InlineData("./SourceGeneration/openapi32.json")]
     public Task TestApis_Generation(string filePath)
     {
         var content = File.ReadAllText(filePath);
@@ -566,6 +567,132 @@ public class OpenApiHttpClientSourceGeneratorTests(ITestOutputHelper output)
         message.ShouldContain("[global::System.Text.Json.Serialization.JsonStringEnumMemberName(\"Too Many Requests\")]");
         message.ShouldContain("TooManyRequests,");
         message.ShouldContain("    OK,");
+    }
+
+
+    [Fact(DisplayName = "OpenAPI - type-less nullable (nullable + allOf $ref) stays nullable and mixed oneOf stays string (YAML)")]
+    public void TypeLess_Nullable_And_Mixed_OneOf_Yaml()
+    {
+        // Microsoft.OpenApi 3.9+ drops `nullable: true` when the schema has no `type` (OpenAPI.NET #2967)
+        // and folds a oneOf of plain types into one multi-flag type - OpenApiCompat keeps the old output
+        var openApi = """
+        openapi: 3.0.1
+        info:
+          title: Test API
+          version: '1.0'
+        paths:
+          /items:
+            get:
+              operationId: getItems
+              responses:
+                '200':
+                  description: OK
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/Item'
+        components:
+          schemas:
+            State:
+              type: string
+              enum: [ON, OFF]
+            Price:
+              type: object
+              properties:
+                amount:
+                  type: number
+            Item:
+              type: object
+              required: [state, price, flowState, plainState, value]
+              properties:
+                state:
+                  nullable: true # block style, with a comment
+                  allOf:
+                    - $ref: '#/components/schemas/State'
+                price:
+                  # a sequence item that starts with nullable - the tag must line up with its siblings
+                  oneOf:
+                    - nullable: true
+                      allOf:
+                        - $ref: '#/components/schemas/Price'
+                flowState: { nullable: true, allOf: [ { $ref: '#/components/schemas/State' } ] }
+                plainState:
+                  allOf:
+                    - $ref: '#/components/schemas/State'
+                value:
+                  oneOf:
+                    - type: string
+                    - type: number
+                    - type: object
+        """.ReplaceLineEndings("\r\n");
+
+        var item = GenerateItem(new MockAdditionalText("nullable.yaml", openApi));
+        item.ShouldContain("public global::TestApi.State? State");
+        item.ShouldContain("public global::TestApi.Price Price");
+        item.ShouldContain("public global::TestApi.State? FlowState");
+        item.ShouldContain("public global::TestApi.State PlainState");
+        item.ShouldContain("public string Value");
+    }
+
+
+    [Fact(DisplayName = "OpenAPI - type-less nullable (nullable + allOf $ref) stays nullable (JSON)")]
+    public void TypeLess_Nullable_Json()
+    {
+        var openApi = """
+        {
+          "openapi": "3.0.1",
+          "info": { "title": "Test API", "version": "1.0" },
+          "paths": {
+            "/items": {
+              "get": {
+                "operationId": "getItems",
+                "responses": {
+                  "200": {
+                    "description": "OK",
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Item" } } }
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "schemas": {
+              "State": { "type": "string", "enum": [ "ON", "OFF" ] },
+              "Item": {
+                "type": "object",
+                "required": [ "state", "plainState" ],
+                "properties": {
+                  "state": { "nullable": true, "allOf": [ { "$ref": "#/components/schemas/State" } ] },
+                  "plainState": { "allOf": [ { "$ref": "#/components/schemas/State" } ] }
+                }
+              }
+            }
+          }
+        }
+        """;
+
+        var item = GenerateItem(new MockAdditionalText("nullable.json", openApi));
+        item.ShouldContain("public global::TestApi.State? State");
+        item.ShouldContain("public global::TestApi.State PlainState");
+    }
+
+
+    static string GenerateItem(AdditionalText file)
+    {
+        var buildProps = new Dictionary<string, string>
+        {
+            ["build_metadata.AdditionalFiles.SourceItemGroup"] = "MediatorHttp",
+            ["build_metadata.AdditionalFiles.Namespace"] = "TestApi",
+            ["build_property.RootNamespace"] = "UnitTests",
+            ["build_property.AssemblyName"] = "UnitTests"
+        };
+        var result = RunGenerator([file], buildProps);
+        result.Diagnostics.ShouldBeEmpty();
+
+        return result.GeneratedSources
+            .Single(x => x.HintName.Contains("Item.") && !x.HintName.Contains("Converter"))
+            .SourceText
+            .ToString();
     }
 
 

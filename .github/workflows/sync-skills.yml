@@ -1,11 +1,9 @@
 name: Sync Skills
 
+# Skills only reach shinyorg/skills with a release: release.yml calls this once the packages are on NuGet, so the
+# published skills always describe a shipped version. Run it by hand to re-sync.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'skills/**'
+  workflow_call:
   workflow_dispatch:
 
 jobs:
@@ -72,7 +70,7 @@ jobs:
           body: |
             This PR updates the `shiny` plugin skills from the [Shiny Mediator repository](https://github.com/shinyorg/mediator).
 
-            **Source branch:** `${{ github.ref_name }}`
+            **Source ref:** `${{ github.ref_name }}`
             **Source commit:** ${{ github.sha }}
             **Triggered by:** @${{ github.actor }}
 

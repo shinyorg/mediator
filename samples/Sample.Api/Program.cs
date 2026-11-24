@@ -19,11 +19,15 @@ builder.Services.AddOpenApi();
 builder.Services.AddHttpContextAccessor();
 
 // TickerQ backs ICommandScheduler with a durable, EF Core-persisted store (Sqlite here).
+// TickerQ 11 requires an explicit application namespace once the scheduler is enabled, and a license
+// certificate (https://license.tickerq.net) before it executes jobs.
 builder.Services.AddTickerQ(options =>
+{
+    options.UseApplicationNamespace("Sample.Api");
     options.AddOperationalStore<TimeTickerEntity, CronTickerEntity>(ef =>
         ef.UseTickerQDbContext<TickerQDbContext>(db => db.UseSqlite("Data Source=tickerq.db"))
-    )
-);
+    );
+});
 
 var app = builder.Build();
 

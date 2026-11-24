@@ -30,7 +30,6 @@
     <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
         <DefineConstants>$(DefineConstants);PLATFORM</DefineConstants>
         <SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
-        <TargetPlatformVersion>36</TargetPlatformVersion>
         <!--
         <EmbedAssembliesIntoApk Condition="'$(Configuration)' == 'Debug'">true</EmbedAssembliesIntoApk>
         <AndroidPackageFormats Condition="'$(Configuration)' == 'Release'">aab</AndroidPackageFormats>
@@ -40,7 +39,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' OR $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
-        <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion>17.0</SupportedOSPlatformVersion>
         <DefineConstants>$(DefineConstants);APPLE;PLATFORM</DefineConstants>
     </PropertyGroup>
     
@@ -51,7 +50,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
-        <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion>17.0</SupportedOSPlatformVersion>
         <DefineConstants>$(DefineConstants);APPLE;PLATFORM</DefineConstants>
 
         <UseHardenedRuntime Condition="'$(Configuration)' == 'Release'">true</UseHardenedRuntime>
@@ -96,7 +95,6 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Condition="'$(Configuration)' == 'Debug'" />
 
-        <PackageReference Include="Prism.DryIoc.Maui"/>
         <PackageReference Include="sqlite-net-pcl"/>
     </ItemGroup>
 
@@ -106,7 +104,6 @@
         <ProjectReference Include="..\..\src\Shiny.Mediator.Contracts\Shiny.Mediator.Contracts.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.FluentValidation\Shiny.Mediator.FluentValidation.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj"/>
-        <ProjectReference Include="..\..\src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator\Shiny.Mediator.csproj"/>
         <ProjectReference Include="..\..\src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj"

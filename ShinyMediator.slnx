@@ -49,7 +49,6 @@
     <Project Path="src\Shiny.Mediator.DapperRequests\Shiny.Mediator.DapperRequests.csproj" />
     <Project Path="src\Shiny.Mediator.FluentValidation\Shiny.Mediator.FluentValidation.csproj" />
     <Project Path="src\Shiny.Mediator.Maui\Shiny.Mediator.Maui.csproj" />
-    <Project Path="src\Shiny.Mediator.Prism\Shiny.Mediator.Prism.csproj" />
     <Project Path="src\Shiny.Mediator.Resilience\Shiny.Mediator.Resilience.csproj" />
     <Project Path="src\Shiny.Mediator.Sentry\Shiny.Mediator.Sentry.csproj" />
     <Project Path="src\Shiny.Mediator.SourceGenerators\Shiny.Mediator.SourceGenerators.csproj" />

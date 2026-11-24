@@ -7,7 +7,8 @@ namespace Shiny.Mediator.Tests;
 
 public class TickerQSchedulingIntegrationTests(ITestOutputHelper output)
 {
-    [Fact]
+    // TickerQ 11 will not execute jobs without a license certificate (https://license.tickerq.net) - run by hand with one installed
+    [Fact(Skip = "Requires a TickerQ license certificate")]
     public async Task ScheduledCommand_FiresThroughTickerQ_AndReDispatches()
     {
         var signal = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -17,7 +18,8 @@ public class TickerQSchedulingIntegrationTests(ITestOutputHelper output)
         builder.Services.AddSingleton(signal);
         builder.Services.AddShinyMediator(x => x.AddTickerQCommandScheduling(), false);
         builder.Services.AddSingleton<ICommandHandler<IntegrationCommand>, IntegrationCommandHandler>();
-        builder.Services.AddTickerQ();
+        // TickerQ 11 requires an explicit application namespace once the scheduler is enabled
+        builder.Services.AddTickerQ(o => o.UseApplicationNamespace("Shiny.Mediator.Tests"));
 
         using var host = builder.Build();
         host.UseTickerQ();
